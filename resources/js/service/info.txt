@@ -1,0 +1,16 @@
+https://primevue.org/
+https://primevue.org/templates/
+https://tailwind.primevue.org/
+https://github.com/primefaces/primevue-tailwind
+https://github.com/primefaces/sakai-vue
+https://sakai.primevue.org/pages/crud
+
+dependencies:
+    npm install primevue
+    npm install @primevue/themes
+    npm install primeicons
+
+devDependencies:
+    npm install @primevue/auto-import-resolver
+    npm install tailwindcss
+    npm install tailwindcss-primeui

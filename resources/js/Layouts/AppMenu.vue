@@ -1,5 +1,11 @@
-<script setup></script>
+<script setup>
+import AppMenuItem from './AppMenuItem.vue';
+</script>
 
 <template>
-    AppMenu
+    <ul class="layout-menu">
+        <template>
+            <AppMenuItem></AppMenuItem>
+        </template>
+    </ul>
 </template>

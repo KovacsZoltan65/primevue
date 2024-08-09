@@ -14,3 +14,4 @@ devDependencies:
     npm install @primevue/auto-import-resolver
     npm install tailwindcss
     npm install tailwindcss-primeui
+    npm install sass

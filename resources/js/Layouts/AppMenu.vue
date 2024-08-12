@@ -1,28 +1,35 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import AppMenuItem from './AppMenuItem.vue';
+import { MenuService } from '@/service/MenuService';
 
-const model = ref([
-    {
-        label: 'Home',
-        items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
-    },
-    {
-        label: 'UI Components',
-        items: [
-            { label: 'Form Layout', icon: 'pi pi-fw pi-id-card',      to: '#' },
-            { label: 'Input',       icon: 'pi pi-fw pi-check-square', to: '#' },
-            { label: 'Button',      icon: 'pi pi-fw pi-mobile',       to: '#', class: 'rotated-icon' },
-            { label: 'Table',       icon: 'pi pi-fw pi-table',        to: '#' },
-        ]
-    },
-]);
+/**
+ * Tároló a MenuService-ből letöltött menüelemek tárolásához.
+ *
+ * @type {ref<unknown>}
+ */
+const menuItems = ref();
 
+
+/**
+ * Ez a funkció akkor hívódik meg, amikor az összetevő fel van szerelve.
+ * Lekéri a menüelemeket a MenuService-ből, és a menuItems reaktív változóban tárolja.
+ */
+onMounted(() => {
+    // A menüelemek lekérése a MenuService-ből.
+    // A MenuService.getMenuItems() metódus egy ígéretet ad vissza, amely feloldja a menüadatokat.
+    MenuService.getMenuItems()
+        .then((data) => {
+            // Tárolja a menüadatokat a menuItems reactive változóban.
+            // A menuItems változó a menüelemek megjelenítésére szolgál a sablonban.
+            menuItems.value = data;
+        });
+});
 </script>
 
 <template>
     <ul class="layout-menu">
-        <template v-for="(item, i) in model" :key="item">
+        <template v-for="(item, i) in menuItems" :key="item">
             
             <AppMenuItem v-if="!item.separator" :item="item" :index="i"></AppMenuItem>
 

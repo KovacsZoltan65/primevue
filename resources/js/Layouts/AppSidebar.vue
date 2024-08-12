@@ -4,7 +4,6 @@ import AppMenu from './AppMenu.vue';
 
 <template>
     <div class="layout-sidebar">
-        AppSidebar
         <AppMenu></AppMenu>
     </div>
 </template>

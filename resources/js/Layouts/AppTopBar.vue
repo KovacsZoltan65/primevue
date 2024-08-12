@@ -129,8 +129,7 @@ function logout(){
                         <span>Messages</span>
                     </button>
                     <form method="POST" @submit.prevent="logout">
-                        <button type="button" class="layout-topbar-action" 
-                                @click="logout()">
+                        <button type="submit" class="layout-topbar-action">
                             <i class="pi pi-user"></i>
                             <span>Profile</span>
                         </button>

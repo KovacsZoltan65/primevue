@@ -1,13 +1,33 @@
 <script setup>
+import { ref } from "vue";
 import { useLayout } from "./composables/layout";
 import AppConfigurator from "./AppConfigurator.vue";
-import NavLink from "@/Components/NavLink.vue";
+//import NavLink from "@/Components/NavLink.vue";
+import Select from "primevue/select";
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
+
+const selectedCountry = ref();
+const countries = ref([
+    //{ name: 'Australia', code: 'AU' },
+    //{ name: 'Brazil', code: 'BR' },
+    //{ name: 'China', code: 'CN' },
+    //{ name: 'Egypt', code: 'EG' },
+    //{ name: 'France', code: 'FR' },
+    //{ name: 'Germany', code: 'DE' },
+    //{ name: 'India', code: 'IN' },
+    //{ name: 'Japan', code: 'JP' },
+    //{ name: 'Spain', code: 'ES' },
+    { name: 'United States', code: 'US' },
+    { name: 'Magyarország', code: 'HU' },
+    { name: 'Great Britain', code: 'GB' },
+]);
+
 </script>
 
 <template>
     <div class="layout-topbar">
+
         <div class="layout-topbar-logo-container">
             <button
                 class="layout-menu-button layout-topbar-action"
@@ -55,21 +75,65 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
         </div>
 
         <div class="layout-topbar-actions">
+<!--
             <div class="layout-config-menu">
-                <button
-                    type="button"
-                    class="layout-topbar-action"
-                    @click="toggleDarkMode"
-                >
-                    <i
-                        :class="[
-                            'pi',
-                            { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme },
-                        ]"
-                    ></i>
+                <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
+                    <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
                 </button>
+                <div class="relative">
+                    <button
+                        v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }"
+                        type="button"
+                        class="layout-topbar-action layout-topbar-action-highlight"
+                    >
+                        <i class="pi pi-palette"></i>
+                    </button>
+                    <AppConfigurator />
+                </div>
+            </div>
+-->
+<!--
+            <button
+                class="layout-topbar-menu-button layout-topbar-action"
+                v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }"
+            >
+                <i class="pi pi-ellipsis-v"></i>
+            </button>
+-->
+            <!-- Ez lesz majd a nyelvi választó -->
+            <Select v-model="selectedCountry" :options="countries" filter optionLabel="name" placeholder="Select a Country" class="w-full md:w-56">
+                <template #value="slotProps">
+                    <div v-if="slotProps.value" class="flex items-center">
+                        <img :alt="slotProps.value.label" src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png" :class="`mr-2 flag flag-${slotProps.value.code.toLowerCase()}`" style="width: 18px" />
+                        <div>{{ slotProps.value.name }}</div>
+                    </div>
+                    <span v-else>
+                        {{ slotProps.placeholder }}
+                    </span>
+                </template>
+                <template #option="slotProps">
+                    <div class="flex items-center">
+                        <img :alt="slotProps.option.label" src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png" :class="`mr-2 flag flag-${slotProps.option.code.toLowerCase()}`" style="width: 18px" />
+                        <div>{{ slotProps.option.name }}</div>
+                    </div>
+                </template>
+            </Select>
 
-                <div class="relative"></div>
+            <div class="layout-topbar-menu hidden lg:block">
+                <div class="layout-topbar-menu-content">
+                    <button type="button" class="layout-topbar-action">
+                        <i class="pi pi-calendar"></i>
+                        <span>Calendar</span>
+                    </button>
+                    <button type="button" class="layout-topbar-action">
+                        <i class="pi pi-inbox"></i>
+                        <span>Messages</span>
+                    </button>
+                    <button type="button" class="layout-topbar-action">
+                        <i class="pi pi-user"></i>
+                        <span>Profile</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

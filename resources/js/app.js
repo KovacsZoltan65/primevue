@@ -11,6 +11,7 @@ import Aura from '@primevue/themes/aura';
 import PrimeVue from 'primevue/config';
 import ConfirmationService from 'primevue/confirmationservice';
 import ToastService from 'primevue/toastservice';
+import StyleClass from 'primevue/styleclass';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -31,6 +32,7 @@ createInertiaApp({
             })
             .use(ToastService)
             .use(ConfirmationService)
+            .directive('styleclass', StyleClass)
             .mount(el);
     },
     progress: {

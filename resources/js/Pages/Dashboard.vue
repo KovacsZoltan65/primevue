@@ -20,6 +20,7 @@ import InputNumber from 'primevue/inputnumber';
 import RadioButton from 'primevue/radiobutton';
 
 
+
 /**
  * Reaktív hivatkozás a toast komponensre.
  * 
@@ -324,8 +325,6 @@ function findIndexById(id) {
     return index;
 }
 
-
-
 /**
  * A komponens betöltésekor lekérdezjük a termékeket a ProductService-ből.
  * A lekérdezett termékeket a products hivatkozásban tároljuk.
@@ -423,21 +422,6 @@ function getStatusLabel(status) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
 
 <template>
@@ -447,13 +431,16 @@ function getStatusLabel(status) {
             <div clas="card">
                 <Toolbar class="md-6">
                     <template #start>
-                        <Button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                        <Button label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected"
+                        <Button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" 
+                                @click="openNew" />
+                        <Button label="Delete" icon="pi pi-trash" severity="secondary" 
+                                @click="confirmDeleteSelected"
                             :disabled="!selectedProducts || !selectedProducts.length" />
                     </template>
 
                     <template #end>
-                        <Button label="Export" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                        <Button label="Export" icon="pi pi-upload" severity="secondary" 
+                                @click="exportCSV($event)" />
                     </template>
                 </Toolbar>
 

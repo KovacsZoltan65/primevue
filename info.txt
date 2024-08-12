@@ -9,9 +9,15 @@ dependencies:
     npm install primevue
     npm install @primevue/themes
     npm install primeicons
+    
 
 devDependencies:
     npm install @primevue/auto-import-resolver
+    npm install @vue/eslint-config-prettier
     npm install tailwindcss
     npm install tailwindcss-primeui
     npm install sass
+    npm install eslint
+    npm install eslint-plugin-vue
+    npm install prettier
+    npm install unplugin-vue-components

@@ -5,6 +5,8 @@ import { $t, updatePreset, updateSurfacePalette } from "@primevue/themes";
 import Aura from "@primevue/themes/aura";
 import Lara from "@primevue/themes/lara";
 
+import SelectButton from "primevue/selectbutton";
+
 const {
     layoutConfig,
     setPrimary,

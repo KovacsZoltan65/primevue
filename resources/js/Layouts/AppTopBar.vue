@@ -1,8 +1,10 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { router } from '@inertiajs/vue3';
 import { useLayout } from "./composables/layout";
 import AppConfigurator from "./AppConfigurator.vue";
-//import NavLink from "@/Components/NavLink.vue";
+import { LanguageService } from "@/service/LanguageService";
+import { AuthService } from '@/service/AuthService';
 import Select from "primevue/select";
 
 import Button from 'primevue/button';
@@ -10,24 +12,24 @@ import Button from 'primevue/button';
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
 const selectedCountry = ref();
-const countries = ref([
-    //{ name: 'Australia', code: 'AU' },
-    //{ name: 'Brazil', code: 'BR' },
-    //{ name: 'China', code: 'CN' },
-    //{ name: 'Egypt', code: 'EG' },
-    //{ name: 'France', code: 'FR' },
-    //{ name: 'Germany', code: 'DE' },
-    //{ name: 'India', code: 'IN' },
-    //{ name: 'Japan', code: 'JP' },
-    //{ name: 'Spain', code: 'ES' },
-    { name: 'United States', code: 'US' },
-    { name: 'Magyarország', code: 'HU' },
-    { name: 'Great Britain', code: 'GB' },
-]);
+const countries = ref();
+
+onMounted(() => {
+    LanguageService.getLanguages().then((data) => {
+        countries.value = data;
+    })
+})
+
+function logout(){
+    //console.log('logout');
+    //AuthService.logout();
+    router.post(route('logout'));
+}
 
 </script>
 
 <template>
+    <div></div>
     <div class="layout-topbar">
 
         <div class="layout-topbar-logo-container">
@@ -58,7 +60,7 @@ const countries = ref([
         </div>
 
         <div class="layout-topbar-actions">
-<!--
+
             <div class="layout-config-menu">
                 <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
                     <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
@@ -74,15 +76,15 @@ const countries = ref([
                     <AppConfigurator />
                 </div>
             </div>
--->
-<!--
+
+
             <button
                 class="layout-topbar-menu-button layout-topbar-action"
                 v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }"
             >
                 <i class="pi pi-ellipsis-v"></i>
             </button>
--->
+
             <!-- Ez lesz majd a nyelvi választó -->
             <Select v-model="selectedCountry" :options="countries" filter optionLabel="name" placeholder="Select a Country" class="w-full md:w-56">
                 <template #value="slotProps">
@@ -112,10 +114,12 @@ const countries = ref([
                         <i class="pi pi-inbox"></i>
                         <span>Messages</span>
                     </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button>
+                    <form method="POST" @submit.prevent="logout">
+                        <button type="submit" class="layout-topbar-action">
+                            <i class="pi pi-user"></i>
+                            <span>Profile</span>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

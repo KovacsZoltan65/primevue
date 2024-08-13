@@ -2,11 +2,20 @@ export const MenuService = {
     getMenuData(){
         return [
             {
-                label: 'Home',
+                label: 'home',
                 items: [
-                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }
+                    { label: 'dashboard', icon: 'pi pi-fw pi-home', to: '/' }
                 ]
             },
+            {
+                label: 'administration',
+                items: [
+                    { label: 'users', icon: 'pi pi-fw pi-users', to: '#'},
+                    { label: 'roles', icon: '', to: '#'},
+                    { label: 'permissions', icon: '', to: '#'},
+                ]
+            },
+            /*
             {
                 label: 'UI Components',
                 items: [
@@ -16,6 +25,7 @@ export const MenuService = {
                     { label: 'Table',       icon: 'pi pi-fw pi-table',        to: '#' },
                 ]
             }
+            */
         ];
     },
     getMenuItems(){

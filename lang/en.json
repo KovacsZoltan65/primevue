@@ -1,0 +1,41 @@
+{
+    "dashboard": "Dashboard",
+    "home": "Home",
+    "administration": "Administration",
+    "users": "Users",
+    "roles": "Roles",
+    "permissions": "Permissions",
+
+    "new": "New",
+    "delete": "Delete",
+    "export": "Export",
+    "search": "Search...",
+    "code": "Code",
+    "name": "Name",
+    "image": "Image",
+    "price": "Price",
+    "category": "Category",
+    "reviews": "Reviews",
+    "status": "Status",
+    "select_status": "Select a Status",
+    "inventory_status": "inventory status",
+    "description": "Description",
+    "accessories": "Accessories",
+    "clothing": "Clothing",
+    "electronics": "Electronics",
+    "fitness": "Fitness",
+    "quantity": "Quantity",
+    
+    "cancel": "Cancel",
+    "save": "Save",
+    "no": "No",
+    "yes": "Yes",
+    "confirm": "",
+    "confirm_delete": "Are you sure you want to delete the selected products?",
+    "confirm_delete_2": "Are you sure you want to delete",
+
+    "manage_products": "Manage Products",
+    "product_details": "Product Details",
+    "errors_name_required": "Name is required."
+    
+}

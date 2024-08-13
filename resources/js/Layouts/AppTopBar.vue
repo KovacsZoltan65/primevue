@@ -3,11 +3,10 @@ import { ref, onMounted } from "vue";
 import { router } from '@inertiajs/vue3';
 import { useLayout } from "./composables/layout";
 import AppConfigurator from "./AppConfigurator.vue";
-import { LanguageService } from "@/service/LanguageService";
 import { AuthService } from '@/service/AuthService';
-import Select from "primevue/select";
 
 import Button from 'primevue/button';
+import LanguageSwitcher from "@/Components/LanguageSwitcher.vue";
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
@@ -15,9 +14,9 @@ const selectedCountry = ref();
 const countries = ref();
 
 onMounted(() => {
-    LanguageService.getLanguages().then((data) => {
-        countries.value = data;
-    })
+    //LanguageService.getLanguages().then((data) => {
+    //    countries.value = data;
+    //})
 })
 
 function logout(){
@@ -86,23 +85,7 @@ function logout(){
             </button>
 
             <!-- Ez lesz majd a nyelvi választó -->
-            <Select v-model="selectedCountry" :options="countries" filter optionLabel="name" placeholder="Select a Country" class="w-full md:w-56">
-                <template #value="slotProps">
-                    <div v-if="slotProps.value" class="flex items-center">
-                        <img :alt="slotProps.value.label" src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png" :class="`mr-2 flag flag-${slotProps.value.code.toLowerCase()}`" style="width: 18px" />
-                        <div>{{ slotProps.value.name }}</div>
-                    </div>
-                    <span v-else>
-                        {{ slotProps.placeholder }}
-                    </span>
-                </template>
-                <template #option="slotProps">
-                    <div class="flex items-center">
-                        <img :alt="slotProps.option.label" src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png" :class="`mr-2 flag flag-${slotProps.option.code.toLowerCase()}`" style="width: 18px" />
-                        <div>{{ slotProps.option.name }}</div>
-                    </div>
-                </template>
-            </Select>
+            <LanguageSwitcher />
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">

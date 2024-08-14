@@ -105,7 +105,7 @@ const filters = ref({
 /**
  * Reaktív hivatkozás a beküldött (submit) állapotára.
  * 
- * @type {Ref<boolean>}
+ * @type {ref<boolean>}
  */
 const submitted = ref(false);
 
@@ -117,7 +117,7 @@ const submitted = ref(false);
  *     { label: 'OUTOFSTOCK', value: 'outofstock' }
  * ]
  * 
- * @type {Ref<Array>}
+ * @type {ref<Array>}
  */
 const statuses = ref([
     /**
@@ -141,7 +141,6 @@ const statuses = ref([
      */
     { label: 'OUTOFSTOCK', value: 'outofstock' }
 ]);
-
 
 /**
  * Egy számot valutakarakterláncként formáz.
@@ -249,15 +248,17 @@ function saveProduct() {
  */
 function editProduct(prod) {
     // Hozzon létre egy másolatot a termékobjektumról, és rendelje hozzá a termékértékhez.
-    // A spread operátor egy új objektum létrehozására szolgál, amely ugyanazokkal a tulajdonságokkal rendelkezik, mint a prod.
+    // A spread operátor egy új objektum létrehozására szolgál, 
+    // amely ugyanazokkal a tulajdonságokkal rendelkezik, mint a prod.
     product.value = { ...prod };
-    
+
     // Állítsa a productDialog értékét igazra, ami megnyitja a termék párbeszédpanelt.
     productDialog.value = true;
 }
 
 /**
- * Módosítja a deleteProductDialog értékét és a product értékét, hogy megerősítse a termék törlését.
+ * Módosítja a deleteProductDialog értékét és a product értékét, 
+ * hogy megerősítse a termék törlését.
  *
  * @param {Object} prod - A törlendő termék.
  * @return {void}
@@ -492,25 +493,41 @@ function getStatusLabel(status) {
                         </div>
                     </template>
 
+                    <!-- Checkbox -->
                     <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
+                    
+                    <!-- Kód -->
                     <Column field="code" :header="$t('code')" sortable style="min-width: 12rem"></Column>
+                    
+                    <!-- Nev -->
                     <Column field="name" :header="$t('name')" sortable style="min-width: 16rem"></Column>
+                    
+                    <!-- image -->
                     <Column :header="$t('image')">
                         <template #body="slotProps">
                             <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.image}`" :alt="slotProps.data.image" class="rounded" style="width: 64px" />
                         </template>
                     </Column>
+
+                    <!-- price -->
                     <Column field="price" :header="$t('price')" sortable style="min-width: 8rem">
                         <template #body="slotProps">
                             {{ formatCurrency(slotProps.data.price) }}
                         </template>
                     </Column>
-                    <Column field="category" header="Category" sortable style="min-width: 10rem"></Column>
+
+                    <!-- category -->
+                    <Column field="category" :header="$t('category')" sortable 
+                            style="min-width: 10rem"></Column>
+                    
+                    <!-- rating -->
                     <Column field="rating" :header="$t('reviews')" sortable style="min-width: 12rem">
                         <template #body="slotProps">
                             <Rating :modelValue="slotProps.data.rating" :readonly="true" />
                         </template>
                     </Column>
+                    
+                    <!-- inventoryStatus -->
                     <Column field="inventoryStatus" :header="$t('status')" sortable 
                             style="min-width: 12rem">
                         <template #body="slotProps">
@@ -518,6 +535,8 @@ function getStatusLabel(status) {
                                  :severity="getStatusLabel(slotProps.data.inventoryStatus)" />
                         </template>
                     </Column>
+
+                    <!-- Actions -->
                     <Column :exportable="false" style="min-width: 12rem">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" outlined rounded class="mr-2" 
@@ -526,9 +545,11 @@ function getStatusLabel(status) {
                                     @click="confirmDeleteProduct(slotProps.data)" />
                         </template>
                     </Column>
+
                 </DataTable>
             </div>
 
+            <!-- Termék megjelenítése -->
             <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" 
                     :header="$t('product_details')" :modal="true">
                 <div class="flex flex-col gap-6">
@@ -545,19 +566,32 @@ function getStatusLabel(status) {
                             {{ $t('errors_name_required') }}
                         </small>
                     </div>
+
+                    <!-- Leírás -->
                     <div>
                         <label for="description" class="block font-bold mb-3">
                             {{ $t('description') }}
                         </label>
-                        <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" fluid />
+                        <Textarea id="description" 
+                                  v-model="product.description" 
+                                  required="true" rows="3" cols="20" fluid />
                     </div>
+
+                    <!-- Leltár állapot -->
                     <div>
                         <label for="inventoryStatus" class="block font-bold mb-3">
                             {{ $t('inventory_status') }}
                         </label>
-                        <Select id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses"
-                                optionLabel="label" :placeholder="$t('select_status')" fluid></Select>
+                        <Select id="inventoryStatus" 
+                                v-model="product.inventoryStatus" 
+                                :options="statuses"
+                                optionLabel="label" 
+                                optionValue="label"
+                                :placeholder="$t('select_status')" 
+                                fluid />
                     </div>
+
+                    <!-- Category -->
                     <div>
                         <span class="block font-bold mb-4">
                             {{ $t('category') }}
@@ -593,6 +627,8 @@ function getStatusLabel(status) {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Price and Quantity -->
                     <div class="grid grid-cols-12 gap-4">
                         <div class="col-span-6">
                             <label for="price" class="block font-bold mb-3">
@@ -608,6 +644,7 @@ function getStatusLabel(status) {
                             <InputNumber id="quantity" v-model="product.quantity" integeronly fluid />
                         </div>
                     </div>
+
                 </div>
                 <template #footer>
                     <Button :label="$t('cancel')" icon="pi pi-times" text @click="hideDialog" />
@@ -615,6 +652,7 @@ function getStatusLabel(status) {
                 </template>
             </Dialog>
 
+            <!-- Kijelölt termék törlése -->
             <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" 
                     :header="$t('confirm')" :modal="true">
                 <div class="flex items-center gap-4">
@@ -629,6 +667,7 @@ function getStatusLabel(status) {
                 </template>
             </Dialog>
 
+            <!-- Összes termék törlése -->
             <Dialog v-model:visible="deleteProductsDialog" 
                     :style="{ width: '450px' }" :header="$t('confirm')" :modal="true">
                 <div class="flex items-center gap-4">

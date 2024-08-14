@@ -21,6 +21,17 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    
+    Route::resource('companies', App\Http\Controllers\CompanyController::class);
+    /*
+    Route::resource('companies', App\Http\Controllers\CompanyController::class)->names([
+        'index' => 'companies',
+        'create' => 'companies_create',
+        'store' => 'companies_store',
+        'update' => 'companies_update',
+        'destroy' => 'companies_destroy',
+    ]);
+    */
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

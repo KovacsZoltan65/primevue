@@ -36,6 +36,8 @@
 
     "manage_products": "Manage Products",
     "product_details": "Product Details",
-    "errors_name_required": "Name is required."
+    "errors_name_required": "Name is required.",
+    
+    "select_country": "Select a Country"
     
 }

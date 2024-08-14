@@ -27,7 +27,7 @@ function setLocale(locale){
     <Select v-model="selectedCountry" 
             :options="countries" filter 
             optionLabel="name" 
-            placeholder="Select a Country" 
+            :placeholder="$t('select_country')" 
             class="w-full md:w-56">
 
         <template #value="slotProps">

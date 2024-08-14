@@ -36,6 +36,7 @@
 
     "manage_products": "Termékek kezelése",
     "product_details": "Termék részletek",
-    "errors_name_required": "A név megadása kötelező."
+    "errors_name_required": "A név megadása kötelező.",
     
+    "select_country": "Válasszon egy országot"
 }

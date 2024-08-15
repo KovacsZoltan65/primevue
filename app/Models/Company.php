@@ -13,16 +13,23 @@ class Company extends Model
     use HasFactory,
         SoftDeletes;
     
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'country', 'city'];
 
     public function scopeSearch(Builder $query, Request $request)
     {
+        // If search parameter is present, filter results by name or email containing the search term
         return $query->when($request->search, function ($query) use ($request) {
             $query->where(function ($query) use ($request) {
                 $query->where('name', 'like', "%{$request->search}%");
             });
         })
-        ->then($request->state, function($query) use($request){})
-        ->then($request->city, function($query) use($request){});
+        // If class_id parameter is present, filter results by that class_id
+        ->when($request->country, function ($query) use ($request) {
+            $query->where('country', $request->country);
+        })
+        // If section_id parameter is present, filter results by that section_id
+        ->when($request->city, function ($query) use ($request) {
+            $query->where('city', $request->city);
+        });
     }
 }

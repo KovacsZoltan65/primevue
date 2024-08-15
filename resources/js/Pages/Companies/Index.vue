@@ -1,114 +1,79 @@
 <script setup>
-import { onMounted, ref } from 'vue';
-import AppLayout from '@/Layouts/AppLayout.vue';
-import Button from 'primevue/button';
-import DataTable from 'primevue/datatable';
-import IconField from 'primevue/iconfield';
-import InputIcon from 'primevue/inputicon';
-import InputText from 'primevue/inputtext';
-import Toolbar from 'primevue/toolbar';
-import { useToast } from 'primevue/usetoast';
-import { FilterMatchMode } from '@primevue/core/api';
-import { CompanyService } from '@/service/CompanyService';
-import Column from 'primevue/column';
+import { ref, onMounted } from 'vue';
+import ApiService from '@/service/ApiService';
 
-const toast = useToast();
-const companies = ref();
-const company = ref({});
-const selectedCompanies = ref();
-const dt = ref();
-const filters = ref({
-    global: {
-        value: null,
-        matchMode: FilterMatchMode.CONTAINS
-    }
-});
+// Reaktív változó létrehozása
+const items = ref([]);
 
-const props = defineProps({
-    companies: {
-        type: Object,
-        default: () => ({})
-    }
-});
+// Adatok lekérése az API-ból
+const fetchItems = () => {
+  ApiService.getItems()
+    .then(response => {
+      //console.log('response.data.data', response.data.data);
+      items.value = response.data.data;
+      //console.log('items', items.value);
+    })
+    .catch(error => {
+      console.error('getItems API Error:', error);
+    });
+};
 
-function openNew(){}
-
-function exportCSV(){}
-
-function confirmDeleteSelected() {}
-
+// fetchItems metódus meghívása, amikor a komponens létrejön
 onMounted(() => {
-    //console.log( props.companies );
-    /*
-    CompanyService.getCompanies()
-        .then((data) => {
-            companies.value = data;
-        })
-    */
+  fetchItems();
 });
+
+const create = () => {
+    //
+    let data = {
+        name: 'new company',
+        country: 'Country 01',
+        city: 'City 01'
+    };
+
+    ApiService.createItems(data)
+        .then(response => {
+            items.value.push(response.data);
+        })
+        .catch(error => {
+            console.error('Create API Error:', error);
+        });
+};
+
+const update = (id) => {
+    let data = {
+        name: 'Company xx',
+        country: 'Country xx',
+        city: 'City xx'
+    };
+    ApiService.updateItem(id, data)
+    .then(response => {
+        const index = state.Books.findIndex(
+            (b) => b.id === response.data.id
+        );
+
+        if (index !== -1) {
+            items.value[index] = response.data;
+        }
+    })
+    .catch(error => {
+        console.error('Company Update Error:', error);
+    });
+}
 
 </script>
+
 <template>
-    <AppLayout>
+    <div>
+        <ul>
+            <li v-for="item in items" :key="item.id">{{ item.name }}</li>
+        </ul>
+
         <div>
-            <div class="card">
-                
-                <Toolbar class="md-6">
-                    <template #start>
-                        <Button :label="$t('new')" icon="pi pi-plus" 
-                                severity="secondary" class="mr-2" @click="openNew" />
-                        <Button :label="$t('delete')" icon="pi pi-trash" 
-                                severity="secondary" 
-                                @click="confirmDeleteSelected"
-                            :disabled="!selectedCompanies || !selectedCompanies.length" />
-                    </template>
-
-                    <template #end>
-                        <Button :label="$t('export')" icon="pi pi-upload" 
-                                severity="secondary" 
-                                @click="exportCSV($event)" />
-                    </template>
-                </Toolbar>
-
-                <DataTable 
-                    ref="dt" 
-                    v-model:selection="selectedCompanies" 
-                    :value="companies" 
-                    dataKey="id" 
-                    :paginator="true"
-                    :rows="10"
-                    :filters="filters"
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
-                    
-                    <template #header>
-                        <div class="flex flex-wrap gap-2 items-center justify-between">
-                            <h4 class="m-0">{{ $t('manage_products') }}</h4>
-                            <IconField>
-                                <InputIcon>
-                                    <i class="pi pi-search" />
-                                </InputIcon>
-                                <InputText v-model="filters['global'].value" :placeholder="$t('search')" />
-                            </IconField>
-                        </div>
-                    </template>
-
-                    <Column selectionMode="multiple" style="width: 3rem" :exportable="false" />
-                    <Column field="name" :header="$t('name')" sortable style="min-width: 16rem" />
-
-                    <Column :exportable="false" style="min-width: 12rem">
-                        <template #body="slotProps">
-                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" 
-                                    @click="editProduct(slotProps.data)" />
-                            <Button icon="pi pi-trash" outlined rounded severity="danger" 
-                                    @click="confirmDeleteProduct(slotProps.data)" />
-                        </template>
-                    </Column>
-                    
-                </DataTable>
-
-            </div>
+            <button @click="create()">CREATE</button>
         </div>
-    </AppLayout>
+        <div>
+            <button @click="update(28)">UPDATE</button>
+        </div>
+    </div>
 </template>

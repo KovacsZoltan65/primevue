@@ -26,6 +26,16 @@ class CompanySeeder extends Seeder
             [ 'id' =>  8, 'name' => 'Company 08', 'country' => 'Hungary', 'city' => 'Miskolc' ],
             [ 'id' =>  9, 'name' => 'Company 09', 'country' => 'Hungary', 'city' => 'Veszprém' ],
             [ 'id' => 10, 'name' => 'Company 10', 'country' => 'Hungary', 'city' => 'Szombathely' ],
+            [ 'id' => 11, 'name' => 'Company 11', 'country' => 'Hungary', 'city' => 'Budapest' ],
+            [ 'id' => 12, 'name' => 'Company 12', 'country' => 'Hungary', 'city' => 'Győr' ],
+            [ 'id' => 13, 'name' => 'Company 13', 'country' => 'Hungary', 'city' => 'Székesfehérvár' ],
+            [ 'id' => 14, 'name' => 'Company 14', 'country' => 'Hungary', 'city' => 'Kecskemét' ],
+            [ 'id' => 15, 'name' => 'Company 15', 'country' => 'Hungary', 'city' => 'Cegléd' ],
+            [ 'id' => 16, 'name' => 'Company 16', 'country' => 'Hungary', 'city' => 'Sopron' ],
+            [ 'id' => 17, 'name' => 'Company 17', 'country' => 'Hungary', 'city' => 'Pécs' ],
+            [ 'id' => 18, 'name' => 'Company 18', 'country' => 'Hungary', 'city' => 'Miskolc' ],
+            [ 'id' => 19, 'name' => 'Company 19', 'country' => 'Hungary', 'city' => 'Veszprém' ],
+            [ 'id' => 20, 'name' => 'Company 20', 'country' => 'Hungary', 'city' => 'Szombathely' ],
         ];
 
         $count = count($companies);

@@ -24,6 +24,12 @@ const filters = ref({
     }
 });
 
+const props = defineProps({
+    companies: {
+        type: Object,
+        default: () => ({})
+    }
+});
 
 function openNew(){}
 
@@ -32,10 +38,13 @@ function exportCSV(){}
 function confirmDeleteSelected() {}
 
 onMounted(() => {
+    //console.log( props.companies );
+    /*
     CompanyService.getCompanies()
         .then((data) => {
             companies.value = data;
         })
+    */
 });
 
 </script>

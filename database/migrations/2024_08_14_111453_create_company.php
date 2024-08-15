@@ -12,10 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('companies', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->softDeletes();
+            $table->id()->comment('Rekord azonosító');
+            $table->string('name')->comment('Név');
+            $table->string('country')->comment('Ország');
+            $table->string('city')->comment('Város');
+            
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

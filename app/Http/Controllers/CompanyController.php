@@ -4,15 +4,21 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Company;
+use App\Http\Resources\CompanyResource;
 
 class CompanyController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render("Companies/Index");
+        $companies = CompanyResource::collection(Company::all());
+\Log::info( print_r($companies, true) );
+        return Inertia::render("Companies/Index", [
+            'companies' => $companies
+        ]);
     }
 
     /**

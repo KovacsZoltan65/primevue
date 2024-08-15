@@ -6,8 +6,10 @@ use App\Http\Resources\CompanyResource;
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+//use Illuminate\Http\Response;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 class CompanyController extends Controller
 {
@@ -36,28 +38,72 @@ class CompanyController extends Controller
         }); 
     }
 
+    /**
+     * Get the list of companies.
+     * 
+     * @param Request $request
+     * @return AnonymousResourceCollection
+     */
     public function getCompanies(Request $request)
     {
+        // Get the list of companies
         $companyQuery = Company::search($request);
         $companies = CompanyResource::collection($companyQuery->get());
-
+        
+        // Return the list of companies
         return $companies;
     }
     
+    /**
+     * Create a new company.
+     *
+     * @param Request $request The HTTP request object containing the company data.
+     * @return \Illuminate\Http\JsonResponse The JSON response containing the created company.
+     */
     public function createCompany(Request $request)
     {
+        // Create a new company using the data from the HTTP request
         $company = Company::create($request->all());
 
+        // Return the created company as a JSON response with a success status code
         return response()->json($company, Response::HTTP_OK);
     }
     
-    public function updateCompany(Request  $request, int $id)
+    /**
+     * Update an existing company.
+     * 
+     * @param Request $request The HTTP request object containing the company data.
+     * @param int $id The ID of the company to update.
+     * @return \Illuminate\Http\JsonResponse The JSON response containing the updated company.
+     */
+    public function updateCompany(Request $request, int $id)
     {
+        // Find the company to update by its ID
         $old_company = Company::where('id', $id)->first();
         
+        // Update the company with the data from the HTTP request
         $company = $old_company->update($request->all());
         
-        return response()->json($company, Response::HTTP_OK);
+        // Return the updated company as a JSON response with a success status code
+        return response()->json($old_company, Response::HTTP_OK);
+    }
+    
+    /**
+     * Delete an existing company.
+     * 
+     * @param int $id The ID of the company to delete.
+     * @return \Illuminate\Http\JsonResponse The JSON response containing the deleted company.
+     */
+    public function deleteCompany(int $id)
+    {
+        // Find the company to delete by its ID
+        $old_company = Company::where('id', $id)->first();
+        
+        // Delete the company
+        $old_company->delete();
+        
+        // Return the deleted company as a JSON response with a success status code
+        return response()->json($old_company, Response::HTTP_OK);
     }
 
     /**

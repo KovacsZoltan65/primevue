@@ -23,7 +23,7 @@ onMounted(() => {
   fetchItems();
 });
 
-const create = () => {
+const createItem = () => {
     //
     let data = {
         name: 'new company',
@@ -40,18 +40,32 @@ const create = () => {
         });
 };
 
-const update = (id) => {
+const updateItem = (id) => {
+    
+    console.log('id', id);
+
     let data = {
         name: 'Company xx',
         country: 'Country xx',
         city: 'City xx'
     };
+
     ApiService.updateItem(id, data)
     .then(response => {
-        const index = state.Books.findIndex(
-            (b) => b.id === response.data.id
-        );
+        console.log('response', response);
+        
+        const index = items.value.findIndex((b) => {
+            //console.log('id', id);
+            //console.log('b.id', b.id);
+            return b.id === id;
+        });
 
+        //const index = items.value.findIndex(
+        //    (b) => b.id === id
+        //);
+
+        //console.log('index', index);
+        
         if (index !== -1) {
             items.value[index] = response.data;
         }
@@ -61,19 +75,43 @@ const update = (id) => {
     });
 }
 
+const deleteItem = (id) => {};
+
 </script>
 
 <template>
     <div>
+        <!--
         <ul>
             <li v-for="item in items" :key="item.id">{{ item.name }}</li>
         </ul>
+    -->
+        <div>
+            <button @click="createItem()">CREATE</button>
+        </div>
 
-        <div>
-            <button @click="create()">CREATE</button>
-        </div>
-        <div>
-            <button @click="update(28)">UPDATE</button>
-        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Country</th>
+                    <th>City</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="item in items" :key="item.id">
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.country }}</td>
+                    <td>{{ item.city }}</td>
+                    <td>
+                        <button @click="updateItem(item.id)" style="margin-left: 5px;">UPDATE</button>
+                        <button @click="deleteItem(item.id)" style="margin-left: 5px;">DELETE</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </template>

@@ -8,6 +8,7 @@ import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+import { i18nVue } from 'laravel-vue-i18n';
 
 import Aura from '@primevue/themes/aura';
 import PrimeVue from 'primevue/config';
@@ -23,6 +24,9 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         return createApp({ render: () => h(App, props) })
             .use(plugin)
+            .use(i18nVue, {
+                resolve: async lang => import(`../../lang/${lang}.json`),
+            })
             .use(ZiggyVue)
             .use(PrimeVue, {
                 theme: {

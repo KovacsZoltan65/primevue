@@ -1,4 +1,5 @@
 import axios from "axios";
+import { trans } from "laravel-vue-i18n";
 
 // Axios kliens konfigurálása
 const apiClient = axios.create({
@@ -30,28 +31,29 @@ apiClient.interceptors.response.use(
             switch(error.response.status){
                 // 400 - Bad Request
                 case 400:
-                    console.error('Bad Request: ', error.response.data.message || 'Invalid request');
+                    console.error(trans('error_400') + ': ', error.response.data.message || 'Invalid request');
                     break;
                 // 401 - Unauthorized
                 case 401:
+                    console.error( trans('error_401') );
                     // Jelenleg az oldal átirányítja a felhasználót a bejelentkezési oldalra, de itt a kívánt módon kezelheted a hibát
                     window.location.href = '/login';
                     break;
                 // 403 - Forbidden
                 case 403:
-                    console.error('Forbidden: ', error.response.data.message || 'Forbidden');
+                    console.error(trans('error_403') + ': ', error.response.data.message || 'Forbidden');
                     break;
                 // 404 - Not found
                 case 404:
-                    console.error('Not Found: ', error.response.data.message || 'Not found');
+                    console.error(trans('error_404') + ': ', error.response.data.message || 'Not found');
                     break;
                 // 500 - Internal server error
                 case 500:
-                    console.error('Server Error: ', error.response.data.message || 'Internal server error');
+                    console.error(trans('error_500') + ': ', error.response.data.message || 'Internal server error');
                     break;
                 // Végső esetben a válaszban szereplő hibaüzenetet vagy az alapértelmezett üzenetet jeleníti meg
                 default:
-                    console.error('Error: ', error.response.data.message || 'Unknown error');
+                    console.error(trans('error_default') + ': ', error.response.data.message || 'Unknown error');
                     break;
             }
         }

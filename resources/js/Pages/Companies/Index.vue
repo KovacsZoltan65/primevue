@@ -1,117 +1,118 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import ApiService from '@/service/ApiService';
+import { onMounted, ref } from 'vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import Button from 'primevue/button';
+import DataTable from 'primevue/datatable';
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
+import InputText from 'primevue/inputtext';
+import Toolbar from 'primevue/toolbar';
+import { useToast } from 'primevue/usetoast';
+import { FilterMatchMode } from '@primevue/core/api';
+import { CompanyService } from '@/service/CompanyService';
+import Column from 'primevue/column';
 
-// Reaktív változó létrehozása
-const items = ref([]);
-
-// Adatok lekérése az API-ból
-const fetchItems = () => {
-  ApiService.getItems()
-    .then(response => {
-      //console.log('response.data.data', response.data.data);
-      items.value = response.data.data;
-      //console.log('items', items.value);
-    })
-    .catch(error => {
-      console.error('getItems API Error:', error);
-    });
-};
-
-// fetchItems metódus meghívása, amikor a komponens létrejön
-onMounted(() => {
-  fetchItems();
+//const toast = useToast();
+const companies = ref();
+//const company = ref({});
+const selectedCompanies = ref();
+const dt = ref();
+const filters = ref({
+    global: {
+        value: null,
+        matchMode: FilterMatchMode.CONTAINS
+    }
 });
 
-const createItem = () => {
-    //
-    let data = {
-        name: 'new company',
-        country: 'Country 01',
-        city: 'City 01'
-    };
+const props = defineProps({
+    companies: {
+        type: Object,
+        default: () => ({})
+    }
+});
 
-    ApiService.createItems(data)
-        .then(response => {
-            items.value.push(response.data);
+function openNew(){}
+
+function exportCSV(){}
+
+function confirmDeleteSelected() {}
+
+onMounted(() => {
+    console.log( 'props.companies.data', props.companies.data );
+    //companies.value = CompanyService.getData();
+    //console.log('comapnies', companies);
+    /*
+    CompanyService.getCompanies()
+        .then((data) => {
+            companies.value = data;
         })
-        .catch(error => {
-            console.error('Create API Error:', error);
-        });
-};
-
-const updateItem = (id) => {
-    
-    console.log('id', id);
-
-    let data = {
-        name: 'Company xx',
-        country: 'Country xx',
-        city: 'City xx'
-    };
-
-    ApiService.updateItem(id, data)
-    .then(response => {
-        console.log('response', response);
-        
-        const index = items.value.findIndex((b) => {
-            //console.log('id', id);
-            //console.log('b.id', b.id);
-            return b.id === id;
-        });
-
-        //const index = items.value.findIndex(
-        //    (b) => b.id === id
-        //);
-
-        //console.log('index', index);
-        
-        if (index !== -1) {
-            items.value[index] = response.data;
-        }
-    })
-    .catch(error => {
-        console.error('Company Update Error:', error);
-    });
-}
-
-const deleteItem = (id) => {};
+    */
+});
 
 </script>
-
 <template>
-    <div>
-        <!--
-        <ul>
-            <li v-for="item in items" :key="item.id">{{ item.name }}</li>
-        </ul>
-    -->
+    <AppLayout>
         <div>
-            <button @click="createItem()">CREATE</button>
-        </div>
+            <div class="card">
+                
+                <Toolbar class="md-6">
+                    <template #start>
+                        <Button :label="$t('new')" icon="pi pi-plus" 
+                                severity="secondary" class="mr-2" @click="openNew" />
+                        <Button :label="$t('delete')" icon="pi pi-trash" 
+                                severity="secondary" 
+                                @click="confirmDeleteSelected"
+                            :disabled="!selectedCompanies || !selectedCompanies.length" />
+                    </template>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Country</th>
-                    <th>City</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="item in items" :key="item.id">
-                    <td>{{ item.id }}</td>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.country }}</td>
-                    <td>{{ item.city }}</td>
-                    <td>
-                        <button @click="updateItem(item.id)" style="margin-left: 5px;">UPDATE</button>
-                        <button @click="deleteItem(item.id)" style="margin-left: 5px;">DELETE</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+                    <template #end>
+                        <Button :label="$t('export')" icon="pi pi-upload" 
+                                severity="secondary" 
+                                @click="exportCSV($event)" />
+                    </template>
+                </Toolbar>
+
+                <DataTable 
+                    ref="dt" 
+                    v-model:selection="selectedCompanies" 
+                    :value="props.companies.data" 
+                    dataKey="id" 
+                    :paginator="true"
+                    :rows="10"
+                    :filters="filters"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    :rowsPerPageOptions="[5, 10, 25]"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
+                    
+                    <template #header>
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <h4 class="m-0">{{ $t('manage_products') }}</h4>
+                            <IconField>
+                                <InputIcon>
+                                    <i class="pi pi-search" />
+                                </InputIcon>
+                                <InputText v-model="filters['global'].value" :placeholder="$t('search')" />
+                            </IconField>
+                        </div>
+                    </template>
+
+                    <Column selectionMode="multiple" style="width: 3rem" :exportable="false" />
+                    <Column field="name" :header="$t('name')" sortable style="min-width: 16rem" />
+                    <Column field="country" :header="$t('country')" sortable style="min-width: 16rem" />
+                    <Column field="city" :header="$t('city')" sortable style="min-width: 16rem" />
+
+                    <Column :exportable="false" style="min-width: 12rem">
+                        <template #body="slotProps">
+                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" 
+                                    @click="editProduct(slotProps.data)" />
+                            <Button icon="pi pi-trash" outlined rounded severity="danger" 
+                                    @click="confirmDeleteProduct(slotProps.data)" />
+                        </template>
+                    </Column>
+                    
+                </DataTable>
+
+            </div>
+        </div>
+    </AppLayout>
 </template>

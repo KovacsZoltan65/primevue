@@ -56,5 +56,12 @@
     "select_country": "Válasszon egy országot",
     
     "specimens": "Példányok",
-    "companies": "Cégek"
+    "companies": "Cégek",
+
+    "error_400": "Rossz kérés",
+    "error_401": "Jogosulatlan! Átirányítás a bejelentkezéshez...",
+    "error_403": "Tiltott",
+    "error_404": "Nem található",
+    "error_500": "Szerver hiba",
+    "error_default": "Hiba"
 }

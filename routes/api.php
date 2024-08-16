@@ -19,7 +19,6 @@ Route::get('/user', function (Request $request) {
  */
 Route::get('/items', [CompanyController::class, 'getCompanies'])->name('api.get.companies');
 
-
 /**
  * Hozzon létre új céget az API-n keresztül.
  *
@@ -28,7 +27,6 @@ Route::get('/items', [CompanyController::class, 'getCompanies'])->name('api.get.
  * @return \Illuminate\Http\JsonResponse A létrehozott vállalatot tartalmazó JSON-válasz.
  */
 Route::post('/items', [CompanyController::class, 'createCompany'])->name('api.create.company');
-
 
 /**
  * Frissítsen egy meglévő céget.

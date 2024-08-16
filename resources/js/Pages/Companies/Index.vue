@@ -38,15 +38,15 @@ function exportCSV(){}
 function confirmDeleteSelected() {}
 
 onMounted(() => {
-    console.log( 'props.companies.data', props.companies.data );
+    //console.log( 'props.companies.data', props.companies.data );
     //companies.value = CompanyService.getData();
     //console.log('comapnies', companies);
-    /*
+    
     CompanyService.getCompanies()
         .then((data) => {
             companies.value = data;
         })
-    */
+    
 });
 
 </script>

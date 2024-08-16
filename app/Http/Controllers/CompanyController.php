@@ -18,17 +18,19 @@ class CompanyController extends Controller
      */
     public function index(Request $request)
     {
-        return Inertia::render("Companies/Index");
-        /*
+        //return Inertia::render("Companies/Index");
+        
         $companyQuery = Company::search($request);
         //$companies = CompanyResource::collection($companyQuery->paginate(5));
         $companies = CompanyResource::collection($companyQuery->get());
 
         return Inertia::render("Companies/Index", [
             'companies' => $companies,
+            'countries' => '',
+            'cityes' => '',
             'search' => request('search')
         ]);
-        */
+        
     }
     
     public function applySearch(Builder $query, string $search)

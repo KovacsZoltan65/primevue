@@ -38,40 +38,48 @@ const submit = () => {
                                 </g>
                             </svg>
                             <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
-                                Welcome to PrimeLand!
+                                {{ $t('welcome') }}
                             </div>
                             <span class="text-muted-color font-medium">
-                                Sign in to continue
+                                {{ $t('register_title') }}
                             </span>
                         </div>
 
                         <form @submit.prevent="submit">
                             <!-- NAME -->
                             <label for="name" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">
-                                Name
+                                {{ $t('name') }}
                             </label>
-                            <InputText id="name" type="text" placeholder="Name" class="w-full md:w-[30rem] mb-8" v-model="name" />
+                            <InputText id="name" type="text" 
+                                       :placeholder="$t('name_placeholder')" 
+                                       class="w-full md:w-[30rem] mb-8" v-model="name" />
                             <!-- ./NAME -->
 
                             <!-- EMAIL -->
                             <label for="email" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">
-                                Email
+                                {{ $t('email') }}
                             </label>
-                            <InputText id="email1" type="text" placeholder="Email address" class="w-full md:w-[30rem] mb-8" v-model="email" />
+                            <InputText id="email1" type="text" 
+                                       :placeholder="$t('email_address')" 
+                                       class="w-full md:w-[30rem] mb-8" v-model="email" />
                             <!-- ./EMAIL -->
 
                             <!-- PASSWORD -->
                             <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">
-                                Password
+                                {{ $t('password') }}
                             </label>
-                            <Password id="password1" v-model="password" placeholder="Password" :toggleMask="true" class="mb-4" fluid :feedback="false"></Password>
+                            <Password id="password1" v-model="password" 
+                                      :placeholder="$t('password_placeholder')" 
+                                      :toggleMask="true" class="mb-4" fluid :feedback="false"></Password>
                             <!-- ./PASSWORD -->
 
                             <!-- CONFIRM PASSWORD -->
                             <label for="confirm_password" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">
-                                Confirm Password
+                                {{ $t('confirm_password') }}
                             </label>
-                            <Password id="confirm_password" v-model="confirm_password" placeholder="Password" :toggleMask="true" class="mb-4" fluid :feedback="false"></Password>
+                            <Password id="confirm_password" v-model="confirm_password" 
+                                      :placeholder="$t('confirm_password_placeholder')" 
+                                      :toggleMask="true" class="mb-4" fluid :feedback="false"></Password>
                             <!-- ./CONFIRM PASSWORD -->
 
                             <div class="flex items-center justify-between mt-2 mb-8 gap-8">
@@ -90,7 +98,7 @@ const submit = () => {
                                     Already registered?
                                 </span>-->
                                 <Link :href="route('login')" class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">
-                                    Already registered?
+                                    {{ $t('already_registered') }}?
                                 </Link>
                             </div>
                             <Button label="Register" class="w-full" as="router-link" to="/login"></Button>

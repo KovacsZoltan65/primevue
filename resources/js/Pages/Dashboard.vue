@@ -105,7 +105,7 @@ const filters = ref({
 /**
  * Reaktív hivatkozás a beküldött (submit) állapotára.
  * 
- * @type {Ref<boolean>}
+ * @type {ref<boolean>}
  */
 const submitted = ref(false);
 
@@ -117,7 +117,7 @@ const submitted = ref(false);
  *     { label: 'OUTOFSTOCK', value: 'outofstock' }
  * ]
  * 
- * @type {Ref<Array>}
+ * @type {ref<Array>}
  */
 const statuses = ref([
     /**
@@ -141,7 +141,6 @@ const statuses = ref([
      */
     { label: 'OUTOFSTOCK', value: 'outofstock' }
 ]);
-
 
 /**
  * Egy számot valutakarakterláncként formáz.
@@ -249,15 +248,17 @@ function saveProduct() {
  */
 function editProduct(prod) {
     // Hozzon létre egy másolatot a termékobjektumról, és rendelje hozzá a termékértékhez.
-    // A spread operátor egy új objektum létrehozására szolgál, amely ugyanazokkal a tulajdonságokkal rendelkezik, mint a prod.
+    // A spread operátor egy új objektum létrehozására szolgál, 
+    // amely ugyanazokkal a tulajdonságokkal rendelkezik, mint a prod.
     product.value = { ...prod };
-    
+
     // Állítsa a productDialog értékét igazra, ami megnyitja a termék párbeszédpanelt.
     productDialog.value = true;
 }
 
 /**
- * Módosítja a deleteProductDialog értékét és a product értékét, hogy megerősítse a termék törlését.
+ * Módosítja a deleteProductDialog értékét és a product értékét, 
+ * hogy megerősítse a termék törlését.
  *
  * @param {Object} prod - A törlendő termék.
  * @return {void}
@@ -294,6 +295,30 @@ function deleteProduct() {
         severity: 'success',
         summary: 'Successful',
         detail: 'Product Deleted',
+        life: 3000,
+    });
+}
+
+
+/**
+ * Törli a kiválasztott termékeket a termékek töméből.
+ *
+ * @return {void}
+ */
+function deleteSelectedProducts(){
+    // Szűrje ki a kiválasztott termékeket a termékek töméből.
+    products.value = products.value.filter((val) => !selectedProducts.value.includes(val));
+
+    // Frissítse a deleteProductsDialog értéket false értékre,
+    // és állítsa a selectedProducts értékét nullra.
+    deleteProductsDialog.value = false;
+    selectedProducts.value = null;
+
+    // Jelenítse meg a sikeres toast üzenetet, amely jelzi, hogy a termékek törölve lettek.
+    toast.add({
+        severity: 'success',
+        summary: 'Successful',
+        detail: 'Products Deleted',
         life: 3000,
     });
 }
@@ -428,19 +453,18 @@ function getStatusLabel(status) {
     <AppLayout>
 
         <div>
-            <div class="card">
-                
+            <div clas="card">
                 <Toolbar class="md-6">
                     <template #start>
-                        <Button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" 
+                        <Button :label="$t('new')" icon="pi pi-plus" severity="secondary" class="mr-2" 
                                 @click="openNew" />
-                        <Button label="Delete" icon="pi pi-trash" severity="secondary" 
+                        <Button :label="$t('delete')" icon="pi pi-trash" severity="secondary" 
                                 @click="confirmDeleteSelected"
                             :disabled="!selectedProducts || !selectedProducts.length" />
                     </template>
 
                     <template #end>
-                        <Button label="Export" icon="pi pi-upload" severity="secondary" 
+                        <Button :label="$t('export')" icon="pi pi-upload" severity="secondary" 
                                 @click="exportCSV($event)" />
                     </template>
                 </Toolbar>
@@ -459,134 +483,207 @@ function getStatusLabel(status) {
                 >
                     <template #header>
                         <div class="flex flex-wrap gap-2 items-center justify-between">
-                            <h4 class="m-0">Manage Products</h4>
+                            <h4 class="m-0">{{ $t('manage_products') }}</h4>
                             <IconField>
                                 <InputIcon>
                                     <i class="pi pi-search" />
                                 </InputIcon>
-                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                                <InputText v-model="filters['global'].value" :placeholder="$t('search')" />
                             </IconField>
                         </div>
                     </template>
 
+                    <!-- Checkbox -->
                     <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                    <Column field="code" header="Code" sortable style="min-width: 12rem"></Column>
-                    <Column field="name" header="Name" sortable style="min-width: 16rem"></Column>
-                    <Column header="Image">
+                    
+                    <!-- Kód -->
+                    <Column field="code" :header="$t('code')" sortable style="min-width: 12rem"></Column>
+                    
+                    <!-- Nev -->
+                    <Column field="name" :header="$t('name')" sortable style="min-width: 16rem"></Column>
+                    
+                    <!-- image -->
+                    <Column :header="$t('image')">
                         <template #body="slotProps">
                             <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.image}`" :alt="slotProps.data.image" class="rounded" style="width: 64px" />
                         </template>
                     </Column>
-                    <Column field="price" header="Price" sortable style="min-width: 8rem">
+
+                    <!-- price -->
+                    <Column field="price" :header="$t('price')" sortable style="min-width: 8rem">
                         <template #body="slotProps">
                             {{ formatCurrency(slotProps.data.price) }}
                         </template>
                     </Column>
-                    <Column field="category" header="Category" sortable style="min-width: 10rem"></Column>
-                    <Column field="rating" header="Reviews" sortable style="min-width: 12rem">
+
+                    <!-- category -->
+                    <Column field="category" :header="$t('category')" sortable 
+                            style="min-width: 10rem"></Column>
+                    
+                    <!-- rating -->
+                    <Column field="rating" :header="$t('reviews')" sortable style="min-width: 12rem">
                         <template #body="slotProps">
                             <Rating :modelValue="slotProps.data.rating" :readonly="true" />
                         </template>
                     </Column>
-                    <Column field="inventoryStatus" header="Status" sortable style="min-width: 12rem">
+                    
+                    <!-- inventoryStatus -->
+                    <Column field="inventoryStatus" :header="$t('status')" sortable 
+                            style="min-width: 12rem">
                         <template #body="slotProps">
-                            <Tag :value="slotProps.data.inventoryStatus" :severity="getStatusLabel(slotProps.data.inventoryStatus)" />
+                            <Tag :value="slotProps.data.inventoryStatus" 
+                                 :severity="getStatusLabel(slotProps.data.inventoryStatus)" />
                         </template>
                     </Column>
+
+                    <!-- Actions -->
                     <Column :exportable="false" style="min-width: 12rem">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editProduct(slotProps.data)" />
-                            <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
+                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" 
+                                    @click="editProduct(slotProps.data)" />
+                            <Button icon="pi pi-trash" outlined rounded severity="danger" 
+                                    @click="confirmDeleteProduct(slotProps.data)" />
                         </template>
                     </Column>
+
                 </DataTable>
             </div>
 
-            <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Product Details" :modal="true">
+            <!-- Termék megjelenítése -->
+            <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" 
+                    :header="$t('product_details')" :modal="true">
                 <div class="flex flex-col gap-6">
                     <img v-if="product.image"
                         :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`"
                         :alt="product.image" class="block m-auto pb-4" />
                     <div>
-                        <label for="name" class="block font-bold mb-3">Name</label>
+                        <label for="name" class="block font-bold mb-3">
+                            {{ $t('name') }}
+                        </label>
                         <InputText id="name" v-model.trim="product.name" required="true" autofocus
                             :invalid="submitted && !product.name" fluid />
-                        <small v-if="submitted && !product.name" class="text-red-500">Name is required.</small>
+                        <small v-if="submitted && !product.name" class="text-red-500">
+                            {{ $t('errors_name_required') }}
+                        </small>
                     </div>
+
+                    <!-- Leírás -->
                     <div>
-                        <label for="description" class="block font-bold mb-3">Description</label>
-                        <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20"
-                            fluid />
+                        <label for="description" class="block font-bold mb-3">
+                            {{ $t('description') }}
+                        </label>
+                        <Textarea id="description" 
+                                  v-model="product.description" 
+                                  required="true" rows="3" cols="20" fluid />
                     </div>
+
+                    <!-- Leltár állapot -->
                     <div>
-                        <label for="inventoryStatus" class="block font-bold mb-3">Inventory Status</label>
-                        <Select id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses"
-                            optionLabel="label" placeholder="Select a Status" fluid></Select>
+                        <label for="inventoryStatus" class="block font-bold mb-3">
+                            {{ $t('inventory_status') }}
+                        </label>
+                        <Select id="inventoryStatus" 
+                                v-model="product.inventoryStatus" 
+                                :options="statuses"
+                                optionLabel="label" 
+                                optionValue="label"
+                                :placeholder="$t('select_status')" 
+                                fluid />
                     </div>
+
+                    <!-- Category -->
                     <div>
-                        <span class="block font-bold mb-4">Category</span>
+                        <span class="block font-bold mb-4">
+                            {{ $t('category') }}
+                        </span>
                         <div class="grid grid-cols-12 gap-4">
                             <div class="flex items-center gap-2 col-span-6">
                                 <RadioButton id="category1" v-model="product.category" name="category"
                                     value="Accessories" />
-                                <label for="category1">Accessories</label>
+                                <label for="category1">
+                                    {{ $t('accessories') }}
+                                </label>
                             </div>
                             <div class="flex items-center gap-2 col-span-6">
                                 <RadioButton id="category2" v-model="product.category" name="category"
                                     value="Clothing" />
-                                <label for="category2">Clothing</label>
+                                <label for="category2">
+                                    {{ $t('clothing') }}
+                                </label>
                             </div>
                             <div class="flex items-center gap-2 col-span-6">
                                 <RadioButton id="category3" v-model="product.category" name="category"
                                     value="Electronics" />
-                                <label for="category3">Electronics</label>
+                                <label for="category3">
+                                    {{ $t('electronics') }}
+                                </label>
                             </div>
                             <div class="flex items-center gap-2 col-span-6">
                                 <RadioButton id="category4" v-model="product.category" name="category"
                                     value="Fitness" />
-                                <label for="category4">Fitness</label>
+                                <label for="category4">
+                                    {{ $t('fitness') }}
+                                </label>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Price and Quantity -->
                     <div class="grid grid-cols-12 gap-4">
                         <div class="col-span-6">
-                            <label for="price" class="block font-bold mb-3">Price</label>
+                            <label for="price" class="block font-bold mb-3">
+                                {{ $t('price') }}
+                            </label>
                             <InputNumber id="price" v-model="product.price" mode="currency" currency="USD"
                                 locale="en-US" fluid />
                         </div>
                         <div class="col-span-6">
-                            <label for="quantity" class="block font-bold mb-3">Quantity</label>
+                            <label for="quantity" class="block font-bold mb-3">
+                                {{ $t('quantity') }}
+                            </label>
                             <InputNumber id="quantity" v-model="product.quantity" integeronly fluid />
                         </div>
                     </div>
+
                 </div>
                 <template #footer>
-                    <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
-                    <Button label="Save" icon="pi pi-check" @click="saveProduct" />
+                    <Button :label="$t('cancel')" icon="pi pi-times" text @click="hideDialog" />
+                    <Button :label="$t('save')" icon="pi pi-check" @click="saveProduct" />
                 </template>
             </Dialog>
 
-            <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+            <!-- Kijelölt termék törlése -->
+            <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" 
+                    :header="$t('confirm')" :modal="true">
                 <div class="flex items-center gap-4">
                     <i class="pi pi-exclamation-triangle !text-3xl" />
-                    <span v-if="product">Are you sure you want to delete <b>{{ product.name }}</b>?</span>
+                    <span v-if="product">{{ $t('confirm_delete_2') }} <b>{{ product.name }}</b>?</span>
                 </div>
                 <template #footer>
-                    <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
-                    <Button label="Yes" icon="pi pi-check" @click="deleteProduct" />
+                    <Button :label="$t('no')" icon="pi pi-times" text 
+                            @click="deleteProductDialog = false" />
+                    <Button :label="$t('yes')" icon="pi pi-check" 
+                            @click="deleteProduct" />
                 </template>
             </Dialog>
 
-            <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+            <!-- Összes termék törlése -->
+            <Dialog v-model:visible="deleteProductsDialog" 
+                    :style="{ width: '450px' }" :header="$t('confirm')" :modal="true">
                 <div class="flex items-center gap-4">
                     <i class="pi pi-exclamation-triangle !text-3xl" />
-                    <span v-if="product">Are you sure you want to delete the selected products?</span>
+                    <span v-if="product">
+                        {{ $t('confirm_delete') }}
+                    </span>
                 </div>
                 <template #footer>
-                    <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false" />
-                    <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
+                    <Button :label="$t('no')" icon="pi pi-times" text 
+                            @click="deleteProductsDialog = false" />
+                    <Button :label="$t('yes')" icon="pi pi-check"  
+                            @click="deleteSelectedProducts" />
                 </template>
             </Dialog>
         </div>
+
     </AppLayout>
 </template>

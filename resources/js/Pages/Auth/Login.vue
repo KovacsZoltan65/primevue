@@ -43,24 +43,26 @@ const submit = () => {
                             </svg>
 
                             <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
-                                Welcome to PrimeLand!
+                                {{ $t('welcome') }}
                             </div>
                             <span class="text-muted-color font-medium">
-                                Sign in to continue
+                                {{ $t('sign_in_title') }}
                             </span>
                         </div>
 
                         <form @submit.prevent="submit">
                             <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">
-                                Email
+                                {{ $t('email') }}
                             </label>
-                            <InputText id="email1" type="text" placeholder="Email address" 
+                            <InputText id="email1" type="text" :placeholder="$t('email_placeholder')" 
                             class="w-full md:w-[30rem] mb-8" v-model="form.email" />
 
                             <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">
-                                Password
+                                {{ $t('password') }}
                             </label>
-                            <Password id="password1" v-model="form.password" placeholder="Password" :toggleMask="true" class="mb-4" fluid :feedback="false"></Password>
+                            <Password id="password1" v-model="form.password" 
+                                      :placeholder="$t('password_placeholder')" 
+                                      :toggleMask="true" class="mb-4" fluid :feedback="false"></Password>
 
                             <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                                 
@@ -68,16 +70,16 @@ const submit = () => {
                                     <Checkbox v-model="form.remember" id="rememberme1" binary 
                                     class="mr-2"></Checkbox>
                                     <label for="rememberme1">
-                                        Remember me
+                                        {{ $t('remember_me') }}
                                     </label>
                                 </div>
 
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">
-                                    Forgot password?
+                                    {{ $t('forgot_password') }}?
                                 </span>
                             </div>
 
-                            <Button label="Sign In" class="w-full" 
+                            <Button :label="$t('sign_in')" class="w-full" 
                                     type="submit"></Button>
 
                         </form>

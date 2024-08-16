@@ -9,7 +9,7 @@ dependencies:
     npm install primevue
     npm install @primevue/themes
     npm install primeicons
-    
+    npm install laravel-vue-i18n
 
 devDependencies:
     npm install @primevue/auto-import-resolver

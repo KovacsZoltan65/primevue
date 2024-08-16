@@ -11,22 +11,70 @@ const apiClient = axios.create({
 });
 
 // Központosított hiba- és jogosultságkezelés
+/**
+ * Központosított hiba- és jogosultságkezelés
+ * Ez a kód blokk az API kliens válaszait kezelő interceptor példája.
+ * Ha a szerver hibaüzenetet ad vissza, akkor a kódblokkban definiált függvényekkel kezeljük a hibát.
+ * A hibakezelésben a válaszban szereplő HTTP státusz kód alapján különböző hibaüzeneteket jelenítünk meg a konzolon.
+ */
 apiClient.interceptors.response.use(
     response => response,
     error => {
+        if( error.response ){
+            /**
+             * A metódus a válaszban szereplő HTTP státusz kód alapján különböző hibaüzeneteket jelenít meg a konzolon.
+             * Ha a válaszban szerepel egy hibaüzenet akkor azt jeleníti meg, különben az alapértelmezett üzenetet jeleníti meg.
+             * @param {number} status - A válaszban szereplő HTTP státusz kód.
+             * @returns {void}
+             */
+            switch(error.response.status){
+                // 400 - Bad Request
+                case 400:
+                    console.error('Bad Request: ', error.response.data.message || 'Invalid request');
+                    break;
+                // 401 - Unauthorized
+                case 401:
+                    // Jelenleg az oldal átirányítja a felhasználót a bejelentkezési oldalra, de itt a kívánt módon kezelheted a hibát
+                    window.location.href = '/login';
+                    break;
+                // 403 - Forbidden
+                case 403:
+                    console.error('Forbidden: ', error.response.data.message || 'Forbidden');
+                    break;
+                // 404 - Not found
+                case 404:
+                    console.error('Not Found: ', error.response.data.message || 'Not found');
+                    break;
+                // 500 - Internal server error
+                case 500:
+                    console.error('Server Error: ', error.response.data.message || 'Internal server error');
+                    break;
+                // Végső esetben a válaszban szereplő hibaüzenetet vagy az alapértelmezett üzenetet jeleníti meg
+                default:
+                    console.error('Error: ', error.response.data.message || 'Unknown error');
+                    break;
+            }
+        }
+        /*
         if(error.response && error.response.status === 401){
             // Például: kezelheted az autentikációs hibákat itt
             console.error('Unauthorized! Redirecting to login...');
         }
         return Promise.reject(error);
+        */
     }
 );
 
 // API hívások
 export default {
     
-    // Például egy GET kérés
-    getItems(){
+    /**
+     * A '/items' végpontból lekérdezi az összes elemet.
+     * 
+     * @return {Promise} - A Promise, ami a GET kérésre adott választ adja vissza.
+     */
+    getItems() {
+        // A GET kérést a '/items' végpontban küldjük el.
         return apiClient.get('/items');
     },
 

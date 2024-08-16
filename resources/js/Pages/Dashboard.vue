@@ -452,6 +452,8 @@ function getStatusLabel(status) {
 <template>
     <AppLayout>
 
+        <Head :title="dashboard"/>
+
         <div>
             <div clas="card">
                 <Toolbar class="md-6">

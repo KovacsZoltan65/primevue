@@ -4,7 +4,7 @@ export const MenuService = {
             {
                 label: 'home',
                 items: [
-                    { label: 'dashboard', icon: 'pi pi-fw pi-home', to: '/' }
+                    { label: 'dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard' }
                 ]
             },
             {
@@ -15,6 +15,25 @@ export const MenuService = {
                     { label: 'permissions', icon: '', to: '#'},
                 ]
             },
+            {
+                label: 'system',
+                items: [
+                    {
+                        label: 'geo',
+                        items: [
+                            { label: 'countries', icon: 'pi pi-fw pi-map-marker', to: '#'},
+                            { label: 'regions', icon: 'pi pi-fw pi-map-marker', to: '#'},
+                            { label: 'cities', icon: 'pi pi-fw pi-map-marker', to: '#'}
+                        ]
+                    }
+                ]
+            },
+            {
+                label: 'specimens',
+                items: [
+                    { label: 'companies', 'icon': 'pi pi-fw pi-briefcase', to: '/companies' }
+                ]
+            }
             /*
             {
                 label: 'UI Components',

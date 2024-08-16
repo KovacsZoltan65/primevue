@@ -4,7 +4,7 @@ export const MenuService = {
             {
                 label: 'home',
                 items: [
-                    { label: 'dashboard', icon: 'pi pi-fw pi-home', to: '/' }
+                    { label: 'dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard' }
                 ]
             },
             {
@@ -15,6 +15,12 @@ export const MenuService = {
                     { label: 'permissions', icon: '', to: '#'},
                 ]
             },
+            {
+                label: 'specimens',
+                items: [
+                    { label: 'companies', 'icon': 'pi pi-fw pi-briefcase', to: '/companies' }
+                ]
+            }
             /*
             {
                 label: 'UI Components',

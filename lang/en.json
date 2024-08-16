@@ -53,6 +53,15 @@
     "product_details": "Product Details",
     "errors_name_required": "Name is required.",
     
-    "select_country": "Select a Country"
+    "select_country": "Select a Country",
     
+    "specimens": "Specimens",
+    "companies": "Companies",
+
+    "error_400": "Bad Request",
+    "error_401": "Unauthorized! Redirecting to login...",
+    "error_403": "Forbidden",
+    "error_404": "Not Found",
+    "error_500": "Server Error",
+    "error_default": "Error"
 }

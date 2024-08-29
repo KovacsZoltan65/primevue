@@ -19,8 +19,6 @@ import Select from 'primevue/select';
 import InputNumber from 'primevue/inputnumber';
 import RadioButton from 'primevue/radiobutton';
 
-
-
 /**
  * Reaktív hivatkozás a toast komponensre.
  * 
@@ -50,7 +48,7 @@ const products = ref();
 const productDialog = ref(false);
 
 /**
- * Reaktív hivatkozás a termékek törléséhez használt párbeszédpanel megnyitásához.
+ * Reaktív hivatkozás a termék törléséhez használt párbeszédpanel megnyitásához.
  * 
  * @type {Boolean}
  */
@@ -117,7 +115,7 @@ const submitted = ref(false);
  *     { label: 'OUTOFSTOCK', value: 'outofstock' }
  * ]
  * 
- * @type {Ref<Array>}
+ * @type {ref<Array>}
  */
 const statuses = ref([
     /**
@@ -142,6 +140,28 @@ const statuses = ref([
     { label: 'OUTOFSTOCK', value: 'outofstock' }
 ]);
 
+/**
+ * A komponens betöltésekor lekérdezjük a termékeket a ProductService-ből.
+ * A lekérdezett termékeket a products hivatkozásban tároljuk.
+ *
+ * @return {void}
+ */
+ onMounted(() => {
+    
+    ProductService.getProducts().then((data) => {
+        products.value = data;
+    });
+
+    /*
+    // A ProductService getProducts() metódusát hívjuk meg,
+    // amely visszaadja a termékeket.
+    ProductService.getProd()
+        .then((data) => {
+            // A lekérdezett termékeket a products hivatkozásban tároljuk.
+            products.value = data;
+        });
+    */
+});
 
 /**
  * Egy számot valutakarakterláncként formáz.
@@ -174,7 +194,6 @@ function openNew() {
     // A párbeszédpanel megnyitásához állítsa a productDialog jelzőt true értékre.
     productDialog.value = true;
 }
-
 
 /**
  * Ez a funkció a termék párbeszédpanel elrejtésére szolgál.
@@ -322,26 +341,10 @@ function findIndexById(id) {
     //}
 
     // Adja vissza az elem indexét, vagy -1-et, ha nem található.
-    return index;
+    //return index;
 }
 
-/**
- * A komponens betöltésekor lekérdezjük a termékeket a ProductService-ből.
- * A lekérdezett termékeket a products hivatkozásban tároljuk.
- *
- * @return {void}
- */
-onMounted(() => {
-    // A ProductService getProducts() metódusát hívjuk meg,
-    // amely visszaadja a termékeket.
-    ProductService.getProducts()
-        .then((data) => {
-            // A lekérdezett termékeket a products hivatkozásban tároljuk.
-            products.value = data;
-        });
-});
-
-/**
+/**ucts()
  * 5 hosszúságú véletlenszerű azonosító karakterláncot generál.
  *
  * @return {string} A véletlenszerűen generált azonosító karakterlánc.

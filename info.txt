@@ -21,3 +21,7 @@ devDependencies:
     npm install eslint-plugin-vue
     npm install prettier
     npm install unplugin-vue-components
+
+
+validation:
+    npm install @vuelidate/core @vuelidate/validators

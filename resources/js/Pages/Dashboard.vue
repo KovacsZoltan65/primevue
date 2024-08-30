@@ -506,27 +506,38 @@ function getStatusLabel(status) {
                 </DataTable>
             </div>
 
-            <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Product Details" :modal="true">
+            <!-- edit product dialog -->
+            <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" 
+                    header="Product Details" :modal="true">
                 <div class="flex flex-col gap-6">
+                    <!-- product image -->
                     <img v-if="product.image"
                         :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`"
                         :alt="product.image" class="block m-auto pb-4" />
+                    
+                    <!-- product name -->
                     <div>
                         <label for="name" class="block font-bold mb-3">Name</label>
                         <InputText id="name" v-model.trim="product.name" required="true" autofocus
                             :invalid="submitted && !product.name" fluid />
                         <small v-if="submitted && !product.name" class="text-red-500">Name is required.</small>
                     </div>
+
+                    <!-- product description -->
                     <div>
                         <label for="description" class="block font-bold mb-3">Description</label>
                         <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20"
                             fluid />
                     </div>
+
+                    <!-- product inventory status -->
                     <div>
                         <label for="inventoryStatus" class="block font-bold mb-3">Inventory Status</label>
                         <Select id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses"
                             optionLabel="label" placeholder="Select a Status" fluid></Select>
                     </div>
+
+                    <!-- product category -->
                     <div>
                         <span class="block font-bold mb-4">Category</span>
                         <div class="grid grid-cols-12 gap-4">
@@ -552,12 +563,17 @@ function getStatusLabel(status) {
                             </div>
                         </div>
                     </div>
+
                     <div class="grid grid-cols-12 gap-4">
+
+                        <!-- product price -->
                         <div class="col-span-6">
                             <label for="price" class="block font-bold mb-3">Price</label>
                             <InputNumber id="price" v-model="product.price" mode="currency" currency="USD"
                                 locale="en-US" fluid />
                         </div>
+
+                        <!-- product quantity -->
                         <div class="col-span-6">
                             <label for="quantity" class="block font-bold mb-3">Quantity</label>
                             <InputNumber id="quantity" v-model="product.quantity" integeronly fluid />
@@ -570,6 +586,7 @@ function getStatusLabel(status) {
                 </template>
             </Dialog>
 
+            <!-- delete product dialog -->
             <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                 <div class="flex items-center gap-4">
                     <i class="pi pi-exclamation-triangle !text-3xl" />
@@ -581,6 +598,7 @@ function getStatusLabel(status) {
                 </template>
             </Dialog>
 
+            <!-- delete products dialog -->
             <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                 <div class="flex items-center gap-4">
                     <i class="pi pi-exclamation-triangle !text-3xl" />
@@ -591,6 +609,7 @@ function getStatusLabel(status) {
                     <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
                 </template>
             </Dialog>
+
         </div>
     </AppLayout>
 </template>

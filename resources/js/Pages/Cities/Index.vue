@@ -1,6 +1,11 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { Head } from '@inertiajs/vue3';
 import { useToast } from 'primevue/usetoast';
+
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+
+import { CityService } from '../services/CityService';
 
 /**
  * Használja a PrimeVue toast összetevőjét.
@@ -91,6 +96,32 @@ const filters = ref({
  */
 const submitted = ref(false);
 
+onMounted(() => {
+    CityService.getCities().then((data) => {
+        cities.value = data;
+    });
+});
+
 </script>
 
-<template></template>
+<template>
+    <AuthenticatedLayout>
+        <Head title="Városok kezelés" />
+
+        <div class="card">
+
+            <Toolbar>
+                <template #start></template>
+                <template #end></template>
+            </Toolbar>
+
+            <DataTable
+                :value="cities.value"
+                :selection="selectedCities.value"
+                :row-selection="true"
+                :paginator="true">
+            </DataTable>
+        </div>
+
+    </AuthenticatedLayout>
+</template>

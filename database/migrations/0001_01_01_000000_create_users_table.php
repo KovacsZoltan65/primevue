@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('name')->comment('Név');
+            $table->string('email')->unique()->comment('Email cím');
+            $table->timestamp('email_verified_at')->nullable()->comment('Email ellenőrzés');
+            $table->string('password')->comment('Jelszó');
+            $table->string('language', 5)->default('hu')->comment('Nyelv');
             $table->rememberToken();
             $table->timestamps();
         });

@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { Functions } from '../helpers/Functions';
 
 import { ProductService } from '../service/ProductService';
 import { useToast } from 'primevue/usetoast';
@@ -44,21 +45,21 @@ const products = ref();
 /**
  * Reaktív hivatkozás a termék adatainak megjelenítő párbeszédpanel megnyitásához.
  * 
- * @type {Boolean}
+ * @type {ref<boolean>}
  */
 const productDialog = ref(false);
 
 /**
  * Reaktív hivatkozás a termék törléséhez használt párbeszédpanel megnyitásához.
  * 
- * @type {Boolean}
+ * @type {ref<boolean>}
  */
 const deleteProductDialog = ref(false);
 
 /**
  * Reaktív hivatkozás a kijelölt termékek törléséhez használt párbeszédpanel megnyitásához.
  * 
- * @type {Boolean}
+ * @type {ref<boolean>}
  */
 const deleteProductsDialog = ref(false);
 
@@ -104,7 +105,7 @@ const filters = ref({
 /**
  * Reaktív hivatkozás a beküldött (submit) állapotára.
  * 
- * @type {Ref<boolean>}
+ * @type {ref<boolean>}
  */
 const submitted = ref(false);
 
@@ -149,8 +150,12 @@ const statuses = ref([
  */
  onMounted(() => {
     
-    ProductService.getProducts().then((data) => {
+    ProductService.getProducts()
+    .then((data) => {
         products.value = data;
+    })
+    .catch(error => {
+        console.log(error);
     });
 
     /*
@@ -171,11 +176,12 @@ const statuses = ref([
  * @return {string | undefined} A formázott pénznem-karakterlánc, vagy hamis az érték definiálatlan.
  */
 function formatCurrency(value) {
+    Functions.formatCurrency(value);
     // Ha az érték false (undefined, null, 0 stb.), adja vissza az undefined értéket.
-    if (!value) return;
+//    if (!value) return;
 
     // Formázza a számot valutakarakterláncként az amerikai angol nyelvterület és az USD pénznem használatával.
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+//    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 }
 
 /**
@@ -301,7 +307,7 @@ function confirmDeleteProduct(prod) {
  */
 function deleteProduct() {
     // Szűrje ki a terméktömbből a megfelelő azonosítójú terméket.
-    products.value = products.value.filter((val) => val.id !== product.value.id);
+    product.value = products.value.filter((val) => val.id !== product.value.id);
 
     // Frissítse a deleteProductDialog értéket false értékre.
     deleteProductDialog.value = false;
@@ -371,10 +377,10 @@ function createId() {
 }
 
 /**
- * Exportálja az adattábla adatait egy CSV-fájlba.
+ * Exportálja az adattáblában lévő adatokat egy CSV-fájlba.
  *
- * This function calls the exportCSV method of the data table component,
- * which is responsible for exporting the data to a CSV file.
+ * A függvény meghívja a `exportCSV` metódust a `dt` refben lévő adattábla komponensen,
+ * amely felelős az adatok exportálásáért egy CSV-fájlba.
  *
  * @return {void}
  */
@@ -483,7 +489,7 @@ function getStatusLabel(status) {
                     </Column>
                     <Column field="price" header="Price" sortable style="min-width: 8rem">
                         <template #body="slotProps">
-                            {{ formatCurrency(slotProps.data.price) }}
+                            {{ Functions.formatCurrency(slotProps.data.price) }}
                         </template>
                     </Column>
                     <Column field="category" header="Category" sortable style="min-width: 10rem"></Column>

@@ -9,6 +9,11 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 import { CityService } from '../services/CityService';
 import Button from 'primevue/button';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
+import InputText from 'primevue/inputtext';
 
 /**
  * Használja a PrimeVue toast összetevőjét.
@@ -100,8 +105,12 @@ const filters = ref({
 });
 
 onMounted(() => {
-    CityService.getCities().then((data) => {
+    CityService.getCities()
+    .then((data) => {
         cities.value = data;
+    })
+    .catch(error => {
+        console.log(error);
     });
 });
 
@@ -123,8 +132,18 @@ function openNew() {
     cityDialog.value = true;
 }
 
+/**
+ * Ez a funkció a város párbeszédpanel elrejtésére szolgál.
+ * A cityDialog hivatkozás értékét false értékre állítja,
+ * és a beküldött hivatkozás false.
+ *
+ * @return {void}
+ */
 function hideDialog() {
+    // A város párbeszédpanel elrejtése a cityDialog értékének false értékre állításával.
     cityDialog.value = false;
+
+    // Állítsa be a beküldött értéket false értékre.
     submitted.value = false;
 }
 
@@ -143,13 +162,6 @@ function saveCity() {
             // Jelenítse meg a sikeres toast üzenetet, amely jelzi, hogy a termék frissítve lett.
             toast.add({ severity: 'success', summary: 'Successful', detail: 'City Updated', life: 3000 });
         } else {
-            //city.value.id = Functions.createId();
-            //city.value.name = '';
-            //city.value.region_id = 0;
-            //city.value.country_id = 0;
-            //city.value.latitude = 0.0;
-            //city.value.longitude = 0.0;
-            
             const fetchItem = CityService.update(city.value.id, city.value)
             .then(response => {
                 // Adja hozzá az új terméket a terméktömbhöz.
@@ -173,27 +185,94 @@ function saveCity() {
     }
 }
 
+/**
+ * Város szerlesztése
+ *
+ * @param {Object} prod - Szerkesztendő város.
+ * @return {void}
+ */
 function editCity(prod) {
+    // Create a copy of the city.
     city.value = {...prod };
+
+    // Show the city dialog.
     cityDialog.value = true;
 }
 
-function confirmDeleteCity(cit) {
-    //
+/**
+ * Megnyitja a város törlését megerősítő párbeszédpanelt.
+ *
+ * @param {Object} ct - A törölni kívánt város.
+ * @return {void}
+ */
+function confirmDeleteCity(ct) {
+    // Mutasd a törlési párbeszédpanelt
+    deleteCityDialog.value = true;
+
+    // Töltse be a törlendő termék adatait a termékobjektumba.
+    city.value = ct;
 }
 
+/**
+ * Törli a kiválasztott várost.
+ *
+ * @return {void}
+ */
 function deleteCity() {
-    //
+    // Szűrje ki a törölni kívánt várost a városok listájából.
+    city.value = cities.value.filter((val) => val.id !== city.value.id);
+
+    // TÖRLÉS
+    CityService.delete(city.value.id)
+
+    // A város törlése párbeszédpanel elrejtése.
+    deleteCityDialog.value = false;
+
+    // Állítsa vissza a városobjektumot.
+    city.value = {};
+
+    // Mutasson egy üzenetet, amely tájékoztatja a felhasználót, hogy a várost törölték.
+    toast.add({ 
+        severity: 'success', 
+        summary: 'Successful', 
+        detail: 'City Deleted', 
+        life: 3000 
+    });
 }
 
+/**
+ * Megkeresi egy város indexét a városok tömbben az azonosítója alapján.
+ *
+ * @param {number} id - A keresendő elem azonosítója.
+ * @return {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
+ */
 function findIndexById(id) {
-    //
+    // Használja a `findIndex` metódust, hogy gyorsan megtalálja a város indexét.
+    return cities.value.findIndex((city) => city.id === id);
 }
 
+/**
+ * Exportálja az adattáblában lévő adatokat egy CSV-fájlba.
+ *
+ * A függvény meghívja a `exportCSV` metódust a `dt` refben lévő adattábla komponensen,
+ * amely felelős az adatok exportálásáért egy CSV-fájlba.
+ *
+ * @return {void}
+ */
+function exportCSV() {
+    dt.value.exportCSV();
+}
 
-
+/**
+ * Megnyitja a törlés megerősítő párbeszédpanelt, 
+ * ha a felhasználó törölni szeretné a kijelölt városokat.
+ *
+ * @return {void}
+ */
 function confirmDeleteSelected() {
-    //
+    // Állítsa a deleteCityDialog értékét true értékre, 
+    // hogy megnyissa a megerősítő párbeszédpanelt.
+    deleteCityDialog.value = true;
 }
 
 </script>
@@ -236,8 +315,49 @@ function confirmDeleteSelected() {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
-                >
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
+                
+                <template #header>
+                    <div class="flex flex-wrap gap-2 items-center justify-between">
+                        <h4 class="m-0">Manage Cities</h4>
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value" 
+                                       placeholder="Search..." />
+                        </IconField>
+                    </div>
+                </template>
+
+                <!-- SELECTION -->
+                <Column selectionMode="multiple" style="width: 3rem" :exportable="false" />
+
+                <!-- RÉGIÓ -->
+                <Column field="region_id" header="region_id" sortable style="min-width: 12rem" />
+
+                <!-- Ország -->
+                <Column field="country_id" header="country_id" sortable style="min-width: 12rem" />
+
+                <!-- Stélesség -->
+                <Column field="latitude" header="latitude" sortable style="min-width: 12rem" />
+
+                <!-- Hosszúság -->
+                <Column field="longitude" header="longitude" sortable style="min-width: 12rem" />
+
+                <!-- Név -->
+                <Column field="name" header="Name" sortable style="min-width: 12rem" />
+
+                <!-- ACTION -->
+                <Column :exportable="false" style="min-width: 12rem">
+                    <template #body="slotProps">
+                        <Button icon="" outlined rounded class="mr-2" 
+                                @click="editCity(slotProps.data)" />
+                        <Button icon="" outlined rounded severity="danger" 
+                                @click="confirmDeleteCity(slotProps.data)" />
+                    </template>
+                </Column>
+
             </DataTable>
         </div>
 

@@ -24,4 +24,5 @@ devDependencies:
 
 
 validation:
+	https://vuelidate-next.netlify.app/#installation
     npm install @vuelidate/core @vuelidate/validators

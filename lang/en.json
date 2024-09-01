@@ -11,6 +11,11 @@
     "roles": "Roles",
     "permissions": "Permissions",
 
+    "system": "System",
+    "regions": "Regions",
+    "countries": "Countries",
+    "cities": "Cities",
+
     "email": "Email",
     "email_placeholder": "Email Address",
     "password": "Password",

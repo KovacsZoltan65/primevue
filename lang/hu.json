@@ -11,6 +11,11 @@
     "roles": "Szerepkörök",
     "permissions": "Engedélyek",
 
+    "system": "Rendszer",
+    "regions": "Megyék",
+    "countries": "Országok",
+    "cities": "Városok",
+
     "email": "Email",
     "email_placeholder": "Email cím",
     "password": "Jelszó",

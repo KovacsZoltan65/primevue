@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { Head } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { ProductService } from '../service/ProductService';
 import { useToast } from 'primevue/usetoast';
@@ -451,6 +452,8 @@ function getStatusLabel(status) {
 
 <template>
     <AppLayout>
+
+        <Head :title="$t('dashboard')"/>
 
         <div>
             <div clas="card">

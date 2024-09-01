@@ -16,6 +16,19 @@ export const MenuService = {
                 ]
             },
             {
+                label: 'system',
+                items: [
+                    {
+                        label: 'geo',
+                        items: [
+                            { label: 'countries', icon: 'pi pi-fw pi-map-marker', to: '#'},
+                            { label: 'regions', icon: 'pi pi-fw pi-map-marker', to: '#'},
+                            { label: 'cities', icon: 'pi pi-fw pi-map-marker', to: '#'}
+                        ]
+                    }
+                ]
+            },
+            {
                 label: 'specimens',
                 items: [
                     { label: 'companies', 'icon': 'pi pi-fw pi-briefcase', to: '/companies' }

@@ -21,3 +21,8 @@ devDependencies:
     npm install eslint-plugin-vue
     npm install prettier
     npm install unplugin-vue-components
+
+
+php artisan make:controller RegionController --resource
+php artisan make:controller CountryController --resource
+php artisan make:controller CityController --resource

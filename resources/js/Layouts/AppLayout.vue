@@ -83,13 +83,15 @@ const containerClass = computed(() => {
  * A visszahívási függvény ellenőrzi, hogy a kattintási cél kívül esik-e egy adott elemen, és ha igen, akkor meghívja a resetMenu() függvényt.
  */
 function bindOutsideClickListener() {
-    // Ellenőrizze, hogy az outsideClickListener eseményfigyelő nincs-e még kötve a dokumentumobjektumhoz
+    // Ellenőrizze, hogy az outsideClickListener eseményfigyelő 
+    // nincs-e még kötve a dokumentumobjektumhoz
     if (!outsideClickListener.value) {
 
         // Határozza meg a visszahívási funkciót a kattintási eseményhez
         outsideClickListener.value = (event) => {
             /**
-             * Ellenőrizze, hogy a kattintási cél kívül van-e az oldalsávon vagy a felső sáv elemein.
+             * Ellenőrizze, hogy a kattintási cél kívül van-e az oldalsávon 
+             * vagy a felső sáv elemein.
              * Ha igen, hívja meg a resetMenu() függvényt.
              */
             if (isOutsideClicked(event)) {

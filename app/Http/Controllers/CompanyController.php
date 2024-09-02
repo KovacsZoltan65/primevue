@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\CompanyResource;
-use App\Models\Company;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use App\Http\Resources\CompanyResource;
+use App\Models\Company;
 //use Illuminate\Http\Response;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
@@ -91,20 +91,20 @@ class CompanyController extends Controller
     }
     
     /**
-     * Delete an existing company.
+     * Töröljön egy meglévő céget.
      * 
-     * @param int $id The ID of the company to delete.
-     * @return \Illuminate\Http\JsonResponse The JSON response containing the deleted company.
+     * @param int $id A törölni kívánt cég azonosítója.
+     * @return \Illuminate\Http\JsonResponse A törölt vállalatot tartalmazó JSON-válasz.
      */
     public function deleteCompany(int $id)
     {
-        // Find the company to delete by its ID
+        // Keresse meg a törölni kívánt céget az azonosítója alapján
         $old_company = Company::where('id', $id)->first();
         
-        // Delete the company
+        // Cég törlése
         $old_company->delete();
         
-        // Return the deleted company as a JSON response with a success status code
+        // A törölt vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
         return response()->json($old_company, Response::HTTP_OK);
     }
 

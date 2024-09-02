@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +11,9 @@ Route::get('/user', function (Request $request) {
 
 //Route::get('/items', function(){ \Log::info('API/GET'); });
 
+// =======================================================
+// 
+// =======================================================
 
 /**
  * A cégek listájának lekérése az API-n keresztül.
@@ -44,3 +48,21 @@ Route::put('/items/{id}', [CompanyController::class, 'updateCompany'])->name('ap
  * @return \Illuminate\Http\JsonResponse A törölt vállalatot tartalmazó JSON-válasz.
  */
 Route::delete('/items/{id}', [CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
+
+// =======================================================
+// CITIES
+// =======================================================
+Route::get('/cities', [CityController::class, 'getCities'])->name('api.get.cities');
+//Route::post('/cities', [CityController::class, 'createCity'])->name('apicities.create');
+//Route::put('/cities/{id}', [CityController::class, 'updateCity'])->name('api.cities.update')->where('id', '[0-9]+');
+//Route::delete('/cities/{id}', [CityController::class, 'deleteCity'])->name('api.cities.delete')->where('id', '[0-9]+');
+
+/*
+Route::resource('/cities', CityController::class)->names([
+        'index'   => 'api.cities',
+        'create'  => 'api.cities.create',
+        'store'   => 'api.cities.store',
+        'update'  => 'api.cities.update',
+        'destroy' => 'api.cities.destroy',
+    ]);
+*/

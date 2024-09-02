@@ -53,24 +53,19 @@ Route::middleware('auth')->group(function () {
      * CITIES
      * =====================================================
      * 
-     * Define the routes for the CityController resource.
-     * These routes use the resource method to define common
-     * CRUD operations. The names method is used to customize
-     * the route names.
+     * Határozza meg a CityController erőforrás útvonalait.
+     * Ezek az útvonalak az erőforrás módszert használják a közös meghatározásához
+     * CRUD műveletek. A testreszabáshoz a names metódust használjuk
+     * az útvonalak nevei.
      */
     Route::resource('/cities', CityController::class)->names([
-        // The index route name is set to 'cities'.
         'index' => 'cities',
-        // The create route name is set to 'cities.create'.
         'create' => 'cities.create',
-        // The store route name is set to 'cities.store'.
         'store' => 'cities.store',
-        // The update route name is set to 'cities.update'.
         'update' => 'cities.update',
-        // The destroy route name is set to 'cities.destroy'.
         'destroy' => 'cities.destroy',
     ]);
-
+    
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

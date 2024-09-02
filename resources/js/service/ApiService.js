@@ -3,7 +3,7 @@ import { trans } from "laravel-vue-i18n";
 
 // Axios kliens konfigurálása
 const apiClient = axios.create({
-    baseURL: 'api', // Állítsd be a megfelelő API bázis URL-t
+    baseURL: '/api', // Állítsd be a megfelelő API bázis URL-t
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -11,7 +11,6 @@ const apiClient = axios.create({
     withCredentials: true,  // Ha szükséges, például ha sütiket használsz
 });
 
-// Központosított hiba- és jogosultságkezelés
 /**
  * Központosított hiba- és jogosultságkezelés
  * Ez a kód blokk az API kliens válaszait kezelő interceptor példája.

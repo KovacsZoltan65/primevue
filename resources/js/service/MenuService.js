@@ -23,7 +23,7 @@ export const MenuService = {
                         items: [
                             { label: 'countries', icon: 'pi pi-fw pi-map-marker', to: '#'},
                             { label: 'regions', icon: 'pi pi-fw pi-map-marker', to: '#'},
-                            { label: 'cities', icon: 'pi pi-fw pi-map-marker', to: '#'}
+                            { label: 'cities', icon: 'pi pi-fw pi-map-marker', to: '/cities'}
                         ]
                     }
                 ]

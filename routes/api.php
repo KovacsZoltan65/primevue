@@ -12,7 +12,7 @@ Route::get('/user', function (Request $request) {
 //Route::get('/items', function(){ \Log::info('API/GET'); });
 
 // =======================================================
-// 
+// COMPANIES
 // =======================================================
 
 /**
@@ -21,7 +21,8 @@ Route::get('/user', function (Request $request) {
  * @param CompanyController $companyController A cégvezérlő példány.
  * @return \Illuminate\Http\JsonResponse A vállalatok listáját tartalmazó JSON-válasz.
  */
-Route::get('/items', [CompanyController::class, 'getCompanies'])->name('api.get.companies');
+//Route::get('/items', [CompanyController::class, 'getCompanies'])->name('api.get.companies');
+Route::get('/companies', [CompanyController::class, 'getCompanies'])->name('api.get.companies');
 
 /**
  * Hozzon létre új céget az API-n keresztül.

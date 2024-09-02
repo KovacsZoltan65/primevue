@@ -22,14 +22,14 @@ class CompanyController extends Controller
     public function index(Request $request)
     {
         // Készítsen lekérdezést, amely a keresési paraméterek alapján keres cégeket.
-        $companyQuery = Company::search($request);
+        //$companyQuery = Company::search($request);
 
         // Szerezze le a vállalatokat a lekérdezésből, és alakítsa őket AnonymousResourceCollection-vé.
-        $companies = CompanyResource::collection($companyQuery->get());
+        //$companies = CompanyResource::collection($companyQuery->get());
 
         // Adjon vissza egy Inertia választ a vállalatok és a keresési paraméterek megadásával.
         return Inertia::render("Companies/Index", [
-            'companies' => $companies,
+            //'companies' => $companies,
             'countries' => '',
             'cityes' => '',
             'search' => request('search')

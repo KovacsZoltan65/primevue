@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use App\Http\Requests\StoreCityRequest;
 use App\Http\Requests\UpdateCityRequest;
 use App\Http\Resources\CityResource;
 use App\Models\City;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 class CityController extends Controller
 {
@@ -20,7 +20,7 @@ class CityController extends Controller
      * Egy opcionális keresési paramétert vesz igénybe, és visszaadja a városok listáját
      * amelyek megfelelnek a keresési feltételeknek.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @retirn \Inertia\Response
      */
     public function index(Request $request)
@@ -70,7 +70,7 @@ class CityController extends Controller
      * Ez a módszer városok erőforrásgyűjteményét adja vissza
      * amelyek megfelelnek a keresési feltételeknek.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function getCities(Request $request)
@@ -86,23 +86,61 @@ class CityController extends Controller
         return $cities;
     }
     
+    /**
+     * Hozzon létre új várost az adatbázisban.
+     *
+     * A létrehozott város adatait tartalmazó JSON-válasz kerül visszaadásra.
+     *
+     * @param  Request  $request  A HTTP kérés objektum, amely tartalmazza a város új adatait.
+     * @return \Illuminate\Http\JsonResponse  A létrehozott város adatait tartalmazó JSON-válasz.
+     */
     public function createCity(Request $request)
     {
+        // Hozzon létre új várost az adatbázisban
         $city = City::create($request->all());
+        
+        // A létrehozott város adatait tartalmazó JSON-válasz visszaadása
         return response()->json($city, Response::HTTP_OK);
     }
     
+    /**
+     * Frissít egy várost az adatbázisban.
+     *
+     * A frissített város adatait tartalmazó JSON-válasz kerül visszaadásra.
+     *
+     * @param  Request  $request  A HTTP kérés objektum, amely tartalmazza a város új adatait.
+     * @param  int  $id  A frissítendő város azonosítója.
+     * @return \Illuminate\Http\JsonResponse  A frissített város adatait tartalmazó JSON-válasz.
+     */
     public function updateCity(Request $request, int $id)
     {
+        // Szerezze be a várost az adatbázisból
         $old_city = City::where('id', $id)->first();
+        
+        // Frissítse a város adatait a HTTP kérésben szereplő adatokkal
         $city = $old_city->update($request->all());
+        
+        // A frissített város adatait tartalmazó JSON-válasz visszaadása
         return response()->json($city, Response::HTTP_OK);
     }
     
+    /**
+     * Töröljön egy várost az adatbázisból.
+     *
+     * A törölt város adatait tartalmazó JSON-válasz kerül visszaadásra.
+     *
+     * @param int $id A törölni kívánt város azonosítója.
+     * @return \Illuminate\Http\JsonResponse A törölt város adatait tartalmazó JSON-válasz.
+     */
     public function deleteCity(int $id)
     {
+        // Szerezze be a várost az adatbázisból
         $city = City::where('id', $id)->first();
+        
+        // Törölje a várost az adatbázisból
         $city->delete();
+        
+        // A törölt város adatait tartalmazó JSON-válasz visszaadása
         return response()->json($city, Response::HTTP_OK);
     }
     

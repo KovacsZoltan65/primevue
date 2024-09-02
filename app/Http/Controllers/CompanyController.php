@@ -14,26 +14,39 @@ use Symfony\Component\HttpFoundation\Response;
 class CompanyController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Jelenítse meg a cégek listáját.
+     *
+     * @param Request $request
+     * @return \Inertia\Response
      */
     public function index(Request $request)
     {
-        //return Inertia::render("Companies/Index");
-        
+        // Készítsen lekérdezést, amely a keresési paraméterek alapján keres cégeket.
         $companyQuery = Company::search($request);
-        //$companies = CompanyResource::collection($companyQuery->paginate(5));
+
+        // Szerezze le a vállalatokat a lekérdezésből, és alakítsa őket AnonymousResourceCollection-vé.
         $companies = CompanyResource::collection($companyQuery->get());
 
+        // Adjon vissza egy Inertia választ a vállalatok és a keresési paraméterek megadásával.
         return Inertia::render("Companies/Index", [
             'companies' => $companies,
             'countries' => '',
             'cityes' => '',
             'search' => request('search')
         ]);
-        
     }
     
-    public function applySearch(Builder $query, string $search)
+    /**
+     * Módosítsa a lekérdezést a keresési paraméter alapján.
+     *
+     * Ha a keresési paraméter nem üres, akkor a lekérdezés tartalmazza
+     * a feltételt, hogy a vállalat neve tartalmazza a keresési paramétert.
+     *
+     * @param Builder $query A lekérdezés, amelyet módosítani kell.
+     * @param string $search A keresési paraméter.
+     * @return Builder A módosított lekérdezés.
+     */
+    public function applySearch(Builder $query, string $search): Builder
     {
         return $query->when($search, function ($query, string $search) {
             $query->where('name', 'like', "%{$search}%");
@@ -41,53 +54,53 @@ class CompanyController extends Controller
     }
 
     /**
-     * Get the list of companies.
+     * Szerezd meg a cégek listáját.
      * 
-     * @param Request $request
-     * @return AnonymousResourceCollection
+     * @param Request $request A keresési paramétert tartalmazó HTTP kérelem objektum.
+     * @return AnonymousResourceCollection A vállalatok listáját tartalmazó JSON-válasz.
      */
-    public function getCompanies(Request $request)
+    public function getCompanies(Request $request): AnonymousResourceCollection
     {
-        // Get the list of companies
+        // Szerezd meg a cégek listáját
         $companyQuery = Company::search($request);
-        $companies = CompanyResource::collection($companyQuery->get());
         
-        // Return the list of companies
+        // JSON-válaszként adja vissza a cégek listáját
+        $companies = CompanyResource::collection($companyQuery->get());
         return $companies;
     }
     
     /**
-     * Create a new company.
+     * Hozzon létre egy új céget.
      *
-     * @param Request $request The HTTP request object containing the company data.
-     * @return \Illuminate\Http\JsonResponse The JSON response containing the created company.
+     * @param Request $request A vállalati adatokat tartalmazó HTTP kérési objektum.
+     * @return \Illuminate\Http\JsonResponse A létrehozott vállalatot tartalmazó JSON-válasz.
      */
     public function createCompany(Request $request)
     {
-        // Create a new company using the data from the HTTP request
+        // Hozzon létre egy új céget a HTTP-kérés adatainak felhasználásával
         $company = Company::create($request->all());
 
-        // Return the created company as a JSON response with a success status code
+        // A létrehozott vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
         return response()->json($company, Response::HTTP_OK);
     }
     
     /**
-     * Update an existing company.
+     * Frissítsen egy meglévő céget.
      * 
-     * @param Request $request The HTTP request object containing the company data.
-     * @param int $id The ID of the company to update.
-     * @return \Illuminate\Http\JsonResponse The JSON response containing the updated company.
+     * @param Request $request A vállalati adatokat tartalmazó HTTP kérési objektum.
+     * @param int $id A frissítendő cég azonosítója.
+     * @return \Illuminate\Http\JsonResponse A frissített vállalatot tartalmazó JSON-válasz.
      */
     public function updateCompany(Request $request, int $id)
     {
-        // Find the company to update by its ID
+        // Keresse meg a frissítendő céget az azonosítója alapján
         $old_company = Company::where('id', $id)->first();
         
-        // Update the company with the data from the HTTP request
+        // Frissítse a vállalatot a HTTP-kérés adataival
         $company = $old_company->update($request->all());
         
-        // Return the updated company as a JSON response with a success status code
-        return response()->json($old_company, Response::HTTP_OK);
+        // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
+        return response()->json($company, Response::HTTP_OK);
     }
     
     /**

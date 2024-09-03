@@ -3,6 +3,7 @@
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ValidationController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -24,6 +25,10 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     
+    // VALIDATION
+    Route::get('/validation_01', [ValidationController::class, 'validation_01'])->name('validation_01');
+    Route::get('/validation_02', [ValidationController::class, 'validation_02'])->name('validation_02');
+
     /**
      * =====================================================
      * CÉGEK

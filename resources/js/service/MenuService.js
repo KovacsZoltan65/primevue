@@ -8,6 +8,13 @@ export const MenuService = {
                 ]
             },
             {
+                label: '',
+                items: [
+                    { label: 'validation 1', icon: '', to: '/validation_01'},
+                    { label: 'validation 2', icon: '', to: '/validation_02'},
+                ]
+            },
+            {
                 label: 'administration',
                 items: [
                     { label: 'users', icon: 'pi pi-fw pi-users', to: '#'},

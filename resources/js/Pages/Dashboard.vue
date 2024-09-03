@@ -272,7 +272,8 @@ function editProduct(prod) {
     // Hozzon létre egy másolatot a termékobjektumról, és rendelje hozzá a termékértékhez.
     // A spread operátor egy új objektum létrehozására szolgál, 
     // amely ugyanazokkal a tulajdonságokkal rendelkezik, mint a prod.
-    product.value = { ...prod };
+    //product.value = { ...prod };
+    product.value = prod;
 
     // Állítsa a productDialog értékét igazra, ami megnyitja a termék párbeszédpanelt.
     productDialog.value = true;

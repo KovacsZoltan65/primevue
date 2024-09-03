@@ -27,5 +27,5 @@ php artisan make:controller RegionController --resource
 php artisan make:controller CountryController --resource
 php artisan make:controller CityController --resource
 
-GAO COORD API
+GEO COORD API
 https://openweathermap.org/api/geocoding-api

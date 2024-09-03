@@ -157,13 +157,14 @@ const hideDialog = () => {
     submitted.value = false;
 }
 
-const editCity = (city) => {
-    city.value = { ...city };
+const editCity = (data) => {
+    city.value = { ...data };
+    //city.value = data;
     cityDialog.value = true;
 }
 
-const confirmDeleteCity = (city) => {
-    city.value = { ...city };
+const confirmDeleteCity = (data) => {
+    city.value = { ...data };
     deleteCityDialog.value = true;
 }
 
@@ -315,12 +316,15 @@ const deleteCity = () => {
                         <label for="name" class="block font-bold mb-3">
                             {{ $t('name') }}
                         </label>
-                        <InputText id="name" v-model.trim="city.name" 
+                        <InputText id="name" 
+                                   v-model="city.name" 
                                    required="true" autofocus fluid
-                                   :invalid="submitted && !city.name" />
+                        />
+                    <!--
                         <small v-if="submitted && !city.name" class="text-red-500">
                             {{ $t('errors_name_required') }}
                         </small>
+                    -->
                         <small class="text-red-500" v-if="v$.name.$error">
                             {{ v$.name.$errors[0].$message }}
                         </small>
@@ -331,7 +335,7 @@ const deleteCity = () => {
                         <label for="region_id" class="block font-bold mb-3">
                             {{ $t('region_id') }}
                         </label>
-                        <InputText id="region_id" v-model.trim="city.region_id" 
+                        <InputText id="region_id" v-model="city.region_id" 
                                    required="true" fluid
                                    :invalid="submitted && !city.region_id" />
                         <small v-if="submitted && !city.region_id" class="text-red-500">
@@ -344,7 +348,7 @@ const deleteCity = () => {
                         <label for="country_id" class="block font-bold mb-3">
                             {{ $t('country_id') }}
                         </label>
-                        <InputText id="country_id" v-model.trim="city.country_id" 
+                        <InputText id="country_id" v-model="city.country_id" 
                                    required="true" fluid
                                    :invalid="submitted && !city.country_id" />
                         <small v-if="submitted && !city.country_id" class="text-red-500">
@@ -357,7 +361,7 @@ const deleteCity = () => {
                         <label for="latitude" class="block font-bold mb-3">
                             {{ $t('latitude') }}
                         </label>
-                        <InputText id="latitude" v-model.trim="city.latitude" fluid
+                        <InputText id="latitude" v-model="city.latitude" fluid
                                    :invalid="submitted && !city.latitude" />
                         <small v-if="submitted && !city.latitude" class="text-red-500">
                             {{ $t('errors_latitude_required') }}
@@ -369,7 +373,7 @@ const deleteCity = () => {
                         <label for="longitude" class="block font-bold mb-3">
                             {{ $t('longitude') }}
                         </label>
-                        <InputText id="longitude" v-model.trim="city.longitude" fluid
+                        <InputText id="longitude" v-model="city.longitude" fluid
                                    :invalid="submitted && !city.longitude" />
                         <small v-if="submitted && !city.longitude" class="text-red-500">
                             {{ $t('errors_longitude_required') }}

@@ -27,22 +27,23 @@ class CityController extends Controller
     {
         // Szerezze be a városokat az adatbázisból.
         // Ha van megadva keresési paraméter, szűrje le az eredményeket.
-        $cityQuery = City::search($request);
+        //$cityQuery = City::search($request);
 
         // Alakítsa át a városokat erőforrásgyűjteménybe
-        $cities = CityResource::collection($cityQuery->get());
+        //$cities = CityResource::collection($cityQuery->get());
 
         // Jelenítse meg a nézetet a városokkal és a keresési paraméterrel
-        return Inertia::render('Cities/Index', [
-            'cities' => $cities,
-            'search' => request('search'),
-        ]);
         /*
-        return Inertia::render('Geo/City/Index', [
-            'cities' => $cities,
+        return Inertia::render('Cities/Index', [
+            //'cities' => $cities,
             'search' => request('search'),
         ]);
         */
+        return Inertia::render('Geo/City/Index', [
+            //'cities' => $cities,
+            'search' => request('search'),
+        ]);
+        
     }
 
     /**

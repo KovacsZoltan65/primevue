@@ -4,6 +4,11 @@ import { Head } from '@inertiajs/vue3';
 import { useToast } from 'primevue/usetoast';
 import { FilterMatchMode } from '@primevue/core/api';
 import AppLayout from '@/Layouts/AppLayout.vue';
+
+// Validation
+import { useVuelidate  } from '@vuelidate/core';
+import { required } from '@vuelidate/validators'
+
 import CityService from '@/service/CityService';
 
 import Toolbar from 'primevue/toolbar';
@@ -13,6 +18,7 @@ import IconField from 'primevue/iconfield';
 import InputText from 'primevue/inputtext';
 import InputIcon from 'primevue/inputicon';
 import Button from 'primevue/button';
+import Dialog from 'primevue/dialog';
 
 
 /**
@@ -39,21 +45,21 @@ const cities = ref();
 /**
  * Reaktív hivatkozás a város adatainak megjelenítő párbeszédpanel megnyitásához.
  * 
- * @type {Boolean}
+ * @type {ref<boolean>}
  */
  const cityDialog = ref(false);
 
 /**
  * Reaktív hivatkozás a városok törléséhez használt párbeszédpanel megnyitásához.
  * 
- * @type {Boolean}
+ * @type {ref<boolean>}
  */
  const deleteCitiesDialog = ref(false);
 
  /**
  * Reaktív hivatkozás a kijelölt város(ok) törléséhez használt párbeszédpanel megnyitásához.
  * 
- * @type {Boolean}
+ * @type {ref<boolean>}
  */
 const deleteCityDialog = ref(false);
 
@@ -130,6 +136,74 @@ function openNew() {
     cityDialog.value = true;
 }
 
+const hideDialog = () => {
+    cityDialog.value = false;
+    submitted.value = false;
+}
+
+const editCity = (city) => {
+    city.value = { ...city };
+    cityDialog.value = true;
+}
+
+const confirmDeleteCity = (city) => {
+    city.value = { ...city };
+    deleteCityDialog.value = true;
+}
+
+const saveCity = () => {
+    submitted.value = true;
+
+    if (city.value.id) {
+        updateCity();
+    }else{
+        createCity();
+    }
+}
+
+const rules = {
+    name: {required},
+    //latitude: {required},
+    //longitude: {required},
+    country_id: {required},
+    region_id: {required},
+};
+
+const createCity = async () => {
+    const v$ = useVuelidate(rules, city.value);
+    const result = await v$.value.$validate();
+    console.log('validation', result);
+    /*
+    CityService.createCity(city.value)
+    .then(response => {
+        //
+    })
+    .catch(error => {
+        console.error('createCity API Error:', error);
+    });
+    */
+}
+
+const updateCity = () => {
+    CityService.updateCity(city.value.id, city.value)
+    .then(response => {
+        //
+    })
+    .catch(error => {
+        console.error('updateCity API Error:', error);
+    });
+}
+
+const deleteCity = () => {
+    CityService.deleteCity(city.value.id)
+    .then(response => {
+        //
+    })
+    .catch(error => {
+        console.error('deleteCity API Error:', error);
+    });
+}
+
 </script>
 
 <template>
@@ -167,7 +241,7 @@ function openNew() {
 
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">{{ $t('manage_products') }}</h4>
+                        <div class="font-semibold text-xl mb-1">{{ $t('manage_cities') }}</div>
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
@@ -196,15 +270,100 @@ function openNew() {
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
                         <Button icon="pi pi-pencil" outlined rounded class="mr-2" 
-                                @click="editProduct(slotProps.data)" />
+                                @click="editCity(slotProps.data)" />
                         <Button icon="pi pi-trash" outlined rounded severity="danger" 
-                                @click="confirmDeleteProduct(slotProps.data)" />
+                                @click="confirmDeleteCity(slotProps.data)" />
                     </template>
                 </Column>
 
             </DataTable>
 
         </div>
+
+        <!-- Város szerkesztése -->
+        <Dialog v-model:visible="cityDialog" :style="{ width: '450px' }" 
+                :header="$t('city_details')" :modal="true">
+                <div class="flex flex-col gap-6">
+
+                    <!-- Name -->
+                    <div>
+                        <label for="name" class="block font-bold mb-3">
+                            {{ $t('name') }}
+                        </label>
+                        <InputText id="name" v-model.trim="city.name" 
+                                   required="true" autofocus fluid
+                                   :invalid="submitted && !city.name" />
+                        <small v-if="submitted && !city.name" class="text-red-500">
+                            {{ $t('errors_name_required') }}
+                        </small>
+                        <small class="text-red-500">
+                            <div v-for="error of v$.$errors" :key="error.$uid">
+                                {{ error.$message }}
+                            </div>
+                        </small>
+                    </div>
+
+                    <!-- region -->
+                    <div>
+                        <label for="region_id" class="block font-bold mb-3">
+                            {{ $t('region_id') }}
+                        </label>
+                        <InputText id="region_id" v-model.trim="city.region_id" 
+                                   required="true" fluid
+                                   :invalid="submitted && !city.region_id" />
+                        <small v-if="submitted && !city.region_id" class="text-red-500">
+                            {{ $t('errors_region_id_required') }}
+                        </small>
+                    </div>
+
+                    <!-- country -->
+                    <div>
+                        <label for="country_id" class="block font-bold mb-3">
+                            {{ $t('country_id') }}
+                        </label>
+                        <InputText id="country_id" v-model.trim="city.country_id" 
+                                   required="true" fluid
+                                   :invalid="submitted && !city.country_id" />
+                        <small v-if="submitted && !city.country_id" class="text-red-500">
+                            {{ $t('errors_country_id_required') }}
+                        </small>
+                    </div>
+
+                    <!-- latitude -->
+                    <div>
+                        <label for="latitude" class="block font-bold mb-3">
+                            {{ $t('latitude') }}
+                        </label>
+                        <InputText id="latitude" v-model.trim="city.latitude" fluid
+                                   :invalid="submitted && !city.latitude" />
+                        <small v-if="submitted && !city.latitude" class="text-red-500">
+                            {{ $t('errors_latitude_required') }}
+                        </small>
+                    </div>
+
+                    <!-- longitude -->
+                    <div>
+                        <label for="longitude" class="block font-bold mb-3">
+                            {{ $t('longitude') }}
+                        </label>
+                        <InputText id="longitude" v-model.trim="city.longitude" fluid
+                                   :invalid="submitted && !city.longitude" />
+                        <small v-if="submitted && !city.longitude" class="text-red-500">
+                            {{ $t('errors_longitude_required') }}
+                        </small>
+                    </div>
+                </div>
+                <template #footer>
+                    <Button :label="$t('cancel')" icon="pi pi-times" text @click="hideDialog" />
+                    <Button :label="$t('save')" icon="pi pi-check" @click="saveCity" />
+                </template>
+        </Dialog>
+
+        <!-- Város törlése -->
+        <Dialog></Dialog>
+
+        <!-- Kijelölt városok törlése -->
+        <Dialog></Dialog>
 
     </AppLayout>
 </template>

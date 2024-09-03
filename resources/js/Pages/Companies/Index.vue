@@ -92,7 +92,7 @@ onMounted(() => {
                 
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">{{ $t('manage_products') }}</h4>
+                        <div class="font-semibold text-xl mb-1">{{ $t('manage_companies') }}</div>
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />

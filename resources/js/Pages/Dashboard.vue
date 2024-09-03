@@ -38,28 +38,28 @@ const dt = ref();
 /**
  * Reaktív hivatkozás a termékek adatainak tárolására.
  * 
- * @type {Array}
+ * @type {ref<Array>}
  */
 const products = ref();
 
 /**
  * Reaktív hivatkozás a termék adatainak megjelenítő párbeszédpanel megnyitásához.
  * 
- * @type {Boolean}
+ * @type {ref<boolean>}
  */
 const productDialog = ref(false);
 
 /**
  * Reaktív hivatkozás a termék törléséhez használt párbeszédpanel megnyitásához.
  * 
- * @type {Boolean}
+ * @type {ref<boolean>}
  */
 const deleteProductDialog = ref(false);
 
 /**
  * Reaktív hivatkozás a kijelölt termékek törléséhez használt párbeszédpanel megnyitásához.
  * 
- * @type {Boolean}
+ * @type {ref<boolean>}
  */
 const deleteProductsDialog = ref(false);
 
@@ -73,7 +73,7 @@ const product = ref({});
 /**
  * Reaktív hivatkozás a kijelölt termékek tárolására.
  * 
- * @type {Array}
+ * @type {ref<Array>}
  */
 const selectedProducts = ref();
 
@@ -491,7 +491,7 @@ function getStatusLabel(status) {
                 >
                     <template #header>
                         <div class="flex flex-wrap gap-2 items-center justify-between">
-                            <h4 class="m-0">{{ $t('manage_products') }}</h4>
+                            <div class="font-semibold text-xl mb-1">{{ $t('manage_products') }}</div>
                             <IconField>
                                 <InputIcon>
                                     <i class="pi pi-search" />
@@ -564,6 +564,8 @@ function getStatusLabel(status) {
                     <img v-if="product.image"
                         :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`"
                         :alt="product.image" class="block m-auto pb-4" />
+
+                    <!-- Nev -->
                     <div>
                         <label for="name" class="block font-bold mb-3">
                             {{ $t('name') }}

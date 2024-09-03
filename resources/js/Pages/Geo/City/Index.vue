@@ -1,12 +1,12 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref, reactive } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { useToast } from 'primevue/usetoast';
 import { FilterMatchMode } from '@primevue/core/api';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
 // Validation
-import { useVuelidate  } from '@vuelidate/core';
+import useVuelidate from '@vuelidate/core';
 import { required } from '@vuelidate/validators'
 
 import CityService from '@/service/CityService';
@@ -110,6 +110,22 @@ const filters = ref({
  */
 const submitted = ref(false);
 
+//const rules = {
+//    name: {required},
+//    //latitude: {required},
+//    //longitude: {required},
+//    country_id: {required},
+//    region_id: {required},
+//};
+const rules = computed(() => ({
+    name: { required },
+    country_id: { required },
+    region_id: { required }
+}));
+
+const v$ = useVuelidate(rules, city);
+// ======================================================
+
 const fetchItems = () => {
     CityService.getCities()
     .then(response => {
@@ -161,27 +177,36 @@ const saveCity = () => {
     }
 }
 
-const rules = {
-    name: {required},
-    //latitude: {required},
-    //longitude: {required},
-    country_id: {required},
-    region_id: {required},
-};
-
+/**
+ * Hozzon létre új várost az API-nak küldött POST-kéréssel.
+ *
+ * A metódus ellenörzi a város adatait a validációs szabályok alapján,
+ * és ha a validáció sikerült, akkor létrehoz egy új várost az API-ban.
+ * A választ megjeleníti a konzolon.
+ *
+ * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
+ */
 const createCity = async () => {
-    const v$ = useVuelidate(rules, city.value);
-    const result = await v$.value.$validate();
-    console.log('validation', result);
-    /*
-    CityService.createCity(city.value)
-    .then(response => {
-        //
-    })
-    .catch(error => {
-        console.error('createCity API Error:', error);
-    });
-    */
+    // Futassa a validációs ellenörzést a város adataira
+    v$.$validate();
+
+    // Ha a validáció sikerült, akkor hozzon létre új várost az API-ban
+    if( !v$.$error ){
+        alert('SUCCESS');
+        /*
+        CityService.createCity(city.value)
+        .then(response => {
+            // Jelenítse meg a válaszban szereplő adatokat a konzolon
+            console.log('response', response);
+        })
+        .catch(error => {
+            // Jelenítse meg a hibaüzenetet a konzolon
+            console.error('createCity API Error:', error);
+        });
+        */
+    }else{
+        alert('FAIL');
+    }
 }
 
 const updateCity = () => {
@@ -296,10 +321,8 @@ const deleteCity = () => {
                         <small v-if="submitted && !city.name" class="text-red-500">
                             {{ $t('errors_name_required') }}
                         </small>
-                        <small class="text-red-500">
-                            <div v-for="error of v$.$errors" :key="error.$uid">
-                                {{ error.$message }}
-                            </div>
+                        <small class="text-red-500" v-if="v$.name.$error">
+                            {{ v$.name.$errors[0].$message }}
                         </small>
                     </div>
 

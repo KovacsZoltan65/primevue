@@ -11,6 +11,9 @@
     "roles": "Roles",
     "permissions": "Permissions",
 
+    "register": "Register",
+    "login": "Login",
+
     "system": "System",
     "geo": "Geo",
     "regions": "Regions",
@@ -46,6 +49,11 @@
     "electronics": "Electronics",
     "fitness": "Fitness",
     "quantity": "Quantity",
+    "country": "Country",
+    "region": "Region",
+    "city": "City",
+    "longitude": "Longitute",
+    "latitude": "Latitude",
     
     "cancel": "Cancel",
     "save": "Save",
@@ -63,6 +71,13 @@
     
     "specimens": "Specimens",
     "companies": "Companies",
+
+    "valid_required": "Value is required (:field)",
+    "valid_name": "Name is required",
+    "valid_email": "Email is required",
+    "valid_region_id": "Region is required",
+    "valid_country_id": "Country is required",
+    "valid_city_id": "City is required",
 
     "error_400": "Bad Request",
     "error_401": "Unauthorized! Redirecting to login...",

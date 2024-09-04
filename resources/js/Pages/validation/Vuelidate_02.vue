@@ -87,7 +87,8 @@ const submitForm = async () => {
                     <label for="email" class="block font-bold mb-3">Email</label>
                     <InputText id="email" v-model="formData.email" />
                     <div>
-                        <span v-for="error in v$.email.$errors" :key="error.$uid" class="text-red-500">
+                        <span v-for="error in v$.email.$errors" :key="error.$uid" 
+                              class="text-red-500">
                             {{ error.$message }}
                         </span>
                     </div>

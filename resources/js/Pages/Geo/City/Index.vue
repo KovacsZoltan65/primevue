@@ -7,7 +7,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 
 // Validation
 import useVuelidate from '@vuelidate/core';
-import { required } from '@vuelidate/validators'
+import { helpers, required } from '@vuelidate/validators'
 
 import CityService from '@/service/CityService';
 
@@ -19,7 +19,6 @@ import InputText from 'primevue/inputtext';
 import InputIcon from 'primevue/inputicon';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
-
 
 /**
  * Használja a PrimeVue toast összetevőjét.
@@ -118,12 +117,19 @@ const submitted = ref(false);
 //    region_id: {required},
 //};
 const rules = computed(() => ({
-    name: { required },
-    country_id: { required },
-    region_id: { required }
+    name: {
+        required: helpers.withMessage('validate_name', required),
+    },
+    country_id: {
+        required: helpers.withMessage('validate_country_id', required),
+    },
+    region_id: {
+        required: helpers.withMessage('validate_region_id', required),
+    }
 }));
 
 const v$ = useVuelidate(rules, city);
+
 // ======================================================
 
 const fetchItems = () => {
@@ -155,6 +161,8 @@ function openNew() {
 const hideDialog = () => {
     cityDialog.value = false;
     submitted.value = false;
+
+    v$.value.$reset();
 }
 
 const editCity = (data) => {
@@ -168,13 +176,22 @@ const confirmDeleteCity = (data) => {
     deleteCityDialog.value = true;
 }
 
-const saveCity = () => {
-    submitted.value = true;
+const saveCity = async () => {
 
-    if (city.value.id) {
-        updateCity();
+    const result = await v$.value.$validate();
+    if( result ){
+        alert('VALID');
+        /*
+        submitted.value = true;
+
+        if (city.value.id) {
+            updateCity();
+        }else{
+            createCity();
+        }
+        */
     }else{
-        createCity();
+        alert('FAIL');
     }
 }
 
@@ -187,30 +204,22 @@ const saveCity = () => {
  *
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
-const createCity = async () => {
-    // Futassa a validációs ellenörzést a város adataira
-    v$.$validate();
-
-    // Ha a validáció sikerült, akkor hozzon létre új várost az API-ban
-    if( !v$.$error ){
-        alert('SUCCESS');
-        /*
-        CityService.createCity(city.value)
-        .then(response => {
-            // Jelenítse meg a válaszban szereplő adatokat a konzolon
-            console.log('response', response);
-        })
-        .catch(error => {
-            // Jelenítse meg a hibaüzenetet a konzolon
-            console.error('createCity API Error:', error);
-        });
-        */
-    }else{
-        alert('FAIL');
-    }
+const createCity = () => {
+    /*
+    CityService.createCity(city.value)
+    .then(response => {
+        // Jelenítse meg a válaszban szereplő adatokat a konzolon
+        console.log('response', response);
+    })
+    .catch(error => {
+        // Jelenítse meg a hibaüzenetet a konzolon
+        console.error('createCity API Error:', error);
+    });
+    */
 }
 
 const updateCity = () => {
+    /*
     CityService.updateCity(city.value.id, city.value)
     .then(response => {
         //
@@ -218,6 +227,7 @@ const updateCity = () => {
     .catch(error => {
         console.error('updateCity API Error:', error);
     });
+    */
 }
 
 const deleteCity = () => {
@@ -277,20 +287,25 @@ const deleteCity = () => {
                     </div>
                 </template>
 
-                <!-- Region -->
-                <Column field="region_id" :header="$t('region_id')" sortable style="min-width: 12rem" />
-
                 <!-- Country -->
-                <Column field="country_id" :header="$t('country_id')" sortable style="min-width: 12rem" />
+                <Column field="country_id" :header="$t('country')" sortable 
+                        style="min-width: 12rem" />
+
+                <!-- Region -->
+                <Column field="region_id" :header="$t('region')" sortable 
+                        style="min-width: 12rem" />
 
                 <!-- Lattitude -->
-                <Column field="latitude" :header="$t('latitude')" sortable style="min-width: 12rem" />
+                <Column field="latitude" :header="$t('latitude')" sortable 
+                        style="min-width: 12rem" />
 
                 <!-- Longitude -->
-                <Column field="longitude" :header="$t('longitude')" sortable style="min-width: 12rem" />
+                <Column field="longitude" :header="$t('longitude')" sortable 
+                        style="min-width: 12rem" />
 
                 <!-- Nev -->
-                <Column field="name" :header="$t('name')" sortable style="min-width: 16rem" />
+                <Column field="name" :header="$t('name')" sortable 
+                        style="min-width: 16rem" />
 
                 <!-- Actions -->
                 <Column :exportable="false" style="min-width: 12rem">
@@ -313,47 +328,35 @@ const deleteCity = () => {
 
                     <!-- Name -->
                     <div>
-                        <label for="name" class="block font-bold mb-3">
-                            {{ $t('name') }}
-                        </label>
-                        <InputText id="name" 
-                                   v-model="city.name" 
-                                   required="true" autofocus fluid
-                        />
-                    <!--
-                        <small v-if="submitted && !city.name" class="text-red-500">
-                            {{ $t('errors_name_required') }}
-                        </small>
-                    -->
+                        <label for="name" class="block font-bold mb-3">{{ $t('name') }}</label>
+                        <InputText id="name" v-model="city.name" autofocus fluid />
                         <small class="text-red-500" v-if="v$.name.$error">
-                            {{ v$.name.$errors[0].$message }}
-                        </small>
-                    </div>
-
-                    <!-- region -->
-                    <div>
-                        <label for="region_id" class="block font-bold mb-3">
-                            {{ $t('region_id') }}
-                        </label>
-                        <InputText id="region_id" v-model="city.region_id" 
-                                   required="true" fluid
-                                   :invalid="submitted && !city.region_id" />
-                        <small v-if="submitted && !city.region_id" class="text-red-500">
-                            {{ $t('errors_region_id_required') }}
+                            {{ $t(v$.name.$errors[0].$message) }}
                         </small>
                     </div>
 
                     <!-- country -->
                     <div>
                         <label for="country_id" class="block font-bold mb-3">
-                            {{ $t('country_id') }}
+                            {{ $t('country') }}
                         </label>
-                        <InputText id="country_id" v-model="city.country_id" 
-                                   required="true" fluid
-                                   :invalid="submitted && !city.country_id" />
-                        <small v-if="submitted && !city.country_id" class="text-red-500">
-                            {{ $t('errors_country_id_required') }}
+                        <InputText id="country_id" v-model="city.country_id" fluid :invalid="submitted && !city.country_id" />
+                        <small class="text-red-500" v-if="v$.country_id.$error">
+                            {{ $t(v$.country_id.$errors[0].$message) }}
                         </small>
+                    </div>
+
+                    <!-- region -->
+                    <div>
+                        <label for="region_id" class="block font-bold mb-3">
+                            {{ $t('region') }}
+                        </label>
+                        <InputText id="region_id" 
+                                   v-model="city.region_id" fluid 
+                                   :invalid="submitted && !city.region_id" />
+                            <small class="text-red-500" v-if="v$.region_id.$error">
+                                {{ $t(v$.region_id.$errors[0].$message) }}
+                            </small>
                     </div>
 
                     <!-- latitude -->
@@ -361,11 +364,7 @@ const deleteCity = () => {
                         <label for="latitude" class="block font-bold mb-3">
                             {{ $t('latitude') }}
                         </label>
-                        <InputText id="latitude" v-model="city.latitude" fluid
-                                   :invalid="submitted && !city.latitude" />
-                        <small v-if="submitted && !city.latitude" class="text-red-500">
-                            {{ $t('errors_latitude_required') }}
-                        </small>
+                        <InputText id="latitude" v-model="city.latitude" fluid />
                     </div>
 
                     <!-- longitude -->
@@ -373,11 +372,7 @@ const deleteCity = () => {
                         <label for="longitude" class="block font-bold mb-3">
                             {{ $t('longitude') }}
                         </label>
-                        <InputText id="longitude" v-model="city.longitude" fluid
-                                   :invalid="submitted && !city.longitude" />
-                        <small v-if="submitted && !city.longitude" class="text-red-500">
-                            {{ $t('errors_longitude_required') }}
-                        </small>
+                        <InputText id="longitude" v-model="city.longitude" fluid />
                     </div>
                 </div>
                 <template #footer>

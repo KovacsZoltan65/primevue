@@ -11,6 +11,9 @@
     "roles": "Szerepkörök",
     "permissions": "Engedélyek",
 
+    "register": "Regisztráció",
+    "login": "Belépés",
+
     "system": "Rendszer",
     "geo": "Geo",
     "regions": "Megyék",
@@ -46,6 +49,11 @@
     "electronics": "Elektronika",
     "fitness": "Fitness",
     "quantity": "Mennyiség",
+    "country": "Ország",
+    "region": "Megye",
+    "city": "Város",
+    "longitude": "Husszúság",
+    "latitude": "Szélesség",
     
     "cancel": "Mégsem",
     "save": "Mentés",
@@ -63,6 +71,13 @@
     
     "specimens": "Példányok",
     "companies": "Cégek",
+
+    "validate_required": "Az érték megadása kötelező (:field)",
+    "validate_name": "A név megadása kötelező",
+    "validate_email": "Az email megadása kötelező",
+    "validate_region_id": "A megye megadása kötelező",
+    "validate_country_id": "Az ország megadása kötelező",
+    "valid_city_id": "A város megadása kötelező",
 
     "error_400": "Rossz kérés",
     "error_401": "Jogosulatlan! Átirányítás a bejelentkezéshez...",

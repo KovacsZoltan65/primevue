@@ -6,6 +6,8 @@ use App\Http\Requests\StoreCityRequest;
 use App\Http\Requests\UpdateCityRequest;
 use App\Http\Resources\CityResource;
 use App\Models\City;
+use App\Models\Country;
+use App\Models\Region;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -39,8 +41,25 @@ class CityController extends Controller
             'search' => request('search'),
         ]);
         */
+
+        //$cities = City::get();
+
+        //echo '<pre>';
+        //foreach($cities as $city){
+        //    print_r("{$city->name} {$city->country->name} {$city->region->name}" . PHP_EOL);
+        //}
+        //echo '</pre>';
+        //die();
+
+        $countries = Country::orderBy('name')->get()->toArray();
+        $regions = Region::orderBy('name')->get()->toArray();
+
+        //dd($countries, $regions);
+
         return Inertia::render('Geo/City/Index', [
             //'cities' => $cities,
+            'countries' => $countries,
+            'regions' => $regions,
             'search' => request('search'),
         ]);
         
@@ -82,7 +101,7 @@ class CityController extends Controller
 
         // Alakítsa át a városokat erőforrásgyűjteménybe
         $cities = CityResource::collection($cityQuery->get());
-        
+
         // Az erőforrásgyűjtemény visszaadása
         return $cities;
     }

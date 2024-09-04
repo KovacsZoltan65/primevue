@@ -41,39 +41,22 @@ class Region extends Model
     ];
 
     /**
-     * A tevékenység naplózásakor naplózott attribútumok.
-     *
-     * @var array<string>
-     */
-    protected static $logAttributes = [];
-
-	/**
-     * A tevékenységnaplózást kiváltó esemény(ek).
-     *
-     * @var array<string>
-     */
-    protected static $recordEvents = [
-        'created', // Új könyv beillesztésekor
-        'updated',  // Amikor egy meglévő könyvet frissítenek
-        'deleted',  // Amikor egy könyvet törölnek
-    ];
-
-	/**
-     * A getActivitylogOptions metódus felülbírálása
+     * A régióhoz tartozó ország
      * 
-     * Ezzel a módszerrel konfigurálhatóak a tevékenységnapló naplózási beállításai.
-     * A tevékenységi napló létrehozásakor vagy frissítésekor hívják meg.
-     *
-     * @return LogOptions
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    //#[\Override]
-    //public function getActivitylogOptions(): LogOptions
-    //{
-        // Állítsa be az alapértelmezett naplózási beállításokat
-    //    return LogOptions::defaults()
-            // Naplózza az összes kitölthető attribútumot
-    //        ->logFillable()
-            // Minden esemény naplózása
-    //        ->logAllEvents();
-    //}
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id');
+    }
+
+    /**
+     * A régióban levő városok
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function cities()
+    {
+        return $this->hasMany(City::class, 'region_id');
+    }
 }

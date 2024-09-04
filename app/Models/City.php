@@ -35,4 +35,24 @@ class City extends Model
             });
         });
     }
+
+    /**
+     * Get the region that owns the City
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function region()
+    {
+        return $this->belongsTo(Region::class, 'region_id');
+    }
+
+    /**
+     * Get the country that owns the City
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id');
+    }
 }

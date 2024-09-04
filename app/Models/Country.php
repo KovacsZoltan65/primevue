@@ -8,8 +8,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Class Country
@@ -22,54 +20,33 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Country extends Model
 {
-	use HasFactory,
-            LogsActivity;
+	use HasFactory;
 
 	protected $table = 'countries';
 	public $timestamps = false;
 
-	protected $fillable = [
-		'name',
-		'code'
-	];
+	protected $fillable = ['name', 'code'];
 
 	/**
-     * A tevékenység naplózásakor naplózott attribútumok.
-     *
-     * @var array<string>
-     */
-    protected static $logAttributes = [
-		'name',
-		'code'
-	];
+	 * A kapcsolódó városok listája.
+	 *
+	 * Egy országnak több városa is lehet.
+	 *
+	 * @return \Illuminate\Database\Eloquent\Relations\HasMany
+	 */
+	public function cities()
+	{
+		return $this->hasMany(City::class, 'country_id');
+	}
 
 	/**
-     * A tevékenységnaplózást kiváltó esemény(ek).
-     *
-     * @var array<string>
-     */
-    protected static $recordEvents = [
-        'created',
-        'updated',
-        'deleted',
-    ];
-
-	/**
-     * A getActivitylogOptions metódus felülbírálása
-     * 
-     * Ezzel a módszerrel konfigurálhatóak a tevékenységnapló naplózási beállításai.
-     * A tevékenységi napló létrehozásakor vagy frissítésekor hívják meg.
-     *
-     * @return LogOptions
-     */
-    #[\Override]
-    public function getActivitylogOptions(): LogOptions
-    {
-        // Állítsa be az alapértelmezett naplózási beállításokat
-        return LogOptions::defaults()
-            // Naplózza az összes kitölthető attribútumot
-            ->logFillable()
-            // Minden esemény naplózása
-            ->logAllEvents();
-    }
+	 * A kapcsolódó régiók listája.
+	 *
+	 * @return \Illuminate\Database\Eloquent\Relations\HasMany
+	 */
+	public function regions()
+	{
+		return $this->hasMany(Region::class, 'country_id');
+	}
 }
+

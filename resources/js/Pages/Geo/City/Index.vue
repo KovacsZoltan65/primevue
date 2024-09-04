@@ -20,6 +20,17 @@ import InputIcon from 'primevue/inputicon';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 
+const props = defineProps({
+    countries: {
+        type: Object,
+        default: () => {}
+    },
+    regions: {
+        type: Object,
+        default: () => {}
+    }
+});
+
 /**
  * Használja a PrimeVue toast összetevőjét.
  *
@@ -109,13 +120,18 @@ const filters = ref({
  */
 const submitted = ref(false);
 
-//const rules = {
-//    name: {required},
-//    //latitude: {required},
-//    //longitude: {required},
-//    country_id: {required},
-//    region_id: {required},
-//};
+const rules = {
+    name: {
+        required: helpers.withMessage('validate_name', required),
+    },
+    country_id: {
+        required: helpers.withMessage('validate_country_id', required),
+    },
+    region_id: {
+        required: helpers.withMessage('validate_region_id', required),
+    }
+};
+/*
 const rules = computed(() => ({
     name: {
         required: helpers.withMessage('validate_name', required),
@@ -127,7 +143,7 @@ const rules = computed(() => ({
         required: helpers.withMessage('validate_region_id', required),
     }
 }));
-
+*/
 const v$ = useVuelidate(rules, city);
 
 // ======================================================
@@ -146,10 +162,19 @@ onMounted(() => {
     fetchItems();
 });
 
+/**
+ * Megerősíti a kiválasztott termékek törlését.
+ *
+ * Ez a funkció akkor hívódik meg, ha a felhasználó törölni szeretné a kiválasztott termékeket.
+ * A deleteProductsDialog változó értékét igazra állítja, ami
+ * megnyílik egy megerősítő párbeszédablak a kiválasztott termékek törléséhez.
+ *
+ * @return {void}
+ */
 function confirmDeleteSelected() {
     // Állítsa a deleteProductsDialog változó értékét igazra,
     // amely megnyitja a megerősítő párbeszédablakot a kiválasztott termékek törléséhez.
-    //deleteProductsDialog.value = true;
+    deleteCitiesDialog.value = true;
 }
 
 function openNew() {
@@ -158,19 +183,43 @@ function openNew() {
     cityDialog.value = true;
 }
 
+/**
+ * Bezárja a dialógusablakot.
+ * 
+ * Ez a függvény a dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
+ * A v$.value.$reset() függvénnyel visszaállítja a validációs objektumot az alapértelmezett állapotába.
+ */
 const hideDialog = () => {
     cityDialog.value = false;
     submitted.value = false;
 
+    // Visszaállítja a validációs objektumot az alapértelmezett állapotába.
     v$.value.$reset();
 }
 
+/**
+ * Szerkeszti a kiválasztott terméket.
+ *
+ * Ez a funkció a kiválasztott termék adatait másolja a city változóba,
+ * és megnyitja a dialógusablakot a termék szerkesztéséhez.
+ *
+ * @param {object} data - A kiválasztott termék adatai.
+ * @return {void}
+ */
 const editCity = (data) => {
     city.value = { ...data };
-    //city.value = data;
     cityDialog.value = true;
 }
 
+/**
+ * Megerősítés a város törléséhez.
+ *
+ * Ez a funkció a city változóba másolja a kiválasztott város adatait,
+ * és megnyitja a dialógusablakot a város törléséhez.
+ *
+ * @param {object} data - A kiválasztott város adatai.
+ * @return {void}
+ */
 const confirmDeleteCity = (data) => {
     city.value = { ...data };
     deleteCityDialog.value = true;
@@ -240,6 +289,14 @@ const deleteCity = () => {
     });
 }
 
+const getCountryName = (id) => {
+    return props.countries.find((country) => country.id === id).name;
+};
+
+const getRegionName = (id) => {
+    return props.regions.find((region) => region.id === id).name;
+};
+
 </script>
 
 <template>
@@ -288,12 +345,18 @@ const deleteCity = () => {
                 </template>
 
                 <!-- Country -->
-                <Column field="country_id" :header="$t('country')" sortable 
-                        style="min-width: 12rem" />
+                <Column field="country_id" :header="$t('country')" sortable style="min-width: 12rem">
+                    <template #body="slotProps">
+                        {{ getCountryName(slotProps.data.country_id) }}
+                    </template>
+                </Column>
 
                 <!-- Region -->
-                <Column field="region_id" :header="$t('region')" sortable 
-                        style="min-width: 12rem" />
+                <Column field="region_id" :header="$t('region')" sortable style="min-width: 12rem">
+                    <template #body="slotProps">
+                        {{ getRegionName(slotProps.data.region_id) }}
+                    </template>
+                </Column>
 
                 <!-- Lattitude -->
                 <Column field="latitude" :header="$t('latitude')" sortable 

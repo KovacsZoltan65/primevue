@@ -10,6 +10,7 @@ export const MenuService = {
             {
                 label: '',
                 items: [
+                    { label: 'validation', icon: '', to: '/validation'},
                     { label: 'validation 1', icon: '', to: '/validation_01'},
                     { label: 'validation 2', icon: '', to: '/validation_02'},
                 ]

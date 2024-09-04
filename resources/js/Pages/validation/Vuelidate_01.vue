@@ -19,18 +19,18 @@
         -->
         </p>
         <p>
-            <input type="password" placeholder="Password" v-model="state.password.password" />
+            <input type="password" placeholder="Password" v-model="state.password" />
         <!--
-            <span v-if="v$.password.password.$error">
-                {{ v$.password.password.$errors[0].$message }}
+            <span v-if="v$.password.$error">
+                {{ v$.password.$errors[0].$message }}
             </span>
         -->
         </p>
         <p>
-            <input type="password" placeholder="Confirm" v-model="state.password.confirm" />
+            <input type="password" placeholder="Confirm" v-model="state.confirm" />
         <!--
-            <span v-if="v$.password.confirm.$error">
-                {{ v$.password.confirm.$errors[0].$message }}
+            <span v-if="v$.confirm.$error">
+                {{ v$.confirm.$errors[0].$message }}
             </span>
         -->
         </p>
@@ -43,6 +43,7 @@
 <script>
 /**
  * https://www.youtube.com/watch?v=2BR6Vvjw3wQ&t=8s
+ * https://www.youtube.com/watch?v=7alh1KowAEI
  */
 
 import { reactive, computed } from 'vue';
@@ -53,10 +54,8 @@ export default {
     setup (){
         const state = reactive({
             email: '',
-            password: {
-                password: '',
-                confirm: ''
-            }
+            password: '',
+            confirm: ''
         });
 
         const mustBeLearnVue = (value) => value.includes('learnvue');
@@ -67,10 +66,8 @@ export default {
                     required, email, 
                     mustBeLearnVue: helpers.withMessage('Must be learnvue', mustBeLearnVue),
                 },
-                password: {
-                    password: { required, minLenght: minLength(6) },
-                    confirm: { required, sameAs: sameAs(state.password.password) }
-                }
+                password: { required, minLenght: minLength(6) },
+                confirm: { required, sameAs: sameAs(state.password) }
             };
         });
 
@@ -85,10 +82,8 @@ export default {
         return {
             v$: useVuelidate(),
             email: '',
-            password: {
-                password: '',
-                confirm: ''
-            }
+            password: '',
+            confirm: ''
         }
     },
     methods: {

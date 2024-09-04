@@ -26,6 +26,7 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     
     // VALIDATION
+    Route::get('/validation', [ValidationController::class, 'validation'])->name('validation');
     Route::get('/validation_01', [ValidationController::class, 'validation_01'])->name('validation_01');
     Route::get('/validation_02', [ValidationController::class, 'validation_02'])->name('validation_02');
 

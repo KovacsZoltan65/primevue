@@ -19,6 +19,7 @@ import InputText from 'primevue/inputtext';
 import InputIcon from 'primevue/inputicon';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
+import Select from 'primevue/select';
 
 const props = defineProps({
     countries: {
@@ -344,6 +345,10 @@ const getRegionName = (id) => {
                     </div>
                 </template>
 
+                <!-- Nev -->
+                <Column field="name" :header="$t('name')" sortable 
+                        style="min-width: 16rem" />
+
                 <!-- Country -->
                 <Column field="country_id" :header="$t('country')" sortable style="min-width: 12rem">
                     <template #body="slotProps">
@@ -365,10 +370,6 @@ const getRegionName = (id) => {
                 <!-- Longitude -->
                 <Column field="longitude" :header="$t('longitude')" sortable 
                         style="min-width: 12rem" />
-
-                <!-- Nev -->
-                <Column field="name" :header="$t('name')" sortable 
-                        style="min-width: 16rem" />
 
                 <!-- Actions -->
                 <Column :exportable="false" style="min-width: 12rem">
@@ -403,7 +404,15 @@ const getRegionName = (id) => {
                         <label for="country_id" class="block font-bold mb-3">
                             {{ $t('country') }}
                         </label>
-                        <InputText id="country_id" v-model="city.country_id" fluid :invalid="submitted && !city.country_id" />
+                        <!--<InputText id="country_id" v-model="city.country_id" fluid :invalid="submitted && !city.country_id" />-->
+
+                        <Select id="country_id" fluid 
+                                v-model="city.country_id" 
+                                :options="props.countries" 
+                                optionLabel="name" 
+                                optionValue="id" 
+                                :placholder="$t('country')" />
+
                         <small class="text-red-500" v-if="v$.country_id.$error">
                             {{ $t(v$.country_id.$errors[0].$message) }}
                         </small>
@@ -414,12 +423,20 @@ const getRegionName = (id) => {
                         <label for="region_id" class="block font-bold mb-3">
                             {{ $t('region') }}
                         </label>
-                        <InputText id="region_id" 
+                        <!--<InputText id="region_id" 
                                    v-model="city.region_id" fluid 
-                                   :invalid="submitted && !city.region_id" />
-                            <small class="text-red-500" v-if="v$.region_id.$error">
-                                {{ $t(v$.region_id.$errors[0].$message) }}
-                            </small>
+                                   :invalid="submitted && !city.region_id" />-->
+                        
+                        <Select id="region_id" fluid 
+                                v-model="city.region_id" 
+                                :options="props.regions" 
+                                optionLabel="name" 
+                                optionValue="id" 
+                                :placholder="$t('region')" />
+
+                        <small class="text-red-500" v-if="v$.region_id.$error">
+                            {{ $t(v$.region_id.$errors[0].$message) }}
+                        </small>
                     </div>
 
                     <!-- latitude -->

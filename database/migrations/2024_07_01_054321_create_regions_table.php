@@ -14,10 +14,11 @@ return new class extends Migration
     public function up()
     {
         Schema::create('regions', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name', 255);
-            $table->string('code', 10);
+            $table->increments('id')->comment('Rekord azonosító');
+            $table->string('name', 255)->comment('Név');
+            $table->string('code', 10)->comment('Kód');
             $table->unsignedSmallInteger('country_id');
+            $table->integer('active')->default(1)->comment('Aktív')->index();
 
             $table->index(['country_id', 'name'], 'country_name');
         });

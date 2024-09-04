@@ -51,8 +51,8 @@ class CityController extends Controller
         //echo '</pre>';
         //die();
 
-        $countries = Country::orderBy('name')->get()->toArray();
-        $regions = Region::orderBy('name')->get()->toArray();
+        $countries = Country::where('active', 1)->orderBy('name')->get()->toArray();
+        $regions = Region::where('active', 1)->orderBy('name')->get()->toArray();
 
         //dd($countries, $regions);
 

@@ -13,6 +13,7 @@ import { useToast } from 'primevue/usetoast';
 import { FilterMatchMode } from '@primevue/core/api';
 //import CompanyService from '@/service/CompanyService';
 import CompanyService from '@/service/CompanyService';
+import Select from 'primevue/select';
 
 //const toast = useToast();
 const companies = ref();
@@ -21,6 +22,8 @@ const selectedCompanies = ref();
 const companyDialog = ref(false);
 const deleteCompanyesDialog = ref(false);
 const deleteCompanyDialog = ref(false);
+
+const country_id = ref();
 
 const dt = ref();
 const submitted = ref(false);
@@ -91,8 +94,23 @@ onMounted(() => {
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
                 
                 <template #header>
+                    
                     <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <div class="font-semibold text-xl mb-1">{{ $t('manage_companies') }}</div>
+                        
+                        <!-- FELIRAT -->
+                        <div class="font-semibold text-xl mb-1">{{ $t('companies_title') }}</div>
+                        
+                        <!-- SZŰRÉS -->
+                        <div class="font-semibold text-xl mb-1">
+                            <Select id="country_id" fluid 
+                                    v-model="country" 
+                                    :options="companies" 
+                                    optionLabel="country" 
+                                    optionValue="country" 
+                                    :placholder="$t('name')" />
+                        </div>
+
+                        <!-- KERESÉS -->
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />

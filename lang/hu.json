@@ -18,7 +18,9 @@
     "geo": "Geo",
     "regions": "Megyék",
     "countries": "Országok",
+
     "cities": "Városok",
+    "cities_title": "Városok kezelése",
 
     "email": "Email",
     "email_placeholder": "Email cím",
@@ -70,7 +72,10 @@
     "select_country": "Válasszon egy országot",
     
     "specimens": "Példányok",
+
     "companies": "Cégek",
+    "companies_title": "Cégek kezelése",
+
 
     "validate_required": "Az érték megadása kötelező (:field)",
     "validate_name": "A név megadása kötelező",

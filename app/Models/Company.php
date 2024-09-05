@@ -32,4 +32,34 @@ class Company extends Model
             $query->where('city', $request->city);
         });
     }
+
+    /**
+     * Get the country that owns the Company
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function country()
+    {
+        // A vállalat tartozó országa
+        // 
+        // Az ország, amelyhez a vállalat tartozik.
+        // 
+        // @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+        return $this->belongsTo(Country::class, 'country');
+    }
+
+    /**
+     * Get the city that owns the Company
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function city()
+    {
+        // A vállalat tartozó városa
+        // 
+        // Egy vállalatnak pontosan egy városa van.
+        // 
+        // @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+        return $this->belongsTo(City::class, 'city');
+    }
 }

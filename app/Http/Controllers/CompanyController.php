@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\City;
+use App\Models\Country;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -27,11 +29,17 @@ class CompanyController extends Controller
         // Szerezze le a vállalatokat a lekérdezésből, és alakítsa őket AnonymousResourceCollection-vé.
         //$companies = CompanyResource::collection($companyQuery->get());
 
+        $cities = City::where('active', 1)->orderBy('name')->select('id', 'name')->get()->toArray();
+        $countries = Country::where('active', 1)->orderBy('name')->select('id', 'name')->get()->toArray();
+        $company_cities = Company::orderBy('name')->select('id', 'name')->get()->toArray();
+
+dd($company_cities);
+
         // Adjon vissza egy Inertia választ a vállalatok és a keresési paraméterek megadásával.
         return Inertia::render("Companies/Index", [
             //'companies' => $companies,
-            'countries' => '',
-            'cityes' => '',
+            'countries' => $countries,
+            'cities' => $cities,
             'search' => request('search')
         ]);
     }

@@ -302,7 +302,7 @@ const getRegionName = (id) => {
 
 <template>
     <AppLayout>
-        <Head title="Város kezelés" />
+        <Head :title="$t('cities')" />
 
         <div class="card">
 
@@ -335,7 +335,7 @@ const getRegionName = (id) => {
 
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <div class="font-semibold text-xl mb-1">{{ $t('manage_cities') }}</div>
+                        <div class="font-semibold text-xl mb-1">{{ $t('cities_title') }}</div>
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />

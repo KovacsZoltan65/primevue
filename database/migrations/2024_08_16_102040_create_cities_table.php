@@ -25,6 +25,8 @@ return new class extends Migration
             $table->foreignIdFor(Country::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Region::class)->constrained()->cascadeOnDelete();
 
+            $table->integer('active')->default(1)->comment('Aktív')->index();
+
             $table->timestamps();
             $table->softDeletes();
         });

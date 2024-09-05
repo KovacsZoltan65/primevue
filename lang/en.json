@@ -18,7 +18,9 @@
     "geo": "Geo",
     "regions": "Regions",
     "countries": "Countries",
+
     "cities": "Cities",
+    "cities_title": "Manage Cities",
 
     "email": "Email",
     "email_placeholder": "Email Address",
@@ -70,7 +72,9 @@
     "select_country": "Select a Country",
     
     "specimens": "Specimens",
+
     "companies": "Companies",
+    "companies_title": "Manage Companies",
 
     "valid_required": "Value is required (:field)",
     "valid_name": "Name is required",

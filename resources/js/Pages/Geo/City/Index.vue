@@ -65,7 +65,7 @@ const cities = ref();
  * 
  * @type {ref<boolean>}
  */
- const deleteCitiesDialog = ref(false);
+ const deleteSelectedCitiesDialog = ref(false);
 
  /**
  * Reaktív hivatkozás a kijelölt város(ok) törléséhez használt párbeszédpanel megnyitásához.
@@ -167,15 +167,15 @@ onMounted(() => {
  * Megerősíti a kiválasztott termékek törlését.
  *
  * Ez a funkció akkor hívódik meg, ha a felhasználó törölni szeretné a kiválasztott termékeket.
- * A deleteProductsDialog változó értékét igazra állítja, ami
+ * A deleteCitysDialog változó értékét igazra állítja, ami
  * megnyílik egy megerősítő párbeszédablak a kiválasztott termékek törléséhez.
  *
  * @return {void}
  */
 function confirmDeleteSelected() {
-    // Állítsa a deleteProductsDialog változó értékét igazra,
+    // Állítsa a deleteCitiessDialog változó értékét igazra,
     // amely megnyitja a megerősítő párbeszédablakot a kiválasztott termékek törléséhez.
-    deleteCitiesDialog.value = true;
+    deleteSelectedCitiesDialog.value = true;
 }
 
 function openNew() {
@@ -222,6 +222,7 @@ const editCity = (data) => {
  * @return {void}
  */
 const confirmDeleteCity = (data) => {
+    console.log(data);
     city.value = { ...data };
     deleteCityDialog.value = true;
 }
@@ -290,6 +291,10 @@ const deleteCity = () => {
     });
 }
 
+const deleteSelectedCities = () => {
+    console.log(selectedCities.value);
+};
+
 const getCountryName = (id) => {
     return props.countries.find((country) => country.id === id).name;
 };
@@ -331,11 +336,15 @@ const getRegionName = (id) => {
                 :filters="filters"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} cities">
 
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
+                        
+                        <!-- FELIRAT -->
                         <div class="font-semibold text-xl mb-1">{{ $t('cities_title') }}</div>
+                        
+                        <!-- KERESÉS -->
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
@@ -344,6 +353,9 @@ const getRegionName = (id) => {
                         </IconField>
                     </div>
                 </template>
+
+                <!-- Checkbox -->
+                <Column selectionMode="multiple" style="min-width: 3rem" :exportable="false" />
 
                 <!-- Nev -->
                 <Column field="name" :header="$t('name')" sortable 
@@ -364,12 +376,10 @@ const getRegionName = (id) => {
                 </Column>
 
                 <!-- Lattitude -->
-                <Column field="latitude" :header="$t('latitude')" sortable 
-                        style="min-width: 12rem" />
+                <Column field="latitude" :header="$t('latitude')" style="min-width: 12rem" sortable />
 
                 <!-- Longitude -->
-                <Column field="longitude" :header="$t('longitude')" sortable 
-                        style="min-width: 12rem" />
+                <Column field="longitude" :header="$t('longitude')" style="min-width: 12rem" sortable />
 
                 <!-- Actions -->
                 <Column :exportable="false" style="min-width: 12rem">
@@ -386,26 +396,22 @@ const getRegionName = (id) => {
         </div>
 
         <!-- Város szerkesztése -->
-        <Dialog v-model:visible="cityDialog" :style="{ width: '450px' }" 
-                :header="$t('city_details')" :modal="true">
-                <div class="flex flex-col gap-6">
+        <Dialog v-model:visible="cityDialog" :style="{ width: '550px' }" :header="$t('city_details')" :modal="true">
 
-                    <!-- Name -->
-                    <div>
-                        <label for="name" class="block font-bold mb-3">{{ $t('name') }}</label>
-                        <InputText id="name" v-model="city.name" autofocus fluid />
-                        <small class="text-red-500" v-if="v$.name.$error">
-                            {{ $t(v$.name.$errors[0].$message) }}
-                        </small>
-                    </div>
+            <div class="flex flex-col gap-6">
+                <div>
+                    <label for="name" class="block font-bold mb-3">{{ $t('name') }}</label>
+                    <InputText id="name" v-model="city.name" autofocus fluid />
+                    <small class="text-red-500" v-if="v$.name.$error">
+                        {{ $t(v$.name.$errors[0].$message) }}
+                    </small>
+                </div>
 
-                    <!-- country -->
-                    <div>
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex flex-col grow basis-0 gap-2">
                         <label for="country_id" class="block font-bold mb-3">
                             {{ $t('country') }}
                         </label>
-                        <!--<InputText id="country_id" v-model="city.country_id" fluid :invalid="submitted && !city.country_id" />-->
-
                         <Select id="country_id" fluid 
                                 v-model="city.country_id" 
                                 :options="props.countries" 
@@ -417,16 +423,10 @@ const getRegionName = (id) => {
                             {{ $t(v$.country_id.$errors[0].$message) }}
                         </small>
                     </div>
-
-                    <!-- region -->
-                    <div>
+                    <div class="flex flex-col grow basis-0 gap-2">
                         <label for="region_id" class="block font-bold mb-3">
                             {{ $t('region') }}
                         </label>
-                        <!--<InputText id="region_id" 
-                                   v-model="city.region_id" fluid 
-                                   :invalid="submitted && !city.region_id" />-->
-                        
                         <Select id="region_id" fluid 
                                 v-model="city.region_id" 
                                 :options="props.regions" 
@@ -438,34 +438,66 @@ const getRegionName = (id) => {
                             {{ $t(v$.region_id.$errors[0].$message) }}
                         </small>
                     </div>
+                </div>
 
-                    <!-- latitude -->
-                    <div>
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex flex-col grow basis-0 gap-2">
                         <label for="latitude" class="block font-bold mb-3">
                             {{ $t('latitude') }}
                         </label>
                         <InputText id="latitude" v-model="city.latitude" fluid />
                     </div>
-
-                    <!-- longitude -->
-                    <div>
+                    <div class="flex flex-col grow basis-0 gap-2">
                         <label for="longitude" class="block font-bold mb-3">
                             {{ $t('longitude') }}
                         </label>
                         <InputText id="longitude" v-model="city.longitude" fluid />
                     </div>
                 </div>
-                <template #footer>
-                    <Button :label="$t('cancel')" icon="pi pi-times" text @click="hideDialog" />
-                    <Button :label="$t('save')" icon="pi pi-check" @click="saveCity" />
-                </template>
+
+            </div>
+
+            <template #footer>
+                <Button :label="$t('cancel')" icon="pi pi-times" text @click="hideDialog" />
+                <Button :label="$t('save')" icon="pi pi-check" @click="saveCity" />
+            </template>
         </Dialog>
 
         <!-- Város törlése -->
-        <Dialog></Dialog>
+        <!-- Egy megerősítő párbeszédpanel, amely megjelenik, ha a felhasználó törölni szeretne egy várost. -->
+        <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést. -->
+        <Dialog v-model:visible="deleteCityDialog" :style="{ width: '450px' }" :header="$t('confirm')" :modal="true">
+            <!-- A párbeszédpanel tartalma -->
+            <div class="flex items-center gap-4">
+                <!-- A figyelmeztető ikon -->
+                <i class="pi pi-exclamation-triangle !text-3xl" />
+                <!-- A szöveg, amely megjelenik a párbeszédpanelen -->
+                <span v-if="city">{{ $t('confirm_delete_2') }} <b>{{ city.name }}</b>?</span>
+            </div>
+            <!-- A párbeszédpanel lábléc, amely tartalmazza a gombokat -->
+            <template #footer>
+                <!-- A "Nem" gomb -->
+                <Button :label="$t('no')" icon="pi pi-times" @click="deleteCityDialog = false" text />
+                <!-- A "Igen" gomb, amely törli a várost -->
+                <Button :label="$t('yes')" icon="pi pi-check" @click="deleteCity" />
+            </template>
+        </Dialog>
 
-        <!-- Kijelölt városok törlése -->
-        <Dialog></Dialog>
+        <!-- Erősítse meg a kiválasztott városok törlését párbeszédpanelen -->
+        <!-- Ez a párbeszédpanel akkor jelenik meg, ha a felhasználó több várost szeretne törölni -->
+        <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést -->
+        <Dialog v-model:visible="deleteSelectedCitiesDialog" :style="{ width: '450px' }" :header="$t('confirm')" :modal="true">
+            <div class="flex items-center gap-4">
+                <i class="pi pi-exclamation-triangle !text-3xl" />
+                <span v-if="city">{{ $t('confirm_delete') }}</span>
+            </div>
+            <template #footer>
+                <!-- "Mégsem" gomb -->
+                <Button :label="$t('no')" icon="pi pi-times" @click="deleteSelectedCitiesDialog = false" text />
+                <!-- Megerősítés gomb -->
+                <Button :label="$t('yes')" icon="pi pi-check" @click="deleteSelectedCities" />
+            </template>
+        </Dialog>
 
     </AppLayout>
 </template>

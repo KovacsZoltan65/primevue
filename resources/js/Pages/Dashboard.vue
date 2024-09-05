@@ -663,7 +663,7 @@ function getStatusLabel(status) {
                 </template>
             </Dialog>
 
-            <!-- Kijelölt termék törlése -->
+            <!-- Termék törlése -->
             <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" 
                     :header="$t('confirm')" :modal="true">
                 <div class="flex items-center gap-4">
@@ -678,14 +678,12 @@ function getStatusLabel(status) {
                 </template>
             </Dialog>
 
-            <!-- Összes termék törlése -->
+            <!-- Kijelölt termék törlése -->
             <Dialog v-model:visible="deleteProductsDialog" 
                     :style="{ width: '450px' }" :header="$t('confirm')" :modal="true">
                 <div class="flex items-center gap-4">
                     <i class="pi pi-exclamation-triangle !text-3xl" />
-                    <span v-if="product">
-                        {{ $t('confirm_delete') }}
-                    </span>
+                    <span v-if="product">{{ $t('confirm_delete') }}</span>
                 </div>
                 <template #footer>
                     <Button :label="$t('no')" icon="pi pi-times" text 

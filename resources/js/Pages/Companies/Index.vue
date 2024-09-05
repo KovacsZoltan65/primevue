@@ -15,7 +15,18 @@ import { FilterMatchMode } from '@primevue/core/api';
 import CompanyService from '@/service/CompanyService';
 import Select from 'primevue/select';
 
-//const toast = useToast();
+const props = defineProps({
+    countries: {
+        type: Object,
+        default: () => {}
+    },
+    cities: {
+        type: Object,
+        default: () => {}
+    },
+});
+
+const toast = useToast();
 const companies = ref();
 const company = ref({});
 const selectedCompanies = ref();
@@ -44,7 +55,6 @@ const fetchItems = () => {
     CompanyService.getCompanies()
     .then(response => {
         companies.value = response.data.data;
-        console.log(companies.value);
     })
     .catch(error => {
         console.log(error);
@@ -54,6 +64,14 @@ const fetchItems = () => {
 onMounted(() => {
     fetchItems();
 });
+
+const getCountryName = (id) => {
+    return props.countries.find((country) => country.id === id).name;
+};
+
+const getCityName = (id) => {
+    return props.cities.find((city) => city.id === id).name;
+};
 
 </script>
 <template>
@@ -66,12 +84,16 @@ onMounted(() => {
             
             <Toolbar class="md-6">
                 <template #start>
+
                     <Button :label="$t('new')" icon="pi pi-plus" 
-                            severity="secondary" class="mr-2" @click="openNew" />
-                    <Button :label="$t('delete')" icon="pi pi-trash" 
                             severity="secondary" 
+                            class="mr-2" 
+                            @click="openNew" />
+                            
+                    <Button :label="$t('delete')" icon="pi pi-trash" 
+                            severity="secondary" class="mr-2" 
                             @click="confirmDeleteSelected"
-                        :disabled="!selectedCompanies || !selectedCompanies.length" />
+                            :disabled="!selectedCompanies || !selectedCompanies.length" />
                 </template>
 
                 <template #end>
@@ -94,36 +116,54 @@ onMounted(() => {
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
                 
                 <template #header>
-                    
+
                     <div class="flex flex-wrap gap-2 items-center justify-between">
                         
-                        <!-- FELIRAT -->
-                        <div class="font-semibold text-xl mb-1">{{ $t('companies_title') }}</div>
-                        
-                        <!-- SZŰRÉS -->
                         <div class="font-semibold text-xl mb-1">
-                            <Select id="country_id" fluid 
+                            {{ $t('companies_title') }}
+                        </div>
+<!--                        
+                        <div class="font-semibold text-xl mb-1">
+                            <Select id="country_id" class="w-full"  
                                     v-model="country" 
-                                    :options="companies" 
-                                    optionLabel="country" 
-                                    optionValue="country" 
+                                    :options="props.countries" 
+                                    optionLabel="name" 
+                                    optionValue="id" 
                                     :placholder="$t('name')" />
                         </div>
 
-                        <!-- KERESÉS -->
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" :placeholder="$t('search')" />
+                            <InputText v-model="filters['global'].value" 
+                                       :placeholder="$t('search')" />
                         </IconField>
+-->
                     </div>
+
                 </template>
 
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false" />
+
+                <!-- NAME -->
                 <Column field="name" :header="$t('name')" sortable style="min-width: 16rem" />
-                <Column field="country" :header="$t('country')" sortable style="min-width: 16rem" />
-                <Column field="city" :header="$t('city')" sortable style="min-width: 16rem" />
+
+                <!-- COUNTRY -->
+                <!--<Column field="country_id" :header="$t('country')" sortable style="min-width: 16rem" />-->
+                <Column field="country_id" :header="$t('country')" sortable style="min-width: 16rem">
+                    <template #body="slotProps">
+                        {{ getCountryName(slotProps.data.country_id) }}
+                    </template>
+                </Column>
+
+                <!-- CITY -->
+                <!--<Column field="city" :header="$t('city')" sortable style="min-width: 16rem" />-->
+                <Column field="city_id" :header="$t('city')" sortable style="min-width: 16rem">
+                    <template #body="slotProps">
+                        {{ getCityName(slotProps.data.city_id) }}
+                    </template>
+                </Column>
 
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">

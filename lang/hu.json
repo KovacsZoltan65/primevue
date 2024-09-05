@@ -62,7 +62,7 @@
     "no": "Nem",
     "yes": "Igen",
     "confirm": "Megerősítés",
-    "confirm_delete": "Biztosan törli a kiválasztott termékeket?",
+    "confirm_delete": "Biztosan törli a kiválasztott rekordokat?",
     "confirm_delete_2": "Biztos, hogy törölni szeretnéd",
 
     "manage_products": "Termékek kezelése",

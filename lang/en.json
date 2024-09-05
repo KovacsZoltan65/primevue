@@ -62,7 +62,7 @@
     "no": "No",
     "yes": "Yes",
     "confirm": "",
-    "confirm_delete": "Are you sure you want to delete the selected products?",
+    "confirm_delete": "Are you sure you want to delete the selected records?",
     "confirm_delete_2": "Are you sure you want to delete",
 
     "manage_products": "Manage Products",

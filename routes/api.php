@@ -54,6 +54,7 @@ Route::delete('/items/{id}', [CompanyController::class, 'deleteCompany'])->name(
 // CITIES
 // =======================================================
 Route::get('/cities', [CityController::class, 'getCities'])->name('api.get.cities');
+Route::post('/cities', [CityController::class, 'createCity'])->name('api.post.cities');
 //Route::post('/cities', [CityController::class, 'createCity'])->name('apicities.create');
 //Route::put('/cities/{id}', [CityController::class, 'updateCity'])->name('api.cities.update')->where('id', '[0-9]+');
 //Route::delete('/cities/{id}', [CityController::class, 'deleteCity'])->name('api.cities.delete')->where('id', '[0-9]+');

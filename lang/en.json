@@ -21,6 +21,8 @@
 
     "cities": "Cities",
     "cities_title": "Manage Cities",
+    "cities_details": "City Details",
+    "city": "City",
 
     "email": "Email",
     "email_placeholder": "Email Address",
@@ -53,7 +55,6 @@
     "quantity": "Quantity",
     "country": "Country",
     "region": "Region",
-    "city": "City",
     "longitude": "Longitute",
     "latitude": "Latitude",
     
@@ -61,7 +62,12 @@
     "save": "Save",
     "no": "No",
     "yes": "Yes",
-    "confirm": "",
+    "true": "True",
+    "false": "False",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "confirm": "Confirm",
     "confirm_delete": "Are you sure you want to delete the selected records?",
     "confirm_delete_2": "Are you sure you want to delete",
 

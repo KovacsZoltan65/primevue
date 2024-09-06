@@ -21,6 +21,8 @@
 
     "cities": "Városok",
     "cities_title": "Városok kezelése",
+    "cities_details": "Város részletei",
+    "city": "Város",
 
     "email": "Email",
     "email_placeholder": "Email cím",
@@ -53,7 +55,6 @@
     "quantity": "Mennyiség",
     "country": "Ország",
     "region": "Megye",
-    "city": "Város",
     "longitude": "Husszúság",
     "latitude": "Szélesség",
     
@@ -61,6 +62,11 @@
     "save": "Mentés",
     "no": "Nem",
     "yes": "Igen",
+    "true": "Igaz",
+    "false": "Hamis",
+    "active": "Aktív",
+    "inactive": "Inaktív",
+    "pending": "Függőben",
     "confirm": "Megerősítés",
     "confirm_delete": "Biztosan törli a kiválasztott rekordokat?",
     "confirm_delete_2": "Biztos, hogy törölni szeretnéd",

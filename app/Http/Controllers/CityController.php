@@ -27,34 +27,8 @@ class CityController extends Controller
      */
     public function index(Request $request)
     {
-        // Szerezze be a városokat az adatbázisból.
-        // Ha van megadva keresési paraméter, szűrje le az eredményeket.
-        //$cityQuery = City::search($request);
-
-        // Alakítsa át a városokat erőforrásgyűjteménybe
-        //$cities = CityResource::collection($cityQuery->get());
-
-        // Jelenítse meg a nézetet a városokkal és a keresési paraméterrel
-        /*
-        return Inertia::render('Cities/Index', [
-            //'cities' => $cities,
-            'search' => request('search'),
-        ]);
-        */
-
-        //$cities = City::get();
-
-        //echo '<pre>';
-        //foreach($cities as $city){
-        //    print_r("{$city->name} {$city->country->name} {$city->region->name}" . PHP_EOL);
-        //}
-        //echo '</pre>';
-        //die();
-
         $countries = Country::where('active', 1)->orderBy('name')->get()->toArray();
         $regions = Region::where('active', 1)->orderBy('name')->get()->toArray();
-
-        //dd($countries, $regions);
 
         return Inertia::render('Geo/City/Index', [
             //'cities' => $cities,
@@ -116,6 +90,7 @@ class CityController extends Controller
      */
     public function createCity(Request $request)
     {
+\Log::info(print_r($request->all(), true));
         // Hozzon létre új várost az adatbázisban
         $city = City::create($request->all());
         

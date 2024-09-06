@@ -608,13 +608,17 @@ function getStatusLabel(status) {
                             {{ $t('category') }}
                         </span>
                         <div class="grid grid-cols-12 gap-4">
+                            
                             <div class="flex items-center gap-2 col-span-6">
-                                <RadioButton id="category1" v-model="product.category" name="category"
+                                <RadioButton id="category1" 
+                                    v-model="product.category" 
+                                    name="category"
                                     value="Accessories" />
                                 <label for="category1">
                                     {{ $t('accessories') }}
                                 </label>
                             </div>
+                            
                             <div class="flex items-center gap-2 col-span-6">
                                 <RadioButton id="category2" v-model="product.category" name="category"
                                     value="Clothing" />

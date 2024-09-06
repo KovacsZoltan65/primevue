@@ -4,12 +4,14 @@ import { Head } from '@inertiajs/vue3';
 import { useToast } from 'primevue/usetoast';
 import { FilterMatchMode } from '@primevue/core/api';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { trans } from 'laravel-vue-i18n';
 
 // Validation
 import useVuelidate from '@vuelidate/core';
 import { helpers, required } from '@vuelidate/validators'
 
 import CityService from '@/service/CityService';
+//import functions from '../../../helpers/functions.js';
 
 import Toolbar from 'primevue/toolbar';
 import DataTable from 'primevue/datatable';
@@ -20,6 +22,7 @@ import InputIcon from 'primevue/inputicon';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import Select from 'primevue/select';
+import Tag from 'primevue/tag';
 
 const props = defineProps({
     countries: {
@@ -31,6 +34,13 @@ const props = defineProps({
         default: () => {}
     }
 });
+
+const getBools = () => {
+    return [
+        { label: trans("inactive"), value: 0 },
+        { label: trans('active'), value: 1 }
+    ];
+}
 
 /**
  * Használja a PrimeVue toast összetevőjét.
@@ -78,8 +88,20 @@ const deleteCityDialog = ref(false);
  * Reaktív hivatkozás a város adatainak tárolására.
  * 
  * @type {Object}
+ * @property {string} name - A város neve.
+ * @property {number} country_id - Az ország azonosítója.
+ * @property {number} region_id - A régió azonosítója.
+ * @property {number} active - A város státusza.
+ * @property {number} id - A város azonosítója.
  */
-const city = ref({});
+const city = ref({
+    name: '',
+    country_id: null,
+    region_id: null,
+    active: 1,
+    id: null
+});
+
 
 /**
  * Reaktív hivatkozás a kijelölt városok tárolására.
@@ -132,19 +154,12 @@ const rules = {
         required: helpers.withMessage('validate_region_id', required),
     }
 };
-/*
-const rules = computed(() => ({
-    name: {
-        required: helpers.withMessage('validate_name', required),
-    },
-    country_id: {
-        required: helpers.withMessage('validate_country_id', required),
-    },
-    region_id: {
-        required: helpers.withMessage('validate_region_id', required),
-    }
-}));
-*/
+
+/**
+ * Létrehozza a validációs példányt a validációs szabályok alapján.
+ * 
+ * @type {Object}
+ */
 const v$ = useVuelidate(rules, city);
 
 // ======================================================
@@ -178,11 +193,40 @@ function confirmDeleteSelected() {
     deleteSelectedCitiesDialog.value = true;
 }
 
+/**
+ * Nyitja meg az új város dialógusablakot.
+ * 
+ * Ez a függvény a city változó értékét alaphelyzetbe állítja, a submitted változó értékét False-ra állítja,
+ * és a cityDialog változó értékét igazra állítja, amely megnyitja az új város dialógusablakot.
+ * 
+ * @return {void}
+ */
 function openNew() {
-    city.value = {};
+    city.value = { ...initialCity };
     submitted.value = false;
     cityDialog.value = true;
 }
+
+/**
+ * Az új város objektum alapértelmezett értékei.
+ * 
+ * A cityDialog változó értékét igazra állítva, ez az objektum lesz a dialógusablakban
+ * megjelenő új város formban.
+ * 
+ * @type {Object}
+ * @property {string} name - A város neve.
+ * @property {number} country_id - Az ország azonosítója.
+ * @property {number} region_id - A régió azonosítója.
+ * @property {number} active - A város aktív-e? (1 igen, 0 nem).
+ * @property {number} id - A város azonosítója.
+ */
+const initialCity = {
+    name: '',
+    country_id: null,
+    region_id: null,
+    active: 1,
+    id: null
+};
 
 /**
  * Bezárja a dialógusablakot.
@@ -199,16 +243,19 @@ const hideDialog = () => {
 }
 
 /**
- * Szerkeszti a kiválasztott terméket.
+ * Szerkeszti a kiválasztott várost.
  *
- * Ez a funkció a kiválasztott termék adatait másolja a city változóba,
- * és megnyitja a dialógusablakot a termék szerkesztéséhez.
+ * Ez a funkció a kiválasztott város adatait másolja a city változóba,
+ * és megnyitja a dialógusablakot a város szerkesztéséhez.
  *
- * @param {object} data - A kiválasztott termék adatai.
+ * @param {object} data - A kiválasztott város adatai.
  * @return {void}
  */
 const editCity = (data) => {
+    // Másolja a kiválasztott város adatait a city változóba.
     city.value = { ...data };
+
+    // Nyissa meg a dialógusablakot a város szerkesztéséhez.
     cityDialog.value = true;
 }
 
@@ -222,8 +269,10 @@ const editCity = (data) => {
  * @return {void}
  */
 const confirmDeleteCity = (data) => {
-    console.log(data);
+    // Másolja a kiválasztott város adatait a city változóba.
     city.value = { ...data };
+
+    // Nyissa meg a dialógusablakot a város törléséhez.
     deleteCityDialog.value = true;
 }
 
@@ -231,16 +280,14 @@ const saveCity = async () => {
 
     const result = await v$.value.$validate();
     if( result ){
-        alert('VALID');
-        /*
         submitted.value = true;
 
         if (city.value.id) {
             updateCity();
-        }else{
+        } else {
             createCity();
         }
-        */
+        
     }else{
         alert('FAIL');
     }
@@ -256,17 +303,20 @@ const saveCity = async () => {
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
 const createCity = () => {
-    /*
     CityService.createCity(city.value)
     .then(response => {
         // Jelenítse meg a válaszban szereplő adatokat a konzolon
         console.log('response', response);
+        cities.values.push(response.data);
+
+        hideDialog();
+
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'City Created', life: 3000 });
     })
     .catch(error => {
         // Jelenítse meg a hibaüzenetet a konzolon
         console.error('createCity API Error:', error);
     });
-    */
 }
 
 const updateCity = () => {
@@ -302,6 +352,10 @@ const getCountryName = (id) => {
 const getRegionName = (id) => {
     return props.regions.find((region) => region.id === id).name;
 };
+
+const getActiveLabel = (city) => ['danger', 'success', 'warning'][city.active || 2];
+
+const getActiveValue = (city) => ['inactive', 'active', 'pending'][city.active] || 'pending';
 
 </script>
 
@@ -381,6 +435,14 @@ const getRegionName = (id) => {
                 <!-- Longitude -->
                 <Column field="longitude" :header="$t('longitude')" style="min-width: 12rem" sortable />
 
+                <!-- Active -->
+                <Column field="active" :header="$t('active')" sortable style="min-width: 6rem">
+                    <template #body="slotProps">
+                        <Tag :value="$t(getActiveValue(slotProps.data))" 
+                             :severity="getActiveLabel(slotProps.data)" />
+                    </template>
+                </Column>
+
                 <!-- Actions -->
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
@@ -396,18 +458,35 @@ const getRegionName = (id) => {
         </div>
 
         <!-- Város szerkesztése -->
-        <Dialog v-model:visible="cityDialog" :style="{ width: '550px' }" :header="$t('city_details')" :modal="true">
+        <Dialog v-model:visible="cityDialog" :style="{ width: '550px' }" :header="$t('cities_details')" :modal="true">
 
             <div class="flex flex-col gap-6">
-                <div>
-                    <label for="name" class="block font-bold mb-3">{{ $t('name') }}</label>
-                    <InputText id="name" v-model="city.name" autofocus fluid />
-                    <small class="text-red-500" v-if="v$.name.$error">
-                        {{ $t(v$.name.$errors[0].$message) }}
-                    </small>
+                <div class="flex flex-wrap gap-4">
+
+                    <!-- Name -->
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <label for="name" class="block font-bold mb-3">{{ $t('name') }}</label>
+                        <InputText id="name" v-model="city.name" autofocus fluid />
+                        <small class="text-red-500" v-if="v$.name.$error">
+                            {{ $t(v$.name.$errors[0].$message) }}
+                        </small>
+                    </div>
+
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <!-- Active -->
+                        <label for="inventoryStatus" class="block font-bold mb-3">{{ $t('active') }}</label>
+                        <Select id="active" name="active" 
+                                v-model="city.active"
+                                :options="getBools()" 
+                                optionLabel="label" 
+                                optionValue="value"
+                                placeholder="Cities" />
+                    </div>
                 </div>
 
                 <div class="flex flex-wrap gap-4">
+                    
+                    <!-- Country -->
                     <div class="flex flex-col grow basis-0 gap-2">
                         <label for="country_id" class="block font-bold mb-3">
                             {{ $t('country') }}
@@ -423,11 +502,13 @@ const getRegionName = (id) => {
                             {{ $t(v$.country_id.$errors[0].$message) }}
                         </small>
                     </div>
+
+                    <!-- Region -->
                     <div class="flex flex-col grow basis-0 gap-2">
                         <label for="region_id" class="block font-bold mb-3">
                             {{ $t('region') }}
                         </label>
-                        <Select id="region_id" fluid 
+                        <Select id="region_id" name="region_id" fluid 
                                 v-model="city.region_id" 
                                 :options="props.regions" 
                                 optionLabel="name" 
@@ -441,20 +522,23 @@ const getRegionName = (id) => {
                 </div>
 
                 <div class="flex flex-wrap gap-4">
+
+                    <!-- Latitude -->
                     <div class="flex flex-col grow basis-0 gap-2">
                         <label for="latitude" class="block font-bold mb-3">
                             {{ $t('latitude') }}
                         </label>
-                        <InputText id="latitude" v-model="city.latitude" fluid />
+                        <InputText id="latitude" v-model="city.latitude" fluid disabled />
                     </div>
+
+                    <!-- Longitude -->
                     <div class="flex flex-col grow basis-0 gap-2">
                         <label for="longitude" class="block font-bold mb-3">
                             {{ $t('longitude') }}
                         </label>
-                        <InputText id="longitude" v-model="city.longitude" fluid />
+                        <InputText id="longitude" v-model="city.longitude" fluid disabled />
                     </div>
                 </div>
-
             </div>
 
             <template #footer>

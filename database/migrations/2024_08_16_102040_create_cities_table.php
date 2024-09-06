@@ -18,8 +18,8 @@ return new class extends Migration
             
             //$table->integer('region_id')->comment('Régió azonosító');
             //$table->integer('country_id')->comment('Ország azonosító');
-            $table->decimal('latitude', 10, 2)->comment('Szélesség');
-            $table->decimal('longitude', 10, 2)->comment('Hosszúság');
+            $table->decimal('latitude', 10, 2)->nullable()->comment('Szélesség');
+            $table->decimal('longitude', 10, 2)->nullable()->comment('Hosszúság');
             $table->string('name', 255)->comment('Név');
             
             $table->foreignIdFor(Country::class)->constrained()->cascadeOnDelete();

@@ -18,6 +18,6 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-/nbproject/private/
+/nbproject/
 composer.lock
 package-lock.json

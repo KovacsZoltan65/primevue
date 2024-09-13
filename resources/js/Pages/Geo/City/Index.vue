@@ -24,21 +24,53 @@ import Dialog from 'primevue/dialog';
 import Select from 'primevue/select';
 import Tag from 'primevue/tag';
 
+/**
+ * Szerver felöl jövő adatok
+ */
 const props = defineProps({
+    /**
+     * Országok adatai.
+     */
     countries: {
         type: Object,
         default: () => {}
     },
+    /**
+     * Régiók adatai.
+     */
     regions: {
         type: Object,
         default: () => {}
     }
 });
 
+/**
+ * Az állapotmező logikai értékeit adja vissza.
+ *
+ * @returns {Array<Object>} objektumok tömbje címke és érték tulajdonságokkal.
+ */
 const getBools = () => {
     return [
-        { label: trans("inactive"), value: 0 },
-        { label: trans('active'), value: 1 }
+        {
+            /**
+             * Az inaktív állapot címkéje.
+             */
+            label: trans("inactive"),
+            /**
+             * Az inaktív állapot értéke.
+             */
+            value: 0
+        },
+        {
+            /**
+             * Az aktív állapot címkéje.
+             */
+            label: trans('active'),
+            /**
+             * Az aktív állapot értéke.
+             */
+            value: 1
+        }
     ];
 }
 
@@ -164,16 +196,34 @@ const v$ = useVuelidate(rules, city);
 
 // ======================================================
 
+/**
+ * Lekéri a városok listáját az API-ból.
+ *
+ * Ez a funkció a városok listáját lekéri az API-ból.
+ * A városok listája a cities változóban lesz elmentve.
+ *
+ * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
+ */
 const fetchItems = () => {
     CityService.getCities()
     .then(response => {
+        // A városok listája a cities változóban lesz elmentve
         cities.value = response.data.data;
     })
     .catch(error => {
+        // Jelenítse meg a hibaüzenetet a konzolon
         console.error('getCities API Error:', error);
     });
 };
 
+/**
+ * Eseménykezelő, amely a komponens létrejöttekor hívódik meg.
+ * 
+ * Ez a funkció a városok listáját lekéri az API-ból, amikor a komponens létrejön.
+ * A városok listája a cities változóban lesz elmentve.
+ *
+ * @return {void}
+ */
 onMounted(() => {
     fetchItems();
 });
@@ -305,8 +355,7 @@ const saveCity = async () => {
 const createCity = () => {
     CityService.createCity(city.value)
     .then(response => {
-        // Jelenítse meg a válaszban szereplő adatokat a konzolon
-        console.log('response', response);
+        //console.log('response', response);
         cities.values.push(response.data);
 
         hideDialog();

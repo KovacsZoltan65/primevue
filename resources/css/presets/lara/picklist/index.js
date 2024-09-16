@@ -1,52 +1,52 @@
 export default {
-    root: 'flex [&_[data-pc-name=pclist]]:h-full',
+    root: "flex [&_[data-pc-name=pclist]]:h-full",
     sourceControls: {
         class: [
             // Flexbox & Alignment
-            'flex lg:flex-col justify-center gap-2',
+            "flex lg:flex-col justify-center gap-2",
 
             // Spacing
-            'p-5'
-        ]
+            "p-5",
+        ],
     },
     sourceListContainer: {
         class: [
             // Flexbox
-            'grow shrink basis-2/4',
+            "grow shrink basis-2/4",
 
             // Shape
-            'rounded-md',
+            "rounded-md",
 
             // Color
-            'bg-surface-0 dark:bg-surface-900',
-            'border border-surface-200 dark:border-surface-700',
-            'outline-none'
-        ]
+            "bg-surface-0 dark:bg-surface-900",
+            "border border-surface-200 dark:border-surface-700",
+            "outline-none",
+        ],
     },
     transferControls: {
-        class: 'flex lg:flex-col justify-center gap-2 p-5'
+        class: "flex lg:flex-col justify-center gap-2 p-5",
     },
     targetListContainer: {
         class: [
             // Flexbox
-            'grow shrink basis-2/4',
+            "grow shrink basis-2/4",
 
             // Shape
-            'rounded-md',
+            "rounded-md",
 
             // Color
-            'bg-surface-0 dark:bg-surface-900',
-            'border border-surface-200 dark:border-surface-700',
-            'outline-none'
-        ]
+            "bg-surface-0 dark:bg-surface-900",
+            "border border-surface-200 dark:border-surface-700",
+            "outline-none",
+        ],
     },
     targetControls: {
-        class: 'flex lg:flex-col justify-center gap-2 p-5'
+        class: "flex lg:flex-col justify-center gap-2 p-5",
     },
     transition: {
-        enterFromClass: '!transition-none',
-        enterActiveClass: '!transition-none',
-        leaveActiveClass: '!transition-none',
-        leaveToClass: '!transition-none'
-    }
+        enterFromClass: "!transition-none",
+        enterActiveClass: "!transition-none",
+        leaveActiveClass: "!transition-none",
+        leaveToClass: "!transition-none",
+    },
 };

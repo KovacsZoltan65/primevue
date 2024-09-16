@@ -12,32 +12,36 @@
 
         <p>
             <input type="text" placeholder="Email" v-model="state.email" />
-        <!--
+            <!--
             <span v-if="v$.email.$error">
                 {{ v$.email.$errors[0].$message }}
             </span>
-        -->
-        </p>
+        --></p>
         <p>
-            <input type="password" placeholder="Password" v-model="state.password" />
-        <!--
+            <input
+                type="password"
+                placeholder="Password"
+                v-model="state.password"
+            />
+            <!--
             <span v-if="v$.password.$error">
                 {{ v$.password.$errors[0].$message }}
             </span>
-        -->
-        </p>
+        --></p>
         <p>
-            <input type="password" placeholder="Confirm" v-model="state.confirm" />
-        <!--
+            <input
+                type="password"
+                placeholder="Confirm"
+                v-model="state.confirm"
+            />
+            <!--
             <span v-if="v$.confirm.$error">
                 {{ v$.confirm.$errors[0].$message }}
             </span>
-        -->
-        </p>
+        --></p>
 
         <button type="submit" @click="submitForm">Submit</button>
     </div>
-
 </template>
 
 <script>
@@ -46,28 +50,38 @@
  * https://www.youtube.com/watch?v=7alh1KowAEI
  */
 
-import { reactive, computed } from 'vue';
-import useVuelidate from '@vuelidate/core';
-import { required, email, minLength, sameAs, helpers } from '@vuelidate/validators';
+import { reactive, computed } from "vue";
+import useVuelidate from "@vuelidate/core";
+import {
+    required,
+    email,
+    minLength,
+    sameAs,
+    helpers,
+} from "@vuelidate/validators";
 
 export default {
-    setup (){
+    setup() {
         const state = reactive({
-            email: '',
-            password: '',
-            confirm: ''
+            email: "",
+            password: "",
+            confirm: "",
         });
 
-        const mustBeLearnVue = (value) => value.includes('learnvue');
+        const mustBeLearnVue = (value) => value.includes("learnvue");
 
         const rules = computed(() => {
             return {
                 email: {
-                    required, email, 
-                    mustBeLearnVue: helpers.withMessage('Must be learnvue', mustBeLearnVue),
+                    required,
+                    email,
+                    mustBeLearnVue: helpers.withMessage(
+                        "Must be learnvue",
+                        mustBeLearnVue,
+                    ),
                 },
                 password: { required, minLenght: minLength(6) },
-                confirm: { required, sameAs: sameAs(state.password) }
+                confirm: { required, sameAs: sameAs(state.password) },
             };
         });
 
@@ -78,25 +92,25 @@ export default {
             v$,
         };
     },
-    data(){
+    data() {
         return {
             v$: useVuelidate(),
-            email: '',
-            password: '',
-            confirm: ''
-        }
+            email: "",
+            password: "",
+            confirm: "",
+        };
     },
     methods: {
-        submitForm(){
+        submitForm() {
             this.v$.$validate();
-            if( !this.v$.$error ){
-            //    alert('Form submitted');
-            }else{
+            if (!this.v$.$error) {
+                //    alert('Form submitted');
+            } else {
                 console.log(this.v$.$errors);
                 console.log(this.v$.$errors[0]);
-            //    alert('Form failed validation');
+                //    alert('Form failed validation');
             }
-        }
-    }
-}
+        },
+    },
+};
 </script>

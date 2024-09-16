@@ -1,11 +1,10 @@
 <script setup>
-import { ref, watch, computed } from 'vue';
-import { useLayout } from '../Layouts/composables/layout';
+import { ref, watch, computed } from "vue";
+import { useLayout } from "../Layouts/composables/layout";
 
-import AppTopBar from './AppTopBar.vue';
-import AppSidebar from './AppSidebar.vue';
-import AppFooter from './AppFooter.vue';
-
+import AppTopBar from "./AppTopBar.vue";
+import AppSidebar from "./AppSidebar.vue";
+import AppFooter from "./AppFooter.vue";
 
 /**
  * Törölje a változókat a useLayout hook segítségével.
@@ -27,14 +26,12 @@ const {
     resetMenu,
 } = useLayout();
 
-
 /**
  * Reaktív hivatkozás a kattintásesemény figyelő tartására külső kattintások esetén.
  *
  * @type {ref<Function|null>}
  */
 const outsideClickListener = ref(null);
-
 
 /**
  * Figyelő a `isSidebarActive` reaktív változóra, hogy elindítsa vagy leállítsa a külső kattintásokat feldolgozó függvényt.
@@ -53,7 +50,6 @@ watch(isSidebarActive, (newVal) => {
     }
 });
 
-
 /**
  * Reaktív hivatkozás, amely tartalmazza a tároló osztályait az elrendezéshez.
  *
@@ -69,11 +65,13 @@ const containerClass = computed(() => {
      * - 'layout-mobile-active': A menü mód 'static' és a mobil menü statikus aktív állapota aktív.
      */
     return {
-        'layout-overlay': layoutConfig.menuMode === 'overlay', // Menü mód 'overlay'
-        'layout-static': layoutConfig.menuMode === 'static', // Menü mód 'static'
-        'layout-static-inactive': layoutState.staticMenuDesktopInactive && layoutConfig.menuMode === 'static', // Menü mód 'static' és a statikus menü aktív állapota inaktív
-        'layout-overlay-active': layoutState.overlayMenuActive, // Menü mód 'overlay' és az átfedő menü aktív állapota aktív
-        'layout-mobile-active': layoutState.staticMenuMobileActive // Menü mód 'static' és a mobil menü statikus aktív állapota aktív
+        "layout-overlay": layoutConfig.menuMode === "overlay", // Menü mód 'overlay'
+        "layout-static": layoutConfig.menuMode === "static", // Menü mód 'static'
+        "layout-static-inactive":
+            layoutState.staticMenuDesktopInactive &&
+            layoutConfig.menuMode === "static", // Menü mód 'static' és a statikus menü aktív állapota inaktív
+        "layout-overlay-active": layoutState.overlayMenuActive, // Menü mód 'overlay' és az átfedő menü aktív állapota aktív
+        "layout-mobile-active": layoutState.staticMenuMobileActive, // Menü mód 'static' és a mobil menü statikus aktív állapota aktív
     };
 });
 
@@ -83,14 +81,13 @@ const containerClass = computed(() => {
  * A visszahívási függvény ellenőrzi, hogy a kattintási cél kívül esik-e egy adott elemen, és ha igen, akkor meghívja a resetMenu() függvényt.
  */
 function bindOutsideClickListener() {
-    // Ellenőrizze, hogy az outsideClickListener eseményfigyelő 
+    // Ellenőrizze, hogy az outsideClickListener eseményfigyelő
     // nincs-e még kötve a dokumentumobjektumhoz
     if (!outsideClickListener.value) {
-
         // Határozza meg a visszahívási funkciót a kattintási eseményhez
         outsideClickListener.value = (event) => {
             /**
-             * Ellenőrizze, hogy a kattintási cél kívül van-e az oldalsávon 
+             * Ellenőrizze, hogy a kattintási cél kívül van-e az oldalsávon
              * vagy a felső sáv elemein.
              * Ha igen, hívja meg a resetMenu() függvényt.
              */
@@ -100,7 +97,7 @@ function bindOutsideClickListener() {
         };
 
         // Adja hozzá az eseményfigyelőt a dokumentumobjektumhoz
-        document.addEventListener('click', outsideClickListener.value);
+        document.addEventListener("click", outsideClickListener.value);
     }
 }
 
@@ -113,7 +110,7 @@ function unbindOutsideClickListener() {
     // Ellenőrizze, hogy az outsideClickListener már be van-e állítva
     if (outsideClickListener.value) {
         // Távolítsa el az eseményfigyelőt a külső kattintásokhoz
-        document.removeEventListener('click', outsideClickListener);
+        document.removeEventListener("click", outsideClickListener);
 
         // Állítsa az outsideClickListenert nullára
         outsideClickListener.value = null;
@@ -122,14 +119,14 @@ function unbindOutsideClickListener() {
 
 /**
  * Ez a funkció ellenőrzi, hogy a kattintott cél az oldalsávon vagy a felső sávon kívül van-e.
- * 
+ *
  * @param {Event} event - A kattintási esemény.
  * @return {boolean} Igaz értéket ad vissza, ha a kattintott cél az oldalsávon vagy a felső sávon kívül van, ellenkező esetben hamis.
  */
 function isOutsideClicked(event) {
     // Szerezze be az oldalsáv és a felső sáv elemeit a DOM-ból
-    const sidebarEl = document.querySelector('.layout-sidebar');
-    const topbarEl = document.querySelector('.layout-menu-button');
+    const sidebarEl = document.querySelector(".layout-sidebar");
+    const topbarEl = document.querySelector(".layout-menu-button");
 
     // Ellenőrizze, hogy a kattintott cél ugyanaz-e, mint az oldalsáv vagy annak gyermeke, vagy ugyanaz, mint a felső sáv vagy annak gyermeke
     // Ha igen, adja vissza false értékét, jelezve, hogy nincs az oldalsávon vagy a felső sávon kívül
@@ -155,10 +152,8 @@ function isOutsideClicked(event) {
             </div>
 
             <AppFooter></AppFooter>
-
         </div>
 
         <div class="layout-mask animate-fadein"></div>
-        
     </div>
 </template>

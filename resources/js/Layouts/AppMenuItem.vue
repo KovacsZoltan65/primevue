@@ -1,11 +1,8 @@
 <script setup>
-import { onBeforeMount, ref, watch } from 'vue';
-import { useLayout } from '../Layouts/composables/layout';
-
-
+import { onBeforeMount, ref, watch } from "vue";
+import { useLayout } from "../Layouts/composables/layout";
 
 const { layoutState, setActiveMenuItem, onMenuToggle } = useLayout();
-
 
 /**
  * Kellékek az AppMenuItem összetevőhöz.
@@ -29,7 +26,7 @@ const props = defineProps({
      */
     item: {
         type: Object,
-        default: () => ({})
+        default: () => ({}),
     },
     /**
      * A menüpont indexe.
@@ -38,7 +35,7 @@ const props = defineProps({
      */
     index: {
         type: Number,
-        default: 0
+        default: 0,
     },
     /**
      * Azt jelzi, hogy a menüpont gyökérmenü-e.
@@ -47,7 +44,7 @@ const props = defineProps({
      */
     root: {
         type: Boolean,
-        default: true
+        default: true,
     },
     /**
      * A szülő menüpont kulcsa.
@@ -56,13 +53,12 @@ const props = defineProps({
      */
     parentItemKey: {
         type: String,
-        default: null
-    }
+        default: null,
+    },
 });
 
 const isActiveMenu = ref(false);
 const itemKey = ref(null);
-
 
 /**
  * Ezt a függvényt a rendszer a komponens csatlakoztatása előtt hívja meg.
@@ -72,7 +68,9 @@ const itemKey = ref(null);
 onBeforeMount(() => {
     // Állítsa be az itemKey értéket a parentItemKey és az index kellékei alapján.
     // Ha a parentItemKey értéke null, használja az indexet itemKeyként.
-    itemKey.value = props.parentItemKey ? props.parentItemKey + '-' + props.index : String(props.index);
+    itemKey.value = props.parentItemKey
+        ? props.parentItemKey + "-" + props.index
+        : String(props.index);
 
     // Szerezze be az activeMenuItem értéket a layoutState-ből.
     const activeItem = layoutState.activeMenuItem;
@@ -81,9 +79,11 @@ onBeforeMount(() => {
     // Ha az activeItem egyenlő az itemKey értékkel, állítsa az isActiveMenu értéket igazra.
     // Ha az activeItem az itemKey karakterrel kezdődik, amelyet kötőjel követ, állítsa az isActiveMenu értéket igazra.
     // Ellenkező esetben állítsa az isActiveMenu-t false értékre.
-    isActiveMenu.value = activeItem === itemKey.value || activeItem ? activeItem.startsWith(itemKey.value + '-') : false;
+    isActiveMenu.value =
+        activeItem === itemKey.value || activeItem
+            ? activeItem.startsWith(itemKey.value + "-")
+            : false;
 });
-
 
 /**
  * A watcher függvény, amely figyeli a layoutState-ból származó activeMenuItem értékét.
@@ -100,8 +100,9 @@ watch(
         // Amennyiben az activeMenuItem érték egyenlő az itemKey-val, vagy az itemKey karakterrel
         // kezdődik és kötőjel követ, állítsa az isActiveMenu értéket igazra.
         // Ha nem, állítsa azt false értékre.
-        isActiveMenu.value = newVal === itemKey.value || newVal.startsWith(itemKey.value + '-');
-    }
+        isActiveMenu.value =
+            newVal === itemKey.value || newVal.startsWith(itemKey.value + "-");
+    },
 );
 
 /**
@@ -126,7 +127,10 @@ function itemClick(event, item) {
 
     // Ellenőrzi, hogy a kattintott elem tartalmaz-e URL-t vagy URL-t és almenüelemeket.
     // Ha igen, akkor meghívódik a onMenuToggle függvény.
-    if ((item.to || item.url) && (layoutState.staticMenuMobileActive || layoutState.overlayMenuActive)) {
+    if (
+        (item.to || item.url) &&
+        (layoutState.staticMenuMobileActive || layoutState.overlayMenuActive)
+    ) {
         onMenuToggle();
     }
 
@@ -139,7 +143,11 @@ function itemClick(event, item) {
     // Meghatározza a kattintott elem kulcsát.
     // Ha a kattintott elem almenüelemeket tartalmaz, akkor az itemKey alapján a parentItemKey-t használja.
     // Ha nem, akkor az itemKey-t használja.
-    const foundItemKey = item.items ? (isActiveMenu.value ? props.parentItemKey : itemKey) : itemKey.value;
+    const foundItemKey = item.items
+        ? isActiveMenu.value
+            ? props.parentItemKey
+            : itemKey
+        : itemKey.value;
 
     // Meghívódik a setActiveMenuItem függvény a kattintott elem kulcsával.
     setActiveMenuItem(foundItemKey);
@@ -147,7 +155,7 @@ function itemClick(event, item) {
 
 /**
  * Ellenőrzi, hogy az aktuális útvonal megegyezik-e az adott elem útvonalával.
- * 
+ *
  * @param {Object} item - Az útvonal ellenőrzéséhez szükséges elem.
  * @param {string} item.to - Az elem útvonala.
  * @return {boolean} - Igaz, ha az aktuális útvonal megegyezik az elem útvonalával, hamis egyébként.
@@ -158,27 +166,38 @@ function checkActiveRoute(item) {
     // Az összehasonlítás annak ellenőrzésével történik, hogy az aktuális útvonal útvonala megegyezik-e az elem útvonalával.
     return route.path === item.to;
 }
-
 </script>
 
 <template>
-    <li :class="{ 'layout-root-menuitem': root, 'active-menuitem': isActiveMenu }">
-        <div v-if="root && item.visible !== false" 
-             class="layout-menuitem-root-text"
+    <li
+        :class="{
+            'layout-root-menuitem': root,
+            'active-menuitem': isActiveMenu,
+        }"
+    >
+        <div
+            v-if="root && item.visible !== false"
+            class="layout-menuitem-root-text"
         >
             {{ $t(item.label) }}
         </div>
-        
-        <a v-if="(!item.to || item.items) && item.visible !== false" 
-           :href="item.url" 
-           @click="itemClick($event, item, index)" 
-           :class="item.class" 
-           :target="item.target" tabindex="0">
+
+        <a
+            v-if="(!item.to || item.items) && item.visible !== false"
+            :href="item.url"
+            @click="itemClick($event, item, index)"
+            :class="item.class"
+            :target="item.target"
+            tabindex="0"
+        >
             <i :class="item.icon" class="layout-menuitem-icon"></i>
             <span class="layout-menuitem-text">{{ item.label }}</span>
-            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
+            <i
+                class="pi pi-fw pi-angle-down layout-submenu-toggler"
+                v-if="item.items"
+            ></i>
         </a>
-<!--
+        <!--
         <a v-if="item.to && !item.items && item.visible !== false" 
            @click="itemClick($event, item, index)" 
            :class="[item.class, { 'active-route': checkActiveRoute(item) }]" 
@@ -188,25 +207,35 @@ function checkActiveRoute(item) {
             <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
         </a>
     -->
-        <a v-if="item.to && !item.items && item.visible !== false" 
-           @click="itemClick($event, item, index)" 
-           :class="[item.class, { 'active-route': checkActiveRoute(item) }]" 
-           tabindex="0" :href="item.to">
+        <a
+            v-if="item.to && !item.items && item.visible !== false"
+            @click="itemClick($event, item, index)"
+            :class="[item.class, { 'active-route': checkActiveRoute(item) }]"
+            tabindex="0"
+            :href="item.to"
+        >
             <i :class="item.icon" class="layout-menuitem-icon"></i>
             <span class="layout-menuitem-text">{{ $t(item.label) }}</span>
-            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
+            <i
+                class="pi pi-fw pi-angle-down layout-submenu-toggler"
+                v-if="item.items"
+            ></i>
         </a>
-        <Transition v-if="item.items && item.visible !== false" name="layout-submenu">
+        <Transition
+            v-if="item.items && item.visible !== false"
+            name="layout-submenu"
+        >
             <ul v-show="root ? true : isActiveMenu" class="layout-submenu">
-                <app-menu-item v-for="(child, i) in item.items" 
-                               :key="child" 
-                               :index="i" 
-                               :item="child" 
-                               :parentItemKey="itemKey" 
-                               :root="false">
+                <app-menu-item
+                    v-for="(child, i) in item.items"
+                    :key="child"
+                    :index="i"
+                    :item="child"
+                    :parentItemKey="itemKey"
+                    :root="false"
+                >
                 </app-menu-item>
             </ul>
         </Transition>
-
     </li>
 </template>

@@ -1,11 +1,11 @@
-import { computed, reactive, readonly } from 'vue';
+import { computed, reactive, readonly } from "vue";
 
 const layoutConfig = reactive({
-    preset: 'Aura',
-    primary: 'emerald',
+    preset: "Aura",
+    primary: "emerald",
     surface: null,
     darkTheme: false,
-    menuMode: 'static'
+    menuMode: "static",
 });
 
 const layoutState = reactive({
@@ -15,7 +15,7 @@ const layoutState = reactive({
     configSidebarVisible: false,
     staticMenuMobileActive: false,
     menuHoverActive: false,
-    activeMenuItem: null
+    activeMenuItem: null,
 });
 
 export function useLayout() {
@@ -73,7 +73,7 @@ export function useLayout() {
 
         // Kapcsolja be az „app-dark” osztályt a dokumentum gyökérelemén
         // a sötét mód stílusának alkalmazásához vagy eltávolításához
-        document.documentElement.classList.toggle('app-dark');
+        document.documentElement.classList.toggle("app-dark");
     };
 
     /**
@@ -86,17 +86,19 @@ export function useLayout() {
      */
     const onMenuToggle = () => {
         // Váltsa át az átfedő menü állapotát, ha a menü mód "overlay"
-        if (layoutConfig.menuMode === 'overlay') {
+        if (layoutConfig.menuMode === "overlay") {
             layoutState.overlayMenuActive = !layoutState.overlayMenuActive;
         }
 
         // Váltsa át a statikus menü állapotát az asztalon, ha az ablak szélessége nagyobb, mint 991 pixel
         if (window.innerWidth > 991) {
-            layoutState.staticMenuDesktopInactive = !layoutState.staticMenuDesktopInactive;
-        } 
+            layoutState.staticMenuDesktopInactive =
+                !layoutState.staticMenuDesktopInactive;
+        }
         // Ellenkező esetben kapcsolja át a statikus menü állapotát a mobilhoz
         else {
-            layoutState.staticMenuMobileActive = !layoutState.staticMenuMobileActive;
+            layoutState.staticMenuMobileActive =
+                !layoutState.staticMenuMobileActive;
         }
     };
 
@@ -127,7 +129,9 @@ export function useLayout() {
     const isSidebarActive = computed(() => {
         // Ellenőrizze, hogy az átfedő menü vagy a mobil menü aktív-e.
         // Ha bármelyik aktív, az oldalsáv aktívnak minősül.
-        return layoutState.overlayMenuActive || layoutState.staticMenuMobileActive;
+        return (
+            layoutState.overlayMenuActive || layoutState.staticMenuMobileActive
+        );
     });
 
     /**
@@ -199,6 +203,6 @@ export function useLayout() {
         // A menü állítására szolgáló függvény.
         resetMenu,
         // A menü mód beállítására szolgáló függvény.
-        setMenuMode
+        setMenuMode,
     };
 }

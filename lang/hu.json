@@ -57,7 +57,7 @@
     "region": "Megye",
     "longitude": "Husszúság",
     "latitude": "Szélesség",
-    
+
     "cancel": "Mégsem",
     "save": "Mentés",
     "no": "Nem",
@@ -74,14 +74,13 @@
     "manage_products": "Termékek kezelése",
     "product_details": "Termék részletek",
     "errors_name_required": "A név megadása kötelező.",
-    
+
     "select_country": "Válasszon egy országot",
-    
+
     "specimens": "Példányok",
 
     "companies": "Cégek",
     "companies_title": "Cégek kezelése",
-
 
     "validate_required": "Az érték megadása kötelező (:field)",
     "validate_name": "A név megadása kötelező",

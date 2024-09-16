@@ -427,7 +427,7 @@ const surfaces = ref([
 
 function getPresetExt() {
     const color = primaryColors.value.find(
-        (c) => c.name === layoutConfig.primary
+        (c) => c.name === layoutConfig.primary,
     );
 
     if (color.name === "noir") {
@@ -541,7 +541,7 @@ function onPresetChange() {
     setPreset(preset.value);
     const presetValue = presets[preset.value];
     const surfacePalette = surfaces.value.find(
-        (s) => s.name === layoutConfig.surface
+        (s) => s.name === layoutConfig.surface,
     )?.palette;
 
     $t()
@@ -605,8 +605,8 @@ function onMenuModeChange() {
                                 'outline-primary': layoutConfig.surface
                                     ? layoutConfig.surface === surface.name
                                     : isDarkTheme
-                                    ? surface.name === 'zinc'
-                                    : surface.name === 'slate',
+                                      ? surface.name === 'zinc'
+                                      : surface.name === 'slate',
                             },
                         ]"
                         :style="{

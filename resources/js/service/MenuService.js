@@ -1,47 +1,67 @@
 export const MenuService = {
-    getMenuData(){
+    getMenuData() {
         return [
             {
-                label: 'home',
-                items: [
-                    { label: 'dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard' }
-                ]
-            },
-            {
-                label: '',
-                items: [
-                    { label: 'validation', icon: '', to: '/validation'},
-                    { label: 'validation 1', icon: '', to: '/validation_01'},
-                    { label: 'validation 2', icon: '', to: '/validation_02'},
-                ]
-            },
-            {
-                label: 'administration',
-                items: [
-                    { label: 'users', icon: 'pi pi-fw pi-users', to: '#'},
-                    { label: 'roles', icon: '', to: '#'},
-                    { label: 'permissions', icon: '', to: '#'},
-                ]
-            },
-            {
-                label: 'system',
+                label: "home",
                 items: [
                     {
-                        label: 'geo',
-                        items: [
-                            { label: 'countries', icon: 'pi pi-fw pi-map-marker', to: '#'},
-                            { label: 'regions', icon: 'pi pi-fw pi-map-marker', to: '#'},
-                            { label: 'cities', icon: 'pi pi-fw pi-map-marker', to: '/cities'}
-                        ]
-                    }
-                ]
+                        label: "dashboard",
+                        icon: "pi pi-fw pi-home",
+                        to: "/dashboard",
+                    },
+                ],
             },
             {
-                label: 'specimens',
+                label: "",
                 items: [
-                    { label: 'companies', 'icon': 'pi pi-fw pi-briefcase', to: '/companies' }
-                ]
-            }
+                    { label: "validation", icon: "", to: "/validation" },
+                    { label: "validation 1", icon: "", to: "/validation_01" },
+                    { label: "validation 2", icon: "", to: "/validation_02" },
+                ],
+            },
+            {
+                label: "administration",
+                items: [
+                    { label: "users", icon: "pi pi-fw pi-users", to: "#" },
+                    { label: "roles", icon: "", to: "#" },
+                    { label: "permissions", icon: "", to: "#" },
+                ],
+            },
+            {
+                label: "system",
+                items: [
+                    {
+                        label: "geo",
+                        items: [
+                            {
+                                label: "countries",
+                                icon: "pi pi-fw pi-map-marker",
+                                to: "#",
+                            },
+                            {
+                                label: "regions",
+                                icon: "pi pi-fw pi-map-marker",
+                                to: "#",
+                            },
+                            {
+                                label: "cities",
+                                icon: "pi pi-fw pi-map-marker",
+                                to: "/cities",
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                label: "specimens",
+                items: [
+                    {
+                        label: "companies",
+                        icon: "pi pi-fw pi-briefcase",
+                        to: "/companies",
+                    },
+                ],
+            },
             /*
             {
                 label: 'UI Components',
@@ -55,7 +75,7 @@ export const MenuService = {
             */
         ];
     },
-    getMenuItems(){
+    getMenuItems() {
         return Promise.resolve(this.getMenuData());
-    }
+    },
 };

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CountryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -55,6 +56,7 @@ Route::delete('/items/{id}', [CompanyController::class, 'deleteCompany'])->name(
 // =======================================================
 Route::get('/cities', [CityController::class, 'getCities'])->name('api.get.cities');
 Route::post('/cities', [CityController::class, 'createCity'])->name('api.post.cities');
+Route::put('/cities/{id}', [CityController::class, 'updateCity'])->name('api.put.cities');
 //Route::post('/cities', [CityController::class, 'createCity'])->name('apicities.create');
 //Route::put('/cities/{id}', [CityController::class, 'updateCity'])->name('api.cities.update')->where('id', '[0-9]+');
 //Route::delete('/cities/{id}', [CityController::class, 'deleteCity'])->name('api.cities.delete')->where('id', '[0-9]+');
@@ -68,3 +70,11 @@ Route::resource('/cities', CityController::class)->names([
         'destroy' => 'api.cities.destroy',
     ]);
 */
+
+// =======================================================
+// COUNTRIES
+// =======================================================
+Route::get('/countries', [CountryController::class, 'getCountries'])->name('api.get.countries');
+Route::post('/countries', [CountryController::class, 'createCountry'])->name('api.post.countries');
+Route::put('/countries/{id}', [CountryController::class, 'updateCountry'])->name('api.put.countries');
+Route::delete('/countries/{id}', [CountryController::class, 'deleteCountry'])->name('api.delete.countries');

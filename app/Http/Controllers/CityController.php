@@ -90,7 +90,6 @@ class CityController extends Controller
      */
     public function createCity(Request $request)
     {
-\Log::info(print_r($request->all(), true));
         // Hozzon létre új várost az adatbázisban
         $city = City::create($request->all());
         
@@ -113,10 +112,10 @@ class CityController extends Controller
         $old_city = City::where('id', $id)->first();
         
         // Frissítse a város adatait a HTTP kérésben szereplő adatokkal
-        $city = $old_city->update($request->all());
-        
+        $success = $old_city->update($request->all());
+
         // A frissített város adatait tartalmazó JSON-válasz visszaadása
-        return response()->json($city, Response::HTTP_OK);
+        return response()->json(['success' => $success], Response::HTTP_OK);
     }
     
     /**
@@ -133,10 +132,10 @@ class CityController extends Controller
         $city = City::where('id', $id)->first();
         
         // Törölje a várost az adatbázisból
-        $city->delete();
+        $success = $city->delete();
         
         // A törölt város adatait tartalmazó JSON-válasz visszaadása
-        return response()->json($city, Response::HTTP_OK);
+        return response()->json(['success' => $success], Response::HTTP_OK);
     }
     
     

@@ -17,12 +17,16 @@
     "system": "Rendszer",
     "geo": "Geo",
     "regions": "Megyék",
-    "countries": "Országok",
 
     "cities": "Városok",
     "cities_title": "Városok kezelése",
     "cities_details": "Város részletei",
     "city": "Város",
+
+    "countries": "Országok",
+    "countries_title": "Országok kezelése",
+    "countries_details": "Ország részletei",
+    "country": "Ország",
 
     "email": "Email",
     "email_placeholder": "Email cím",
@@ -53,7 +57,6 @@
     "electronics": "Elektronika",
     "fitness": "Fitness",
     "quantity": "Mennyiség",
-    "country": "Ország",
     "region": "Megye",
     "longitude": "Husszúság",
     "latitude": "Szélesség",
@@ -85,6 +88,7 @@
     "validate_required": "Az érték megadása kötelező (:field)",
     "validate_name": "A név megadása kötelező",
     "validate_email": "Az email megadása kötelező",
+    "validate_code": "A kód megadása kötelező",
     "validate_region_id": "A megye megadása kötelező",
     "validate_country_id": "Az ország megadása kötelező",
     "valid_city_id": "A város megadása kötelező",

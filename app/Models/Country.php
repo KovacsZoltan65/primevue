@@ -6,8 +6,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 /**
  * Class Country
@@ -27,6 +29,15 @@ class Country extends Model
 
 	protected $fillable = ['name', 'code'];
 
+        public function scopeSearch(Builder $query, Request $request)
+        {
+            return $query->when($request->search, function ($query) use ($request) {
+                $query->where(function ($query) use ($request) {
+                    $query->where('name', 'like', "%{$request->search}%");
+                });
+            });
+        }
+        
 	/**
 	 * A kapcsolódó városok listája.
 	 *

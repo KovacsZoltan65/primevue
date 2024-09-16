@@ -370,16 +370,50 @@ const createCity = () => {
         });
 };
 
+/**
+ * Frissít egy várost az API-nak küldött PUT-kéréssel.
+ *
+ * A metódus ellenörzi a város adatait a validációs szabályok alapján,
+ * és ha a validáció sikerült, akkor frissíti a várost az API-ban.
+ * A választ megjeleníti a konzolon.
+ *
+ * @param {number} id - A frissítendő város azonosítója.
+ * @param {object} data - A város új adatai.
+ * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
+ */
 const updateCity = () => {
-    /*
     CityService.updateCity(city.value.id, city.value)
-    .then(response => {
-        //
-    })
-    .catch(error => {
-        console.error('updateCity API Error:', error);
-    });
-    */
+        .then(() => {
+            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
+            const index = findIndexById(city.value.id);
+            // A város adatait frissíti a városok tömbjében
+            cities.value.splice(index, 1, city.value);
+
+            // Bezárja a dialógus ablakot
+            hideDialog();
+
+            // Siker-értesítést jelenít meg
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "City Updated",
+                life: 3000,
+            });
+        })
+        .catch(error => {
+            // Jelenítse meg a hibaüzenetet a konzolon
+            console.error('updateCity API Error:', error);
+        });
+};
+
+/**
+ * Megkeresi egy város indexét a városok tömbjében az azonosítója alapján.
+ *
+ * @param {number} id - A keresendő város azonosítója.
+ * @returns {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
+ */
+const findIndexById = (id) => {
+    return cities.value.findIndex((city) => city.id === id);
 };
 
 const deleteCity = () => {
@@ -390,6 +424,10 @@ const deleteCity = () => {
         .catch((error) => {
             console.error("deleteCity API Error:", error);
         });
+};
+
+const exportCSV = () => {
+    dt.value.exportCSV();
 };
 
 const deleteSelectedCities = () => {

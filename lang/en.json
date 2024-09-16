@@ -17,12 +17,16 @@
     "system": "System",
     "geo": "Geo",
     "regions": "Regions",
-    "countries": "Countries",
 
     "cities": "Cities",
     "cities_title": "Manage Cities",
     "cities_details": "City Details",
     "city": "City",
+
+    "countries": "Countries",
+    "countries_title": "",
+    "countries_details": "",
+    "country": "Country",
 
     "email": "Email",
     "email_placeholder": "Email Address",
@@ -53,7 +57,7 @@
     "electronics": "Electronics",
     "fitness": "Fitness",
     "quantity": "Quantity",
-    "country": "Country",
+    
     "region": "Region",
     "longitude": "Longitute",
     "latitude": "Latitude",
@@ -82,12 +86,13 @@
     "companies": "Companies",
     "companies_title": "Manage Companies",
 
-    "valid_required": "Value is required (:field)",
-    "valid_name": "Name is required",
-    "valid_email": "Email is required",
-    "valid_region_id": "Region is required",
-    "valid_country_id": "Country is required",
-    "valid_city_id": "City is required",
+    "validate_required": "Value is required (:field)",
+    "validate_name": "Name is required",
+    "validate_email": "Email is required",
+    "validate_code": "Code is required",
+    "validate_region_id": "Region is required",
+    "validate_country_id": "Country is required",
+    "validate_city_id": "City is required",
 
     "error_400": "Bad Request",
     "error_401": "Unauthorized! Redirecting to login...",

@@ -22,9 +22,9 @@ export const MenuService = {
             {
                 label: "administration",
                 items: [
-                    { label: "users", icon: "pi pi-fw pi-users", to: "#" },
-                    { label: "roles", icon: "", to: "#" },
-                    { label: "permissions", icon: "", to: "#" },
+                    { label: "users", icon: "pi pi-fw pi-users", to: "/users" },
+                    { label: "roles", icon: "pi pi-fw pi-users", to: "/roles" },
+                    { label: "permissions", icon: "pi pi-fw pi-users", to: "/permissions" },
                 ],
             },
             {

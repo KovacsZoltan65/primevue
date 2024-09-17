@@ -15,6 +15,14 @@ class City extends Model
     
     protected $table = 'cities';
     
+    protected $fillable = [
+        'region_id', 
+        'country_id', 
+        'latitude', 
+        'longitude', 
+        'name'
+    ];
+    
     protected $casts = [
         'region_id' => 'int',
         'country_id' => 'int',
@@ -22,8 +30,6 @@ class City extends Model
         'longitude' => 'float'
     ];
     
-    protected $fillable = ['region_id', 'country_id', 'latitude', 'longitude', 'name'];
-
     //protected static $logAttributes = ['region_id', 'country_id', 'latitude', 'longitude', 'name'];
     
     public function scopeSearch(Builder $query, Request $request)

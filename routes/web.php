@@ -1,15 +1,19 @@
 <?php
 
+use App\Http\Controllers\Auth\PermissionController;
+use App\Http\Controllers\Auth\RoleController;
+use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ValidationController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::post('/language', [App\Http\Controllers\LanguageController::class, 'index'])->name('language');
+Route::post('/language', [LanguageController::class, 'index'])->name('language');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -57,7 +61,7 @@ Route::middleware('auth')->group(function () {
     
     /**
      * =====================================================
-     * CITIES
+     * VÁROSOK
      * =====================================================
      * 
      * Határozza meg a CityController erőforrás útvonalait.
@@ -81,7 +85,7 @@ Route::middleware('auth')->group(function () {
     
     /**
      * =====================================================
-     * COUNTRIES
+     * ORSZÁGOK
      * =====================================================
      * 
      * Határozza meg a CountryController erőforrás útvonalait.
@@ -90,6 +94,21 @@ Route::middleware('auth')->group(function () {
      * az útvonalak nevei.
      */
     Route::get('/countries', [CountryController::class, 'index'])->name('countries');
+    
+    // =======================================================
+    // FELHASZNÁLÓK
+    // =======================================================
+    Route::get('/users', [UserController::class, 'index'])->name('users');
+
+    // =======================================================
+    // SZEREPKÖRÖK
+    // =======================================================
+    Route::get('/roles', [RoleController::class, 'index'])->name('roles');
+
+    // =======================================================
+    // ENGEDÉLYEK
+    // =======================================================
+    Route::get('/permissions', [PermissionController::class, 'index'])->name('permissions');
     
 });
 

@@ -6,6 +6,9 @@ import AppLayout from "@/Layouts/AppLayout.vue";
 import { ProductService } from "../service/ProductService";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
+
+import { formatCurrency, formatDate } from "@/helpers/functions";
+
 import Button from "primevue/button";
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -170,16 +173,16 @@ onMounted(() => {
  * @param {number | undefined} value - A formázandó szám.
  * @return {string | undefined} A formázott pénznem-karakterlánc, vagy hamis az érték definiálatlan.
  */
-function formatCurrency(value) {
+//function formatCurrency(value) {
     // Ha az érték false (undefined, null, 0 stb.), adja vissza az undefined értéket.
-    if (!value) return;
+//    if (!value) return;
 
     // Formázza a számot valutakarakterláncként az amerikai angol nyelvterület és az USD pénznem használatával.
-    return value.toLocaleString("en-US", {
-        style: "currency",
-        currency: "USD",
-    });
-}
+//    return value.toLocaleString("en-US", {
+//        style: "currency",
+//        currency: "USD",
+//    });
+//}
 
 /**
  * Ez a funkció megnyitja az új termék párbeszédpanelt.

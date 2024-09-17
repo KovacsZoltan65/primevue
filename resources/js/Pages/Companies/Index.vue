@@ -15,6 +15,8 @@ import { FilterMatchMode } from "@primevue/core/api";
 import CompanyService from "@/service/CompanyService";
 import Select from "primevue/select";
 
+import { formatCurrency, formatDate } from "@/helpers/functions";
+
 const props = defineProps({
     countries: {
         type: Object,
@@ -50,7 +52,6 @@ function openNew() {}
 function exportCSV() {}
 
 function confirmDeleteSelected() {}
-
 const fetchItems = () => {
     CompanyService.getCompanies()
         .then((response) => {
@@ -65,6 +66,10 @@ onMounted(() => {
     fetchItems();
 });
 
+const editCompany = () => {};
+
+const confirmDeleteCompany = () => {};
+
 const getCountryName = (id) => {
     return props.countries.find((country) => country.id === id).name;
 };
@@ -72,6 +77,7 @@ const getCountryName = (id) => {
 const getCityName = (id) => {
     return props.cities.find((city) => city.id === id).name;
 };
+
 </script>
 <template>
     <AppLayout>
@@ -146,7 +152,7 @@ const getCityName = (id) => {
                             <InputText v-model="filters['global'].value" 
                                        :placeholder="$t('search')" />
                         </IconField>
--->
+                        -->
                     </div>
                 </template>
 
@@ -165,7 +171,6 @@ const getCityName = (id) => {
                 />
 
                 <!-- COUNTRY -->
-                <!--<Column field="country_id" :header="$t('country')" sortable style="min-width: 16rem" />-->
                 <Column
                     field="country_id"
                     :header="$t('country')"
@@ -178,7 +183,6 @@ const getCityName = (id) => {
                 </Column>
 
                 <!-- CITY -->
-                <!--<Column field="city" :header="$t('city')" sortable style="min-width: 16rem" />-->
                 <Column
                     field="city_id"
                     :header="$t('city')"
@@ -197,14 +201,14 @@ const getCityName = (id) => {
                             outlined
                             rounded
                             class="mr-2"
-                            @click="editProduct(slotProps.data)"
+                            @click="editCompany(slotProps.data)"
                         />
                         <Button
                             icon="pi pi-trash"
                             outlined
                             rounded
                             severity="danger"
-                            @click="confirmDeleteProduct(slotProps.data)"
+                            @click="confirmDeleteCompany(slotProps.data)"
                         />
                     </template>
                 </Column>

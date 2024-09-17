@@ -1,6 +1,6 @@
 import axios from "axios";
 import { trans } from "laravel-vue-i18n";
-import { CONFIG } from "@/helpers/constantas";
+import { CONFIG } from "@/helpers/constants";
 
 const apiClient = axios.create({
     //baseURL: "/api", // Állítsd be a megfelelő API bázis URL-t

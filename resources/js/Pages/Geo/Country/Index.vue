@@ -206,6 +206,7 @@ const v$ = useVuelidate(rules, country);
 const fetchItems = () => {
     CountryService.getCountries()
         .then((response) => {
+            //console.log(response);
             // A városok listája a countries változóban lesz elmentve
             countries.value = response.data.data;
         })
@@ -271,8 +272,9 @@ function openNew() {
  */
 const initialCountry = {
     name: "",
-    country_id: null,
-    region_id: null,
+    //country_id: null,
+    //region_id: null,
+    code: '',
     active: 1,
     id: null,
 };
@@ -434,13 +436,23 @@ const deleteSelectedCountries = () => {
     console.log(selectedCountries.value);
 };
 
-const getCountryName = (id) => {
-    return props.countries.find((country) => country.id === id).name;
-};
+//const getCountryName = (id) => {
+//    return props.countries.find((country) => country.id === id).name;
+//};
 
-const getRegionName = (id) => {
-    return props.regions.find((region) => region.id === id).name;
-};
+//const getRegionName = (id) => {
+    //console.log('props.regions', props.regions);
+    //console.log('id', id);
+
+//    let region = props.regions.find((region) => region.country_id === id);
+
+//    if( region )
+//    {
+//        console.log('region', region);
+//    }
+
+    //return props.regions.find((region) => region.id === id).name;
+//};
 
 const getActiveLabel = (country) =>
     ["danger", "success", "warning"][country.active || 2];
@@ -532,7 +544,7 @@ const getActiveValue = (country) =>
                 />
 
                 <!-- Country -->
-                <Column
+<!--               <Column
                     field="country_id"
                     :header="$t('country')"
                     sortable
@@ -542,35 +554,38 @@ const getActiveValue = (country) =>
                         {{ getCountryName(slotProps.data.country_id) }}
                     </template>
                 </Column>
-
+            -->
                 <!-- Region -->
-                <Column
-                    field="region_id"
+<!--                <Column
                     :header="$t('region')"
                     sortable
                     style="min-width: 12rem"
                 >
                     <template #body="slotProps">
-                        {{ getRegionName(slotProps.data.region_id) }}
+                        {{ getRegionName(slotProps.data.id) }}
                     </template>
                 </Column>
-
-                <!-- Lattitude -->
-                <Column
+-->
+                <!-- Country -->
+<!--                <Column
                     field="latitude"
                     :header="$t('latitude')"
                     style="min-width: 12rem"
                     sortable
-                />
-
+                >
+                    <template #body="slotProps">
+                        {{ getCountryName(slotProps.data.country_id) }}
+                    </template>
+                </Column>
+-->
                 <!-- Longitude -->
-                <Column
+<!--                <Column
                     field="longitude"
                     :header="$t('longitude')"
                     style="min-width: 12rem"
                     sortable
                 />
-
+-->
                 <!-- Active -->
                 <Column
                     field="active"

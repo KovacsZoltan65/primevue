@@ -35,7 +35,7 @@ class Country extends Model
                 $query->where(function ($query) use ($request) {
                     $query->where('name', 'like', "%{$request->search}%");
                 });
-            });
+            })->where('active', 1);
         }
         
 	/**
@@ -47,7 +47,7 @@ class Country extends Model
 	 */
 	public function cities()
 	{
-		return $this->hasMany(City::class, 'country_id');
+            return $this->hasMany(City::class, 'country_id');
 	}
 
 	/**
@@ -57,7 +57,7 @@ class Country extends Model
 	 */
 	public function regions()
 	{
-		return $this->hasMany(Region::class, 'country_id');
+            return $this->hasMany(Region::class, 'country_id');
 	}
 }
 

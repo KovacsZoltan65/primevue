@@ -42,6 +42,8 @@ class CountryController extends Controller
         $countryQuery = Country::search($request);
         
         $countries = CountryResource::collection($countryQuery->get());
+        
+        return $countries;
     }
     
     public function createCountry(Request $request)

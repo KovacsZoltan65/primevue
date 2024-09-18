@@ -38,7 +38,7 @@ const props = defineProps({
     /**
      * Régiók adatai.
      */
-    companies: {
+    cities: {
         type: Object,
         default: () => {},
     },
@@ -127,11 +127,11 @@ const deleteCompanyDialog = ref(false);
  * @property {number} id - A város azonosítója.
  */
 const company = ref({
+    id: null,
     name: "",
     country_id: null,
-    region_id: null,
+    city_id: null,
     active: 1,
-    id: null,
 });
 
 /**
@@ -181,8 +181,8 @@ const rules = {
     country_id: {
         required: helpers.withMessage("validate_country_id", required),
     },
-    region_id: {
-        required: helpers.withMessage("validate_region_id", required),
+    city_id: {
+        required: helpers.withMessage("validate_city_id", required),
     },
 };
 
@@ -438,6 +438,10 @@ const getCountryName = (id) => {
     return props.countries.find((country) => country.id === id).name;
 };
 
+const getCityName = (id) => {
+    return props.cities.find((city) => city.id === id).name;
+};
+
 const getRegionName = (id) => {
     return props.regions.find((region) => region.id === id).name;
 };
@@ -553,16 +557,17 @@ const getActiveValue = (company) =>
 
                 <!-- CITY -->
                 <Column
-                    field="company_id"
-                    :header="$t('company')"
+                    field="city_id"
+                    :header="$t('city')"
                     sortable
                     style="min-width: 16rem"
                 >
                     <template #body="slotProps">
-                        {{ getCompanyName(slotProps.data.company_id) }}
+                        {{ getCityName(slotProps.data.city_id) }}
                     </template>
                 </Column>
 
+                <!-- ACTIONS -->
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
                         <Button
@@ -581,7 +586,148 @@ const getActiveValue = (company) =>
                         />
                     </template>
                 </Column>
+
             </DataTable>
         </div>
+
+        <!-- COMPANY DETAILS DIALOG -->
+        <Dialog 
+            v-model:visible="companyDialog" 
+            :style="{ with: '550px' }" 
+            :header="$t('company_details')" 
+            :modal="true">
+
+            <div class="flex flex-col gap-6">
+                <!-- NAME -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <label for="name" class="block font-bold mb-3">
+                        {{ $t("name") }}
+                    </label>
+                    <InputText
+                        id="name"
+                        v-model="company.name"
+                        autofocus
+                        fluid
+                    />
+                    <small class="text-red-500" v-if="v$.name.$error">
+                        {{ $t(v$.name.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <div class="flex flex-wrap gap-4">
+
+                    <!-- COUNTRY -->
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <label for="country_id" class="block font-bold mb-3">
+                            {{ $t("country") }}
+                        </label>
+                        <InputText
+                            id="country_id"
+                            v-model="company.country_id"
+                            autofocus
+                            fluid
+                        />
+                        <small class="text-red-500" v-if="v$.country_id.$error">
+                            {{ $t(v$.country_id.$errors[0].$message) }}
+                        </small>
+                    </div>
+
+                    <!-- CITY -->
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <label for="city_id" class="block font-bold mb-3">
+                            {{ $t("city") }}
+                        </label>
+                        <InputText
+                            id="city_id"
+                            v-model="company.city_id"
+                            autofocus
+                            fluid
+                        />
+                        <small class="text-red-500" v-if="v$.city_id.$error">
+                            {{ $t(v$.city_id.$errors[0].$message) }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <template #footer>
+                <Button
+                    :label="$t('cancel')"
+                    icon="pi pi-times"
+                    text
+                    @click="hideDialog"
+                />
+                <Button
+                    :label="$t('save')"
+                    icon="pi pi-check"
+                    @click="saveCompany"
+                />
+            </template>
+
+        </Dialog>
+
+        <Dialog
+            v-model:visible="deleteCompanyDialog"
+            :style="{ width: '450px' }"
+            :header="$t('confirm')"
+            :modal="true"
+        >
+            <!-- A párbeszédpanel tartalma -->
+            <div class="flex items-center gap-4">
+                <!-- A figyelmeztető ikon -->
+                <i class="pi pi-exclamation-triangle !text-3xl" />
+                <!-- A szöveg, amely megjelenik a párbeszédpanelen -->
+                <span v-if="company">
+                    {{ $t("confirm_delete_2") }} <b>{{ company.name }}</b>?
+                </span>
+            </div>
+            <!-- A párbeszédpanel lábléc, amely tartalmazza a gombokat -->
+            <template #footer>
+                <!-- A "Nem" gomb -->
+                <Button
+                    :label="$t('no')"
+                    icon="pi pi-times"
+                    @click="deleteCompanyDialog = false"
+                    text
+                />
+                <!-- A "Igen" gomb, amely törli a céget -->
+                <Button
+                    :label="$t('yes')"
+                    icon="pi pi-check"
+                    @click="deleteCompany"
+                />
+            </template>
+        </Dialog>
+
+        <!-- Erősítse meg a kiválasztott városok törlését párbeszédpanelen -->
+        <!-- Ez a párbeszédpanel akkor jelenik meg, ha a felhasználó több várost szeretne törölni -->
+        <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést -->
+        <Dialog
+            v-model:visible="deleteSelectedCompaniesDialog"
+            :style="{ width: '450px' }"
+            :header="$t('confirm')"
+            :modal="true"
+        >
+            <div class="flex items-center gap-4">
+                <i class="pi pi-exclamation-triangle !text-3xl" />
+                <span v-if="company">{{ $t("confirm_delete") }}</span>
+            </div>
+            <template #footer>
+                <!-- "Mégsem" gomb -->
+                <Button
+                    :label="$t('no')"
+                    icon="pi pi-times"
+                    @click="deleteSelectedCompaniesDialog = false"
+                    text
+                />
+                <!-- Megerősítés gomb -->
+                <Button
+                    :label="$t('yes')"
+                    icon="pi pi-check"
+                    @click="deleteSelectedCompanies"
+                />
+            </template>
+        </Dialog>
+
     </AppLayout>
 </template>

@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\City;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class CitySeeder extends Seeder
 {
@@ -12,8 +14,13 @@ class CitySeeder extends Seeder
      */
     public function run(): void
     {
-        \DB::table('cities')->truncate();
-        
+        Schema::disableForeignKeyConstraints();
+
+        //\DB::table('cities')->truncate();
+        City::truncate();
+
+        Schema::enableForeignKeyConstraints();
+
         $cities = [
             ['id' => 955428, 'region_id' => 1555, 'country_id' => 92, 'latitude' => '47.50000000', 'longitude' => '19.08333330', 'name' => 'Budapest',       'active' => 1],
             ['id' => 958977, 'region_id' => 1562, 'country_id' => 92, 'latitude' => '47.68333330', 'longitude' => '17.63333330', 'name' => 'Győr',           'active' => 1],
@@ -27,7 +34,7 @@ class CitySeeder extends Seeder
             ['id' => 969175, 'region_id' => 1549, 'country_id' => 92, 'latitude' => '47.23333330', 'longitude' => '16.61666670', 'name' => 'Szombathely', 'active' => 1],
             ['id' => 971009, 'region_id' => 1547, 'country_id' => 92, 'latitude' => '47.10000000', 'longitude' => '17.91666670', 'name' => 'Veszprém', 'active' => 1],
         ];
-        
+
         foreach($cities as $city)
         {
             \App\Models\City::create($city);

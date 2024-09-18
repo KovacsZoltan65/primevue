@@ -25,10 +25,12 @@ return new class extends Migration
             $table->id()->comment('Rekord azonosító. Egyedi azonosító a rekordhoz.');
             $table->string('name', 255)->comment('Név. A régió neve.');
             $table->string('code', 10)->comment('Kód. A régió kódja.');
-            $table->unsignedSmallInteger('country_id')->comment('Ország azonosító. A kapcsolódó ország azonosítója.');
+
+            $table->unsignedBigInteger('country_id')->comment('Ország azonosító. A kapcsolódó ország azonosítója.');
+
             $table->integer('active')->default(1)->comment('Aktív. A régió aktív-e vagy sem.')->index();
 
-            $table->index(['country_id', 'name'], 'country_name')->comment('Index a country_id és name oszlopokra.');
+            $table->foreign('country_id')->references('id')->on('countries')->cascadeOnDelete();
         });
     }
 

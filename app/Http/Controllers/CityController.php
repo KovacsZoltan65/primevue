@@ -10,11 +10,16 @@ use App\Models\Country;
 use App\Models\Region;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 class CityController extends Controller
 {
+    public function __construct()
+    {
+        //$this->middleware('can:city list', ['only' => ['index', '']]);
+    }
     /**
      * Jelenítse meg az erőforrás listáját.
      *
@@ -36,7 +41,7 @@ class CityController extends Controller
             'regions' => $regions,
             'search' => request('search'),
         ]);
-        
+
     }
 
     /**
@@ -57,7 +62,7 @@ class CityController extends Controller
             $query->where('name', 'LIKE', "%{$search}%");
         });
     }
-    
+
     /**
      * Keresse meg a városokat a keresési paraméter alapján.
      *
@@ -67,7 +72,7 @@ class CityController extends Controller
      * @param  Request  $request
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
-    public function getCities(Request $request)
+    public function getCities(Request $request): AnonymousResourceCollection
     {
         // Szerezze be a városokat az adatbázisból
         // Ha keresési paramétert ad meg, szűrje az eredményeket
@@ -79,7 +84,7 @@ class CityController extends Controller
         // Az erőforrásgyűjtemény visszaadása
         return $cities;
     }
-    
+
     /**
      * Hozzon létre új várost az adatbázisban.
      *
@@ -92,11 +97,11 @@ class CityController extends Controller
     {
         // Hozzon létre új várost az adatbázisban
         $city = City::create($request->all());
-        
+
         // A létrehozott város adatait tartalmazó JSON-válasz visszaadása
         return response()->json($city, Response::HTTP_OK);
     }
-    
+
     /**
      * Frissít egy várost az adatbázisban.
      *
@@ -110,14 +115,14 @@ class CityController extends Controller
     {
         // Szerezze be a várost az adatbázisból
         $old_city = City::where('id', $id)->first();
-        
+
         // Frissítse a város adatait a HTTP kérésben szereplő adatokkal
         $success = $old_city->update($request->all());
 
         // A frissített város adatait tartalmazó JSON-válasz visszaadása
         return response()->json(['success' => $success], Response::HTTP_OK);
     }
-    
+
     /**
      * Töröljön egy várost az adatbázisból.
      *
@@ -130,19 +135,19 @@ class CityController extends Controller
     {
         // Szerezze be a várost az adatbázisból
         $city = City::where('id', $id)->first();
-        
+
         // Törölje a várost az adatbázisból
         $success = $city->delete();
-        
+
         // A törölt város adatait tartalmazó JSON-válasz visszaadása
         return response()->json(['success' => $success], Response::HTTP_OK);
     }
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     /**
      * Show the form for creating a new resource.
      */

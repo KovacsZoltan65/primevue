@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Country;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class CountriesTableSeeder extends Seeder
 {
@@ -13,9 +15,14 @@ class CountriesTableSeeder extends Seeder
      */
     public function run()
     {
-        
-        \DB::table('countries')->truncate();
-        
+        Schema::disableForeignKeyConstraints();
+
+        //\DB::table('countries')->truncate();
+
+        Country::truncate();
+
+        Schema::enableForeignKeyConstraints();
+
         \DB::table('countries')->insert([
             ['id' => 1,'name' => 'Andorra','code' => 'ad','active' => 0],
             ['id' => 2,'name' => 'United Arab Emirates','code' => 'ae','active' => 0],
@@ -249,6 +256,6 @@ class CountriesTableSeeder extends Seeder
             ['id' => 230,'name' => 'United States of America','code' => 'us','active' => 0],
         ]);
 
-        
+
     }
 }

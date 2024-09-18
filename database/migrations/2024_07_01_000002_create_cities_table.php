@@ -14,87 +14,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cities', function (Blueprint $table) {
-            
-            /**
-             * Rekord azonosító. Egyedi azonosító a rekordhoz.
-             *
-             * @var int
-             */
-            $table->id()
-                ->comment('Rekord azonosító. Egyedi azonosító a rekordhoz.');
 
-            /**
-             * Szélesség. A város szélességi koordinátája.
-             *
-             * @var float|null
-             */
-            $table->decimal('latitude', 10, 2)
-                ->nullable()
-                ->comment('Szélesség. A város szélességi koordinátája.');
+            $table->id()->comment('Rekord azonosító. Egyedi azonosító a rekordhoz.');
+            $table->decimal('latitude', 10, 2)->nullable()->comment('Szélesség. A város szélességi koordinátája.');
+            $table->decimal('longitude', 10, 2)->nullable()->comment('Hosszúság. A város hosszúsági koordinátája.');
+            $table->string('name', 255)->index()->comment('Név. A város neve.');
 
-            /**
-             * Hosszúság. A város hosszúsági koordinátája.
-             *
-             * @var float|null
-             */
-            $table->decimal('longitude', 10, 2)
-                ->nullable()
-                ->comment('Hosszúság. A város hosszúsági koordinátája.');
+            $table->unsignedBigInteger('country_id')->comment('Ország azonosító. A kapcsolódó ország azonosítója.');
+            $table->unsignedBigInteger('region_id')->comment('Megye / Régió azonosító. A kapcsolódó megye / régió azonosítója.');
 
-            /**
-             * Név. A város neve.
-             *
-             * @var string
-             */
-            $table->string('name', 255)
-                ->index()
-                ->comment('Név. A város neve.');
+            $table->integer('active')->default(1)->index()->comment('Aktív. 0 érték esetén a város inaktív.');
 
-            /**
-             * Az ország, amelyhez a város tartozik.
-             * A kapcsolatot a country_id mező tartja.
-             */
-            //$table->foreignIdFor(Country::class)->constrained()->cascadeOnDelete();
-            $table->foreign('country_id')
-                ->references('id')
-                ->on('countries')
-                ->cascadeOnDelete();
+            $table->foreign('country_id')->references('id')->on('countries')->cascadeOnDelete();
+            $table->foreign('region_id')->references('id')->on('regions')->cascadeOnDelete();
 
-            /**
-             * A régió, amelyhez a város tartozik.
-             * A kapcsolatot a region_id mező tartja.
-             */
-            //$table->foreignIdFor(Region::class)->constrained()->cascadeOnDelete();
-            $table->foreign('region_id')
-                ->references('id')
-                ->on('regions')
-                ->cascadeOnDelete();
-
-            /**
-             * Aktív. 0 érték esetén a város inaktív.
-             *
-             * @var int
-             */
-            $table->integer('active')
-                ->default(1)
-                ->index()
-                ->comment('Aktív. 0 érték esetén a város inaktív.');
-
-            /**
-             * A rekord létrehozásának időpontja.
-             *
-             * @var \Illuminate\Support\Carbon
-             */
             $table->timestamps();
-
-            /**
-             * A rekord törlésének időpontja.
-             * A softDeletes() segítségével a rekordok nem kerülnek
-             * fizikailag törlésre, hanem csak az deleted_at mezőbe
-             * kerül az aktuális időpont.
-             *
-             * @var \Illuminate\Support\Carbon
-             */
             $table->softDeletes();
         });
     }

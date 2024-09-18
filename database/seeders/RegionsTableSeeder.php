@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Region;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class RegionsTableSeeder extends Seeder
 {
@@ -13,10 +15,13 @@ class RegionsTableSeeder extends Seeder
      */
     public function run()
     {
-        
+        Schema::disableForeignKeyConstraints();
 
-        \DB::table('regions')->truncate();
-        
+        //\DB::table('regions')->truncate();
+        Region::truncate();
+
+        Schema::enableForeignKeyConstraints();
+
         \DB::table('regions')->insert([
             ['id' => 1,'name' => 'Sant Julia de Loria','code' => '06','country_id' => 1,'active' => 0,],
             ['id' => 2,'name' => 'Andorra la Vella','code' => '07','country_id' => 1,'active' => 0,],
@@ -3920,6 +3925,6 @@ class RegionsTableSeeder extends Seeder
             ['id' => 3886,'name' => 'Matabeleland South','code' => '07','country_id' => 229,'active' => 0,],
             //['id' => 3887,'name' => '','code' => '00','country_id' => 229,'active' => 0,],
             ['id' => 3888,'name' => 'Masvingo','code' => '08','country_id' => 229,'active' => 0,],
-        ]);       
+        ]);
     }
 }

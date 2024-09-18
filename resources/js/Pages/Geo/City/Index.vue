@@ -127,11 +127,11 @@ const deleteCityDialog = ref(false);
  * @property {number} id - A város azonosítója.
  */
 const city = ref({
+    id: null,
     name: "",
     country_id: null,
     region_id: null,
     active: 1,
-    id: null,
 });
 
 /**

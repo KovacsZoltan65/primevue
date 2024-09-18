@@ -5,6 +5,7 @@ https://github.com/primefaces/primevue-tailwind
 https://github.com/primefaces/sakai-vue
 https://sakai.primevue.org/pages/crud
 
+package.json
 dependencies:
     npm install primevue
     npm install @primevue/themes
@@ -21,6 +22,31 @@ devDependencies:
     npm install eslint-plugin-vue
     npm install prettier
     npm install unplugin-vue-components
+
+composer.json
+require
+    prettus/l5-repository
+    spatie/laravel-activitylog
+    spatie/laravel-permission
+
+require-dev
+
+// ==============================
+// spatie/laravel-permission
+// ==============================
+composer require spatie/laravel-permission
+bootstrap\providers.php
+    return [
+        ...
+        Spatie\Permission\PermissionServiceProvider::class,
+    ]
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+
+
+
+
+
+php artisan optimize:clear
 
 
 php artisan make:controller RegionController --resource

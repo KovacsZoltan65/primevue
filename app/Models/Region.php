@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * Class Region
- * 
+ *
  * @property int $id
  * @property string $name
  * @property string $code
@@ -26,7 +26,7 @@ class Region extends Model
     use HasFactory
         //, LogsActivity
     ;
-    
+
     protected $table = 'regions';
     public $timestamps = false;
 
@@ -35,14 +35,14 @@ class Region extends Model
     ];
 
     protected $fillable = [
-            'name',
-            'code',
-            'country_id'
+        'name',
+        'code',
+        'country_id'
     ];
 
     /**
      * A régióhoz tartozó ország
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function country()
@@ -52,7 +52,7 @@ class Region extends Model
 
     /**
      * A régióban levő városok
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function cities()

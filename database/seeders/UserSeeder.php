@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class UserSeeder extends Seeder
 {
@@ -13,8 +14,10 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        \DB::table('users')->truncate();
-        
+        Schema::disableForeignKeyConstraints();
+        User::truncate();
+        Schema::enableForeignKeyConstraints();
+
         $password = 'password';
         $arr_users = [
             ['id' => 1, 'name' => 'Kovács Zoltán',  'email' => 'zoltan1_kovacs@msn.com',   'password' => Hash::make($password), 'email_verified_at' => '2023-01-01 00:00:00', 'language' => 'hu'],
@@ -24,9 +27,9 @@ class UserSeeder extends Seeder
             ['id' => 5, 'name' => 'Example User',   'email' => 'test@laraveltuts.com',       'password' => Hash::make($password), 'email_verified_at' => '2023-01-01 00:00:00', 'language' => 'hu'],
         ];
         $count = count($arr_users);
-        
+
         $this->command->warn(PHP_EOL . 'Creating users...');
-        
+
         $this->command->getOutput()->progressStart($count);
         foreach($arr_users as $user)
         {
@@ -34,7 +37,7 @@ class UserSeeder extends Seeder
             $this->command->getOutput()->progressAdvance();
         }
         $this->command->getOutput()->progressFinish();
-        
+
         $this->command->info(PHP_EOL . 'Users created');
     }
 }

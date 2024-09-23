@@ -24,6 +24,7 @@ class CountriesTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         \DB::table('countries')->insert([
+            /*
             ['id' => 1,'name' => 'Andorra','code' => 'ad','active' => 0],
             ['id' => 2,'name' => 'United Arab Emirates','code' => 'ae','active' => 0],
             ['id' => 3,'name' => 'Afghanistan','code' => 'af','active' => 0],
@@ -34,16 +35,20 @@ class CountriesTableSeeder extends Seeder
             ['id' => 8,'name' => 'Netherlands Antilles','code' => 'an','active' => 0],
             ['id' => 9,'name' => 'Angola','code' => 'ao','active' => 0],
             ['id' => 10,'name' => 'Argentina','code' => 'ar','active' => 0],
+            */
             ['id' => 11,'name' => 'Austria','code' => 'at','active' => 1],
+            /*
             ['id' => 12,'name' => 'Australia','code' => 'au','active' => 0],
             ['id' => 13,'name' => 'Aruba','code' => 'aw','active' => 0],
             ['id' => 14,'name' => 'Azerbaijan','code' => 'az','active' => 0],
             ['id' => 15,'name' => 'Bosnia and Herzegovina','code' => 'ba','active' => 0],
             ['id' => 16,'name' => 'Barbados','code' => 'bb','active' => 0],
             ['id' => 17,'name' => 'Bangladesh','code' => 'bd','active' => 0],
+            */
             ['id' => 18,'name' => 'Belgium','code' => 'be','active' => 1],
-            ['id' => 19,'name' => 'Burkina Faso','code' => 'bf','active' => 0],
+            //['id' => 19,'name' => 'Burkina Faso','code' => 'bf','active' => 0],
             ['id' => 20,'name' => 'Bulgaria','code' => 'bg','active' => 1],
+            /*
             ['id' => 21,'name' => 'Bahrain','code' => 'bh','active' => 0],
             ['id' => 22,'name' => 'Burundi','code' => 'bi','active' => 0],
             ['id' => 23,'name' => 'Benin','code' => 'bj','active' => 0],
@@ -56,7 +61,9 @@ class CountriesTableSeeder extends Seeder
             ['id' => 30,'name' => 'Botswana','code' => 'bw','active' => 0],
             ['id' => 31,'name' => 'Belarus','code' => 'by','active' => 0],
             ['id' => 32,'name' => 'Belize','code' => 'bz','active' => 0],
+            */
             ['id' => 33,'name' => 'Canada','code' => 'ca','active' => 1],
+            /*
             ['id' => 34,'name' => 'Cocos (Keeling) Islands','code' => 'cc','active' => 0],
             ['id' => 35,'name' => 'Democratic Republic of the Congo','code' => 'cd','active' => 0],
             ['id' => 36,'name' => 'Central African Republic','code' => 'cf','active' => 0],
@@ -81,27 +88,35 @@ class CountriesTableSeeder extends Seeder
             ['id' => 55,'name' => 'Dominican Republic','code' => 'do','active' => 0],
             ['id' => 56,'name' => 'Algeria','code' => 'dz','active' => 0],
             ['id' => 57,'name' => 'Ecuador','code' => 'ec','active' => 0],
+            */
             ['id' => 58,'name' => 'Estonia','code' => 'ee','active' => 1],
+            /*
             ['id' => 59,'name' => 'Egypt','code' => 'eg','active' => 0],
             ['id' => 60,'name' => 'Western Sahara','code' => 'eh','active' => 0],
             ['id' => 61,'name' => 'Eritrea','code' => 'er','active' => 0],
             ['id' => 62,'name' => 'Spain','code' => 'es','active' => 0],
             ['id' => 63,'name' => 'Ethiopia','code' => 'et','active' => 0],
+            */
             ['id' => 64,'name' => 'Finland','code' => 'fi','active' => 1],
+            /*
             ['id' => 65,'name' => 'Fiji','code' => 'fj','active' => 0],
             ['id' => 66,'name' => 'Falkland Islands (Malvinas)','code' => 'fk','active' => 0],
             ['id' => 67,'name' => 'Federated States of Micronesia','code' => 'fm','active' => 0],
             ['id' => 68,'name' => 'Faroe Islands','code' => 'fo','active' => 0],
+            */
             ['id' => 69,'name' => 'France','code' => 'fr','active' => 1],
+            /*
             ['id' => 70,'name' => 'Gabon','code' => 'ga','active' => 0],
             ['id' => 71,'name' => 'Great Britain (UK)','code' => 'gb','active' => 0],
             ['id' => 72,'name' => 'Grenada','code' => 'gd','active' => 0],
             ['id' => 73,'name' => 'Georgia','code' => 'ge','active' => 0],
             ['id' => 74,'name' => 'French Guiana','code' => 'gf','active' => 0],
-            //['id' => 75,'name' => 'NULL','code' => 'gg','active' => 0],
+            ['id' => 75,'name' => 'NULL','code' => 'gg','active' => 0],
             ['id' => 76,'name' => 'Ghana','code' => 'gh','active' => 0],
             ['id' => 77,'name' => 'Gibraltar','code' => 'gi','active' => 0],
+            */
             ['id' => 78,'name' => 'Greenland','code' => 'gl','active' => 1],
+            /*
             ['id' => 79,'name' => 'Gambia','code' => 'gm','active' => 0],
             ['id' => 80,'name' => 'Guinea','code' => 'gn','active' => 0],
             ['id' => 81,'name' => 'Guadeloupe','code' => 'gp','active' => 0],
@@ -115,15 +130,19 @@ class CountriesTableSeeder extends Seeder
             ['id' => 89,'name' => 'Honduras','code' => 'hn','active' => 0],
             ['id' => 90,'name' => 'Croatia (Hrvatska)','code' => 'hr','active' => 0],
             ['id' => 91,'name' => 'Haiti','code' => 'ht','active' => 0],
+            */
             ['id' => 92,'name' => 'Hungary','code' => 'hu','active' => 1],
-            ['id' => 93,'name' => 'Indonesia','code' => 'id','active' => 0],
+            //['id' => 93,'name' => 'Indonesia','code' => 'id','active' => 0],
             ['id' => 94,'name' => 'Ireland','code' => 'ie','active' => 1],
+            /*
             ['id' => 95,'name' => 'Israel','code' => 'il','active' => 0],
             ['id' => 96,'name' => 'India','code' => 'in','active' => 0],
             ['id' => 97,'name' => 'Iraq','code' => 'iq','active' => 0],
             ['id' => 98,'name' => 'Iran','code' => 'ir','active' => 0],
+            */
             ['id' => 99,'name' => 'Iceland','code' => 'is','active' => 1],
             ['id' => 100,'name' => 'Italy','code' => 'it','active' => 1],
+            /*
             ['id' => 101,'name' => 'Jamaica','code' => 'jm','active' => 0],
             ['id' => 102,'name' => 'Jordan','code' => 'jo','active' => 0],
             ['id' => 103,'name' => 'Japan','code' => 'jp','active' => 0],
@@ -146,15 +165,17 @@ class CountriesTableSeeder extends Seeder
             ['id' => 120,'name' => 'Liberia','code' => 'lr','active' => 0],
             ['id' => 121,'name' => 'Lesotho','code' => 'ls','active' => 0],
             ['id' => 122,'name' => 'Lithuania','code' => 'lt','active' => 0],
+            */
             ['id' => 123,'name' => 'Luxembourg','code' => 'lu','active' => 1],
             ['id' => 124,'name' => 'Latvia','code' => 'lv','active' => 1],
-            ['id' => 125,'name' => 'Libya','code' => 'ly','active' => 0],
-            ['id' => 126,'name' => 'Morocco','code' => 'ma','active' => 0],
+            //['id' => 125,'name' => 'Libya','code' => 'ly','active' => 0],
+            //['id' => 126,'name' => 'Morocco','code' => 'ma','active' => 0],
             ['id' => 127,'name' => 'Monaco','code' => 'mc','active' => 1],
             ['id' => 128,'name' => 'Moldova','code' => 'md','active' => 1],
-            ['id' => 129,'name' => 'Madagascar','code' => 'mg','active' => 0],
-            ['id' => 130,'name' => 'Marshall Islands','code' => 'mh','active' => 0],
+            //['id' => 129,'name' => 'Madagascar','code' => 'mg','active' => 0],
+            //['id' => 130,'name' => 'Marshall Islands','code' => 'mh','active' => 0],
             ['id' => 131,'name' => 'Macedonia','code' => 'mk','active' => 1],
+            /*
             ['id' => 132,'name' => 'Mali','code' => 'ml','active' => 0],
             ['id' => 133,'name' => 'Myanmar','code' => 'mm','active' => 0],
             ['id' => 134,'name' => 'Mongolia','code' => 'mn','active' => 0],
@@ -173,11 +194,15 @@ class CountriesTableSeeder extends Seeder
             ['id' => 147,'name' => 'Namibia','code' => 'na','active' => 0],
             ['id' => 148,'name' => 'New Caledonia','code' => 'nc','active' => 0],
             ['id' => 149,'name' => 'Niger','code' => 'ne','active' => 0],
+            */
             ['id' => 150,'name' => 'Norfolk Island','code' => 'nf','active' => 1],
+            /*
             ['id' => 151,'name' => 'Nigeria','code' => 'ng','active' => 0],
             ['id' => 152,'name' => 'Nicaragua','code' => 'ni','active' => 0],
             ['id' => 153,'name' => 'Netherlands','code' => 'nl','active' => 0],
+            */
             ['id' => 154,'name' => 'Norway','code' => 'no','active' => 1],
+            /*
             ['id' => 155,'name' => 'Nepal','code' => 'np','active' => 0],
             ['id' => 156,'name' => 'Nauru','code' => 'nr','active' => 0],
             ['id' => 157,'name' => 'Niue','code' => 'nu','active' => 0],
@@ -198,14 +223,18 @@ class CountriesTableSeeder extends Seeder
             ['id' => 172,'name' => 'Paraguay','code' => 'py','active' => 0],
             ['id' => 173,'name' => 'Qatar','code' => 'qa','active' => 0],
             ['id' => 174,'name' => 'Reunion','code' => 're','active' => 0],
+            */
             ['id' => 175,'name' => 'Romania','code' => 'ro','active' => 1],
+            /*
             ['id' => 176,'name' => 'Russian Federation','code' => 'ru','active' => 0],
             ['id' => 177,'name' => 'Rwanda','code' => 'rw','active' => 0],
             ['id' => 178,'name' => 'Saudi Arabia','code' => 'sa','active' => 0],
             ['id' => 179,'name' => 'Solomon Islands','code' => 'sb','active' => 0],
             ['id' => 180,'name' => 'Seychelles','code' => 'sc','active' => 0],
             ['id' => 181,'name' => 'Sudan','code' => 'sd','active' => 0],
+            */
             ['id' => 182,'name' => 'Sweden','code' => 'se','active' => 1],
+            /*
             ['id' => 183,'name' => 'Singapore','code' => 'sg','active' => 0],
             ['id' => 184,'name' => 'Saint Helena','code' => 'sh','active' => 0],
             ['id' => 185,'name' => 'Slovenia','code' => 'si','active' => 0],
@@ -254,6 +283,7 @@ class CountriesTableSeeder extends Seeder
             ['id' => 228,'name' => 'Zaire (former)','code' => 'zr','active' => 0],
             ['id' => 229,'name' => 'Zimbabwe','code' => 'zw','active' => 0],
             ['id' => 230,'name' => 'United States of America','code' => 'us','active' => 0],
+            */
         ]);
 
 

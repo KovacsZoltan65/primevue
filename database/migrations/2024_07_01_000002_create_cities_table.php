@@ -21,12 +21,14 @@ return new class extends Migration
             $table->string('name', 255)->index()->comment('Név. A város neve.');
 
             $table->unsignedBigInteger('country_id')->comment('Ország azonosító. A kapcsolódó ország azonosítója.');
-            $table->unsignedBigInteger('region_id')->comment('Megye / Régió azonosító. A kapcsolódó megye / régió azonosítója.');
+            $table->unsignedBigInteger('region_id')->comment('Régió azonosító. A kapcsolódó régió azonosítója.');
+            //$table->unsignedBigInteger('city_id')->comment('Város azonosító. A kapcsolódó megye / régió azonosítója.');
 
             $table->integer('active')->default(1)->index()->comment('Aktív. 0 érték esetén a város inaktív.');
 
             $table->foreign('country_id')->references('id')->on('countries')->cascadeOnDelete();
             $table->foreign('region_id')->references('id')->on('regions')->cascadeOnDelete();
+            //$table->foreign('city_id')->references('id')->on('cities')->cascadeOnDelete();
 
             $table->timestamps();
             $table->softDeletes();

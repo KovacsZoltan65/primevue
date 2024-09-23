@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name')->index()->comment('Név');
 
             $table->unsignedSmallInteger('country_id')->comment('Ország azonosító. A kapcsolódó ország azonosítója.');
-            $table->unsignedSmallInteger('region_id')->comment('Megye / Régió azonosító. A kapcsolódó megye / régió azonosítója.');
+            $table->unsignedSmallInteger('city_id')->comment('Város azonosító. A kapcsolódó megye / régió azonosítója.');
 
             //$table->foreignIdFor(Country::class)->constrained()->cascadeOnDelete();
             //$table->foreign('country_id')->references('id')->on('countries')->cascadeOnDelete();

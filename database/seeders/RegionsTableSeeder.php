@@ -20,7 +20,7 @@ class RegionsTableSeeder extends Seeder
         Region::truncate();
 
         Schema::enableForeignKeyConstraints();
-
+        /*
         \DB::table('regions')->insert([
             ['id' =>  1,'name' => 'Sant Julia de Loria','code' => '06','country_id' => 1,'active' => 0,],
             ['id' =>  2,'name' => 'Andorra la Vella',   'code' => '07','country_id' => 1,'active' => 0,],
@@ -523,7 +523,8 @@ class RegionsTableSeeder extends Seeder
             ['id' => 499,'name' => '','code' => '00','country_id' => 34,'active' => 0,],
             ['id' => 500,'name' => 'Equateur','code' => '02','country_id' => 35,'active' => 0,],
         ]);
-
+        */
+        /*
         \DB::table('regions')->insert([
             ['id' => 501,'name' => 'Orientale','code' => '09','country_id' => 35,'active' => 0,],
             ['id' => 502,'name' => '','code' => '00','country_id' => 35,'active' => 0,],
@@ -1026,7 +1027,8 @@ class RegionsTableSeeder extends Seeder
             ['id' => 999,'name' => 'Chuuk','code' => '03','country_id' => 67,'active' => 0,],
             ['id' => 1000,'name' => 'Kosrae','code' => '01','country_id' => 67,'active' => 0,],
         ]);
-
+        */
+        /*
         \DB::table('regions')->insert([
             ['id' => 1001,'name' => '','code' => '00','country_id' => 68,'active' => 0,],
             ['id' => 1002,'name' => 'Aquitaine','code' => '97','country_id' => 69,'active' => 0,],
@@ -1529,8 +1531,10 @@ class RegionsTableSeeder extends Seeder
             ['id' => 1499,'name' => 'Olancho','code' => '15','country_id' => 89,'active' => 0,],
             ['id' => 1500,'name' => 'Cortes','code' => '06','country_id' => 89,'active' => 0,],
         ]);
+        */
 
         \DB::table('regions')->insert([
+            /*
             ['id' => 1501,'name' => 'Yoro','code' => '18','country_id' => 89,'active' => 0,],
             ['id' => 1502,'name' => 'Atlantida','code' => '01','country_id' => 89,'active' => 0,],
             ['id' => 1503,'name' => 'Intibuca','code' => '10','country_id' => 89,'active' => 0,],
@@ -1568,31 +1572,33 @@ class RegionsTableSeeder extends Seeder
             ['id' => 1535,'name' => 'Nord-Est','code' => '10','country_id' => 91,'active' => 0,],
             ['id' => 1536,'name' => 'Sud-Est','code' => '13','country_id' => 91,'active' => 0,],
             ['id' => 1537,'name' => 'Artibonite','code' => '06','country_id' => 91,'active' => 0,],
-            ['id' => 1538,'name' => 'Komárom-Esztergom','code' => '12','country_id' => 92,'active' => 1,],
-            ['id' => 1539,'name' => 'Fejér','code' => '08','country_id' => 92,'active' => 1,],
-            ['id' => 1540,'name' => 'Jász-Nagykun-Szolnok','code' => '20','country_id' => 92,'active' => 1,],
-            ['id' => 1541,'name' => 'Baranya','code' => '02','country_id' => 92,'active' => 1,],
+            */
+            ['id' => 1538,'name' => 'Komárom-Esztergom',     'code' => '12','country_id' => 92,'active' => 1,],
+            ['id' => 1539,'name' => 'Fejér',                 'code' => '08','country_id' => 92,'active' => 1,],
+            ['id' => 1540,'name' => 'Jász-Nagykun-Szolnok',  'code' => '20','country_id' => 92,'active' => 1,],
+            ['id' => 1541,'name' => 'Baranya',               'code' => '02','country_id' => 92,'active' => 1,],
             ['id' => 1542,'name' => 'Szabolcs-Szatmár-Bereg','code' => '18','country_id' => 92,'active' => 1,],
-            ['id' => 1543,'name' => 'Heves','code' => '11','country_id' => 92,'active' => 1,],
-            ['id' => 1544,'name' => 'Borsod-Abauj-Zemplén','code' => '04','country_id' => 92,'active' => 1,],
-            ['id' => 1545,'name' => 'Győr-Moson-Sopron','code' => '09','country_id' => 92,'active' => 1,],
-            ['id' => 1546,'name' => 'Pest','code' => '16','country_id' => 92,'active' => 1,],
-            ['id' => 1547,'name' => 'Veszprém','code' => '23','country_id' => 92,'active' => 1,],
-            ['id' => 1548,'name' => 'Bács-Kiskun','code' => '01','country_id' => 92,'active' => 1,],
-            ['id' => 1549,'name' => 'Vas','code' => '22','country_id' => 92,'active' => 1,],
-            ['id' => 1550,'name' => 'Hajdu-Bihar','code' => '10','country_id' => 92,'active' => 1,],
-            ['id' => 1551,'name' => 'Zala','code' => '24','country_id' => 92,'active' => 1,],
-            ['id' => 1552,'name' => 'Somogy','code' => '17','country_id' => 92,'active' => 1,],
-            ['id' => 1553,'name' => 'Tolna','code' => '21','country_id' => 92,'active' => 1,],
-            ['id' => 1554,'name' => 'Nográd','code' => '14','country_id' => 92,'active' => 1,],
-            ['id' => 1555,'name' => 'Budapest','code' => '05','country_id' => 92,'active' => 1,],
-            ['id' => 1556,'name' => 'Miskolc','code' => '13','country_id' => 92,'active' => 1,],
-            ['id' => 1557,'name' => 'Csongrád','code' => '06','country_id' => 92,'active' => 1,],
-            ['id' => 1558,'name' => 'Debrecen','code' => '07','country_id' => 92,'active' => 1,],
-            ['id' => 1559,'name' => 'Békés','code' => '03','country_id' => 92,'active' => 1,],
-            ['id' => 1560,'name' => 'Szeged','code' => '19','country_id' => 92,'active' => 1,],
-            ['id' => 1561,'name' => 'Pécs','code' => '15','country_id' => 92,'active' => 1,],
-            ['id' => 1562,'name' => 'Győr','code' => '25','country_id' => 92,'active' => 1,],
+            ['id' => 1543,'name' => 'Heves',                 'code' => '11','country_id' => 92,'active' => 1,],
+            ['id' => 1544,'name' => 'Borsod-Abauj-Zemplén',  'code' => '04','country_id' => 92,'active' => 1,],
+            ['id' => 1545,'name' => 'Győr-Moson-Sopron',     'code' => '09','country_id' => 92,'active' => 1,],
+            ['id' => 1546,'name' => 'Pest',                  'code' => '16','country_id' => 92,'active' => 1,],
+            ['id' => 1547,'name' => 'Veszprém',              'code' => '23','country_id' => 92,'active' => 1,],
+            ['id' => 1548,'name' => 'Bács-Kiskun',           'code' => '01','country_id' => 92,'active' => 1,],
+            ['id' => 1549,'name' => 'Vas',                   'code' => '22','country_id' => 92,'active' => 1,],
+            ['id' => 1550,'name' => 'Hajdu-Bihar',           'code' => '10','country_id' => 92,'active' => 1,],
+            ['id' => 1551,'name' => 'Zala',                  'code' => '24','country_id' => 92,'active' => 1,],
+            ['id' => 1552,'name' => 'Somogy',                'code' => '17','country_id' => 92,'active' => 1,],
+            ['id' => 1553,'name' => 'Tolna',                 'code' => '21','country_id' => 92,'active' => 1,],
+            ['id' => 1554,'name' => 'Nográd',                'code' => '14','country_id' => 92,'active' => 1,],
+            ['id' => 1555,'name' => 'Budapest',              'code' => '05','country_id' => 92,'active' => 1,],
+            ['id' => 1556,'name' => 'Miskolc',               'code' => '13','country_id' => 92,'active' => 1,],
+            ['id' => 1557,'name' => 'Csongrád',              'code' => '06','country_id' => 92,'active' => 1,],
+            ['id' => 1558,'name' => 'Debrecen',              'code' => '07','country_id' => 92,'active' => 1,],
+            ['id' => 1559,'name' => 'Békés',                 'code' => '03','country_id' => 92,'active' => 1,],
+            ['id' => 1560,'name' => 'Szeged',                'code' => '19','country_id' => 92,'active' => 1,],
+            ['id' => 1561,'name' => 'Pécs',                  'code' => '15','country_id' => 92,'active' => 1,],
+            ['id' => 1562,'name' => 'Győr',                  'code' => '25','country_id' => 92,'active' => 1,],
+            /*
             ['id' => 1563,'name' => 'Jawa Timur','code' => '08','country_id' => 93,'active' => 0,],
             ['id' => 1564,'name' => '','code' => '09','country_id' => 93,'active' => 0,],
             ['id' => 1565,'name' => 'Sulawesi Tenggara','code' => '22','country_id' => 93,'active' => 0,],
@@ -2031,8 +2037,9 @@ class RegionsTableSeeder extends Seeder
             ['id' => 1998,'name' => 'North Central','code' => '30','country_id' => 119,'active' => 0,],
             ['id' => 1999,'name' => '','code' => '31','country_id' => 119,'active' => 0,],
             ['id' => 2000,'name' => 'Western','code' => '36','country_id' => 119,'active' => 0,],
+            */
         ]);
-
+        /*
         \DB::table('regions')->insert([
             ['id' => 2001,'name' => 'Uva','code' => '35','country_id' => 119,'active' => 0,],
             ['id' => 2002,'name' => 'Nimba','code' => '09','country_id' => 120,'active' => 0,],
@@ -2198,7 +2205,7 @@ class RegionsTableSeeder extends Seeder
             ['id' => 2162,'name' => '','code' => '35','country_id' => 126,'active' => 0,],
             ['id' => 2163,'name' => '','code' => '00','country_id' => 127,'active' => 0,],
             ['id' => 2164,'name' => '','code' => '52','country_id' => 128,'active' => 0,],
-            ['id' => 2165,'name' => '',        'code' => '47','country_id' => 128,'active' => 0,],
+            ['id' => 2165,'name' => '','code' => '47','country_id' => 128,'active' => 0,],
             ['id' => 2166,'name' => 'Gagauzia','code' => '51','country_id' => 128,'active' => 0,],
             ['id' => 2167,'name' => '','code' => '55','country_id' => 128,'active' => 0,],
             ['id' => 2168,'name' => '','code' => '49','country_id' => 128,'active' => 0,],
@@ -2535,7 +2542,8 @@ class RegionsTableSeeder extends Seeder
             ['id' => 2499,'name' => 'Dosso','code' => '03','country_id' => 149,'active' => 0,],
             ['id' => 2500,'name' => 'Maradi','code' => '04','country_id' => 149,'active' => 0,],
         ]);
-
+        */
+        /*
         \DB::table('regions')->insert([
             ['id' => 2501,'name' => 'Niamey','code' => '08','country_id' => 149,'active' => 0,],
             ['id' => 2502,'name' => '','code' => '00','country_id' => 150,'active' => 0,],
@@ -3038,7 +3046,8 @@ class RegionsTableSeeder extends Seeder
             ['id' => 2999,'name' => 'Khakass','code' => '31','country_id' => 176,'active' => 0,],
             ['id' => 3000,'name' => 'Vologda','code' => '85','country_id' => 176,'active' => 0,],
         ]);
-
+        */
+        /*
         \DB::table('regions')->insert([
             ['id' => 3001,'name' => 'Omsk','code' => '54','country_id' => 176,'active' => 0,],
             ['id' => 3002,'name' => 'Orenburg','code' => '55','country_id' => 176,'active' => 0,],
@@ -3541,7 +3550,8 @@ class RegionsTableSeeder extends Seeder
             ['id' => 3499,'name' => 'Tabora','code' => '17','country_id' => 211,'active' => 0,],
             ['id' => 3500,'name' => 'Manyara','code' => '27','country_id' => 211,'active' => 0,],
         ]);
-
+        */
+        /*
         \DB::table('regions')->insert([
             ['id' => 3501,'name' => 'Mtwara','code' => '11','country_id' => 211,'active' => 0,],
             ['id' => 3502,'name' => 'Lindi','code' => '07','country_id' => 211,'active' => 0,],
@@ -3932,6 +3942,6 @@ class RegionsTableSeeder extends Seeder
             ['id' => 3887,'name' => '','code' => '00','country_id' => 229,'active' => 0,],
             ['id' => 3888,'name' => 'Masvingo','code' => '08','country_id' => 229,'active' => 0,],
         ]);
-
+        */
     }
 }

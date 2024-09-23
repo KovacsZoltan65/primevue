@@ -53,9 +53,9 @@ class CompanyController extends Controller
      */
     public function applySearch(Builder $query, string $search): Builder
     {
-        return $query->when($search, function ($query, string $search) {
-            $query->where('name', 'like', "%{$search}%");
-        }); 
+        //return $query->when($search, function ($query, string $search) {
+        //    $query->where('name', 'like', "%{$search}%");
+        //}); 
     }
 
     /**
@@ -67,10 +67,11 @@ class CompanyController extends Controller
     public function getCompanies(Request $request): AnonymousResourceCollection
     {
         // Szerezd meg a cégek listáját
-        $companyQuery = Company::search($request);
+        //$companyQuery = Company::search($request);
         
         // JSON-válaszként adja vissza a cégek listáját
-        $companies = CompanyResource::collection($companyQuery->get());
+        //$companies = CompanyResource::collection($companyQuery->get());
+        $companies = CompanyResource::collection(Company::all());
         
         return $companies;
     }

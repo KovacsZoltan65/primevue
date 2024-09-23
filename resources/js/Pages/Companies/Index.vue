@@ -508,7 +508,7 @@ const getActiveValue = (company) =>
                         <div class="font-semibold text-xl mb-1">
                             {{ $t("companies_title") }}
                         </div>
-                        <!--                        
+                    <!--
                         <div class="font-semibold text-xl mb-1">
                             <Select id="country_id" class="w-full"  
                                     v-model="country" 
@@ -517,15 +517,16 @@ const getActiveValue = (company) =>
                                     optionValue="id" 
                                     :placholder="$t('name')" />
                         </div>
-
+                    -->
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" 
-                                       :placeholder="$t('search')" />
+                            <InputText 
+                                v-model="filters['global'].value" 
+                                :placeholder="$t('search')" />
                         </IconField>
-                        -->
+                        
                     </div>
                 </template>
 

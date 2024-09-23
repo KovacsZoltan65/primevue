@@ -76,10 +76,11 @@ class CityController extends Controller
     {
         // Szerezze be a városokat az adatbázisból
         // Ha keresési paramétert ad meg, szűrje az eredményeket
-        $cityQuery = City::search($request);
+        //$cityQuery = City::search($request);
 
         // Alakítsa át a városokat erőforrásgyűjteménybe
-        $cities = CityResource::collection($cityQuery->get());
+        //$cities = CityResource::collection($cityQuery->get());
+        $cities = CityResource::collection(City::all());
 
         // Az erőforrásgyűjtemény visszaadása
         return $cities;

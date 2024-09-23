@@ -42,10 +42,11 @@ class UserController extends Controller
     
     public function getUsers(Request $request)
     {
-        $userQuery = User::search($request);
+        //$userQuery = User::search($request);
+        //$users = UserResource::collection($userQuery->get());
         
-        $users = UserResource::collection($userQuery->get());
-        
+        $users = UserResource::collection(User::all());
+
         return $users;
     }
     

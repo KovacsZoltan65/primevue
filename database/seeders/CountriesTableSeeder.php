@@ -17,52 +17,50 @@ class CountriesTableSeeder extends Seeder
     {
         Schema::disableForeignKeyConstraints();
 
-        //\DB::table('countries')->truncate();
-
         Country::truncate();
 
         Schema::enableForeignKeyConstraints();
 
-        \DB::table('countries')->insert([
+        $countries = [
             /*
-            ['id' => 1,'name' => 'Andorra','code' => 'ad','active' => 0],
+            ['id' => 1,'name' => 'Andorra',             'code' => 'ad','active' => 0],
             ['id' => 2,'name' => 'United Arab Emirates','code' => 'ae','active' => 0],
-            ['id' => 3,'name' => 'Afghanistan','code' => 'af','active' => 0],
-            ['id' => 4,'name' => 'Antigua and Barbuda','code' => 'ag','active' => 0],
-            ['id' => 5,'name' => 'Anguilla','code' => 'ai','active' => 0],
-            ['id' => 6,'name' => 'Albania','code' => 'al','active' => 0],
-            ['id' => 7,'name' => 'Armenia','code' => 'am','active' => 0],
+            ['id' => 3,'name' => 'Afghanistan',         'code' => 'af','active' => 0],
+            ['id' => 4,'name' => 'Antigua and Barbuda', 'code' => 'ag','active' => 0],
+            ['id' => 5,'name' => 'Anguilla',            'code' => 'ai','active' => 0],
+            ['id' => 6,'name' => 'Albania',             'code' => 'al','active' => 0],
+            ['id' => 7,'name' => 'Armenia',             'code' => 'am','active' => 0],
             ['id' => 8,'name' => 'Netherlands Antilles','code' => 'an','active' => 0],
-            ['id' => 9,'name' => 'Angola','code' => 'ao','active' => 0],
-            ['id' => 10,'name' => 'Argentina','code' => 'ar','active' => 0],
+            ['id' => 9,'name' => 'Angola',              'code' => 'ao','active' => 0],
+            ['id' => 10,'name' => 'Argentina',          'code' => 'ar','active' => 0],
             */
-            ['id' => 11,'name' => 'Austria','code' => 'at','active' => 1],
+            ['id' => 11,'name' => 'Austria',            'code' => 'at','active' => 1],
             /*
-            ['id' => 12,'name' => 'Australia','code' => 'au','active' => 0],
-            ['id' => 13,'name' => 'Aruba','code' => 'aw','active' => 0],
-            ['id' => 14,'name' => 'Azerbaijan','code' => 'az','active' => 0],
+            ['id' => 12,'name' => 'Australia',             'code' => 'au','active' => 0],
+            ['id' => 13,'name' => 'Aruba',                 'code' => 'aw','active' => 0],
+            ['id' => 14,'name' => 'Azerbaijan',            'code' => 'az','active' => 0],
             ['id' => 15,'name' => 'Bosnia and Herzegovina','code' => 'ba','active' => 0],
-            ['id' => 16,'name' => 'Barbados','code' => 'bb','active' => 0],
-            ['id' => 17,'name' => 'Bangladesh','code' => 'bd','active' => 0],
+            ['id' => 16,'name' => 'Barbados',              'code' => 'bb','active' => 0],
+            ['id' => 17,'name' => 'Bangladesh',            'code' => 'bd','active' => 0],
             */
-            ['id' => 18,'name' => 'Belgium','code' => 'be','active' => 1],
-            //['id' => 19,'name' => 'Burkina Faso','code' => 'bf','active' => 0],
-            ['id' => 20,'name' => 'Bulgaria','code' => 'bg','active' => 1],
+            ['id' => 18,'name' => 'Belgium',               'code' => 'be','active' => 1],
+            //['id' => 19,'name' => 'Burkina Faso',          'code' => 'bf','active' => 0],
+            ['id' => 20,'name' => 'Bulgaria',              'code' => 'bg','active' => 1],
             /*
-            ['id' => 21,'name' => 'Bahrain','code' => 'bh','active' => 0],
-            ['id' => 22,'name' => 'Burundi','code' => 'bi','active' => 0],
-            ['id' => 23,'name' => 'Benin','code' => 'bj','active' => 0],
-            ['id' => 24,'name' => 'Bermuda','code' => 'bm','active' => 0],
+            ['id' => 21,'name' => 'Bahrain',          'code' => 'bh','active' => 0],
+            ['id' => 22,'name' => 'Burundi',          'code' => 'bi','active' => 0],
+            ['id' => 23,'name' => 'Benin',            'code' => 'bj','active' => 0],
+            ['id' => 24,'name' => 'Bermuda',          'code' => 'bm','active' => 0],
             ['id' => 25,'name' => 'Brunei Darussalam','code' => 'bn','active' => 0],
-            ['id' => 26,'name' => 'Bolivia','code' => 'bo','active' => 0],
-            ['id' => 27,'name' => 'Brazil','code' => 'br','active' => 0],
-            ['id' => 28,'name' => 'Bahamas','code' => 'bs','active' => 0],
-            ['id' => 29,'name' => 'Bhutan','code' => 'bt','active' => 0],
-            ['id' => 30,'name' => 'Botswana','code' => 'bw','active' => 0],
-            ['id' => 31,'name' => 'Belarus','code' => 'by','active' => 0],
-            ['id' => 32,'name' => 'Belize','code' => 'bz','active' => 0],
+            ['id' => 26,'name' => 'Bolivia',          'code' => 'bo','active' => 0],
+            ['id' => 27,'name' => 'Brazil',           'code' => 'br','active' => 0],
+            ['id' => 28,'name' => 'Bahamas',          'code' => 'bs','active' => 0],
+            ['id' => 29,'name' => 'Bhutan',           'code' => 'bt','active' => 0],
+            ['id' => 30,'name' => 'Botswana',         'code' => 'bw','active' => 0],
+            ['id' => 31,'name' => 'Belarus',          'code' => 'by','active' => 0],
+            ['id' => 32,'name' => 'Belize',           'code' => 'bz','active' => 0],
             */
-            ['id' => 33,'name' => 'Canada','code' => 'ca','active' => 1],
+            ['id' => 33,'name' => 'Canada',           'code' => 'ca','active' => 1],
             /*
             ['id' => 34,'name' => 'Cocos (Keeling) Islands','code' => 'cc','active' => 0],
             ['id' => 35,'name' => 'Democratic Republic of the Congo','code' => 'cd','active' => 0],
@@ -284,8 +282,23 @@ class CountriesTableSeeder extends Seeder
             ['id' => 229,'name' => 'Zimbabwe','code' => 'zw','active' => 0],
             ['id' => 230,'name' => 'United States of America','code' => 'us','active' => 0],
             */
-        ]);
+        ];
+        
+        $count = count($countries);
+        
+        //\DB::table('countries')->insert($countries);
 
-
+        $this->command->warn(PHP_EOL . __('migration_creating_countries'));
+        $this->command->getOutput()->progressStart($count);
+        
+        foreach( $countries as $country )
+        {
+            Country::create($country);
+            $this->command->getOutput()->progressAdvance();
+        }
+        
+        $this->command->getOutput()->progressFinish();
+        
+        $this->command->info(PHP_EOL . __('migration_created_countries'));
     }
 }

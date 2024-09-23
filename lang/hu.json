@@ -98,5 +98,16 @@
     "error_403": "Tiltott",
     "error_404": "Nem található",
     "error_500": "Szerver hiba",
-    "error_default": "Hiba"
+    "error_default": "Hiba",
+    
+    "migration_creating_countries": "Országok létrehozása...",
+    "migration_created_countries": "Országok létrehozva",
+    "migration_creating_cities": "Városok létrehozása...",
+    "migration_created_cities": "Városok létrehozva",
+    "migration_creating_regions": "Megyék létrehozása...",
+    "migration_created_regions": "Megyék létrehozva",
+    "migration_creating_users": "Felhasználók létrehozása...",
+    "migration_created_users": "Felhasználók létrehozva",
+    "migration_creating_companies": "Cégek létrehozása...",
+    "migration_created_companies": "Cégek létrehozva"
 }

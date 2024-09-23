@@ -99,5 +99,16 @@
     "error_403": "Forbidden",
     "error_404": "Not Found",
     "error_500": "Server Error",
-    "error_default": "Error"
+    "error_default": "Error",
+    
+    "migration_creating_countries": "Creating Countries...",
+    "migration_created_countries": "Countries created",
+    "migration_creating_cities": "Creating Cities...",
+    "migration_created_cities": "Cities created",
+    "migration_creating_regions": "Creating Regions...",
+    "migration_created_regions": "Regions created",
+    "migration_creating_users": "Creating Regions...",
+    "migration_created_users": "Regions created",
+    "migration_creating_companies": "Creating Companies...",
+    "migration_created_companies": "Companies created"
 }

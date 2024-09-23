@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\City;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
@@ -16,7 +15,6 @@ class CitySeeder extends Seeder
     {
         Schema::disableForeignKeyConstraints();
 
-        //\DB::table('cities')->truncate();
         City::truncate();
 
         Schema::enableForeignKeyConstraints();
@@ -35,9 +33,19 @@ class CitySeeder extends Seeder
             ['id' => 11, 'region_id' => 1547, 'country_id' => 92, 'latitude' => '47.10000000', 'longitude' => '17.91666670', 'name' => 'Veszprém',       'active' => 1],
         ];
 
+        $count = count($cities);
+        
+        $this->command->warn(PHP_EOL . __('migration_creating_cities'));
+        $this->command->getOutput()->progressStart($count);
+        
         foreach($cities as $city)
         {
-            \App\Models\City::create($city);
+            City::create($city);
+            $this->command->getOutput()->progressAdvance();
         }
+        
+        $this->command->getOutput()->progressFinish();
+        
+        $this->command->info(PHP_EOL . __('migration_created_cities'));
     }
 }

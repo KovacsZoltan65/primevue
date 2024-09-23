@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
 
         $password = 'password';
         $arr_users = [
-            ['id' => 1, 'name' => 'Kovács Zoltán',  'email' => 'zoltan1_kovacs@msn.com',   'password' => Hash::make($password), 'email_verified_at' => '2023-01-01 00:00:00', 'language' => 'hu'],
+            ['id' => 1, 'name' => 'Kovács Zoltán',  'email' => 'zoltan1_kovacs@msn.com',     'password' => Hash::make($password), 'email_verified_at' => '2023-01-01 00:00:00', 'language' => 'hu'],
             ['id' => 2, 'name' => 'Admin',          'email' => 'admin@admin.com',            'password' => Hash::make($password), 'email_verified_at' => '2023-01-01 00:00:00', 'language' => 'hu'],
             ['id' => 3, 'name' => 'Super Admin',    'email' => 'superadmin@laraveltuts.com', 'password' => Hash::make($password), 'email_verified_at' => '2023-01-01 00:00:00', 'language' => 'hu'],
             ['id' => 4, 'name' => 'Admin User',     'email' => 'admin@laraveltuts.com',      'password' => Hash::make($password), 'email_verified_at' => '2023-01-01 00:00:00', 'language' => 'hu'],

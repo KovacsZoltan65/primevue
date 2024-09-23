@@ -12,7 +12,7 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
+    {   
         Schema::create('companies', function (Blueprint $table) {
             $table->id()->comment('Rekord azonosító');
             $table->string('name')->index()->comment('Név');

@@ -40,7 +40,7 @@ class CompanyController extends Controller
             'search' => request('search')
         ]);
     }
-    
+
     /**
      * Módosítsa a lekérdezést a keresési paraméter alapján.
      *
@@ -53,29 +53,29 @@ class CompanyController extends Controller
      */
     public function applySearch(Builder $query, string $search): Builder
     {
-        //return $query->when($search, function ($query, string $search) {
-        //    $query->where('name', 'like', "%{$search}%");
-        //}); 
+        return $query->when($search, function ($query, string $search) {
+            $query->where('name', 'like', "%{$search}%");
+        });
     }
 
     /**
      * Szerezd meg a cégek listáját.
-     * 
+     *
      * @param Request $request A keresési paramétert tartalmazó HTTP kérelem objektum.
      * @return AnonymousResourceCollection A vállalatok listáját tartalmazó JSON-válasz.
      */
     public function getCompanies(Request $request): AnonymousResourceCollection
     {
         // Szerezd meg a cégek listáját
-        //$companyQuery = Company::search($request);
-        
+        $companyQuery = Company::search($request);
+
         // JSON-válaszként adja vissza a cégek listáját
-        //$companies = CompanyResource::collection($companyQuery->get());
-        $companies = CompanyResource::collection(Company::all());
-        
+        $companies = CompanyResource::collection($companyQuery->get());
+        //$companies = CompanyResource::collection(Company::all());
+
         return $companies;
     }
-    
+
     /**
      * Hozzon létre egy új céget.
      *
@@ -90,10 +90,10 @@ class CompanyController extends Controller
         // A létrehozott vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
         return response()->json($company, Response::HTTP_OK);
     }
-    
+
     /**
      * Frissítsen egy meglévő céget.
-     * 
+     *
      * @param Request $request A vállalati adatokat tartalmazó HTTP kérési objektum.
      * @param int $id A frissítendő cég azonosítója.
      * @return \Illuminate\Http\JsonResponse A frissített vállalatot tartalmazó JSON-válasz.
@@ -102,17 +102,17 @@ class CompanyController extends Controller
     {
         // Keresse meg a frissítendő céget az azonosítója alapján
         $old_company = Company::where('id', $id)->first();
-        
+
         // Frissítse a vállalatot a HTTP-kérés adataival
         $company = $old_company->update($request->all());
-        
+
         // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
         return response()->json($company, Response::HTTP_OK);
     }
-    
+
     /**
      * Töröljön egy meglévő céget.
-     * 
+     *
      * @param int $id A törölni kívánt cég azonosítója.
      * @return \Illuminate\Http\JsonResponse A törölt vállalatot tartalmazó JSON-válasz.
      */
@@ -120,10 +120,10 @@ class CompanyController extends Controller
     {
         // Keresse meg a törölni kívánt céget az azonosítója alapján
         $old_company = Company::where('id', $id)->first();
-        
+
         // Cég törlése
         $old_company->delete();
-        
+
         // A törölt vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
         return response()->json($old_company, Response::HTTP_OK);
     }

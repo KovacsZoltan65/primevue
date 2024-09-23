@@ -46,7 +46,7 @@ class CompanySeeder extends Seeder
 
         $count = count($companies);
 
-        $this->command->warn(PHP_EOL . 'Creating companies...');
+        $this->command->warn(PHP_EOL . __('migration_creating_companies'));
         $this->command->getOutput()->progressStart($count);
 
         foreach($companies as $company){
@@ -55,6 +55,6 @@ class CompanySeeder extends Seeder
         }
         $this->command->getOutput()->progressFinish();
 
-        $this->command->info(PHP_EOL . 'Companies created');
+        $this->command->info(PHP_EOL . __('migration_created_companies'));
     }
 }

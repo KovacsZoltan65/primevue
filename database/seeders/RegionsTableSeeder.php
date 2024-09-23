@@ -1028,7 +1028,7 @@ class RegionsTableSeeder extends Seeder
         ]);
 
         \DB::table('regions')->insert([
-            //['id' => 1001,'name' => '','code' => '00','country_id' => 68,'active' => 0,],
+            ['id' => 1001,'name' => '','code' => '00','country_id' => 68,'active' => 0,],
             ['id' => 1002,'name' => 'Aquitaine','code' => '97','country_id' => 69,'active' => 0,],
             ['id' => 1003,'name' => 'Nord-Pas-de-Calais','code' => 'B4','country_id' => 69,'active' => 0,],
             ['id' => 1004,'name' => 'Lorraine','code' => 'B2','country_id' => 69,'active' => 0,],

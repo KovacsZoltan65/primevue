@@ -31,7 +31,7 @@ class CompanyController extends Controller
 
         $cities = City::where('active', 1)->orderBy('name')->select('id', 'name')->get()->toArray();
         $countries = Country::where('active', 1)->orderBy('name')->select('id', 'name')->get()->toArray();
-//dd($countries);
+
         // Adjon vissza egy Inertia választ a vállalatok és a keresési paraméterek megadásával.
         return Inertia::render("Companies/Index", [
             //'companies' => $companies,
@@ -71,6 +71,7 @@ class CompanyController extends Controller
         
         // JSON-válaszként adja vissza a cégek listáját
         $companies = CompanyResource::collection($companyQuery->get());
+        
         return $companies;
     }
     

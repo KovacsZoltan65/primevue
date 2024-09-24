@@ -442,6 +442,19 @@ const getCityName = (id) => {
     return props.cities.find((city) => city.id === id).name;
 };
 
+const getModalTitle = () => {
+    return company.value.id
+        ? trans("companies_edit_title")
+        : trans("companies_new_title");
+};
+
+const getModalDetails = () => {
+    return company.value.id
+        ? trans("companies_edit_details")
+        : trans("companies_new_details");
+};
+
+/*
 const getRegionName = (id) => {
     return props.regions.find((region) => region.id === id).name;
 };
@@ -451,6 +464,7 @@ const getActiveLabel = (company) =>
 
 const getActiveValue = (company) =>
     ["inactive", "active", "pending"][company.active] || "pending";
+*/
 </script>
 <template>
     <AppLayout>
@@ -594,9 +608,14 @@ const getActiveValue = (company) =>
         <!-- COMPANY DETAILS DIALOG -->
         <Dialog 
             v-model:visible="companyDialog" 
-            :style="{ with: '550px' }" 
-            :header="$t('company_details')" 
+            :style="{ width: '550px' }" 
+            :header="$t('companies_details')" 
             :modal="true">
+
+            <span 
+                class="text-surface-500 dark:text-surface-400 block mb-8">
+                {{ getModalTitle() }}
+            </span>
 
             <div class="flex flex-col gap-6">
                 <!-- NAME -->
@@ -622,12 +641,16 @@ const getActiveValue = (company) =>
                         <label for="country_id" class="block font-bold mb-3">
                             {{ $t("country") }}
                         </label>
-                        <InputText
-                            id="country_id"
-                            v-model="company.country_id"
-                            autofocus
+                        <Select 
+                            id="country_id" 
+                            v-model="company.country_id" 
+                            :options="props.countries"
+                            optionLabel="name"
+                            optionValue="id"
+                            :placeholder="$t('country')"
                             fluid
                         />
+
                         <small class="text-red-500" v-if="v$.country_id.$error">
                             {{ $t(v$.country_id.$errors[0].$message) }}
                         </small>
@@ -638,12 +661,16 @@ const getActiveValue = (company) =>
                         <label for="city_id" class="block font-bold mb-3">
                             {{ $t("city") }}
                         </label>
-                        <InputText
-                            id="city_id"
-                            v-model="company.city_id"
-                            autofocus
+                        <Select 
+                            id="city_id" 
+                            v-model="company.city_id" 
+                            :options="props.cities"
+                            optionLabel="name"
+                            optionValue="id"
+                            :placeholder="$t('city')"
                             fluid
                         />
+
                         <small class="text-red-500" v-if="v$.city_id.$error">
                             {{ $t(v$.city_id.$errors[0].$message) }}
                         </small>
@@ -667,12 +694,16 @@ const getActiveValue = (company) =>
 
         </Dialog>
 
+        <!-- COMPANY DELETE DIALOG -->
         <Dialog
             v-model:visible="deleteCompanyDialog"
             :style="{ width: '450px' }"
             :header="$t('confirm')"
             :modal="true"
         >
+            <span class="text-surface-500 dark:text-surface-400 block mb-8">
+                {{ $t('companies_delete_title') }}
+            </span>
             <!-- A párbeszédpanel tartalma -->
             <div class="flex items-center gap-4">
                 <!-- A figyelmeztető ikon -->
@@ -709,10 +740,15 @@ const getActiveValue = (company) =>
             :header="$t('confirm')"
             :modal="true"
         >
+            <span class="text-surface-500 dark:text-surface-400 block mb-8">
+                {{ $t('companies_delete_title_2') }}
+            </span>
+
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
                 <span v-if="company">{{ $t("confirm_delete") }}</span>
             </div>
+
             <template #footer>
                 <!-- "Mégsem" gomb -->
                 <Button

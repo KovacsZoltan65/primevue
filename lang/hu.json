@@ -84,6 +84,15 @@
 
     "companies": "Cégek",
     "companies_title": "Cégek kezelése",
+    "companies_details": "Cégek kezelése",
+    "companies_new_title": "Cég rögzítése",
+    "companies_new_details": "Új cég létrehozása",
+    "companies_edit_title": "Cég szerkesztése",
+    "companies_edit_details": "Cég adatainak szerkesztése",
+    "companies_delete_title": "Cég törlése",
+    "companies_delete_details": "Törlés megerősítése",
+    "companies_delete_title_2": "Cégek törlése",
+    "companies_delete_details_2": "Törlés megerősítése",
 
     "validate_required": "Az érték megadása kötelező (:field)",
     "validate_name": "A név megadása kötelező",

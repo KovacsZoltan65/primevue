@@ -85,6 +85,15 @@
 
     "companies": "Companies",
     "companies_title": "Manage Companies",
+    "companies_details": "Manage Companies",
+    "companies_new_title": "New Company",
+    "companies_new_details": "Create New Company",
+    "companies_edit_title": "Edit Company",
+    "companies_edit_details": "Edit Company Data",
+    "companies_delete_title": "Company Deletion",
+    "companies_delete_details": "Confirm Deletion",
+    "companies_delete_title_2": "Companies Deletion",
+    "companies_delete_details_2": "Confirm Deletion",
 
     "validate_required": "Value is required (:field)",
     "validate_name": "Name is required",

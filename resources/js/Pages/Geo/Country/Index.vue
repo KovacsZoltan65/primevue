@@ -543,49 +543,6 @@ const getActiveValue = (country) =>
                     style="min-width: 16rem"
                 />
 
-                <!-- Country -->
-<!--               <Column
-                    field="country_id"
-                    :header="$t('country')"
-                    sortable
-                    style="min-width: 12rem"
-                >
-                    <template #body="slotProps">
-                        {{ getCountryName(slotProps.data.country_id) }}
-                    </template>
-                </Column>
-            -->
-                <!-- Region -->
-<!--                <Column
-                    :header="$t('region')"
-                    sortable
-                    style="min-width: 12rem"
-                >
-                    <template #body="slotProps">
-                        {{ getRegionName(slotProps.data.id) }}
-                    </template>
-                </Column>
--->
-                <!-- Country -->
-<!--                <Column
-                    field="latitude"
-                    :header="$t('latitude')"
-                    style="min-width: 12rem"
-                    sortable
-                >
-                    <template #body="slotProps">
-                        {{ getCountryName(slotProps.data.country_id) }}
-                    </template>
-                </Column>
--->
-                <!-- Longitude -->
-<!--                <Column
-                    field="longitude"
-                    :header="$t('longitude')"
-                    style="min-width: 12rem"
-                    sortable
-                />
--->
                 <!-- Active -->
                 <Column
                     field="active"
@@ -663,77 +620,6 @@ const getActiveValue = (country) =>
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Countries"
-                        />
-                    </div>
-                </div>
-
-                <div class="flex flex-wrap gap-4">
-                    <!-- Country -->
-                    <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="country_id" class="block font-bold mb-3">
-                            {{ $t("country") }}
-                        </label>
-                        <Select
-                            id="country_id"
-                            fluid
-                            v-model="country.country_id"
-                            :options="props.countries"
-                            optionLabel="name"
-                            optionValue="id"
-                            :placholder="$t('country')"
-                        />
-
-                        <small class="text-red-500" v-if="v$.country_id.$error">
-                            {{ $t(v$.country_id.$errors[0].$message) }}
-                        </small>
-                    </div>
-
-                    <!-- Region -->
-                    <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="region_id" class="block font-bold mb-3">
-                            {{ $t("region") }}
-                        </label>
-                        <Select
-                            id="region_id"
-                            name="region_id"
-                            fluid
-                            v-model="country.region_id"
-                            :options="props.regions"
-                            optionLabel="name"
-                            optionValue="id"
-                            :placholder="$t('region')"
-                        />
-
-                        <small class="text-red-500" v-if="v$.region_id.$error">
-                            {{ $t(v$.region_id.$errors[0].$message) }}
-                        </small>
-                    </div>
-                </div>
-
-                <div class="flex flex-wrap gap-4">
-                    <!-- Latitude -->
-                    <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="latitude" class="block font-bold mb-3">
-                            {{ $t("latitude") }}
-                        </label>
-                        <InputText
-                            id="latitude"
-                            v-model="country.latitude"
-                            fluid
-                            disabled
-                        />
-                    </div>
-
-                    <!-- Longitude -->
-                    <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="longitude" class="block font-bold mb-3">
-                            {{ $t("longitude") }}
-                        </label>
-                        <InputText
-                            id="longitude"
-                            v-model="country.longitude"
-                            fluid
-                            disabled
                         />
                     </div>
                 </div>

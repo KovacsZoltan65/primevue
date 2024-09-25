@@ -542,7 +542,7 @@ const getActiveValue = (city) =>
                         {{ getCountryName(slotProps.data.country_id) }}
                     </template>
                 </Column>
-
+            
                 <!-- Region -->
                 <Column
                     field="region_id"

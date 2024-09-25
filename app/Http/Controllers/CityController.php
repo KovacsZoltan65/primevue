@@ -28,7 +28,7 @@ class CityController extends Controller
      * amelyek megfelelnek a keresési feltételeknek.
      *
      * @param  Request  $request
-     * @retirn \Inertia\Response
+     * @return \Inertia\Response
      */
     public function index(Request $request)
     {
@@ -142,58 +142,5 @@ class CityController extends Controller
 
         // A törölt város adatait tartalmazó JSON-válasz visszaadása
         return response()->json(['success' => $success], Response::HTTP_OK);
-    }
-
-
-
-
-
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreCityRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(City $city)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(City $city)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCityRequest $request, City $city)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(City $city)
-    {
-        //
     }
 }

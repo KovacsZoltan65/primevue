@@ -8,8 +8,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-//use Spatie\Activitylog\LogOptions;
-//use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 
 /**
  * Class Region
@@ -40,6 +40,15 @@ class Region extends Model
         'country_id'
     ];
 
+    public function scopeSearch(Builder $query, Request $request)
+    {
+        return $query->when($request->search, function ($query) use ($request) {
+            $query->where(function ($query) use ($request) {
+                $query->where('name', 'like', "%{$request->search}%");
+            });
+        })->where('active', 1);
+    }
+    
     /**
      * A régióhoz tartozó ország
      *

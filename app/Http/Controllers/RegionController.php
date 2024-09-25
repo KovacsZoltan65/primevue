@@ -22,9 +22,12 @@ class RegionController extends Controller
      */
     public function index(Request $request)
     {
+        $countries = Country::where('active', 1)->orderBy('name')->get()->toArray();
+        
         $search = $request->query('search');
         
         return \Inertia\Inertia::render('Geo/Region/Index', [
+            'countries' => $countries,
             'search' => $search,
         ]);
     }

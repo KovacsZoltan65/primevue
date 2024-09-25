@@ -419,13 +419,13 @@ const exportCSV = () => {
     dt.value.exportCSV();
 };
 
-const deleteSelectedCities = () => {
+const deleteSelectedRegions = () => {
     console.log(selectedRegions.value);
 };
 
-const getCountryName = (id) => {
-    return props.countries.find((country) => country.id === id).name;
-};
+//const getRegionName = (id) => {
+//    return props.countries.find((country) => country.id === id).name;
+//};
 
 const getActiveLabel = (region) =>
     ["danger", "success", "warning"][region.active || 2];
@@ -517,7 +517,7 @@ const getActiveValue = (region) =>
                 />
 
                 <!-- Country -->
-                <Column
+                <!--<Column
                     field="country_id"
                     :header="$t('country')"
                     sortable
@@ -526,10 +526,10 @@ const getActiveValue = (region) =>
                     <template #body="slotProps">
                         {{ getCountryName(slotProps.data.country_id) }}
                     </template>
-                </Column>
+                </Column>-->
 
                 <!-- Region -->
-                <Column
+                <!--<Column
                     field="region_id"
                     :header="$t('region')"
                     sortable
@@ -538,23 +538,23 @@ const getActiveValue = (region) =>
                     <template #body="slotProps">
                         {{ getRegionName(slotProps.data.region_id) }}
                     </template>
-                </Column>
+                </Column>-->
 
                 <!-- Lattitude -->
-                <Column
+                <!--<Column
                     field="latitude"
                     :header="$t('latitude')"
                     style="min-width: 12rem"
                     sortable
-                />
+                />-->
 
                 <!-- Longitude -->
-                <Column
+                <!--<Column
                     field="longitude"
                     :header="$t('longitude')"
                     style="min-width: 12rem"
                     sortable
-                />
+                />-->
 
                 <!-- Active -->
                 <Column

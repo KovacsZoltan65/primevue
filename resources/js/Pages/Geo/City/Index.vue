@@ -400,9 +400,9 @@ const updateCity = () => {
                 life: 3000,
             });
         })
-        .catch(error => {
+        .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon
-            console.error('updateCity API Error:', error);
+            console.error("updateCity API Error:", error);
         });
 };
 
@@ -542,7 +542,7 @@ const getActiveValue = (city) =>
                         {{ getCountryName(slotProps.data.country_id) }}
                     </template>
                 </Column>
-            
+
                 <!-- Region -->
                 <Column
                     field="region_id"

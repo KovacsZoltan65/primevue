@@ -57,7 +57,7 @@
     "electronics": "Electronics",
     "fitness": "Fitness",
     "quantity": "Quantity",
-    
+
     "region": "Region",
     "longitude": "Longitute",
     "latitude": "Latitude",
@@ -109,7 +109,7 @@
     "error_404": "Not Found",
     "error_500": "Server Error",
     "error_default": "Error",
-    
+
     "migration_creating_countries": "Creating Countries...",
     "migration_created_countries": "Countries created",
     "migration_creating_cities": "Creating Cities...",

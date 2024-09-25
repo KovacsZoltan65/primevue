@@ -274,7 +274,7 @@ const initialCountry = {
     name: "",
     //country_id: null,
     //region_id: null,
-    code: '',
+    code: "",
     active: 1,
     id: null,
 };
@@ -402,9 +402,9 @@ const updateCountry = () => {
                 life: 3000,
             });
         })
-        .catch(error => {
+        .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon
-            console.error('updateCountry API Error:', error);
+            console.error("updateCountry API Error:", error);
         });
 };
 
@@ -441,8 +441,8 @@ const deleteSelectedCountries = () => {
 //};
 
 //const getRegionName = (id) => {
-    //console.log('props.regions', props.regions);
-    //console.log('id', id);
+//console.log('props.regions', props.regions);
+//console.log('id', id);
 
 //    let region = props.regions.find((region) => region.country_id === id);
 
@@ -451,7 +451,7 @@ const deleteSelectedCountries = () => {
 //        console.log('region', region);
 //    }
 
-    //return props.regions.find((region) => region.id === id).name;
+//return props.regions.find((region) => region.id === id).name;
 //};
 
 const getActiveLabel = (country) =>
@@ -480,7 +480,9 @@ const getActiveValue = (country) =>
                         icon="pi pi-trash"
                         severity="secondary"
                         @click="confirmDeleteSelected"
-                        :disabled="!selectedCountries || !selectedCountries.length"
+                        :disabled="
+                            !selectedCountries || !selectedCountries.length
+                        "
                     />
                 </template>
 

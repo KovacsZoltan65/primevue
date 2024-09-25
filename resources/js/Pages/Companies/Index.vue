@@ -400,9 +400,9 @@ const updateCompany = () => {
                 life: 3000,
             });
         })
-        .catch(error => {
+        .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon
-            console.error('updateCompany API Error:', error);
+            console.error("updateCompany API Error:", error);
         });
 };
 
@@ -522,7 +522,7 @@ const getActiveValue = (company) =>
                         <div class="font-semibold text-xl mb-1">
                             {{ $t("companies_title") }}
                         </div>
-                    <!--
+                        <!--
                         <div class="font-semibold text-xl mb-1">
                             <Select id="country_id" class="w-full"  
                                     v-model="country" 
@@ -536,11 +536,11 @@ const getActiveValue = (company) =>
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText 
-                                v-model="filters['global'].value" 
-                                :placeholder="$t('search')" />
+                            <InputText
+                                v-model="filters['global'].value"
+                                :placeholder="$t('search')"
+                            />
                         </IconField>
-                        
                     </div>
                 </template>
 
@@ -601,19 +601,17 @@ const getActiveValue = (company) =>
                         />
                     </template>
                 </Column>
-
             </DataTable>
         </div>
 
         <!-- COMPANY DETAILS DIALOG -->
-        <Dialog 
-            v-model:visible="companyDialog" 
-            :style="{ width: '550px' }" 
-            :header="$t('companies_details')" 
-            :modal="true">
-
-            <span 
-                class="text-surface-500 dark:text-surface-400 block mb-8">
+        <Dialog
+            v-model:visible="companyDialog"
+            :style="{ width: '550px' }"
+            :header="$t('companies_details')"
+            :modal="true"
+        >
+            <span class="text-surface-500 dark:text-surface-400 block mb-8">
                 {{ getModalTitle() }}
             </span>
 
@@ -635,15 +633,14 @@ const getActiveValue = (company) =>
                 </div>
 
                 <div class="flex flex-wrap gap-4">
-
                     <!-- COUNTRY -->
                     <div class="flex flex-col grow basis-0 gap-2">
                         <label for="country_id" class="block font-bold mb-3">
                             {{ $t("country") }}
                         </label>
-                        <Select 
-                            id="country_id" 
-                            v-model="company.country_id" 
+                        <Select
+                            id="country_id"
+                            v-model="company.country_id"
                             :options="props.countries"
                             optionLabel="name"
                             optionValue="id"
@@ -661,9 +658,9 @@ const getActiveValue = (company) =>
                         <label for="city_id" class="block font-bold mb-3">
                             {{ $t("city") }}
                         </label>
-                        <Select 
-                            id="city_id" 
-                            v-model="company.city_id" 
+                        <Select
+                            id="city_id"
+                            v-model="company.city_id"
                             :options="props.cities"
                             optionLabel="name"
                             optionValue="id"
@@ -691,7 +688,6 @@ const getActiveValue = (company) =>
                     @click="saveCompany"
                 />
             </template>
-
         </Dialog>
 
         <!-- COMPANY DELETE DIALOG -->
@@ -702,7 +698,7 @@ const getActiveValue = (company) =>
             :modal="true"
         >
             <span class="text-surface-500 dark:text-surface-400 block mb-8">
-                {{ $t('companies_delete_title') }}
+                {{ $t("companies_delete_title") }}
             </span>
             <!-- A párbeszédpanel tartalma -->
             <div class="flex items-center gap-4">
@@ -710,7 +706,8 @@ const getActiveValue = (company) =>
                 <i class="pi pi-exclamation-triangle !text-3xl" />
                 <!-- A szöveg, amely megjelenik a párbeszédpanelen -->
                 <span v-if="company">
-                    {{ $t("confirm_delete_2") }} <b>{{ company.name }}</b>?
+                    {{ $t("confirm_delete_2") }} <b>{{ company.name }}</b
+                    >?
                 </span>
             </div>
             <!-- A párbeszédpanel lábléc, amely tartalmazza a gombokat -->
@@ -741,7 +738,7 @@ const getActiveValue = (company) =>
             :modal="true"
         >
             <span class="text-surface-500 dark:text-surface-400 block mb-8">
-                {{ $t('companies_delete_title_2') }}
+                {{ $t("companies_delete_title_2") }}
             </span>
 
             <div class="flex items-center gap-4">
@@ -765,6 +762,5 @@ const getActiveValue = (company) =>
                 />
             </template>
         </Dialog>
-
     </AppLayout>
 </template>

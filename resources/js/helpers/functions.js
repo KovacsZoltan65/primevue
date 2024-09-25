@@ -5,8 +5,7 @@
  * @return {string | undefined} A formázott pénznem-karakterlánc, vagy hamis az érték definiálatlan.
  */
 export function formatCurrency(value) {
-    if(!value)
-        return;
+    if (!value) return;
 
     return value.toLocaleString("en-US", {
         style: "currency",
@@ -15,6 +14,6 @@ export function formatCurrency(value) {
 }
 
 export function formatDate(date) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(date).toLocaleString(undefined, options);
 }

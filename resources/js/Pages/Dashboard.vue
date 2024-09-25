@@ -174,10 +174,10 @@ onMounted(() => {
  * @return {string | undefined} A formázott pénznem-karakterlánc, vagy hamis az érték definiálatlan.
  */
 //function formatCurrency(value) {
-    // Ha az érték false (undefined, null, 0 stb.), adja vissza az undefined értéket.
+// Ha az érték false (undefined, null, 0 stb.), adja vissza az undefined értéket.
 //    if (!value) return;
 
-    // Formázza a számot valutakarakterláncként az amerikai angol nyelvterület és az USD pénznem használatával.
+// Formázza a számot valutakarakterláncként az amerikai angol nyelvterület és az USD pénznem használatával.
 //    return value.toLocaleString("en-US", {
 //        style: "currency",
 //        currency: "USD",

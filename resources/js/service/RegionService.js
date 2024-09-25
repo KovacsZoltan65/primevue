@@ -96,7 +96,6 @@ export default {
         return apiClient.get(`/regions/${id}`);
     },
 
-
     /**
      * Új régiót hoz létre az API-nak küldött POST-kéréssel.
      *
@@ -126,4 +125,5 @@ export default {
      */
     deleteRegion: (id) => {
         return apiClient.delete(`/regions/${id}`);
-    }};
+    },
+};

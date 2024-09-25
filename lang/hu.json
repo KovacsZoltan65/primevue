@@ -108,7 +108,7 @@
     "error_404": "Nem található",
     "error_500": "Szerver hiba",
     "error_default": "Hiba",
-    
+
     "migration_creating_countries": "Országok létrehozása...",
     "migration_created_countries": "Országok létrehozva",
     "migration_creating_cities": "Városok létrehozása...",

@@ -8,6 +8,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegionController;
 use App\Http\Controllers\ValidationController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -94,6 +95,13 @@ Route::middleware('auth')->group(function () {
      * az útvonalak nevei.
      */
     Route::get('/countries', [CountryController::class, 'index'])->name('countries');
+    
+    /**
+     * =====================================================
+     * MEGYÉK
+     * =====================================================
+     */
+    Route::get('/regions', [RegionController::class, 'index'])->name('regions');
     
     // =======================================================
     // FELHASZNÁLÓK

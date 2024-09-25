@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\RegionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,13 +16,12 @@ Route::get('/user', function (Request $request) {
 
 //Route::get('/items', function(){ \Log::info('API/GET'); });
 
-// =======================================================
-// CÉGEK
-// =======================================================
-
 /**
+ * =======================================================
+ * COMPANIES
+ * =======================================================
  * A cégek listájának lekérése az API-n keresztül.
- *
+ * 
  * @param CompanyController $companyController A cégvezérlő példány.
  * @return \Illuminate\Http\JsonResponse A vállalatok listáját tartalmazó JSON-válasz.
  */
@@ -54,9 +54,11 @@ Route::put('/items/{id}', [CompanyController::class, 'updateCompany'])->name('ap
  */
 Route::delete('/items/{id}', [CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
 
-// =======================================================
-// VÁROSOK
-// =======================================================
+/**
+ * =======================================================
+ * VÁROSOK
+ * =======================================================
+ */
 Route::get('/cities', [CityController::class, 'getCities'])->name('api.get.cities');
 Route::post('/cities', [CityController::class, 'createCity'])->name('api.post.cities');
 Route::put('/cities/{id}', [CityController::class, 'updateCity'])->name('api.put.cities');
@@ -74,33 +76,51 @@ Route::resource('/cities', CityController::class)->names([
     ]);
 */
 
-// =======================================================
-// CÉGEK
-// =======================================================
+/**
+ * =======================================================
+ * ORSZÁGOK
+ * =======================================================
+ */
 Route::get('/countries', [CountryController::class, 'getCountries'])->name('api.get.countries');
 Route::post('/countries', [CountryController::class, 'createCountry'])->name('api.post.countries');
 Route::put('/countries/{id}', [CountryController::class, 'updateCountry'])->name('api.put.countries');
 Route::delete('/countries/{id}', [CountryController::class, 'deleteCountry'])->name('api.delete.countries');
 
-// =======================================================
-// FELHASZNÁLÓK
-// =======================================================
+/**
+ * =======================================================
+ * MEGYÉK
+ * =======================================================
+ */
+Route::get('/regions', [RegionController::class, 'getRegions'])->name('api.get.regions');
+Route::post('/regions', [RegionController::class, 'createRegion'])->name('api.post.regions');
+Route::put('/regions/{id}', [RegionController::class, 'updateRegion'])->name('api.put.regions');
+Route::delete('/regions/{id}', [RegionController::class, 'deleteRegion'])->name('api.delete.regions');
+
+/**
+ * =======================================================
+ * FELHASZNÁLÓK
+ * =======================================================
+ */
 Route::get('/users', [UserController::class, 'getUsers'])->name('api.get.users');
 Route::post('/users', [UserController::class, 'createUsers'])->name('api.post.users');
 Route::put('/users/{id}', [UserController::class, 'updateUsers'])->name('api.put.users');
 Route::delete('/users/{id}', [UserController::class, 'deleteUsers'])->name('api.delete.users');
 
-// =======================================================
-// SZEREPKÖRÖK
-// =======================================================
+/**
+ * =======================================================
+ * SEREPKÖRÖK (ROLES)
+ * =======================================================
+ */
 Route::get('/roles', [RoleController::class, 'getRoles'])->name('api.get.roles');
 Route::post('/roles', [RoleController::class, 'createRoles'])->name('api.post.roles');
 Route::put('/roles/{id}', [RoleController::class, 'updateRoles'])->name('api.put.roles');
 Route::delete('/roles/{id}', [RoleController::class, 'deleteRoles'])->name('api.delete.roles');
 
-// =======================================================
-// ENGEDÉLYEK
-// =======================================================
+/**
+ * =======================================================
+ * ENGEDÉLYEK (PERMISSIONS)
+ * =======================================================
+ */
 Route::get('/permissions', [PermissionController::class, 'getPermissions'])->name('api.get.permissions');
 Route::post('/permissions', [PermissionController::class, 'createPermissions'])->name('api.post.permissions');
 Route::put('/permissions/{id}', [PermissionController::class, 'updatePermissions'])->name('api.put.permissions');

@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\RegionResource;
+use App\Models\Country;
 use App\Models\Region;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response as Response2;
 use Symfony\Component\HttpFoundation\Response;
 
 class RegionController extends Controller
@@ -18,7 +22,7 @@ class RegionController extends Controller
      * amelyek megfelelnek a keresési feltételeknek.
      *
      * @param  Request  $request
-     * @return \Inertia\Response
+     * @return Response2
      */
     public function index(Request $request)
     {
@@ -26,7 +30,7 @@ class RegionController extends Controller
         
         $search = $request->query('search');
         
-        return \Inertia\Inertia::render('Geo/Region/Index', [
+        return Inertia::render('Geo/Region/Index', [
             'countries' => $countries,
             'search' => $search,
         ]);
@@ -38,9 +42,9 @@ class RegionController extends Controller
      * Ha a keresési paraméter nem üres, akkor a lekérdezés tartalmazza
      * a feltételt, hogy a régió neve tartalmazza a keresési paramétert.
      * 
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  Builder  $query
      * @param  string  $search
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function applySearch(Builder $query, string $search)
     {
@@ -79,7 +83,7 @@ class RegionController extends Controller
      * A létrehozott régió adatait tartalmazó JSON-válasz kerül visszaadásra.
      *
      * @param  Request  $request  A HTTP kérés objektum, amely tartalmazza a régió új adatait.
-     * @return \Illuminate\Http\JsonResponse  A létrehozott régió adatait tartalmazó JSON-válasz.
+     * @return JsonResponse  A létrehozott régió adatait tartalmazó JSON-válasz.
      */
     public function createRegion(Request $request)
     {
@@ -97,7 +101,7 @@ class RegionController extends Controller
      *
      * @param  Request  $request  A HTTP kérés objektum, amely tartalmazza a régió új adatait.
      * @param  int  $id  A frissítendő régió azonosítója.
-     * @return \Illuminate\Http\JsonResponse  A frissített régió adatait tartalmazó JSON-válasz.
+     * @return JsonResponse  A frissített régió adatait tartalmazó JSON-válasz.
      */
     public function updateRegion(Request $request, int $id)
     {
@@ -117,7 +121,7 @@ class RegionController extends Controller
      * A törölt régió adatait tartalmazó JSON-válasz kerül visszaadásra.
      *
      * @param  int  $id  A törölni kívánt régió azonosítója.
-     * @return \Illuminate\Http\JsonResponse  A törölt régió adatait tartalmazó JSON-válasz.
+     * @return JsonResponse  A törölt régió adatait tartalmazó JSON-válasz.
      */
     public function deleteRegion(int $id)
     {

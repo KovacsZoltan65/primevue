@@ -83,7 +83,7 @@ export default {
      * @return {Promise} Ígéret, amely a régiók listájával megoldódik.
      */
     getRegions: () => {
-        return apiClient.get("/api/regions");
+        return apiClient.get("/regions");
     },
 
     /**

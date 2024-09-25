@@ -45,7 +45,7 @@ export const MenuService = {
                             {
                                 label: "regions",
                                 icon: "pi pi-fw pi-map-marker",
-                                to: "#",
+                                to: "/regions",
                             },
                             {
                                 label: "cities",

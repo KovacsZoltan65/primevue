@@ -49,7 +49,7 @@ class Subdomain extends Model
         'state_id' => 'int',
         'is_mirror' => 'bool',
         'sso' => 'bool',
-        'access_control_system' => 'int',
+        'acs_id' => 'int',
         'last_export' => 'datetime'
     ];
 
@@ -57,9 +57,9 @@ class Subdomain extends Model
             'subdomain', 'url', 'name',
             'db_host', 'db_port', 'db_name', 'db_user', 'db_password',
             'notification', 'state_id', 'is_mirror', 'sso',
-            'access_control_system', 'last_export'
+            'acs_id', 'last_export'
     ];
-    
+    /*
     protected $attributes = [
         'subdomain' => '', 
         'url' => '', 
@@ -73,10 +73,10 @@ class Subdomain extends Model
         'state_id' => 0, 
         'is_mirror' => 0, 
         'sso' => 0,
-        'access_control_system' => 0, 
+        'acs_id' => 0, 
         'last_export' => '',
     ];
-    
+    */
     public function scopeSearch(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {

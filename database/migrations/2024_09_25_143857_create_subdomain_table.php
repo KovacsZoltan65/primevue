@@ -22,19 +22,17 @@ return new class extends Migration
             $table->string('db_user')->collation('utf8mb3_general_ci')->comment('Adatbázis felhasználó');
             $table->string('db_password')->collation('utf8mb3_general_ci')->comment('Adatbázis jelszó');
             
-            //$table->tinyInteger('notification')->comment('Értesítés');
-            $table->enum('notification', ['0','1'])->comment('Értesítés');
+            $table->enum('notification', [0,1])->comment('Értesítés');
             
-            $table->unsignedInteger('state_id')->index('subdomains_state_id_foreign')->comment('Állapot azonosító');
+            $table->unsignedInteger('state_id')->comment('Állapot azonosító');
+            //$table->foreign('state_id')->references('id')->on('access_control_system_type')->cascadeOnDelete();
             
-            //$table->tinyInteger('is_mirror')->default(0)->comment('Tükör adatbázis');
             $table->enum('is_mirror', ['0','1'])->default(0)->comment('Tükör adatbázis');
             
-            //$table->tinyInteger('sso')->default(0)->comment('SSO');
             $table->enum('sso', ['0','1'])->default(0)->comment('SSO');
             
-            //$table->tinyInteger('access_control_system')->default(0)->comment('Access Controll System');
-            $table->enum('access_control_system', ['0','1'])->default(0)->comment('Access Controll System');
+            $table->unsignedBigInteger('acs_id')->default(0)->comment('Access Controll System');
+            //$table->foreign('acs_id')->references('id')->on('access_control_system')->cascadeOnDelete();
             
             $table->timestamp('last_export')->nullable()->comment('Utoldó export');
             

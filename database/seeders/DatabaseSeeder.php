@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
             CitySeeder::class,
 
             CompanySeeder::class,
+            
+            SubdomainsSeeder::class,
         ]);
 
         // User::factory(10)->create();

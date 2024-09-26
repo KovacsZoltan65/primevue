@@ -10,6 +10,8 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 
 /**
  * Class Subdomain
@@ -51,10 +53,6 @@ class Subdomain extends Model
         'last_export' => 'datetime'
     ];
 
-    //protected $hidden = [
-    //	'db_password'
-    //];
-
     protected $fillable = [
             'subdomain', 'url', 'name',
             'db_host', 'db_port', 'db_name', 'db_user', 'db_password',
@@ -62,7 +60,35 @@ class Subdomain extends Model
             'access_control_system', 'last_export'
     ];
     
-    public static function getSubdomainById(int $subdomain_id) {
-        return self::where('id', $subdomain_id)->first();
+    protected $attributes = [
+        'subdomain' => '', 
+        'url' => '', 
+        'name' => '',
+        'db_host' => 'localhost', 
+        'db_port' => 3306, 
+        'db_name' => '', 
+        'db_user' => '', 
+        'db_password' => '',
+        'notification' => 0, 
+        'state_id' => 0, 
+        'is_mirror' => 0, 
+        'sso' => 0,
+        'access_control_system' => 0, 
+        'last_export' => '',
+    ];
+    
+    public function scopeSearch(Builder $query, Request $request)
+    {
+        return $query->when($request->search, function ($query) use ($request) {
+            $query->where(function ($query) use ($request) {
+                $query->where('name', 'like', "%{$request->search}%");
+            });
+        });
+    }
+    
+    public static function getSubdomainById(int $subdomain_id)
+    {
+        //return self::where('id', $subdomain_id)->first();
+        return self::find($subdomain_id);
     }
 }

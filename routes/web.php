@@ -9,6 +9,7 @@ use App\Http\Controllers\CountryController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegionController;
+use App\Http\Controllers\SubdomainController;
 use App\Http\Controllers\ValidationController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -103,21 +104,33 @@ Route::middleware('auth')->group(function () {
      */
     Route::get('/regions', [RegionController::class, 'index'])->name('regions');
     
-    // =======================================================
-    // FELHASZNÁLÓK
-    // =======================================================
+    /**
+     * =======================================================
+     * FELHASZNÁLÓK
+     * =======================================================
+     */
     Route::get('/users', [UserController::class, 'index'])->name('users');
 
-    // =======================================================
-    // SZEREPKÖRÖK
-    // =======================================================
+    /**
+     * =======================================================
+     * SZEREPKÖRÖK
+     * =======================================================
+     */
     Route::get('/roles', [RoleController::class, 'index'])->name('roles');
 
-    // =======================================================
-    // ENGEDÉLYEK
-    // =======================================================
+    /**
+     * =======================================================
+     * ENGEDÉLYEK
+     * =======================================================
+     */
     Route::get('/permissions', [PermissionController::class, 'index'])->name('permissions');
     
+    /**
+     * =======================================================
+     * SUBDOMAINS
+     * =======================================================
+     */
+    Route::get('/subdomains', [SubdomainController::class, 'index'])->name('subdomains');
 });
 
 require __DIR__.'/auth.php';

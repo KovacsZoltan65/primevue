@@ -13,6 +13,7 @@ class Company extends Model
     use HasFactory,
         SoftDeletes;
     
+    protected $table = 'companies';
     protected $fillable = ['name', 'country', 'city'];
 
     public function scopeSearch(Builder $query, Request $request)

@@ -2,10 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Subdomain;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
-class SubdomainSeeder extends Seeder
+class SubdomainsSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -13,7 +14,7 @@ class SubdomainSeeder extends Seeder
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
-        App\Models\Subdomain::truncate();
+        Subdomain::truncate();
         Schema::enableForeignKeyConstraints();
         
         $arr_subdomains = [
@@ -34,7 +35,7 @@ class SubdomainSeeder extends Seeder
         $this->command->getOutput()->progressStart($count);
         foreach($arr_subdomains as $subdomain)
         {
-            Subdomain::factory()->create($subdomain);
+            Subdomain::create($subdomain);
             $this->command->getOutput()->progressAdvance();
         }
         $this->command->getOutput()->progressFinish();

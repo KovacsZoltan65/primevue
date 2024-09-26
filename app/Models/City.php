@@ -35,11 +35,11 @@ class City extends Model
     public function scopeSearch(Builder $query, Request $request)
     {
         // If search parameter is present, filter results by name or email containing the search term
-        //return $query->when($request->search, function ($query) use ($request) {
-        //    $query->where(function ($query) use ($request) {
-        //        $query->where('name', 'like', "%{$request->search}%");
-        //    });
-        //});
+        return $query->when($request->search, function ($query) use ($request) {
+            $query->where(function ($query) use ($request) {
+                $query->where('name', 'like', "%{$request->search}%");
+            });
+        });
     }
 
     /**

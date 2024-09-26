@@ -125,3 +125,13 @@ Route::get('/permissions', [PermissionController::class, 'getPermissions'])->nam
 Route::post('/permissions', [PermissionController::class, 'createPermissions'])->name('api.post.permissions');
 Route::put('/permissions/{id}', [PermissionController::class, 'updatePermissions'])->name('api.put.permissions');
 Route::delete('/permissions/{id}', [PermissionController::class, 'deletePermissions'])->name('api.delete.permissions');
+
+/**
+ * =======================================================
+ * SUBDOMAINS
+ * =======================================================
+ */
+Route::get('/subdomains', [\App\Http\Controllers\SubdomainController::class, 'getSubdomains'])->name('api.get.subdomains');
+Route::post('/subdomains', [\App\Http\Controllers\SubdomainController::class, 'createSubdomains'])->name('api.post.subdomains');
+Route::put('/subdomains/{id}', [\App\Http\Controllers\SubdomainController::class, 'updateSubdomains'])->name('api.put.subdomains');
+Route::delete('/subdomains/{id}', [\App\Http\Controllers\SubdomainController::class, 'deleteSubdomains'])->name('api.delete.subdomains');

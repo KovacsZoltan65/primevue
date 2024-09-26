@@ -101,6 +101,11 @@
     "validate_region_id": "A megye megadása kötelező",
     "validate_country_id": "Az ország megadása kötelező",
     "valid_city_id": "A város megadása kötelező",
+    "validate_integer": "",
+    "validate_min": "",
+    "validate_max": "",
+    "validate_unique": "",
+    "validate_boolean": "",
 
     "error_400": "Rossz kérés",
     "error_401": "Jogosulatlan! Átirányítás a bejelentkezéshez...",

@@ -102,6 +102,11 @@
     "validate_region_id": "Region is required",
     "validate_country_id": "Country is required",
     "validate_city_id": "City is required",
+    "validate_integer": "",
+    "validate_min": "",
+    "validate_max": "",
+    "validate_unique": "",
+    "validate_boolean": "",
 
     "error_400": "Bad Request",
     "error_401": "Unauthorized! Redirecting to login...",

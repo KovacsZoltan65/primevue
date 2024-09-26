@@ -94,7 +94,7 @@ class CityController extends Controller
      * @param  Request  $request  A HTTP kérés objektum, amely tartalmazza a város új adatait.
      * @return \Illuminate\Http\JsonResponse  A létrehozott város adatait tartalmazó JSON-válasz.
      */
-    public function createCity(Request $request)
+    public function createCity(StoreCityRequest $request)
     {
         // Hozzon létre új várost az adatbázisban
         $city = City::create($request->all());
@@ -112,7 +112,7 @@ class CityController extends Controller
      * @param  int  $id  A frissítendő város azonosítója.
      * @return \Illuminate\Http\JsonResponse  A frissített város adatait tartalmazó JSON-válasz.
      */
-    public function updateCity(Request $request, int $id)
+    public function updateCity(UpdateCityRequest $request, int $id)
     {
         // Szerezze be a várost az adatbázisból
         $old_city = City::where('id', $id)->first();

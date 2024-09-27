@@ -16,13 +16,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
 
-            CountriesTableSeeder::class,
-            RegionsTableSeeder::class,
-            CitySeeder::class,
+            CountriesTableSeeder::class,    // - Ne változtasd meg a sorrendet!!
+            RegionsTableSeeder::class,      // - Ne változtasd meg a sorrendet!!
+            CitySeeder::class,              // - Ne változtasd meg a sorrendet!!
 
-            CompanySeeder::class,
+            CompanySeeder::class,           // - Ne változtasd meg a sorrendet!!
             
-            SubdomainsSeeder::class,
+            SubdomainStateSeeder::class,    // - Ne változtasd meg a sorrendet!!
+            SubdomainsSeeder::class,        // - Ne változtasd meg a sorrendet!!
         ]);
 
         // User::factory(10)->create();

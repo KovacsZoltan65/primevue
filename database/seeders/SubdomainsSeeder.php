@@ -30,7 +30,7 @@ class SubdomainsSeeder extends Seeder
         ];
         $count = count($arr_subdomains);
         
-        $this->command->warn(PHP_EOL . 'Creating subdomains...');
+        $this->command->warn(PHP_EOL . __('migration_creating_subdomains') );
         
         $this->command->getOutput()->progressStart($count);
         foreach($arr_subdomains as $subdomain)
@@ -40,6 +40,6 @@ class SubdomainsSeeder extends Seeder
         }
         $this->command->getOutput()->progressFinish();
         
-        $this->command->info(PHP_EOL . 'Subdomains created');
+        $this->command->info(PHP_EOL . __('migration_created_subdomains') );
     }
 }

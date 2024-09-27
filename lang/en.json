@@ -128,5 +128,9 @@
     "migration_creating_users": "Creating Regions...",
     "migration_created_users": "Regions created",
     "migration_creating_companies": "Creating Companies...",
-    "migration_created_companies": "Companies created"
+    "migration_created_companies": "Companies created",
+    "migration_creating_subdomains": "Creating Subdomains...",
+    "migration_created_subdomains": "Subdomains Created",
+    "migration_creating_subdomain_states": "Creating Subdomain States ...",
+    "migration_created_subdomain_states": "Subdomain States Created"
 }

@@ -25,7 +25,7 @@ return new class extends Migration
             $table->enum('notification', [0,1])->comment('Értesítés');
             
             $table->unsignedInteger('state_id')->comment('Állapot azonosító');
-            //$table->foreign('state_id')->references('id')->on('access_control_system_type')->cascadeOnDelete();
+            $table->foreign('state_id')->references('id')->on('subdomain_states')->cascadeOnDelete();
             
             $table->enum('is_mirror', ['0','1'])->default(0)->comment('Tükör adatbázis');
             
@@ -40,7 +40,6 @@ return new class extends Migration
             $table->softDeletes();
         });
     }
-
     /**
      * Reverse the migrations.
      */

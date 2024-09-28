@@ -7,15 +7,16 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 /**
  * Class Subdomain
- * 
+ *
  * @property int $id
  * @property string $subdomain
  * @property string $url
@@ -38,9 +39,9 @@ use Illuminate\Http\Request;
  */
 class Subdomain extends Model
 {
-    use HasFactory, 
+    use HasFactory,
         SoftDeletes;
-    
+
     protected $table = 'subdomains';
 
     protected $casts = [
@@ -61,19 +62,19 @@ class Subdomain extends Model
     ];
     /*
     protected $attributes = [
-        'subdomain' => '', 
-        'url' => '', 
+        'subdomain' => '',
+        'url' => '',
         'name' => '',
-        'db_host' => 'localhost', 
-        'db_port' => 3306, 
-        'db_name' => '', 
-        'db_user' => '', 
+        'db_host' => 'localhost',
+        'db_port' => 3306,
+        'db_name' => '',
+        'db_user' => '',
         'db_password' => '',
-        'notification' => 0, 
-        'state_id' => 0, 
-        'is_mirror' => 0, 
+        'notification' => 0,
+        'state_id' => 0,
+        'is_mirror' => 0,
         'sso' => 0,
-        'acs_id' => 0, 
+        'acs_id' => 0,
         'last_export' => '',
     ];
     */
@@ -85,10 +86,15 @@ class Subdomain extends Model
             });
         });
     }
-    
+
     public static function getSubdomainById(int $subdomain_id)
     {
         //return self::where('id', $subdomain_id)->first();
         return self::find($subdomain_id);
+    }
+
+    public function subdomainState(): BelongsTo
+    {
+        return $this->belongsTo(SubdomainState::class, 'state_id');
     }
 }

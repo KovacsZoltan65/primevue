@@ -10,16 +10,17 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 /**
- * 
+ *
  * @property int $id
  * @property string $name
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon $deleted_at
  */
+
 class SubdomainState extends Model
 {
-    use HasFactory, 
+    use HasFactory,
         SoftDeletes;
 
     protected $table = 'subdomain_states';
@@ -34,5 +35,8 @@ class SubdomainState extends Model
             });
         });
     }
-
+    public function subdomains()
+    {
+        return $this->hasMany(Subdomain::class, 'state_id');
+    }
 }

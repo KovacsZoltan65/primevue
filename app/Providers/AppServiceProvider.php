@@ -27,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
                     ? Session::get('errors')->getBag('default')->getMessages()
                     : (object) [];
             },
+            //'baseUrl' => env('VUE_APP_BASE_URL'),
         ]);
 
         Inertia::share('flash', function(){

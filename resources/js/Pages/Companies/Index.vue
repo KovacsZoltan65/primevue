@@ -442,30 +442,29 @@ const getCityName = (id) => {
     return props.cities.find((city) => city.id === id).name;
 };
 
+/**
+ * Visszaadja a dialógusablak címét attól függően, hogy új várost hozunk létre, vagy egy meglévőt szerkesztünk.
+ *
+ * @returns {string} A dialógusablak címe.
+ */
 const getModalTitle = () => {
     return company.value.id
         ? trans("companies_edit_title")
         : trans("companies_new_title");
 };
 
+/**
+ * Visszaadja a dialógusablak részleteit attól függően, hogy új várost hozunk létre, vagy egy meglévőt szerkesztünk.
+ *
+ * @returns {string} A dialógusablak részletei.
+ */
 const getModalDetails = () => {
     return company.value.id
         ? trans("companies_edit_details")
         : trans("companies_new_details");
 };
-
-/*
-const getRegionName = (id) => {
-    return props.regions.find((region) => region.id === id).name;
-};
-
-const getActiveLabel = (company) =>
-    ["danger", "success", "warning"][company.active || 2];
-
-const getActiveValue = (company) =>
-    ["inactive", "active", "pending"][company.active] || "pending";
-*/
 </script>
+
 <template>
     <AppLayout>
         <Head :title="$t('companies')" />
@@ -524,11 +523,11 @@ const getActiveValue = (company) =>
                         </div>
                         <!--
                         <div class="font-semibold text-xl mb-1">
-                            <Select id="country_id" class="w-full"  
-                                    v-model="country" 
-                                    :options="props.countries" 
-                                    optionLabel="name" 
-                                    optionValue="id" 
+                            <Select id="country_id" class="w-full"
+                                    v-model="country"
+                                    :options="props.countries"
+                                    optionLabel="name"
+                                    optionValue="id"
                                     :placholder="$t('name')" />
                         </div>
                     -->
@@ -544,6 +543,7 @@ const getActiveValue = (company) =>
                     </div>
                 </template>
 
+                <!-- SELECTION -->
                 <Column
                     selectionMode="multiple"
                     style="width: 3rem"
@@ -608,12 +608,9 @@ const getActiveValue = (company) =>
         <Dialog
             v-model:visible="companyDialog"
             :style="{ width: '550px' }"
-            :header="$t('companies_details')"
+            :header="getModalTitle()"
             :modal="true"
         >
-            <span class="text-surface-500 dark:text-surface-400 block mb-8">
-                {{ getModalTitle() }}
-            </span>
 
             <div class="flex flex-col gap-6">
                 <!-- NAME -->
@@ -762,5 +759,6 @@ const getActiveValue = (company) =>
                 />
             </template>
         </Dialog>
+
     </AppLayout>
 </template>

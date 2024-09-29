@@ -10,6 +10,9 @@ import { trans } from "laravel-vue-i18n";
 import useVuelidate from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 
+//import { usePage } from "@inertiajs/vue3";
+//const page = usePage();
+
 import CountryService from "@/service/CountryService";
 //import functions from '../../../helpers/functions.js';
 
@@ -23,6 +26,7 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
+//import { setBaseUrl } from "@/helpers/constants";
 
 /**
  * Szerver felöl jövő adatok
@@ -204,6 +208,7 @@ const v$ = useVuelidate(rules, country);
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
  */
 const fetchItems = () => {
+
     CountryService.getCountries()
         .then((response) => {
             //console.log(response);
@@ -327,17 +332,31 @@ const confirmDeleteCountry = (data) => {
     deleteCountryDialog.value = true;
 };
 
+/**
+ * Mentse el a város adatait az API-ban.
+ *
+ * A metódus ellenörzi a város adatait a validációs szabályok alapján,
+ * és ha a validáció sikerült, akkor elmenti a város adatait az API-ban.
+ *
+ * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megold dik.
+ */
 const saveCountry = async () => {
+    // Ellen rizi a város adatait a validációs szabályok alapján.
     const result = await v$.value.$validate();
+
+    // Ha a validáció sikerült, akkor mentse el a város adatait az API-ban.
     if (result) {
         submitted.value = true;
 
+        // Ha a városnak van azonosítója, akkor frissítse a város adatait.
         if (country.value.id) {
             updateCountry();
         } else {
+            // Ellenkez  esetben hozzon létre egy új várost az API-ban.
             createCountry();
         }
     } else {
+        // Ha a validáció nem sikerült, akkor jelenítsen meg egy figyelmeztetést.
         alert("FAIL");
     }
 };
@@ -418,12 +437,43 @@ const findIndexById = (id) => {
     return countries.value.findIndex((country) => country.id === id);
 };
 
+/**
+ * Törli a kiválasztott várost az API-ból.
+ *
+ * A metódus ellenörzi a város adatait a validációs szabályok alapján,
+ * és ha a validáció sikerült, akkor törli a várost az API-ból.
+ * A választ megjeleníti a konzolon.
+ *
+ * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megold dik.
+ */
 const deleteCountry = () => {
+    // Ellen rizi a város adatait a validációs szabályok alapján.
+    if (v$.value.$invalid) {
+        alert("FAIL");
+        return;
+    }
+
+    // Törli a várost az API-ból.
     CountryService.deleteCountry(country.value.id)
         .then((response) => {
-            //
+            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
+            const index = findIndexById(country.value.id);
+            // A város adatait törli a városok tömbjéb l
+            countries.value.splice(index, 1);
+
+            // Bezárja a dialógus ablakot
+            hideDialog();
+
+            // Siker-értesítést jelenít meg
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Country Deleted",
+                life: 3000,
+            });
         })
         .catch((error) => {
+            // Jelenítse meg a hibaüzenetet a konzolon
             console.error("deleteCountry API Error:", error);
         });
 };
@@ -436,35 +486,18 @@ const deleteSelectedCountries = () => {
     console.log(selectedCountries.value);
 };
 
-//const getCountryName = (id) => {
-//    return props.countries.find((country) => country.id === id).name;
-//};
-
-//const getRegionName = (id) => {
-//console.log('props.regions', props.regions);
-//console.log('id', id);
-
-//    let region = props.regions.find((region) => region.country_id === id);
-
-//    if( region )
-//    {
-//        console.log('region', region);
-//    }
-
-//return props.regions.find((region) => region.id === id).name;
-//};
-
 const getActiveLabel = (country) =>
     ["danger", "success", "warning"][country.active || 2];
 
 const getActiveValue = (country) =>
     ["inactive", "active", "pending"][country.active] || "pending";
+
 </script>
 
 <template>
     <AppLayout>
         <Head :title="$t('countries')" />
-
+{{ $page.props.baseUrl }}
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>

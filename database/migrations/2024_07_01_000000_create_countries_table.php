@@ -17,7 +17,9 @@ return new class extends Migration
             $table->id()->comment('Rekord azonosító');
             $table->string('name', 255)->unique('name')->comment('Név');
             $table->string('code', 10)->index()->comment('Kód');
-            $table->integer('active')->default(1)->index()->comment('Aktív')->index();
+            
+            //$table->integer('active')->default(1)->index()->comment('Aktív');
+            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
         });
     }
 

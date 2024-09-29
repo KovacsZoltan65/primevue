@@ -35,7 +35,7 @@ class Country extends Model
                 $query->where(function ($query) use ($request) {
                     $query->where('name', 'like', "%{$request->search}%");
                 });
-            })->where('active', 1);
+            })->where('active', APP_ACTIVE);
         }
         
 	/**

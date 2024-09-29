@@ -64,9 +64,9 @@ class StoreCityRequest extends FormRequest
             'name' => [
                 'required' => __('validate_required'),
                 'string' => __('validate_string'),
-                'min' => __('validate_min.numeric', ['min' => $this->string_length_min]),
-                'max' => __('validate_max.numeric', ['max' => $this->string_length_max]),
-                'unique' => _('validate_unique'),
+                'min' => __('validate_min.numeric'),
+                'max' => __('validate_max.numeric'),
+                'unique' => __('validate_unique'),
             ],
             'country_id' => [
                 'required' => __('validate_required'),

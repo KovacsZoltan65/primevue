@@ -2,7 +2,7 @@ import BaseService from "./BaseService";
 
 class CountryService extends BaseService {
     /**
-     * Osztályépítő.
+     * Létrehoz egy új CountryService példányt.
      * Meghívja a szülő osztály konstruktorát.
      */
     constructor() {
@@ -11,7 +11,7 @@ class CountryService extends BaseService {
 
     /**
      * Szerezd meg az összes országot.
-     * @returns {Promise<AxiosResponse<any>>}
+     * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     getCountries() {
         return this.get("/countries");

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\EntityController;
 use App\Http\Controllers\RegionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -60,8 +61,13 @@ Route::delete('/items/{id}', [CompanyController::class, 'deleteCompany'])->name(
  * =======================================================
  */
 Route::get('/cities', [CityController::class, 'getCities'])->name('api.get.cities');
+
+Route::get('/cities/{id}', [CityController::class, 'getCity'])->name('api.get.city_by_id')->where('id', '[0-9]+');
+Route::get('/cities/name/{name}', [CityController::class, 'getCityByName'])->name('api.get.city_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+
 Route::post('/cities', [CityController::class, 'createCity'])->name('api.post.cities');
-Route::put('/cities/{id}', [CityController::class, 'updateCity'])->name('api.put.cities');
+Route::put('/cities/{id}', [CityController::class, 'updateCity'])->name('api.put.cities')->where('id', '[0-9]+');
+Route::delete('/cities/{id}', [CityController::class, 'deleteCity'])->name('api.delete.cities')->where('id', '[0-9]+');
 //Route::post('/cities', [CityController::class, 'createCity'])->name('apicities.create');
 //Route::put('/cities/{id}', [CityController::class, 'updateCity'])->name('api.cities.update')->where('id', '[0-9]+');
 //Route::delete('/cities/{id}', [CityController::class, 'deleteCity'])->name('api.cities.delete')->where('id', '[0-9]+');
@@ -82,9 +88,27 @@ Route::resource('/cities', CityController::class)->names([
  * =======================================================
  */
 Route::get('/countries', [CountryController::class, 'getCountries'])->name('api.get.countries');
+
+Route::get('/countries/{id}', [CountryController::class, 'getCountry'])->name('api.get.country_by_id')->where('id', '[0-9]+');
+Route::get('/countries/name/{name}', [CountryController::class, 'getCountryByName'])->name('api.get.country_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+
 Route::post('/countries', [CountryController::class, 'createCountry'])->name('api.post.countries');
-Route::put('/countries/{id}', [CountryController::class, 'updateCountry'])->name('api.put.countries');
-Route::delete('/countries/{id}', [CountryController::class, 'deleteCountry'])->name('api.delete.countries');
+Route::put('/countries/{id}', [CountryController::class, 'updateCountry'])->name('api.put.countries')->where('id', '[0-9]+');
+Route::delete('/countries/{id}', [CountryController::class, 'deleteCountry'])->name('api.delete.countries')->where('id', '[0-9]+');
+
+/**
+ * =======================================================
+ * JOGI SZEMÉLYEK (legal entity)
+ * =======================================================
+ */
+Route::get('/entities', [EntityController::class, 'getEntities'])->name('api.get.entities');
+
+Route::get('/entities/{id}', [EntityController::class, 'getEntity'])->name('api.get.entity_by_id')->where('id', '[0-9]+');
+Route::get('/entities/name/{name}', [EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+
+Route::post('/entities', [EntityController::class, 'createEntity'])->name('api.post.entities');
+Route::put('/entities/{id}', [EntityController::class, 'updateEntity'])->name('api.put.entities')->where('id', '[0-9]+');
+Route::delete('/entities/{id}', [EntityController::class, 'deleteEntity'])->name('api.delete.entities')->where('id', '[0-9]+');
 
 /**
  * =======================================================
@@ -135,3 +159,4 @@ Route::get('/subdomains', [\App\Http\Controllers\SubdomainController::class, 'ge
 Route::post('/subdomains', [\App\Http\Controllers\SubdomainController::class, 'createSubdomains'])->name('api.post.subdomains');
 Route::put('/subdomains/{id}', [\App\Http\Controllers\SubdomainController::class, 'updateSubdomains'])->name('api.put.subdomains');
 Route::delete('/subdomains/{id}', [\App\Http\Controllers\SubdomainController::class, 'deleteSubdomains'])->name('api.delete.subdomains');
+

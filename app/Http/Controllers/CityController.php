@@ -87,6 +87,36 @@ class CityController extends Controller
     }
 
     /**
+     * Szerezzen várost azonosítóval.
+     *
+     * @param int $id A város id.
+     * @return \Illuminate\Http\JsonResponse A város adatai JSON formátumban.
+     */
+    public function getCity(int $id)
+    {
+        // Szerezd meg a várost az adatbázisból
+        $city = City::find($id);
+
+        // Adja vissza a város adatait JSON formátumban
+        return response()->json($city, Response::HTTP_OK);
+    }
+
+    /**
+     * Szerezzen várost a név alapján.
+     *
+     * @param string $name A város neve.
+     * @return \Illuminate\Http\JsonResponse A keresett város adatait tartalmazó JSON-válasz.
+     */
+    public function getCityByName(string $name)
+    {
+        // Szerezze be a várost a megadott név alapján
+        $city = City::where('name', $name)->first();
+
+        // A keresett város adatait tartalmazó JSON-válasz visszaadása
+        return response()->json($city, Response::HTTP_OK);
+    }
+
+    /**
      * Hozzon létre új várost az adatbázisban.
      *
      * A létrehozott város adatait tartalmazó JSON-válasz kerül visszaadásra.

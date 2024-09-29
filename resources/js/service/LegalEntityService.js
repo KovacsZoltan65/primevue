@@ -1,3 +1,43 @@
+import BaseService from "./BaseService";
+
+/**
+ * Szolgáltatás jogi személyek kezelésére.
+ *
+ * @class
+ * @extends BaseService
+ */
+class LegalEntityService extends BaseService {
+    constructor() {
+        super();
+    }
+
+    getEntities() {
+        return this.get("/api/entities");
+    }
+
+    getEntity($id) {
+        return this.get(`/api/entities/${$id}`);
+    }
+
+    getEntityByName($name) {
+        return this.get(`/api/entities/name/${$name}`);
+    }
+
+    createEntity($data) {
+        return this.post("/api/entities", $data);
+    }
+
+    updateEntity($id, $data) {
+        return this.put(`/api/entities/${$id}`, $data);
+    }
+
+    deleteEntity($id) {
+        return this.delete(`/api/entities/${$id}`);
+    }
+}
+export default new LegalEntityService();
+
+/*
 export const CustomerService = {
     getData() {
         return [
@@ -9037,3 +9077,4 @@ export const CustomerService = {
         ).then((res) => res.json());
     },
 };
+*/

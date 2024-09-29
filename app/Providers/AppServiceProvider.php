@@ -21,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        define('APP_ACTIVE', 1);
+        define('APP_INACTIVE', 0);
+        
         Inertia::share([
             'errors' => function () {
                 return Session::get('errors')

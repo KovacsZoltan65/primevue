@@ -95,6 +95,10 @@
     "companies_delete_title_2": "Companies Deletion",
     "companies_delete_details_2": "Confirm Deletion",
 
+    "subdomains": "Subdomains",
+
+    "subdomain_states": "Subdomain States",
+
     "validate_required": "This field is required.",
     "validate_name": "Name is required",
     "validate_email": "Email is required",

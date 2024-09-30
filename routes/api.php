@@ -8,6 +8,9 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\RegionController;
+use App\Http\Controllers\SubdomainController;
+use App\Http\Controllers\SubdomainStateController;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,7 +27,7 @@ Route::get('/user', function (Request $request) {
  * A cégek listájának lekérése az API-n keresztül.
  * 
  * @param CompanyController $companyController A cégvezérlő példány.
- * @return \Illuminate\Http\JsonResponse A vállalatok listáját tartalmazó JSON-válasz.
+ * @return JsonResponse A vállalatok listáját tartalmazó JSON-válasz.
  */
 //Route::get('/items', [CompanyController::class, 'getCompanies'])->name('api.get.companies');
 Route::get('/companies', [CompanyController::class, 'getCompanies'])->name('api.get.companies');
@@ -34,7 +37,7 @@ Route::get('/companies', [CompanyController::class, 'getCompanies'])->name('api.
  *
  * @param Request $request A vállalati adatokat tartalmazó HTTP kérési objektum.
  * @param CompanyController $companyController A CompanyController példány.
- * @return \Illuminate\Http\JsonResponse A létrehozott vállalatot tartalmazó JSON-válasz.
+ * @return JsonResponse A létrehozott vállalatot tartalmazó JSON-válasz.
  */
 Route::post('/items', [CompanyController::class, 'createCompany'])->name('api.create.company');
 
@@ -43,7 +46,7 @@ Route::post('/items', [CompanyController::class, 'createCompany'])->name('api.cr
  *
  * @param Request $request A vállalati adatokat tartalmazó HTTP kérési objektum.
  * @param int $id A frissítendő cég azonosítója.
- * @return \Illuminate\Http\JsonResponse A frissített vállalatot tartalmazó JSON-válasz.
+ * @return JsonResponse A frissített vállalatot tartalmazó JSON-válasz.
  */
 Route::put('/items/{id}', [CompanyController::class, 'updateCompany'])->name('api.update.company')->where('id', '[0-9]+');
 
@@ -51,7 +54,7 @@ Route::put('/items/{id}', [CompanyController::class, 'updateCompany'])->name('ap
  * Töröljön egy meglévő céget.
  *
  * @param int $id A törölni kívánt cég azonosítója.
- * @return \Illuminate\Http\JsonResponse A törölt vállalatot tartalmazó JSON-válasz.
+ * @return JsonResponse A törölt vállalatot tartalmazó JSON-válasz.
  */
 Route::delete('/items/{id}', [CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
 
@@ -155,8 +158,17 @@ Route::delete('/permissions/{id}', [PermissionController::class, 'deletePermissi
  * SUBDOMAINS
  * =======================================================
  */
-Route::get('/subdomains', [\App\Http\Controllers\SubdomainController::class, 'getSubdomains'])->name('api.get.subdomains');
-Route::post('/subdomains', [\App\Http\Controllers\SubdomainController::class, 'createSubdomains'])->name('api.post.subdomains');
-Route::put('/subdomains/{id}', [\App\Http\Controllers\SubdomainController::class, 'updateSubdomains'])->name('api.put.subdomains');
-Route::delete('/subdomains/{id}', [\App\Http\Controllers\SubdomainController::class, 'deleteSubdomains'])->name('api.delete.subdomains');
+Route::get('/subdomains', [SubdomainController::class, 'getSubdomains'])->name('api.get.subdomains');
+Route::post('/subdomains', [SubdomainController::class, 'createSubdomains'])->name('api.post.subdomains');
+Route::put('/subdomains/{id}', [SubdomainController::class, 'updateSubdomains'])->name('api.put.subdomains');
+Route::delete('/subdomains/{id}', [SubdomainController::class, 'deleteSubdomains'])->name('api.delete.subdomains');
 
+/**
+ * =======================================================
+ * SUBDOMAIN STATES
+ * =======================================================
+ */
+Route::get('/subdomain_states', [SubdomainStateController::class, 'getSubdomainStates'])->name('api.get.subdomain_states');
+Route::post('/subdomain_states', [SubdomainStateController::class, 'createSubdomainStates'])->name('api.post.subdomain_states');
+Route::put('/subdomain_states/{id}', [SubdomainStateController::class, 'updateSubdomainStates'])->name('api.put.subdomain_states');
+Route::delete('/subdomain_states/{id}', [SubdomainStateController::class, 'deleteSubdomainStates'])->name('api.delete.subdomain_states');

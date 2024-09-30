@@ -463,7 +463,7 @@ const getActiveValue = (country) =>
 
 <template>
     <AppLayout>
-        <Head :title="$t('countries')" />
+        <Head :title="$t('subdomains')" />
 
         <div class="card">
             <Toolbar class="md-6">

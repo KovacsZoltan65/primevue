@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('subdomains', function (Blueprint $table) {
             $table->increments('id')->comment('Rekord azonosító');
-            $table->string('subdomain')->comment('Példány');
+            $table->string('subdomain')->collation('utf8mb3_general_ci')->index()->comment('Példány');
             $table->string('url')->collation('utf8mb3_general_ci')->comment('Példány url-je');
-            $table->string('name')->collation('utf8mb3_general_ci')->comment('Aldomain neve');
+            $table->string('name')->collation('utf8mb3_general_ci')->index()->comment('Aldomain neve');
             $table->string('db_host', 125)->collation('utf8mb3_general_ci')->default('localhost')->comment('Adatbázis szerver címe');
             $table->integer('db_port')->default(3306)->comment('Adatbázis port');
             $table->string('db_name')->collation('utf8mb3_general_ci')->comment('Adatbázis neve');
@@ -31,8 +31,10 @@ return new class extends Migration
             
             $table->enum('sso', ['0','1'])->default(0)->comment('SSO');
             
-            $table->unsignedBigInteger('acs_id')->default(0)->comment('Access Controll System');
+            $table->unsignedBigInteger('acs_id')->default(0)->comment('Beléptető rendszer használata');
             //$table->foreign('acs_id')->references('id')->on('access_control_system')->cascadeOnDelete();
+            
+            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
             
             $table->timestamp('last_export')->nullable()->comment('Utoldó export');
             

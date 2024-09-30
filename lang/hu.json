@@ -94,9 +94,11 @@
     "companies_delete_title_2": "Cégek törlése",
     "companies_delete_details_2": "Törlés megerősítése",
 
-    "subdomains": "Subdomainok",
+    "subdomains": "Subdomainek",
+    "subdomains_title": "Subdomainek kezelése",
 
     "subdomain_states": "Subdomain állapotok",
+    "subdomain_state_title": "Subdomain állapotok kezelése",
 
     "validate_required": "Ez a mező kötelező.",
     "validate_name": "A név megadása kötelező",

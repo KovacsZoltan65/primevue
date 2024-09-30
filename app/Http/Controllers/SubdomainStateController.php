@@ -21,8 +21,8 @@ class SubdomainStateController extends Controller
 
     public function index(Request $request)
     {
-        return Inertia::render('', [
-            'search' => $request('search'),
+        return Inertia::render('SubdomainState/Index', [
+            'search' => $request->get('search'),
         ]);
     }
 

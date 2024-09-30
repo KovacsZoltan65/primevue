@@ -22,6 +22,22 @@ class SubdomainService extends BaseService {
         return this.get("/subdomains");
     }
 
+    getSubdomainsSmall() {
+        return Promise.resolve(this.getSubdomains().slice(0, 10));
+    }
+
+    getSubdomainsMedium() {
+        return Promise.resolve(this.getSubdomains().slice(0, 50));
+    }
+
+    getSubdomainsLarge() {
+        return Promise.resolve(this.getSubdomains().slice(0, 200));
+    }
+
+    getSubdomainsXLarge() {
+        return Promise.resolve(this.getSubdomains());
+    }
+
     /**
      * Szerezd meg a várost azonosítója alapján az API-ból.
      *

@@ -22,9 +22,9 @@ return new class extends Migration
             $table->string('db_user')->collation('utf8mb3_general_ci')->comment('Adatbázis felhasználó');
             $table->string('db_password')->collation('utf8mb3_general_ci')->comment('Adatbázis jelszó');
             
-            $table->enum('notification', [0,1])->comment('Értesítés');
+            $table->enum('notification', [0,1])->default(1)->comment('Értesítés');
             
-            $table->unsignedInteger('state_id')->comment('Állapot azonosító');
+            $table->unsignedInteger('state_id')->default(1)->comment('Állapot azonosító');
             $table->foreign('state_id')->references('id')->on('subdomain_states')->cascadeOnDelete();
             
             $table->enum('is_mirror', ['0','1'])->default(0)->comment('Tükör adatbázis');

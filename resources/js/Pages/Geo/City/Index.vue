@@ -206,6 +206,7 @@ const v$ = useVuelidate(rules, city);
 const fetchItems = () => {
     CityService.getCities()
         .then((response) => {
+            console.log(response.data.data);
             // A városok listája a cities változóban lesz elmentve
             cities.value = response.data.data;
         })

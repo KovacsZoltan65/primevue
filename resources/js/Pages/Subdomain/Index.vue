@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, reactive } from "vue";
 import { Head } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
-import { FilterMatchMode } from "@primevue/core/api";
+import { FilterMatchMode, FilterOperator  } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { trans } from "laravel-vue-i18n";
 
@@ -23,10 +23,10 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
+import SubdomainService from "@/service/SubdomainService";
 
-/**
- * Szerver felöl jövő adatok
- */
+const loading = ref(true);
+
 const props = defineProps({
     /**
      * Országok adatai.
@@ -44,129 +44,61 @@ const props = defineProps({
     },
 });
 
-/**
- * Az állapotmező logikai értékeit adja vissza.
- *
- * @returns {Array<Object>} objektumok tömbje címke és érték tulajdonságokkal.
- */
 const getBools = () => {
     return [
         {
-            /**
-             * Az inaktív állapot címkéje.
-             */
             label: trans("inactive"),
-            /**
-             * Az inaktív állapot értéke.
-             */
             value: 0,
         },
         {
-            /**
-             * Az aktív állapot címkéje.
-             */
             label: trans("active"),
-            /**
-             * Az aktív állapot értéke.
-             */
             value: 1,
         },
     ];
 };
 
-/**
- * Használja a PrimeVue toast összetevőjét.
- *
- * @type {Object}
- */
 const toast = useToast();
 
-/**
- * Reaktív hivatkozás a datatable komponensre.
- *
- * @type {Object}
- */
 const dt = ref();
 
-/**
- * Reaktív hivatkozás a városok adatainak tárolására.
- *
- * @type {Array}
- */
-const countries = ref();
+const subdomains = ref();
 
-/**
- * Reaktív hivatkozás a város adatainak megjelenítő párbeszédpanel megnyitásához.
- *
- * @type {ref<boolean>}
- */
-const countryDialog = ref(false);
-
-/**
- * Reaktív hivatkozás a városok törléséhez használt párbeszédpanel megnyitásához.
- *
- * @type {ref<boolean>}
- */
-const deleteSelectedCountriesDialog = ref(false);
-
-/**
- * Reaktív hivatkozás a kijelölt város(ok) törléséhez használt párbeszédpanel megnyitásához.
- *
- * @type {ref<boolean>}
- */
-const deleteCountryDialog = ref(false);
-
-/**
- * Reaktív hivatkozás a város adatainak tárolására.
- *
- * @type {Object}
- * @property {string} name - A város neve.
- * @property {number} country_id - Az ország azonosítója.
- * @property {number} region_id - A régió azonosítója.
- * @property {number} active - A város státusza.
- * @property {number} id - A város azonosítója.
- */
-const country = ref({
-    name: "",
-    country_id: null,
-    region_id: null,
-    active: 1,
+const subdomain = ref({
     id: null,
+    subdomain: "",
+    url: "",
+    name: "",
+    db_host: "",
+    db_port: 3306,
+    db_name: "",
+    db_user: "",
+    db_password: "",
+    notification: 1,
+    state_id: 1,
+    is_mirror: 0,
+    sso: 0,
+    acs_id: 0,
+    active: 1,
+    last_export: null,
 });
 
-/**
- * Reaktív hivatkozás a kijelölt városok tárolására.
- *
- * @type {Array}
- */
-const selectedCountries = ref();
+const subdomainDialog = ref(false);
 
-/**
- * Reaktív hivatkozás a globális keresés szűrőinek tárolására az adattáblában.
- *
- * @type {Object}
- */
+const deleteSelectedSubdomainsDialog = ref(false);
+
+const deleteSubdomainDialog = ref(false);
+
+const selectedSubdomains = ref([]);
+
+const filters = ref();
+/*
 const filters = ref({
-    // A globális szűrőobjektum.
-    // Van egy érték tulajdonsága a keresési lekérdezés tárolására
-    // és egy matchMode tulajdonsága a keresés típusának megadásához.
     global: {
-        /**
-         * A globális szűrő értéke.
-         *
-         * @type {string | null}
-         */
         value: null,
-
-        /**
-         * A globális szűrő illesztési módja.
-         *
-         * @type {FilterMatchMode}
-         */
         matchMode: FilterMatchMode.CONTAINS,
     },
 });
-
+*/
 /**
  * Reaktív hivatkozás a beküldött (submit) állapotára.
  *
@@ -175,15 +107,16 @@ const filters = ref({
 const submitted = ref(false);
 
 const rules = {
+    subdomain: {},
+    url: {},
     name: {
         required: helpers.withMessage("validate_name", required),
     },
-    country_id: {
-        required: helpers.withMessage("validate_country_id", required),
-    },
-    region_id: {
-        required: helpers.withMessage("validate_region_id", required),
-    },
+    db_host: {required},
+    db_port: {required},
+    db_name: {required},
+    db_user: {required},
+    db_password: {required},
 };
 
 /**
@@ -191,171 +124,118 @@ const rules = {
  *
  * @type {Object}
  */
-const v$ = useVuelidate(rules, country);
+const v$ = useVuelidate(rules, subdomain);
 
 // ======================================================
 
-/**
- * Lekéri a városok listáját az API-ból.
- *
- * Ez a funkció a városok listáját lekéri az API-ból.
- * A városok listája a countries változóban lesz elmentve.
- *
- * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
- */
-const fetchItems = () => {
-    CountryService.getCountries()
-        .then((response) => {
-            //console.log(response);
-            // A városok listája a countries változóban lesz elmentve
-            countries.value = response.data.data;
-        })
-        .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("getCountries API Error:", error);
-        });
+const initFilters = () => {
+    filters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+    };
 };
 
-/**
- * Eseménykezelő, amely a komponens létrejöttekor hívódik meg.
- *
- * Ez a funkció a városok listáját lekéri az API-ból, amikor a komponens létrejön.
- * A városok listája a countries változóban lesz elmentve.
- *
- * @return {void}
- */
+const clearFilter = () => {
+    initFilters();
+};
+
+initFilters();
+
+const fetchItems = () => {
+
+    loading.value = true;
+
+    SubdomainService.getSubdomainsXLarge()
+        .then((response) => {
+            subdomains.value = getSubdomains(response.data.data);
+            loading.value = false;
+        });
+    /*
+    SubdomainService.getSubdomains()
+        .then(response => {
+            subdomains.value = response.data.data;
+
+            loading.value = false;
+        })
+        .catch(error => {
+            console.error("getSubdomains API Error:", error);
+        });
+    */
+};
+
+const getSubdomains = (data) => {
+    return data;
+};
+
 onMounted(() => {
     fetchItems();
 });
 
-/**
- * Megerősíti a kiválasztott termékek törlését.
- *
- * Ez a funkció akkor hívódik meg, ha a felhasználó törölni szeretné a kiválasztott termékeket.
- * A deleteCountrysDialog változó értékét igazra állítja, ami
- * megnyílik egy megerősítő párbeszédablak a kiválasztott termékek törléséhez.
- *
- * @return {void}
- */
 function confirmDeleteSelected() {
-    // Állítsa a deleteCountriessDialog változó értékét igazra,
-    // amely megnyitja a megerősítő párbeszédablakot a kiválasztott termékek törléséhez.
-    deleteSelectedCountriesDialog.value = true;
+    deleteSelectedSubdomainsDialog.value = true;
 }
 
-/**
- * Nyitja meg az új város dialógusablakot.
- *
- * Ez a függvény a country változó értékét alaphelyzetbe állítja, a submitted változó értékét False-ra állítja,
- * és a countryDialog változó értékét igazra állítja, amely megnyitja az új város dialógusablakot.
- *
- * @return {void}
- */
 function openNew() {
-    country.value = { ...initialCountry };
+    subdomain.value = { ...initialSubdomain };
     submitted.value = false;
-    countryDialog.value = true;
+    subdomainDialog.value = true;
 }
 
-/**
- * Az új város objektum alapértelmezett értékei.
- *
- * A countryDialog változó értékét igazra állítva, ez az objektum lesz a dialógusablakban
- * megjelenő új város formban.
- *
- * @type {Object}
- * @property {string} name - A város neve.
- * @property {number} country_id - Az ország azonosítója.
- * @property {number} region_id - A régió azonosítója.
- * @property {number} active - A város aktív-e? (1 igen, 0 nem).
- * @property {number} id - A város azonosítója.
- */
-const initialCountry = {
-    name: "",
-    //country_id: null,
-    //region_id: null,
-    code: "",
-    active: 1,
+const initialSubdomain = {
     id: null,
+    subdomain: "",
+    url: "",
+    name: "",
+    db_host: "",
+    db_port: 3306,
+    db_name: "",
+    db_user: "",
+    db_password: "",
+    notification: 1,
+    state_id: 1,
+    is_mirror: 0,
+    sso: 0,
+    acs_id: 0,
+    active: 1,
+    last_export: null,
 };
 
-/**
- * Bezárja a dialógusablakot.
- *
- * Ez a függvény a dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
- * A v$.value.$reset() függvénnyel visszaállítja a validációs objektumot az alapértelmezett állapotába.
- */
 const hideDialog = () => {
-    countryDialog.value = false;
+    subdomainDialog.value = false;
     submitted.value = false;
-
-    // Visszaállítja a validációs objektumot az alapértelmezett állapotába.
     v$.value.$reset();
 };
 
-/**
- * Szerkeszti a kiválasztott várost.
- *
- * Ez a funkció a kiválasztott város adatait másolja a country változóba,
- * és megnyitja a dialógusablakot a város szerkesztéséhez.
- *
- * @param {object} data - A kiválasztott város adatai.
- * @return {void}
- */
-const editCountry = (data) => {
-    // Másolja a kiválasztott város adatait a country változóba.
-    country.value = { ...data };
-
-    // Nyissa meg a dialógusablakot a város szerkesztéséhez.
-    countryDialog.value = true;
+const editSubdomain = (data) => {
+    subdomain.value = { ...data };
+    subdomainDialog.value = true;
 };
 
-/**
- * Megerősítés a város törléséhez.
- *
- * Ez a funkció a country változóba másolja a kiválasztott város adatait,
- * és megnyitja a dialógusablakot a város törléséhez.
- *
- * @param {object} data - A kiválasztott város adatai.
- * @return {void}
- */
 const confirmDeleteCountry = (data) => {
-    // Másolja a kiválasztott város adatait a country változóba.
-    country.value = { ...data };
+    subdomain.value = { ...data };
 
-    // Nyissa meg a dialógusablakot a város törléséhez.
-    deleteCountryDialog.value = true;
+    deleteSubdomainDialog.value = true;
 };
 
-const saveCountry = async () => {
+const saveSubdomain = async () => {
     const result = await v$.value.$validate();
     if (result) {
         submitted.value = true;
 
-        if (country.value.id) {
-            updateCountry();
+        if (subdomain.value.id) {
+            updateSubdomain();
         } else {
-            createCountry();
+            createSubdomain();
         }
     } else {
         alert("FAIL");
     }
 };
 
-/**
- * Hozzon létre új várost az API-nak küldött POST-kéréssel.
- *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor létrehoz egy új várost az API-ban.
- * A választ megjeleníti a konzolon.
- *
- * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
- */
-const createCountry = () => {
-    CountryService.createCountry(country.value)
+const createSubdomain = () => {
+    CountryService.createCountry(subdomain.value)
         .then((response) => {
-            //console.log('response', response);
-            countries.values.push(response.data);
+            subdomains.values.push(response.data);
 
             hideDialog();
 
@@ -367,38 +247,22 @@ const createCountry = () => {
             });
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("createCountry API Error:", error);
+            console.error("createSubdomain API Error:", error);
         });
 };
 
-/**
- * Frissít egy várost az API-nak küldött PUT-kéréssel.
- *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor frissíti a várost az API-ban.
- * A választ megjeleníti a konzolon.
- *
- * @param {number} id - A frissítendő város azonosítója.
- * @param {object} data - A város új adatai.
- * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
- */
-const updateCountry = () => {
-    CountryService.updateCountry(country.value.id, country.value)
+const updateSubdomain = () => {
+    SubdomainService.updateSubdomain(subdomain.value.id, subdomain.value)
         .then(() => {
-            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
-            const index = findIndexById(country.value.id);
-            // A város adatait frissíti a városok tömbjében
-            countries.value.splice(index, 1, country.value);
+            const index = findIndexById(subdomain.value.id);
+            subdomains.value.splice(index, 1, subdomain.value);
 
-            // Bezárja a dialógus ablakot
             hideDialog();
 
-            // Siker-értesítést jelenít meg
             toast.add({
                 severity: "success",
                 summary: "Successful",
-                detail: "Country Updated",
+                detail: "Subdomain Updated",
                 life: 3000,
             });
         })
@@ -408,23 +272,17 @@ const updateCountry = () => {
         });
 };
 
-/**
- * Megkeresi egy város indexét a városok tömbjében az azonosítója alapján.
- *
- * @param {number} id - A keresendő város azonosítója.
- * @returns {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
- */
 const findIndexById = (id) => {
-    return countries.value.findIndex((country) => country.id === id);
+    return subdomain.value.findIndex((subdomain) => subdomain.id === id);
 };
 
-const deleteCountry = () => {
-    CountryService.deleteCountry(country.value.id)
+const deleteSubdomain = () => {
+    SubdomainService.deleteSubdomain(subdomain.value.id)
         .then((response) => {
             //
         })
         .catch((error) => {
-            console.error("deleteCountry API Error:", error);
+            console.error("deleteSubdomain API Error:", error);
         });
 };
 
@@ -432,33 +290,15 @@ const exportCSV = () => {
     dt.value.exportCSV();
 };
 
-const deleteSelectedCountries = () => {
-    console.log(selectedCountries.value);
+const deleteSelectedSubdomain = () => {
+    console.log(selectedSubdomains.value);
 };
 
-//const getCountryName = (id) => {
-//    return props.countries.find((country) => country.id === id).name;
-//};
+const getActiveLabel = (subdomain) =>
+    ["danger", "success", "warning"][subdomain.active || 2];
 
-//const getRegionName = (id) => {
-//console.log('props.regions', props.regions);
-//console.log('id', id);
-
-//    let region = props.regions.find((region) => region.country_id === id);
-
-//    if( region )
-//    {
-//        console.log('region', region);
-//    }
-
-//return props.regions.find((region) => region.id === id).name;
-//};
-
-const getActiveLabel = (country) =>
-    ["danger", "success", "warning"][country.active || 2];
-
-const getActiveValue = (country) =>
-    ["inactive", "active", "pending"][country.active] || "pending";
+const getActiveValue = (subdomain) =>
+    ["inactive", "active", "pending"][subdomain.active] || "pending";
 </script>
 
 <template>
@@ -481,7 +321,7 @@ const getActiveValue = (country) =>
                         severity="secondary"
                         @click="confirmDeleteSelected"
                         :disabled="
-                            !selectedCountries || !selectedCountries.length
+                            !selectedSubdomains || !selectedSubdomains.length
                         "
                     />
                 </template>
@@ -498,23 +338,41 @@ const getActiveValue = (country) =>
 
             <DataTable
                 ref="dt"
-                v-model:selection="selectedCountries"
-                :value="countries"
+                v-model:selection="selectedSubdomains"
+                v-model:filters="filters"
+                :value="subdomains"
                 dataKey="id"
                 :paginator="true"
                 :rows="10"
                 :filters="filters"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                filterDisplay="menu"
+                :globalFilterFields="['name']"
+                :loading="loading"
                 :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} countries"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} subdomains"
             >
+            <!--<DataTable 
+                v-model:filters="filters" 
+                :value="customers" 
+                paginator showGridlines 
+                :rows="10" dataKey="id" 
+                filterDisplay="menu" 
+                :loading="loading" 
+                :globalFilterFields="['name', 'country.name', 'representative.name', 'balance', 'status']"
+            >-->
                 <template #header>
-                    <div
-                        class="flex flex-wrap gap-2 items-center justify-between"
-                    >
+                    <div class="flex flex-wrap gap-2 items-center justify-between">
+                        <Button 
+                            type="button" 
+                            icon="pi pi-filter-slash" 
+                            label="Clear" 
+                            outlined 
+                            @click="clearFilter()"
+                        />
                         <!-- FELIRAT -->
                         <div class="font-semibold text-xl mb-1">
-                            {{ $t("countries_title") }}
+                            {{ $t("subdomains_title") }}
                         </div>
 
                         <!-- KERESÉS -->
@@ -530,6 +388,18 @@ const getActiveValue = (country) =>
                     </div>
                 </template>
 
+                <template #paginatorstart>
+                    <Button type="button" icon="pi pi-refresh" text @click="fetchItems" />
+                </template>
+
+                <!--<template #paginatorend>
+                    <Button type="button" icon="pi pi-download" text @click="" />
+                </template>-->
+
+                <template #empty> No customers found. </template>
+
+                <template #loading> Loading customers data. Please wait. </template>
+
                 <!-- Checkbox -->
                 <Column
                     selectionMode="multiple"
@@ -538,11 +408,59 @@ const getActiveValue = (country) =>
                 />
 
                 <!-- Nev -->
-                <Column
+                <Column field="name" header="Name" style="min-width: 12rem" sortable>
+                    <template #body="{ data }">
+                        {{ data.name }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText v-model="filterModel.value" type="text" placeholder="Search by name" />
+                    </template>
+                </Column>
+                <!--<Column
                     field="name"
                     :header="$t('name')"
                     sortable
                     style="min-width: 16rem"
+                />-->
+
+                <!-- Subdomain -->
+                <Column 
+                    field="subdomain" 
+                    :header="$t('subdomain')" 
+                    style="min-width: 16rem" 
+                    sortable
+                />
+
+                <!-- url -->
+                <Column 
+                    field="url" 
+                    :header="$t('url')" 
+                    style="min-width: 16rem" 
+                    sortable
+                />
+
+                <!-- db_name -->
+                <Column 
+                    field="db_name" 
+                    :header="$t('db_name')" 
+                    style="min-width: 16rem" 
+                    sortable
+                />
+
+                <!-- db_user -->
+                <Column 
+                    field="db_user" 
+                    :header="$t('db_user')" 
+                    style="min-width: 16rem" 
+                    sortable
+                />
+
+                <!-- db_password -->
+                <Column 
+                    field="db_password" 
+                    :header="$t('db_password')" 
+                    style="min-width: 16rem" 
+                    sortable
                 />
 
                 <!-- Active -->
@@ -568,23 +486,24 @@ const getActiveValue = (country) =>
                             outlined
                             rounded
                             class="mr-2"
-                            @click="editCountry(slotProps.data)"
+                            @click="editSubdomain(slotProps.data)"
                         />
                         <Button
                             icon="pi pi-trash"
                             outlined
                             rounded
                             severity="danger"
-                            @click="confirmDeleteCountry(slotProps.data)"
+                            @click="confirmDeleteSubdomain(slotProps.data)"
                         />
                     </template>
                 </Column>
+
             </DataTable>
         </div>
 
         <!-- Város szerkesztése -->
         <Dialog
-            v-model:visible="countryDialog"
+            v-model:visible="subdomainDialog"
             :style="{ width: '550px' }"
             :header="$t('countries_details')"
             :modal="true"
@@ -598,7 +517,7 @@ const getActiveValue = (country) =>
                         }}</label>
                         <InputText
                             id="name"
-                            v-model="country.name"
+                            v-model="subdomain.name"
                             autofocus
                             fluid
                         />
@@ -617,7 +536,7 @@ const getActiveValue = (country) =>
                         <Select
                             id="active"
                             name="active"
-                            v-model="country.active"
+                            v-model="subdomain.active"
                             :options="getBools()"
                             optionLabel="label"
                             optionValue="value"
@@ -646,7 +565,7 @@ const getActiveValue = (country) =>
         <!-- Egy megerősítő párbeszédpanel, amely megjelenik, ha a felhasználó törölni szeretne egy várost. -->
         <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést. -->
         <Dialog
-            v-model:visible="deleteCountryDialog"
+            v-model:visible="deleteSubdomainDialog"
             :style="{ width: '450px' }"
             :header="$t('confirm')"
             :modal="true"
@@ -656,8 +575,8 @@ const getActiveValue = (country) =>
                 <!-- A figyelmeztető ikon -->
                 <i class="pi pi-exclamation-triangle !text-3xl" />
                 <!-- A szöveg, amely megjelenik a párbeszédpanelen -->
-                <span v-if="country"
-                    >{{ $t("confirm_delete_2") }} <b>{{ country.name }}</b
+                <span v-if="subdomain"
+                    >{{ $t("confirm_delete_2") }} <b>{{ subdomain.name }}</b
                     >?</span
                 >
             </div>
@@ -667,14 +586,14 @@ const getActiveValue = (country) =>
                 <Button
                     :label="$t('no')"
                     icon="pi pi-times"
-                    @click="deleteCountryDialog = false"
+                    @click="deleteSubdomainDialog = false"
                     text
                 />
                 <!-- A "Igen" gomb, amely törli a várost -->
                 <Button
                     :label="$t('yes')"
                     icon="pi pi-check"
-                    @click="deleteCountry"
+                    @click="deleteSubdomain"
                 />
             </template>
         </Dialog>
@@ -683,14 +602,14 @@ const getActiveValue = (country) =>
         <!-- Ez a párbeszédpanel akkor jelenik meg, ha a felhasználó több várost szeretne törölni -->
         <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést -->
         <Dialog
-            v-model:visible="deleteSelectedCountriesDialog"
+            v-model:visible="deleteSelectedSubdomainsDialog"
             :style="{ width: '450px' }"
             :header="$t('confirm')"
             :modal="true"
         >
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="country">{{ $t("confirm_delete") }}</span>
+                <span v-if="subdomain">{{ $t("confirm_delete") }}</span>
             </div>
             <template #footer>
                 <!-- "Mégsem" gomb -->

@@ -39,7 +39,7 @@ class CityController extends Controller
             //'cities' => $cities,
             'countries' => $countries,
             'regions' => $regions,
-            'search' => request('search'),
+            'search' => $request->get('search'),
         ]);
 
     }
@@ -80,7 +80,6 @@ class CityController extends Controller
 
         // Alakítsa át a városokat erőforrásgyűjteménybe
         $cities = CityResource::collection($cityQuery->get());
-        //$cities = CityResource::collection(City::all());
 
         // Az erőforrásgyűjtemény visszaadása
         return $cities;

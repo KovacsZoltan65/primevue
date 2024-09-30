@@ -138,7 +138,7 @@ Route::middleware('auth')->group(function () {
      * SUBDOMAIN STATES
      * =======================================================
      */
-    Route::get('/subdomain_states', [SubdomainStateController::Controller::class, 'index'])->name('subdomain_states');
+    Route::get('/subdomain_states', [SubdomainStateController::class, 'index'])->name('subdomain_states');
 });
 
 require __DIR__.'/auth.php';

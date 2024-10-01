@@ -11,7 +11,11 @@ import { ZiggyVue } from "../../vendor/tightenco/ziggy";
 import { i18nVue } from "laravel-vue-i18n";
 
 import Aura from "@primevue/themes/aura";
+
 import PrimeVue from "primevue/config";
+import { localeEN } from "../../lang/primevue-en.js";
+import { localeHU } from "../../lang/primevue-hu.js";
+
 import ConfirmationService from "primevue/confirmationservice";
 import ToastService from "primevue/toastservice";
 import StyleClass from "primevue/styleclass";
@@ -39,6 +43,13 @@ createInertiaApp({
                         darkModaSelector: ".app-dark",
                     },
                 },
+                locale: localeHU
+                /*
+                locale: {
+                    en: localeEN,
+                    hu: localeHU,
+                },
+                */
             })
             .use(ToastService)
             .use(ConfirmationService)

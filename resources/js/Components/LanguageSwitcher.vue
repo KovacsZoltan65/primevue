@@ -1,9 +1,12 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import axios from "axios";
 import { LanguageService } from "@/service/LanguageService";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import Select from "primevue/select";
+
+import { localeEN } from "../../../lang/primevue-en.js";
+import { localeHU } from "../../../lang/primevue-hu.js";
 
 const selectedCountry = ref();
 const countries = ref();
@@ -16,10 +19,21 @@ onMounted(() => {
 });
 
 function setLocale(locale) {
+    /*
     axios.post(route("language"), { locale: locale }).catch((error) => {
         console.log(error);
     });
+    */
+   const primeLocale = locale == 'HU' ? localeHU : localeEN;
+   PrimeVue.config.locale = primeLocale;
 }
+
+watch(selectedCountry, (newValue) => {
+    console.log(newValue);
+    //const primeLocale = locale == 'HU' ? localeHU : localeEN;
+    //PrimeVue.config.locale = primeLocale;
+});
+
 </script>
 <template>
     <Select

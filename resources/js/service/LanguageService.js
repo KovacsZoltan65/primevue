@@ -9,4 +9,8 @@ export const LanguageService = {
     getLanguages() {
         return Promise.resolve(this.getLanguageData());
     },
+
+    setLocale() {
+        //
+    }
 };

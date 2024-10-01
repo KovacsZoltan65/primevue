@@ -4,6 +4,7 @@ import { Head } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode, FilterOperator  } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
+
 import { trans } from "laravel-vue-i18n";
 
 // Validation
@@ -24,6 +25,7 @@ import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
 import SubdomainService from "@/service/SubdomainService";
+import { usePrimeVue } from "primevue/config";
 
 const loading = ref(true);
 
@@ -145,12 +147,20 @@ const fetchItems = () => {
 
     loading.value = true;
 
+    /*
     SubdomainService.getSubdomainsXLarge()
         .then((response) => {
             subdomains.value = getSubdomains(response.data.data);
             loading.value = false;
         });
-    /*
+    
+    
+    SubdomainService.getSubdomainsXLarge()
+        .then((response) => {
+            subdomains.value = getSubdomains(response.data.data);
+            loading.value = false;
+        });
+    */
     SubdomainService.getSubdomains()
         .then(response => {
             subdomains.value = response.data.data;
@@ -160,14 +170,16 @@ const fetchItems = () => {
         .catch(error => {
             console.error("getSubdomains API Error:", error);
         });
-    */
 };
 
-const getSubdomains = (data) => {
-    return data;
-};
-
+//const getSubdomains = (data) => {
+//    return data;
+//};
+//import { primeVueLocaleConfig } from "@/primevue/config.js";
 onMounted(() => {
+    //const primevue = usePrimeVue();
+    //primevue.config.locale = primeVueLocaleConfig;
+
     fetchItems();
 });
 

@@ -5,6 +5,10 @@ import { LanguageService } from "@/service/LanguageService";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import Select from "primevue/select";
 
+import localeHu from '../../../lang/primevue-hu.json';
+import localeEn from '../../../lang/primevue-en.json';
+import PrimeVue from 'primevue/config';
+
 const selectedCountry = ref();
 const countries = ref();
 const responsiveSettingsLanguage = ref(false);
@@ -15,10 +19,38 @@ onMounted(() => {
     });
 });
 
-function setLocale(locale) {
+function setLocale(event) {
+
+    //console.log(event);
+    //console.log(selectedCountry.value);
+    //console.log(selectedCountry.value.code);
+    //console.log(selectedCountry.value.name);
+    var locale = selectedCountry.value.code.toLowerCase();
+    //console.log(locale);
+    /*
     axios.post(route("language"), { locale: locale }).catch((error) => {
         console.log(error);
     });
+    */
+   console.log(locale);
+        
+    switch(locale) {
+        case 'hu':
+            PrimeVue.config.locale = localeHu;
+        case 'gb':
+            PrimeVue.config.locale = localeEn;
+        default:
+            PrimeVue.config.locale = localeHu;
+    }
+
+   axios.post(route('language', { locale:locale }))
+    .then((response) => {
+        loadLanguageAsync(locale);
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+    
 }
 </script>
 <template>
@@ -29,6 +61,7 @@ function setLocale(locale) {
         optionLabel="name"
         :placeholder="$t('select_country')"
         class="w-full md:w-56"
+        @change="setLocale()"
     >
         <template #value="slotProps">
             <div v-if="slotProps.value" class="flex items-center">

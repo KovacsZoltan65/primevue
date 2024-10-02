@@ -13,7 +13,7 @@ import { localeHU } from "../../../lang/primevue-hu.js";
 const primevue = usePrimeVue();
 const selectedCountry = ref('');
 const supportedleLocales = ref();
-const availableLocale = ref();
+//const availableLocale = ref();
 const countries = ref();
 const responsiveSettingsLanguage = ref(false);
 
@@ -25,22 +25,38 @@ onMounted(() => {
     //console.log(sharedData.available_locales);
     //console.log(sharedData.supported_locales);
 
+    /**
+     * Kiválasztott nyelv
+     */
     selectedCountry.val = sharedData.locale;
+
+    /**
+     * Támogatott nyelvek
+     */
     supportedleLocales.val = sharedData.supported_locales;
-    availableLocale.val = sharedData.available_locales;
+
+    //availableLocale.val = sharedData.available_locales;
+    /**
+     * Elérhető nyelvek
+     */
+    countries.value = sharedData.available_locales;
+    //console.log('countries.value', countries.value);
 
     console.log('selectedCountry', selectedCountry.val);
 
-    console.log('supportedleLocales', supportedleLocales.val);
-    console.log('supportedleLocales[0]', supportedleLocales.val[0]);
+    //console.log('supportedleLocales', supportedleLocales.val);
+    //console.log('supportedleLocales[0]', supportedleLocales.val[0]);
 
-    console.log('availableLocale', availableLocale.val);
-    console.log('availableLocale[0]', availableLocale.val[0]);
-    /*
-    LanguageService.getLanguages().then((data) => {
-        countries.value = data;
-    });
-    */
+    //console.log('availableLocale', availableLocale.val);
+    //console.log('availableLocale[0]', availableLocale.val[0]);
+
+    //LanguageService.getLanguages().then((data) => {
+    //    countries.value = data;
+
+    //    console.log('countries.value', countries.value);
+    //    console.log('countries.value[0]', countries.value[0]);
+    //});
+
 });
 
 function setLocale(locale) {
@@ -54,6 +70,7 @@ function setLocale(locale) {
 }
 
 watch(selectedCountry, (newValue) => {
+    console.log('newValue', newValue);
     const primeLocale = newValue.code.toLowerCase() == 'hu' ? localeHU : localeEN;
     primevue.config.locale = primeLocale;
 });
@@ -62,9 +79,10 @@ watch(selectedCountry, (newValue) => {
 <template>
     <Select
         v-model="selectedCountry"
-        :options="supportedleLocales"
+        :options="countries"
         filter
         optionLabel="name"
+        opvionValue="code"
         :placeholder="$t('select_country')"
         class="w-full md:w-56"
     >

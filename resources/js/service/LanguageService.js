@@ -1,3 +1,4 @@
+
 import BaseService from "./BaseService";
 
 class LanguageService extends BaseService
@@ -9,6 +10,7 @@ class LanguageService extends BaseService
     getLanguages() {
         return this.get('/languages');
     }
+
 }
 export default new LanguageService();
 

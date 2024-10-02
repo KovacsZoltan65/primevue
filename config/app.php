@@ -92,9 +92,14 @@ return [
     | List all locales that your application works with
     |
     */
+    //'available_locales' => [
+    //    'English' => 'en',
+    //    'Hungarian' => 'hu',
+    //],
     'available_locales' => [
-        'English' => 'en',
-        'Hungarian' => 'hu',
+        [ 'name' => "United States", 'code' => "US" ],
+        [ 'name' => "Magyarország", 'code' => "HU" ],
+        [ 'name' => "Great Britain", 'code' => "GB" ],
     ],
 
     'supported_locales' => ['en', 'hu'],

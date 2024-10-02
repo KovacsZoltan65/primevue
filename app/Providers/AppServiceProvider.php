@@ -24,13 +24,19 @@ class AppServiceProvider extends ServiceProvider
         define('APP_ACTIVE', 1);
         define('APP_INACTIVE', 0);
         
+        $available_locales = config('app.available_locales', ['English' => 'en','Hungarian' => 'hu',]);
+        $supported_locales = config('app.supported_locales', ['en', 'hu']);
+        $locale = ( Session::has('locale') ) ? Session::get('locale') : env('APP_LOCALE');
+
         Inertia::share([
             'errors' => function () {
                 return Session::get('errors')
                     ? Session::get('errors')->getBag('default')->getMessages()
                     : (object) [];
             },
-            //'baseUrl' => env('VUE_APP_BASE_URL'),
+            'available_locales' => $available_locales,
+            'supported_locales' => $supported_locales,
+            'locale' => $locale,
         ]);
 
         Inertia::share('flash', function(){

@@ -1,7 +1,9 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import axios from "axios";
-import { LanguageService } from "@/service/LanguageService";
+import { usePage } from "@inertiajs/vue3";
+
+//import { LanguageService } from "@/service/LanguageService";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import Select from "primevue/select";
 import { usePrimeVue } from 'primevue/config';
@@ -9,14 +11,36 @@ import { localeEN } from "../../../lang/primevue-en.js";
 import { localeHU } from "../../../lang/primevue-hu.js";
 
 const primevue = usePrimeVue();
-const selectedCountry = ref();
+const selectedCountry = ref('');
+const supportedleLocales = ref();
+const availableLocale = ref();
 const countries = ref();
 const responsiveSettingsLanguage = ref(false);
 
 onMounted(() => {
+    const page = usePage();
+    const sharedData = page.props;
+
+    //console.log(sharedData.locale);
+    //console.log(sharedData.available_locales);
+    //console.log(sharedData.supported_locales);
+
+    selectedCountry.val = sharedData.locale;
+    supportedleLocales.val = sharedData.supported_locales;
+    availableLocale.val = sharedData.available_locales;
+
+    console.log('selectedCountry', selectedCountry.val);
+
+    console.log('supportedleLocales', supportedleLocales.val);
+    console.log('supportedleLocales[0]', supportedleLocales.val[0]);
+
+    console.log('availableLocale', availableLocale.val);
+    console.log('availableLocale[0]', availableLocale.val[0]);
+    /*
     LanguageService.getLanguages().then((data) => {
         countries.value = data;
     });
+    */
 });
 
 function setLocale(locale) {
@@ -30,12 +54,7 @@ function setLocale(locale) {
 }
 
 watch(selectedCountry, (newValue) => {
-    //console.log(newValue);
-    //console.log(newValue.name);
-    //console.log(newValue.code);
-    //console.log(newValue.code.toLowerCase());
     const primeLocale = newValue.code.toLowerCase() == 'hu' ? localeHU : localeEN;
-    //console.log(primeLocale);
     primevue.config.locale = primeLocale;
 });
 
@@ -43,7 +62,7 @@ watch(selectedCountry, (newValue) => {
 <template>
     <Select
         v-model="selectedCountry"
-        :options="countries"
+        :options="supportedleLocales"
         filter
         optionLabel="name"
         :placeholder="$t('select_country')"

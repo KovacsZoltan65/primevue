@@ -1,3 +1,18 @@
+import BaseService from "./BaseService";
+
+class LanguageService extends BaseService
+{
+    constructor() {
+        super();
+    }
+
+    getLanguages() {
+        return this.get('/languages');
+    }
+}
+export default new LanguageService();
+
+/*
 export const LanguageService = {
     getLanguageData() {
         return [
@@ -10,3 +25,4 @@ export const LanguageService = {
         return Promise.resolve(this.getLanguageData());
     },
 };
+*/

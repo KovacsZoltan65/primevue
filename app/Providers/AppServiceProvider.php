@@ -23,7 +23,13 @@ class AppServiceProvider extends ServiceProvider
     {
         define('APP_ACTIVE', 1);
         define('APP_INACTIVE', 0);
-        
+
+        define('APP_MIN_STRING_LENGTH', 3);
+        define('APP_MAX_STRING_LENGTH', 255);
+
+        define('APP_DEC_LENGTHS', 10);
+        define('APP_DEC_DIGITS', 2);
+
         Inertia::share([
             'errors' => function () {
                 return Session::get('errors')

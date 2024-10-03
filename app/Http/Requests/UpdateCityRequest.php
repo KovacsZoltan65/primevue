@@ -34,8 +34,8 @@ class UpdateCityRequest extends FormRequest
             // Egyedinek kell lennie a városok nevei között a jelenlegi város kivételével.
             'name' => [
                 'request', 'string', 
-                "min:{$this->string_length_min}", 
-                "max:{$this->string_length_max}", 
+                "min:" . APP_MIN_STRING_LENGTH, 
+                "max:" . APP_MAX_STRING_LENGTH, 
                 Rule::unique('cities', 'name')->ignore($this->id),
             ],
             // Az ország azonosítójának jelen kell lennie, és egész számnak kell lennie.
@@ -45,12 +45,12 @@ class UpdateCityRequest extends FormRequest
             // A város szélessége tizedesjegy, legfeljebb 10 digit hosszú, 
             // amiből kettő egész szám.
             'latitude' => [
-                "decimal:{$this->dec_length},{$this->dec_digit}"
+                "decimal:" . APP_DEC_LENGTHS . "," . APP_DEC_DIGITS
             ],
             // A város hosszúsága tizedesjegy, legfeljebb 10 digit hosszú, 
             // amiből kettő egész szám.
             'longitute' => [
-                "decimal:{$this->dec_length},{$this->dec_digit}"
+                "decimal:" . APP_DEC_LENGTHS . "," . APP_DEC_DIGITS
             ],
             // A várost aktívként vagy inaktívként kell megjelölni.
             'active' => ['required', 'boolean'],
@@ -63,8 +63,8 @@ class UpdateCityRequest extends FormRequest
             'name' => [
                 'required' => __('validate_required'),
                 'string' => __('validate_string'),
-                'min' => __('validate_min.numeric', ['min' => $this->string_length_min]),
-                'max' => __('validate_max.numeric', ['max' => $this->string_length_max]),
+                'min' => __('validate_min.numeric', ['min' => APP_MIN_STRING_LENGTH]),
+                'max' => __('validate_max.numeric', ['max' => APP_MAX_STRING_LENGTH]),
                 'unique' => _('validate_unique'),
             ],
             'country_id' => [
@@ -76,10 +76,10 @@ class UpdateCityRequest extends FormRequest
                 'integer' => __('validate_integer'),
             ],
             'latitude' => [
-                'decimal' => __('validate_decimal', ['decimal' => ($this->dec_length - $this->dec_digit)]),
+                'decimal' => __('validate_decimal', ['decimal' => (APP_DEC_LENGTHS - APP_DEC_DIGITS)]),
             ],
             'longitude' => [
-                'decimal' => __('validate_decimal', ['decimal' => ($this->dec_length - $this->dec_digit)]),
+                'decimal' => __('validate_decimal', ['decimal' => (APP_DEC_LENGTHS - APP_DEC_DIGITS)]),
             ],
             'active' => [
                 'required' => __('validate_required'),

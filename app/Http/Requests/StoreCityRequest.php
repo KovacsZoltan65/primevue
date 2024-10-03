@@ -7,13 +7,6 @@ use Illuminate\Validation\Rule;
 
 class StoreCityRequest extends FormRequest
 {
-    private int $min_numeric = 2;
-    private int $max_numeric = 2;
-    private int $dec_digit = 2;
-    private int $dec_length = 10;
-    private int $string_length_min = 2;
-    private int $string_length_max = 255;
-
     /**
      * Határozza meg, hogy a felhasználó jogosult-e erre a kérésre.
      */
@@ -34,8 +27,8 @@ class StoreCityRequest extends FormRequest
             // Egyedinek kell lennie a városok nevei között.
             'name' => [
                 'required', 'string', 'unique:cities,name',
-                "min:{$this->string_length_min}", 
-                "max:{$this->string_length_max}",
+                "min:" . APP_MIN_STRING_LENGTH, 
+                "max:" . APP_MAX_STRING_LENGTH,
             ],
             // A város országának azonosítója jelen kell lennie, 
             // és egész számnak kell lennie.
@@ -46,12 +39,12 @@ class StoreCityRequest extends FormRequest
             // A város szélessége tizedesjegy, legfeljebb 10 digit hosszú, 
             // amiből kettő egész szám.
             'latitude' => [
-                "decimal:{$this->dec_length},{$this->dec_digit}"
+                "decimal:" . APP__DEC_LENGTHS . "," . APP_DEC_DIGITS
             ],
             // A város hosszúsága tizedesjegy, legfeljebb 10 digit hosszú, 
             // amiből kettő egész szám.
             'longitute' => [
-                "decimal:{$this->dec_length},{$this->dec_digit}"
+                "decimal:" . APP__DEC_LENGTHS . "," . APP_DEC_DIGITS
             ],
             // A várost aktívként vagy inaktívként kell megjelölni.
             'active' => ['required', 'boolean'],
@@ -77,10 +70,10 @@ class StoreCityRequest extends FormRequest
                 'integer' => __('validate_integer'),
             ],
             'latitude' => [
-                'decimal' => __('validate_decimal', ['decimal' => ($this->dec_length - $this->dec_digit)]),
+                'decimal' => __('validate_decimal', ['decimal' => (APP_DEC_LENGTHS - APP_DEC_DIGITS)]),
             ],
             'longitude' => [
-                'decimal' => __('validate_decimal', ['decimal' => ($this->dec_length - $this->dec_digit)]),
+                'decimal' => __('validate_decimal', ['decimal' => (APP_DEC_LENGTHS - APP_DEC_DIGITS)]),
             ],
             'active' => [
                 'required' => __('validate_required'),

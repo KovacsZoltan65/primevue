@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Auth\Requests;
+namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
-class UpdateUserRequest extends FormRequest
+class UpdatePasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -23,14 +23,8 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => [
-                'required', 'string', 
-                "min:" . APP_MIN_STRING_LENGTH, 
-                "max:" . APP_MAX_STRING_LENGTH
-            ],
             'password' => [
-                // Nem kötelező
-                'confirmed',
+                'required', 'confirmed', 
                 Password::min(APP_PASSWORD_MIN_LENGTHS)
                 ->letters()->mixedCase()->numbers()->symbols()
                 /**
@@ -53,7 +47,7 @@ class UpdateUserRequest extends FormRequest
                  * Ez a funkció segít megakadályozni, hogy felhasználók olyan jelszót válasszanak, 
                  * amely korábban már kompromittálódott, így csökkenti a biztonsági kockázatokat.
                  */
-                ->uncompromised(),
+                ->uncompromised(), 
                 function($attribute, $value, $fail): void {
                     // Ellenőrzi, hogy a jelszó tartalmaz-e legalább 2 számot
                     if (preg_match_all('/[0-9]/', $value) < APP_PASSWORD_MIN_NUMBERS) {
@@ -65,7 +59,7 @@ class UpdateUserRequest extends FormRequest
                     }
                 }
             ],
-            
+
             // A 'password_confirmation' mezőt a 'confirmed' szabály kezeli automatikusan
         ];
     }

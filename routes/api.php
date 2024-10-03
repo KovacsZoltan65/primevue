@@ -128,8 +128,8 @@ Route::delete('/entities/{id}', [EntityController::class, 'deleteEntity'])->name
  */
 Route::get('/regions', [RegionController::class, 'getRegions'])->name('api.get.regions');
 Route::post('/regions', [RegionController::class, 'createRegion'])->name('api.post.regions');
-Route::put('/regions/{id}', [RegionController::class, 'updateRegion'])->name('api.put.regions');
-Route::delete('/regions/{id}', [RegionController::class, 'deleteRegion'])->name('api.delete.regions');
+Route::put('/regions/{id}', [RegionController::class, 'updateRegion'])->name('api.put.regions')->where('id', '[0-9]+');
+Route::delete('/regions/{id}', [RegionController::class, 'deleteRegion'])->name('api.delete.regions')->where('id', '[0-9]+');
 
 /**
  * =======================================================
@@ -138,8 +138,9 @@ Route::delete('/regions/{id}', [RegionController::class, 'deleteRegion'])->name(
  */
 Route::get('/users', [UserController::class, 'getUsers'])->name('api.get.users');
 Route::post('/users', [UserController::class, 'createUsers'])->name('api.post.users');
-Route::put('/users/{id}', [UserController::class, 'updateUsers'])->name('api.put.users');
-Route::delete('/users/{id}', [UserController::class, 'deleteUsers'])->name('api.delete.users');
+Route::put('/users/{id}', [UserController::class, 'updateUsers'])->name('api.put.users')->where('id', '[0-9]+');
+Route::put('/users/password/{id}', [UserController::class, 'updatePassword'])->name('api.put.password')->where('id', '[0-9]+');
+Route::delete('/users/{id}', [UserController::class, 'deleteUsers'])->name('api.delete.users')->where('id', '[0-9]+');
 
 /**
  * =======================================================
@@ -148,8 +149,8 @@ Route::delete('/users/{id}', [UserController::class, 'deleteUsers'])->name('api.
  */
 Route::get('/roles', [RoleController::class, 'getRoles'])->name('api.get.roles');
 Route::post('/roles', [RoleController::class, 'createRoles'])->name('api.post.roles');
-Route::put('/roles/{id}', [RoleController::class, 'updateRoles'])->name('api.put.roles');
-Route::delete('/roles/{id}', [RoleController::class, 'deleteRoles'])->name('api.delete.roles');
+Route::put('/roles/{id}', [RoleController::class, 'updateRoles'])->name('api.put.roles')->where('id', '[0-9]+');
+Route::delete('/roles/{id}', [RoleController::class, 'deleteRoles'])->name('api.delete.roles')->where('id', '[0-9]+');
 
 /**
  * =======================================================
@@ -158,8 +159,8 @@ Route::delete('/roles/{id}', [RoleController::class, 'deleteRoles'])->name('api.
  */
 Route::get('/permissions', [PermissionController::class, 'getPermissions'])->name('api.get.permissions');
 Route::post('/permissions', [PermissionController::class, 'createPermissions'])->name('api.post.permissions');
-Route::put('/permissions/{id}', [PermissionController::class, 'updatePermissions'])->name('api.put.permissions');
-Route::delete('/permissions/{id}', [PermissionController::class, 'deletePermissions'])->name('api.delete.permissions');
+Route::put('/permissions/{id}', [PermissionController::class, 'updatePermissions'])->name('api.put.permissions')->where('id', '[0-9]+');
+Route::delete('/permissions/{id}', [PermissionController::class, 'deletePermissions'])->name('api.delete.permissions')->where('id', '[0-9]+');
 
 /**
  * =======================================================
@@ -168,8 +169,8 @@ Route::delete('/permissions/{id}', [PermissionController::class, 'deletePermissi
  */
 Route::get('/subdomains', [SubdomainController::class, 'getSubdomains'])->name('api.get.subdomains');
 Route::post('/subdomains', [SubdomainController::class, 'createSubdomains'])->name('api.post.subdomains');
-Route::put('/subdomains/{id}', [SubdomainController::class, 'updateSubdomains'])->name('api.put.subdomains');
-Route::delete('/subdomains/{id}', [SubdomainController::class, 'deleteSubdomains'])->name('api.delete.subdomains');
+Route::put('/subdomains/{id}', [SubdomainController::class, 'updateSubdomains'])->name('api.put.subdomains')->where('id', '[0-9]+');
+Route::delete('/subdomains/{id}', [SubdomainController::class, 'deleteSubdomains'])->name('api.delete.subdomains')->where('id', '[0-9]+');
 
 /**
  * =======================================================
@@ -178,5 +179,5 @@ Route::delete('/subdomains/{id}', [SubdomainController::class, 'deleteSubdomains
  */
 Route::get('/subdomain_states', [SubdomainStateController::class, 'getSubdomainStates'])->name('api.get.subdomain_states');
 Route::post('/subdomain_states', [SubdomainStateController::class, 'createSubdomainStates'])->name('api.post.subdomain_states');
-Route::put('/subdomain_states/{id}', [SubdomainStateController::class, 'updateSubdomainStates'])->name('api.put.subdomain_states');
-Route::delete('/subdomain_states/{id}', [SubdomainStateController::class, 'deleteSubdomainStates'])->name('api.delete.subdomain_states');
+Route::put('/subdomain_states/{id}', [SubdomainStateController::class, 'updateSubdomainStates'])->name('api.put.subdomain_states')->where('id', '[0-9]+');
+Route::delete('/subdomain_states/{id}', [SubdomainStateController::class, 'deleteSubdomainStates'])->name('api.delete.subdomain_states')->where('id', '[0-9]+');

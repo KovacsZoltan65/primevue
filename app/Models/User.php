@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
@@ -46,8 +47,14 @@ class User extends Authenticatable
         ];
     }
     
-    public function scopeSearch(Request $request){
+    public function scopeSearch(Builder $query, Request $request){
 
+        return $query->when($request->search, function ($query) use ($request) {
+            $query->where(function ($query) use ($request) {
+                $query->where('name', 'like', "%{$request->search}%");
+            });
+        });
+        /*
         $query = User::query();
 
         return $query->when($request->search, function($query) use($request){
@@ -55,14 +62,6 @@ class User extends Authenticatable
                 $query->where('name', 'like', "%{$request->search}%");
             });
         });
+        */
     }
-
-    //public function scopeSearch_old(Builder $query, Request $request)
-    //{
-    //    return $query->when($request->search, function ($query) use ($request) {
-    //        $query->where(function ($query) use ($request) {
-    //            $query->where('name', 'like', "%{$request->search}%");
-    //        });
-    //    });
-    //}
 }

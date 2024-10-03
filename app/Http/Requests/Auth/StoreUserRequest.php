@@ -3,6 +3,7 @@
 namespace App\Http\Auth\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreUserRequest extends FormRequest
 {
@@ -22,7 +23,25 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => [
+                'required', 'string',
+                'min:' . APP_MIN_STRING_LENGTH,
+                'max:' . APP_MAX_STRING_LENGTH,
+            ],
+            'password' => Rule::password()->min(8)->mixedCase()->symbols()
+                ->uncompromised(), 
+                    function($attribute, $value, $fail): void
+                    {
+                        if( preg_match_all('/[0-9]/', $value) < 2 )
+                        {
+                            $fail('The :attribute must contain at least 2 numbers.');
+                        }
+
+                        if( preg_match_all('/[a-zA-Z]/', $value) < 3 )
+                        {
+                            $fail('The :attribute must contain at least 3 letters.');
+                        }
+                    }
         ];
     }
 }

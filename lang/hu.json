@@ -7,7 +7,7 @@
     "dashboard": "Irányítópult",
     "home": "Fő oldal",
     "administration": "Adminisztráció",
-    "users": "Felhasználók",
+    
     "roles": "Szerepkörök",
     "permissions": "Engedélyek",
 
@@ -81,6 +81,14 @@
     "select_country": "Válasszon egy országot",
 
     "specimens": "Példányok",
+
+    "users": "Felhasználók",
+    "users_title": "Felhasználók kezelése",
+    "users_details": "Felhasználók adatainak szerkesztése",
+    "users_new_title": "Felhasználó rögzítése",
+    "users_new_details": "Új felhasználó létrehozása",
+    "users_edit_title": "Felhasználó szerkesztése",
+    "users_edit_details": "Felhasználó adatainak szerkesztése",
 
     "companies": "Cégek",
     "companies_title": "Cég szerkesztése",

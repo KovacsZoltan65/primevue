@@ -42,7 +42,7 @@ onMounted(() => {
     countries.value = sharedData.available_locales;
     //console.log('countries.value', countries.value);
 
-    console.log('selectedCountry', selectedCountry.val);
+    //console.log('selectedCountry', selectedCountry.val);
 
     //console.log('supportedleLocales', supportedleLocales.val);
     //console.log('supportedleLocales[0]', supportedleLocales.val[0]);

@@ -78,53 +78,53 @@ const toast = useToast();
 const dt = ref();
 
 /**
- * Reaktív hivatkozás a városok adatainak tárolására.
+ * Reaktív hivatkozás a felhasználók adatainak tárolására.
  *
  * @type {Array}
  */
 const users = ref();
 
 /**
- * Reaktív hivatkozás a város adatainak megjelenítő párbeszédpanel megnyitásához.
+ * Reaktív hivatkozás a felhasználó adatainak megjelenítő párbeszédpanel megnyitásához.
  *
  * @type {ref<boolean>}
  */
 const userDialog = ref(false);
 
 /**
- * Reaktív hivatkozás a városok törléséhez használt párbeszédpanel megnyitásához.
+ * Reaktív hivatkozás a felhasználók törléséhez használt párbeszédpanel megnyitásához.
  *
  * @type {ref<boolean>}
  */
 const deleteSelectedUsersDialog = ref(false);
 
 /**
- * Reaktív hivatkozás a kijelölt város(ok) törléséhez használt párbeszédpanel megnyitásához.
+ * Reaktív hivatkozás a kijelölt felhasználó(ok) törléséhez használt párbeszédpanel megnyitásához.
  *
  * @type {ref<boolean>}
  */
 const deleteUserDialog = ref(false);
 
 /**
- * Reaktív hivatkozás a város adatainak tárolására.
+ * Reaktív hivatkozás a felhasználó adatainak tárolására.
+ *
+ * Ebben a változóban tároljuk a felhasználó adatait, amiket a dialogban megjelenítünk.
  *
  * @type {Object}
- * @property {string} name - A város neve.
- * @property {number} user_id - Az ország azonosítója.
- * @property {number} region_id - A régió azonosítója.
- * @property {number} active - A város státusza.
- * @property {number} id - A város azonosítója.
+ * @property {number} id - A felhasználó azonosítója.
+ * @property {string} name - A felhasználó neve.
+ * @property {string} email - A felhasználó e-mail címe.
+ * @property {string} language - A felhasználó által használt nyelv. (hu, en)
  */
 const user = ref({
-    name: "",
-    user_id: null,
-    region_id: null,
-    active: 1,
     id: null,
+    name: "",
+    email: "",
+    language: "hu",
 });
 
 /**
- * Reaktív hivatkozás a kijelölt városok tárolására.
+ * Reaktív hivatkozás a kijelölt felhasználók tárolására.
  *
  * @type {Array}
  */
@@ -167,11 +167,8 @@ const rules = {
     name: {
         required: helpers.withMessage("validate_name", required),
     },
-    user_id: {
+    email: {
         required: helpers.withMessage("validate_user_id", required),
-    },
-    region_id: {
-        required: helpers.withMessage("validate_region_id", required),
     },
 };
 
@@ -185,10 +182,10 @@ const v$ = useVuelidate(rules, user);
 // ======================================================
 
 /**
- * Lekéri a városok listáját az API-ból.
+ * Lekéri a felhasználók listáját az API-ból.
  *
- * Ez a funkció a városok listáját lekéri az API-ból.
- * A városok listája a users változóban lesz elmentve.
+ * Ez a funkció a felhasználók listáját lekéri az API-ból.
+ * A felhasználók listája a users változóban lesz elmentve.
  *
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
  */
@@ -197,7 +194,7 @@ const fetchItems = () => {
     UserService.getUsers()
         .then((response) => {
             //console.log(response);
-            // A városok listája a users változóban lesz elmentve
+            // A felhasználók listája a users változóban lesz elmentve
             users.value = response.data.data;
         })
         .catch((error) => {
@@ -209,8 +206,8 @@ const fetchItems = () => {
 /**
  * Eseménykezelő, amely a komponens létrejöttekor hívódik meg.
  *
- * Ez a funkció a városok listáját lekéri az API-ból, amikor a komponens létrejön.
- * A városok listája a users változóban lesz elmentve.
+ * Ez a funkció a felhasználók listáját lekéri az API-ból, amikor a komponens létrejön.
+ * A felhasználók listája a users változóban lesz elmentve.
  *
  * @return {void}
  */
@@ -234,10 +231,10 @@ function confirmDeleteSelected() {
 }
 
 /**
- * Nyitja meg az új város dialógusablakot.
+ * Nyitja meg az új felhasználó dialógusablakot.
  *
  * Ez a függvény a user változó értékét alaphelyzetbe állítja, a submitted változó értékét False-ra állítja,
- * és a userDialog változó értékét igazra állítja, amely megnyitja az új város dialógusablakot.
+ * és a userDialog változó értékét igazra állítja, amely megnyitja az új felhasználó dialógusablakot.
  *
  * @return {void}
  */
@@ -248,25 +245,23 @@ function openNew() {
 }
 
 /**
- * Az új város objektum alapértelmezett értékei.
+ * Az új felhasználó objektum alapértelmezett értékei.
  *
- * A userDialog változó értékét igazra állítva, ez az objektum lesz a dialógusablakban
- * megjelenő új város formban.
+ * Ebben a változóban tároljuk a felhasználó adatait, amiket a dialógusablakban
+ * megjelenítünk. A dialógusablakban megadott adatokkal ez az objektum lesz
+ * feltöltve.
  *
  * @type {Object}
- * @property {string} name - A város neve.
- * @property {number} user_id - Az ország azonosítója.
- * @property {number} region_id - A régió azonosítója.
- * @property {number} active - A város aktív-e? (1 igen, 0 nem).
- * @property {number} id - A város azonosítója.
+ * @property {number} id - A felhasználó azonosítója.
+ * @property {string} name - A felhasználó neve.
+ * @property {string} email - A felhasználó e-mail címe.
+ * @property {string} language - A felhasználó által használt nyelv.
  */
 const initialUser = {
-    name: "",
-    //user_id: null,
-    //region_id: null,
-    code: "",
-    active: 1,
     id: null,
+    name: "",
+    email: "",
+    language: "hu",
 };
 
 /**
@@ -284,60 +279,63 @@ const hideDialog = () => {
 };
 
 /**
- * Szerkeszti a kiválasztott várost.
+ * Szerkeszti a kiválasztott felhasználót.
  *
- * Ez a funkció a kiválasztott város adatait másolja a user változóba,
- * és megnyitja a dialógusablakot a város szerkesztéséhez.
+ * Ez a funkció a kiválasztott felhasználó adatait másolja a user változóba,
+ * és megnyitja a dialógusablakot a felhasználó szerkesztéséhez.
  *
- * @param {object} data - A kiválasztott város adatai.
+ * @param {object} data - A kiválasztott felhasználó adatai.
  * @return {void}
  */
 const editUser = (data) => {
-    // Másolja a kiválasztott város adatait a user változóba.
+    // Másolja a kiválasztott felhasználó adatait a user változóba.
     user.value = { ...data };
 
-    // Nyissa meg a dialógusablakot a város szerkesztéséhez.
+    var user2 = UserService.getUser(data.id);
+    console.log(user2);
+
+    // Nyissa meg a dialógusablakot a felhasználó szerkesztéséhez.
     userDialog.value = true;
 };
 
 /**
- * Megerősítés a város törléséhez.
+ * Megerősítés a felhasználó törléséhez.
  *
- * Ez a funkció a user változóba másolja a kiválasztott város adatait,
- * és megnyitja a dialógusablakot a város törléséhez.
+ * Ez a funkció a user változóba másolja a kiválasztott felhasználó adatait,
+ * és megnyitja a dialógusablakot a felhasználó törléséhez.
  *
- * @param {object} data - A kiválasztott város adatai.
+ * @param {object} data - A kiválasztott felhasználó adatai.
  * @return {void}
  */
 const confirmDeleteUser = (data) => {
-    // Másolja a kiválasztott város adatait a user változóba.
+    // Másolja a kiválasztott felhasználó adatait a user változóba.
     user.value = { ...data };
 
-    // Nyissa meg a dialógusablakot a város törléséhez.
+    // Nyissa meg a dialógusablakot a felhasználó törléséhez.
     deleteUserDialog.value = true;
 };
 
 /**
- * Mentse el a város adatait az API-ban.
+ * Mentse el a felhasználó adatait az API-ban.
  *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor elmenti a város adatait az API-ban.
+ * A metódus ellenörzi a felhasználó adatait a validációs szabályok alapján,
+ * és ha a validáció sikerült, akkor elmenti a felhasználó adatait az API-ban.
  *
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megold dik.
  */
 const saveUser = async () => {
-    // Ellen rizi a város adatait a validációs szabályok alapján.
+    // Ellen rizi a felhasználó adatait a validációs szabályok alapján.
     const result = await v$.value.$validate();
 
-    // Ha a validáció sikerült, akkor mentse el a város adatait az API-ban.
+    // Ha a validáció sikerült, akkor mentse el a felhasználó adatait az API-ban.
     if (result) {
         submitted.value = true;
 
-        // Ha a városnak van azonosítója, akkor frissítse a város adatait.
+        // Ha a felhasználónak van azonosítója, akkor frissítse a felhasználó adatait.
         if (user.value.id) {
             updateUser();
         } else {
-            // Ellenkez  esetben hozzon létre egy új várost az API-ban.
+            // Ellenkez  esetben hozzon létre egy új felhasználót az API-ban.
             createUser();
         }
     } else {
@@ -347,10 +345,10 @@ const saveUser = async () => {
 };
 
 /**
- * Hozzon létre új várost az API-nak küldött POST-kéréssel.
+ * Hozzon létre új felhasználót az API-nak küldött POST-kéréssel.
  *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor létrehoz egy új várost az API-ban.
+ * A metódus ellenörzi a felhasználó adatait a validációs szabályok alapján,
+ * és ha a validáció sikerült, akkor létrehoz egy új felhasználót az API-ban.
  * A választ megjeleníti a konzolon.
  *
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
@@ -377,22 +375,22 @@ const createUser = () => {
 };
 
 /**
- * Frissít egy várost az API-nak küldött PUT-kéréssel.
+ * Frissít egy felhasználót az API-nak küldött PUT-kéréssel.
  *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor frissíti a várost az API-ban.
+ * A metódus ellenörzi a felhasználó adatait a validációs szabályok alapján,
+ * és ha a validáció sikerült, akkor frissíti a felhasználót az API-ban.
  * A választ megjeleníti a konzolon.
  *
- * @param {number} id - A frissítendő város azonosítója.
- * @param {object} data - A város új adatai.
+ * @param {number} id - A frissítendő felhasználó azonosítója.
+ * @param {object} data - A felhasználó új adatai.
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
 const updateUser = () => {
     UserService.updateUser(user.value.id, user.value)
         .then(() => {
-            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
+            // Megkeresi a felhasználó indexét a felhasználók tömbjében az azonosítója alapján
             const index = findIndexById(user.value.id);
-            // A város adatait frissíti a városok tömbjében
+            // A felhasználó adatait frissíti a felhasználók tömbjében
             users.value.splice(index, 1, user.value);
 
             // Bezárja a dialógus ablakot
@@ -413,37 +411,37 @@ const updateUser = () => {
 };
 
 /**
- * Megkeresi egy város indexét a városok tömbjében az azonosítója alapján.
+ * Megkeresi egy felhasználó indexét a felhasználók tömbjében az azonosítója alapján.
  *
- * @param {number} id - A keresendő város azonosítója.
- * @returns {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
+ * @param {number} id - A keresendő felhasználó azonosítója.
+ * @returns {number} A felhasználó indexe a felhasználók tömbjében, vagy -1, ha nem található.
  */
 const findIndexById = (id) => {
     return users.value.findIndex((user) => user.id === id);
 };
 
 /**
- * Törli a kiválasztott várost az API-ból.
+ * Törli a kiválasztott felhasználót az API-ból.
  *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor törli a várost az API-ból.
+ * A metódus ellenörzi a felhasználó adatait a validációs szabályok alapján,
+ * és ha a validáció sikerült, akkor törli a felhasználót az API-ból.
  * A választ megjeleníti a konzolon.
  *
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megold dik.
  */
 const deleteUser = () => {
-    // Ellen rizi a város adatait a validációs szabályok alapján.
+    // Ellen rizi a felhasználó adatait a validációs szabályok alapján.
     if (v$.value.$invalid) {
         alert("FAIL");
         return;
     }
 
-    // Törli a várost az API-ból.
+    // Törli a felhasználót az API-ból.
     UserService.deleteUser(user.value.id)
         .then((response) => {
-            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
+            // Megkeresi a felhasználó indexét a felhasználók tömbjében az azonosítója alapján
             const index = findIndexById(user.value.id);
-            // A város adatait törli a városok tömbjéb l
+            // A felhasználó adatait törli a felhasználók tömbjéb l
             users.value.splice(index, 1);
 
             // Bezárja a dialógus ablakot
@@ -477,12 +475,36 @@ const getActiveLabel = (user) =>
 const getActiveValue = (user) =>
     ["inactive", "active", "pending"][user.active] || "pending";
 
+/**
+ * Visszaadja a dialógusablak címét attól függően, 
+ * hogy új felhasználót hozunk létre, vagy egy meglévőt szerkesztünk.
+ *
+ * @returns {string} A dialógusablak címe.
+ */
+const getModalTitle = () => {
+    return user.value.id
+        ? trans("users_edit_title")
+        : trans("users_new_title");
+};
+
+/**
+ * Visszaadja a dialógusablak részleteit attól függően, 
+ * hogy új felhasználót hozunk létre, vagy egy meglévőt szerkesztünk.
+ *
+ * @returns {string} A dialógusablak részletei.
+ */
+const getModalDetails = () => {
+    return user.value.id
+        ? trans("users_edit_details")
+        : trans("users_new_details");
+};
+
 </script>
 
 <template>
     <AppLayout>
         <Head :title="$t('users')" />
-{{ $page.props.baseUrl }}
+
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
@@ -600,11 +622,11 @@ const getActiveValue = (user) =>
             </DataTable>
         </div>
 
-        <!-- Város szerkesztése -->
+        <!-- Felhasználó szerkesztése -->
         <Dialog
             v-model:visible="userDialog"
             :style="{ width: '550px' }"
-            :header="$t('users_details')"
+            :header="getModalTitle()"
             :modal="true"
         >
             <div class="flex flex-col gap-6">
@@ -625,22 +647,20 @@ const getActiveValue = (user) =>
                         </small>
                     </div>
 
+                    <!-- Email -->
                     <div class="flex flex-col grow basis-0 gap-2">
-                        <!-- Active -->
-                        <label
-                            for="inventoryStatus"
-                            class="block font-bold mb-3"
-                            >{{ $t("active") }}</label
-                        >
-                        <Select
-                            id="active"
-                            name="active"
-                            v-model="user.active"
-                            :options="getBools()"
-                            optionLabel="label"
-                            optionValue="value"
-                            placeholder="Users"
+                        <label for="email" class="block font-bold mb-3">{{
+                            $t("email")
+                        }}</label>
+                        <InputText
+                            id="email"
+                            v-model="user.email"
+                            autofocus
+                            fluid
                         />
+                        <small class="text-red-500" v-if="v$.name.$error">
+                            {{ $t(v$.email.$errors[0].$message) }}
+                        </small>
                     </div>
                 </div>
             </div>
@@ -660,8 +680,8 @@ const getActiveValue = (user) =>
             </template>
         </Dialog>
 
-        <!-- Város törlése -->
-        <!-- Egy megerősítő párbeszédpanel, amely megjelenik, ha a felhasználó törölni szeretne egy várost. -->
+        <!-- Felhasználó törlése -->
+        <!-- Egy megerősítő párbeszédpanel, amely megjelenik, ha a felhasználó törölni szeretne egy felhasználót. -->
         <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést. -->
         <Dialog
             v-model:visible="deleteUserDialog"
@@ -688,7 +708,7 @@ const getActiveValue = (user) =>
                     @click="deleteUserDialog = false"
                     text
                 />
-                <!-- A "Igen" gomb, amely törli a várost -->
+                <!-- A "Igen" gomb, amely törli a felhasználót -->
                 <Button
                     :label="$t('yes')"
                     icon="pi pi-check"
@@ -697,8 +717,8 @@ const getActiveValue = (user) =>
             </template>
         </Dialog>
 
-        <!-- Erősítse meg a kiválasztott városok törlését párbeszédpanelen -->
-        <!-- Ez a párbeszédpanel akkor jelenik meg, ha a felhasználó több várost szeretne törölni -->
+        <!-- Erősítse meg a kiválasztott felhasználók törlését párbeszédpanelen -->
+        <!-- Ez a párbeszédpanel akkor jelenik meg, ha a felhasználó több felhasználót szeretne törölni -->
         <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést -->
         <Dialog
             v-model:visible="deleteSelectedUsersDialog"

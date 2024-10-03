@@ -137,6 +137,8 @@ Route::delete('/regions/{id}', [RegionController::class, 'deleteRegion'])->name(
  * =======================================================
  */
 Route::get('/users', [UserController::class, 'getUsers'])->name('api.get.users');
+Route::get('/users/{id}', [UserController::class, 'getUser'])->name('api.get.user')->where('id', '[0-9]+');
+Route::get('/users/name/{name}', [EntityController::class, 'getEntityByName'])->name('api.get.user_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
 Route::post('/users', [UserController::class, 'createUsers'])->name('api.post.users');
 Route::put('/users/{id}', [UserController::class, 'updateUsers'])->name('api.put.users')->where('id', '[0-9]+');
 Route::put('/users/password/{id}', [UserController::class, 'updatePassword'])->name('api.put.password')->where('id', '[0-9]+');

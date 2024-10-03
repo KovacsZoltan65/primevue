@@ -62,6 +62,14 @@ class UserController extends Controller
         return $users;
     }
     
+    public function getUser(Request $request)
+    {
+\Log::info('$user: ' . print_r($request->all(), true));
+        $user = User::find($request->get('id'));
+//\Log::info('$user: ' . print_r($user, true));
+        return $user;
+    }
+    
     /**
      * Létrehoz egy új felhasználót az adatbázisban.
      *

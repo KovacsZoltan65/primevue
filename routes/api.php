@@ -7,6 +7,7 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\SubdomainController;
 use App\Http\Controllers\SubdomainStateController;
@@ -19,6 +20,13 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 //Route::get('/items', function(){ \Log::info('API/GET'); });
+
+/**
+ * =======================================================
+ * LANGUAGES
+ * =======================================================
+ */
+Route::get('/languages', [LanguageController::class, 'getLanguages'])->name('get.languages');
 
 /**
  * =======================================================

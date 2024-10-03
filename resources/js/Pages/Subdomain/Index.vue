@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, reactive } from "vue";
-import { Head } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode, FilterOperator  } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
@@ -316,6 +316,10 @@ const getActiveValue = (subdomain) =>
 <template>
     <AppLayout>
         <Head :title="$t('subdomains')" />
+
+{{ $page.props.available_locales }}
+{{ $page.props.supported_locales }}
+{{ $page.props.locale }}
 
         <div class="card">
             <Toolbar class="md-6">

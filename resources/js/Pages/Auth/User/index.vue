@@ -99,6 +99,13 @@ const userDialog = ref(false);
 const deleteSelectedUsersDialog = ref(false);
 
 /**
+ * Reaktív hivatkozás a jelszó módosító párbeszédpanel megnyitásához.
+ *
+ * @type {ref<boolean>}
+ */
+const changePwdDialog = ref(false);
+
+/**
  * Reaktív hivatkozás a kijelölt felhasználó(ok) törléséhez használt párbeszédpanel megnyitásához.
  *
  * @type {ref<boolean>}
@@ -476,7 +483,7 @@ const getActiveValue = (user) =>
     ["inactive", "active", "pending"][user.active] || "pending";
 
 /**
- * Visszaadja a dialógusablak címét attól függően, 
+ * Visszaadja a dialógusablak címét attól függően,
  * hogy új felhasználót hozunk létre, vagy egy meglévőt szerkesztünk.
  *
  * @returns {string} A dialógusablak címe.
@@ -488,7 +495,7 @@ const getModalTitle = () => {
 };
 
 /**
- * Visszaadja a dialógusablak részleteit attól függően, 
+ * Visszaadja a dialógusablak részleteit attól függően,
  * hogy új felhasználót hozunk létre, vagy egy meglévőt szerkesztünk.
  *
  * @returns {string} A dialógusablak részletei.
@@ -616,6 +623,9 @@ const getModalDetails = () => {
                             rounded
                             severity="danger"
                             @click="confirmDeleteUser(slotProps.data)"
+                        />
+                        <Button
+                            icon="pi pi-database"
                         />
                     </template>
                 </Column>
@@ -746,5 +756,20 @@ const getModalDetails = () => {
                 />
             </template>
         </Dialog>
+
+        <Diaog
+            v-model:visible="changePwdDialog"
+            :style="{ width: '450px' }"
+            :header="$t('change_password')"
+            :modal="true"
+        >
+            <template #footer>
+                <Button
+                    :label="$t('change')"
+                    icon="pi pi-database"
+                />
+            </template>
+        </Diaog>
+
     </AppLayout>
 </template>

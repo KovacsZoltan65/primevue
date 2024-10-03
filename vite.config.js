@@ -17,4 +17,11 @@ export default defineConfig({
             },
         }),
     ],
+    css: {
+        processorOptions: {
+            scss: {
+                api: 'modern',
+            },
+        }
+    }
 });

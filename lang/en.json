@@ -7,7 +7,7 @@
     "dashboard": "Dashboard",
     "home": "Home",
     "administration": "Administration",
-    
+
     "roles": "Roles",
     "permissions": "Permissions",
 
@@ -72,6 +72,7 @@
     "inactive": "Inactive",
     "pending": "Pending",
     "confirm": "Confirm",
+    "change": "Change",
     "confirm_delete": "Are you sure you want to delete the selected records?",
     "confirm_delete_2": "Are you sure you want to delete",
 
@@ -91,6 +92,8 @@
     "users_edit_title": "Edit User",
     "users_edit_details": "Edit User Data",
     "users_delete_title": "User Deletion",
+
+    "change_password": "Change Password",
 
     "companies": "Companies",
     "companies_title": "Edit Company",

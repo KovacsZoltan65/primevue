@@ -790,6 +790,7 @@ const getActiveValue = (city) =>
                 <i class="pi pi-exclamation-triangle !text-3xl" />
                 <span v-if="city">{{ $t("confirm_delete") }}</span>
             </div>
+
             <template #footer>
                 <!-- "Mégsem" gomb -->
                 <Button
@@ -806,5 +807,6 @@ const getActiveValue = (city) =>
                 />
             </template>
         </Dialog>
+        
     </AppLayout>
 </template>

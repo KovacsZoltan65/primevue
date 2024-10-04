@@ -136,12 +136,18 @@ const submit = () => {
                                         {{ $t("remember_me") }}
                                     </label>
                                 </div>
-
+                            <!--
                                 <span
                                     class="font-medium no-underline ml-2 text-right cursor-pointer text-primary"
                                 >
                                     {{ $t("forgot_password") }}?
                                 </span>
+                            -->
+                                <Button 
+                                    :label="$t('forgot_password')" link 
+                                    :href="route('password.request')"
+                                ></Button>
+
                             </div>
 
                             <Button

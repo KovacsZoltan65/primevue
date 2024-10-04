@@ -71,7 +71,7 @@
     "inactive": "Inaktív",
     "pending": "Függőben",
     "confirm": "Megerősítés",
-    "change": "Módosít",
+    "change": "Változtat",
     "confirm_delete": "Biztosan törli a kiválasztott rekordokat?",
     "confirm_delete_2": "Biztos, hogy törölni szeretnéd",
 
@@ -127,6 +127,7 @@
     "validate_unique": "Ez a mező már foglalt.",
     "validate_boolean": "Ennek a mezőnek igaznak vagy hamisnak kell lennie.",
     "validate_string": "Ennek a mezőnek karakterláncnak kell lennie.",
+    "validate_same_as": "A két mező nem egyforma.",
 
     "error_400": "Rossz kérés",
     "error_401": "Jogosulatlan! Átirányítás a bejelentkezéshez...",

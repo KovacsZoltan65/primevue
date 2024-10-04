@@ -127,6 +127,7 @@
     "validate_unique": "This field has already been taken.",
     "validate_boolean": "This field must be true or false.",
     "validate_string": "This field must be a string.",
+    "validate_same_as": "the two fields are not the same.",
 
     "error_400": "Bad Request",
     "error_401": "Unauthorized! Redirecting to login...",

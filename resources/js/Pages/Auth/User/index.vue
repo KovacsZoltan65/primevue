@@ -8,7 +8,7 @@ import { trans } from "laravel-vue-i18n";
 
 // Validation
 import useVuelidate from "@vuelidate/core";
-import { helpers, required } from "@vuelidate/validators";
+import { helpers, minLength, required, sameAs } from "@vuelidate/validators";
 
 //import { usePage } from "@inertiajs/vue3";
 //const page = usePage();
@@ -26,6 +26,7 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
+import Password from "primevue/password";
 //import { setBaseUrl } from "@/helpers/constants";
 
 /**
@@ -130,6 +131,11 @@ const user = ref({
     language: "hu",
 });
 
+const pwd = ref({
+    password: '',
+    confirm_password: '',
+});
+
 /**
  * Reaktív hivatkozás a kijelölt felhasználók tárolására.
  *
@@ -179,12 +185,24 @@ const rules = {
     },
 };
 
+const pwd_rules = {
+    password: {
+        required: helpers.withMessage(trans('validate_required'), required),
+        minLength: helpers.withMessage(trans('validate_min.string'), minLength(8)),
+    },
+    confirm_password: {
+        required: helpers.withMessage(trans('validate_required'), required),
+        sameAsPassword: helpers.withMessage(trans(''), sameAs(pwd.value.password)),
+    },
+};
+
 /**
  * Létrehozza a validációs példányt a validációs szabályok alapján.
  *
  * @type {Object}
  */
 const v$ = useVuelidate(rules, user);
+const v_pwd$ = useVuelidate(pwd_rules, pwd);
 
 // ======================================================
 
@@ -303,6 +321,69 @@ const editUser = (data) => {
 
     // Nyissa meg a dialógusablakot a felhasználó szerkesztéséhez.
     userDialog.value = true;
+};
+
+/**
+ * Jelszó módosító funkció.
+ *
+ * Ez a funkció a kiválasztott felhasználó adatait másolja a user változóba,
+ * és megnyitja a jelszó módosító dialógusablakot.
+ *
+ * @param {object} data - A kiválasztott felhasználó adatai.
+ * @return {void}
+ */
+const pwdChange = (data) => {
+    // Másolja a kiválasztott felhasználó adatait a user változóba.
+    user.value = { ...data };
+
+    // Állítsa a pwd változó id-jét a kiválasztott felhasználó id-jére.
+    pwd.value.id = user.value.id;
+
+    // Nyissa meg a jelszó módosító dialógusablakot.
+    changePwdDialog.value = true;
+};
+
+/**
+ * Bezárja a jelszó módosító dialógusablakot.
+ *
+ * Ez a függvény a jelszó módosító dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
+ * A user és a pwd változókat is alaphelyzetbe állítja.
+ */
+ const hidePwrd = () => {
+    // Alaphelyzetbe állítja a user változót.
+    user.value = {};
+
+    // Alaphelyzetbe állítja a pwd változót.
+    pwd.value = {};
+
+    // A submitted változó értékét False-ra állítja.
+    submitted.value = false;
+
+    // Bezárja a jelszó módosító dialógusablakot.
+    changePwdDialog.value = false;
+
+    v_pwd$.value.$reset();
+};
+
+const updatePwd = async () => {
+    const result = await v_pwd$.value.$validate();
+
+    if(result) {
+        submitted.value = true;
+
+        UserService.updatePassword(user.value.id, pwd.value)
+        .then(response => {
+            console.log('response', response);
+
+            hidePwrd();
+        })
+        .catch(error => {
+            console.log('error', error);
+        });
+    }
+    else {
+        console.log(v_pwd$.value.$errors);
+    }
 };
 
 /**
@@ -618,14 +699,19 @@ const getModalDetails = () => {
                             @click="editUser(slotProps.data)"
                         />
                         <Button
+                            icon="pi pi-lock"
+                            outlined
+                            rounded
+                            class="mr-2"
+                            severity="help"
+                            @click="pwdChange(slotProps.data)"
+                        />
+                        <Button
                             icon="pi pi-trash"
                             outlined
                             rounded
                             severity="danger"
                             @click="confirmDeleteUser(slotProps.data)"
-                        />
-                        <Button
-                            icon="pi pi-database"
                         />
                     </template>
                 </Column>
@@ -736,10 +822,13 @@ const getModalDetails = () => {
             :header="$t('confirm')"
             :modal="true"
         >
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="user">{{ $t("confirm_delete") }}</span>
-            </div>
+            <template #header>
+                <div class="flex items-center gap-4">
+                    <i class="pi pi-exclamation-triangle !text-3xl" />
+                    <span v-if="user">{{ $t("confirm_delete") }}</span>
+                </div>
+            </template>
+        
             <template #footer>
                 <!-- "Mégsem" gomb -->
                 <Button
@@ -757,19 +846,66 @@ const getModalDetails = () => {
             </template>
         </Dialog>
 
-        <Diaog
+        <!-- Jelszó módosítása párbeszédpanel -->
+        <!-- Ez a párbeszédablak akkor jelenik meg, ha a felhasználó meg akarja változtatni a jelszavát -->
+        <!-- A párbeszédpanelen egy figyelmeztető ikon és egy „Jelszó módosítása” szöveg látható. -->
+        <!-- A párbeszédpanelen két gomb található: "Mégse" és "Módosítás" -->
+        <Dialog
             v-model:visible="changePwdDialog"
             :style="{ width: '450px' }"
             :header="$t('change_password')"
             :modal="true"
         >
+            <div class="flex flex-col gap-6">
+                <!-- JELSZÓ -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <label for="password" class="block font-bold mb-3">
+                        {{ $t("password") }}
+                    </label>
+                    <Password
+                        id="password"
+                        v-model="pwd.password"
+                        autofocus fluid toggleMask
+                    />
+                    <small class="text-red-500" v-if="v_pwd$.password.$error">
+                        {{ $t(v_pwd$.password.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- JELSZÓ MEGERŐSÍTÉS -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <label for="confirm_password" class="block font-bold mb-3">
+                        {{ $t("confirm_password") }}
+                    </label>
+                    <Password
+                        id="confirm_password"
+                        v-model="pwd.confirm_password"
+                        autofocus fluid toggleMask
+                    />
+                    <small class="text-red-500" v-if="v_pwd$.confirm_password.$error">
+                        {{ $t(v_pwd$.confirm_password.$errors[0].$message) }}
+                    </small>
+                </div>
+
+            </div>
+
+            <!-- A párbeszédablak lábléce -->
             <template #footer>
+                <!-- A "Mégse" gomb -->
+                <Button
+                    :label="$t('cancel')"
+                    icon="pi pi-times"
+                    text
+                    @click="hidePwrd"
+                />
+                <!-- A "Változtatás" gomb -->
                 <Button
                     :label="$t('change')"
                     icon="pi pi-database"
+                    @click="updatePwd"
                 />
             </template>
-        </Diaog>
+        </Dialog>
 
     </AppLayout>
 </template>

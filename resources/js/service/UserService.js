@@ -82,7 +82,9 @@ class UserService extends BaseService {
      * @return {Promise<AxiosResponse<any>>}
      */
     updatePassword(id, data) {
-        return this.put(`/users/password/${id}`, data);
+        console.log('id', id);
+        console.log('data', data);
+        //return this.put(`/users/password/${id}`, data);
     }
 
 

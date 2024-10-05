@@ -70,6 +70,7 @@ const submitForm = async () => {
         alert("error, form not submitted!");
     }
 };
+
 </script>
 
 <template>
@@ -94,7 +95,7 @@ const submitForm = async () => {
                         </span>
                     </div>
                 </div>
-                <!--                
+                <!--
                 <BaseInput v-model="formData.username" label="Username" type="text" />
 -->
                 <div>

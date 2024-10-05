@@ -7,16 +7,17 @@ export const MenuService = {
                     { label: "dashboard", icon: "pi pi-fw pi-home", to: "/dashboard", },
                 ],
             },
-            
+
             {
                 label: "validation2",
                 items: [
                     { label: "validation", icon: "", to: "/validation" },
                     { label: "validation 1", icon: "", to: "/validation_01" },
                     { label: "validation 2", icon: "", to: "/validation_02" },
+                    { label: "validation 3", icon: "", to: "/validation_03" },
                 ],
             },
-            
+
             {
                 label: "administration",
                 items: [

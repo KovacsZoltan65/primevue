@@ -11,7 +11,7 @@ class CentralRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,10 +21,24 @@ class CentralRequest extends FormRequest
      */
     public function rules(): array
     {
-        $validationRules = json_decode(file_get_contents(resource_path('js/validationRules.js')), true);
+        //$validationRules = json_decode(file_get_contents(resource_path('js/validationRules.json')), true);
         
-        return [
-            'field_name' => 'required|string|max:' . $validationRules['maxStringLength'],
+//\Log::info('$validationRules: ' . print_r($validationRules['minStringLength'], true));
+//\Log::info('$validationRules: ' . print_r($validationRules['maxStringLength'], true));
+        /*
+        $aa = [
+            'fieldName' => [
+                'required', 'string', 
+                "min:{$validationRules['minStringLength']}", 
+                "max:{$validationRules['maxStringLength']}"
+            ]
         ];
+        */
+
+        $aa = ['fieldName' => 'required|string|min:5|max:6'];
+
+\Log::info('$this->all(): ' . print_r($this->all(), true));
+        
+        return $aa;
     }
 }

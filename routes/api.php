@@ -98,8 +98,23 @@ Route::resource('/cities', CityController::class)->names([
  * VALIDATION
  * =======================================================
  */
-Route::post('/submit-form', [\App\Http\Controllers\ValidationController::class, 'updateVal_03'])->name('api.post.submit-form');
 
+Route::post(
+    '/submit-form', 
+    [
+        \App\Http\Controllers\ValidationController::class, 
+        'updateVal_03'
+    ]
+)->name('api.post.submit-form');
+
+/*
+Route::post(
+    '/submit-form', 
+    function(Request $request){
+        \Log::info('API');
+    }
+)->name('api.post.submit-form');
+*/
 /**
  * =======================================================
  * ORSZÁGOK

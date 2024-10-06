@@ -3,7 +3,8 @@ import { ref, reactive, onMounted } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
 import { required, maxLength, minLength, helpers } from '@vuelidate/validators';
 
-import { validationRules } from '../../validationRules';
+import ValidationService from '@/service/ValidationService';
+import validationRules from '../../validationRules';
 
 //onMounted(() => {
 //    console.log('onMounted');
@@ -27,13 +28,14 @@ const rules = {
 
 const v$ = useVuelidate(rules, form);
 
-import ValidationService from '@/service/ValidationService';
 const submitForm = async () => {
     //
     const result = await v$.value.$validate();
+
     if (result) {
         try {
-            await ValidationService.submitForm();
+            console.log('vue', form);
+            await ValidationService.submitForm(form);
             serverErrors.value = [];
         } catch(error) {
             if (error.response && error.response.status === 422) {
@@ -41,6 +43,8 @@ const submitForm = async () => {
             }
             console.error("submitForm API Error:", error);
         }
+    }else{
+        console.log('AAA');
     }
 
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CentralRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -23,7 +24,8 @@ class ValidationController extends Controller
         return Inertia::render('validation/Vuelidate_03');
     }
     
-    public function updateVal_03 (Request $request) {
-        //
+    public function updateVal_03 (CentralRequest $request) {
+\Log::info('updateVal_03' . print_r($request->all(), true));
+//\Log::info('updateVal_03: ' . print_r($request->all(), true));
     }
 }

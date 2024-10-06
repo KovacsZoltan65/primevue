@@ -6,8 +6,9 @@ class ValidationService extends BaseService {
         super();
     }
 
-    submitForm() {
-        return this.post("/submit-form");
+    submitForm(data) {
+        console.log('service',data);
+        return this.post("/submit-form", data);
     }
 
 }

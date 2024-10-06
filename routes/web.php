@@ -32,17 +32,12 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    
-    // VALIDATION
-    Route::get('/validation', [ValidationController::class, 'validation'])->name('validation');
-    Route::get('/validation_01', [ValidationController::class, 'validation_01'])->name('validation_01');
-    Route::get('/validation_02', [ValidationController::class, 'validation_02'])->name('validation_02');
 
     /**
      * =====================================================
      * CÉGEK
      * =====================================================
-     * 
+     *
      * Define the routes for the CompanyController resource.
      * These routes use the resource method to define common
      * CRUD operations. The names method is used to customize
@@ -61,12 +56,12 @@ Route::middleware('auth')->group(function () {
         // The destroy route name is set to 'companies.destroy'.
         'destroy' => 'companies.destroy',
     ]);
-    
+
     /**
      * =====================================================
      * VÁROSOK
      * =====================================================
-     * 
+     *
      * Határozza meg a CityController erőforrás útvonalait.
      * Ezek az útvonalak az erőforrás módszert használják a közös meghatározásához
      * CRUD műveletek. A testreszabáshoz a names metódust használjuk
@@ -80,31 +75,31 @@ Route::middleware('auth')->group(function () {
     //    'destroy' => 'cities.destroy',
     //]);
     Route::get('/cities', [CityController::class, 'index'])->name('cities');
-    
-    
+
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     /**
      * =====================================================
      * ORSZÁGOK
      * =====================================================
-     * 
+     *
      * Határozza meg a CountryController erőforrás útvonalait.
      * Ezek az útvonalak az erőforrás módszert használják a közös meghatározásához
      * CRUD műveletek. A testreszabáshoz a names metódust használjuk
      * az útvonalak nevei.
      */
     Route::get('/countries', [CountryController::class, 'index'])->name('countries');
-    
+
     /**
      * =====================================================
      * MEGYÉK
      * =====================================================
      */
     Route::get('/regions', [RegionController::class, 'index'])->name('regions');
-    
+
     /**
      * =======================================================
      * FELHASZNÁLÓK
@@ -125,14 +120,14 @@ Route::middleware('auth')->group(function () {
      * =======================================================
      */
     Route::get('/permissions', [PermissionController::class, 'index'])->name('permissions');
-    
+
     /**
      * =======================================================
      * SUBDOMAINS
      * =======================================================
      */
     Route::get('/subdomains', [SubdomainController::class, 'index'])->name('subdomains');
-    
+
     /**
      * =======================================================
      * SUBDOMAIN STATES

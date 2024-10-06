@@ -11,7 +11,6 @@ import useVuelidate from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 
 import CityService from "@/service/CityService";
-//import functions from '../../../helpers/functions.js';
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -807,6 +806,5 @@ const getActiveValue = (city) =>
                 />
             </template>
         </Dialog>
-        
     </AppLayout>
 </template>

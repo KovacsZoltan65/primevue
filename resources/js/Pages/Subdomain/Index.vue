@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, reactive } from "vue";
 import { Head, usePage } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
-import { FilterMatchMode, FilterOperator  } from "@primevue/core/api";
+import { FilterMatchMode, FilterOperator } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
 
 import { trans } from "laravel-vue-i18n";
@@ -12,7 +12,6 @@ import useVuelidate from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 
 import CountryService from "@/service/CountryService";
-//import functions from '../../../helpers/functions.js';
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -114,11 +113,11 @@ const rules = {
     name: {
         required: helpers.withMessage("validate_name", required),
     },
-    db_host: {required},
-    db_port: {required},
-    db_name: {required},
-    db_user: {required},
-    db_password: {required},
+    db_host: { required },
+    db_port: { required },
+    db_name: { required },
+    db_user: { required },
+    db_password: { required },
 };
 
 /**
@@ -133,7 +132,12 @@ const v$ = useVuelidate(rules, subdomain);
 const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+        name: {
+            operator: FilterOperator.AND,
+            constraints: [
+                { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+            ],
+        },
     };
 };
 
@@ -144,42 +148,20 @@ const clearFilter = () => {
 initFilters();
 
 const fetchItems = () => {
-
     loading.value = true;
 
-    /*
-    SubdomainService.getSubdomainsXLarge()
-        .then((response) => {
-            subdomains.value = getSubdomains(response.data.data);
-            loading.value = false;
-        });
-    
-    
-    SubdomainService.getSubdomainsXLarge()
-        .then((response) => {
-            subdomains.value = getSubdomains(response.data.data);
-            loading.value = false;
-        });
-    */
     SubdomainService.getSubdomains()
-        .then(response => {
+        .then((response) => {
             subdomains.value = response.data.data;
 
             loading.value = false;
         })
-        .catch(error => {
+        .catch((error) => {
             console.error("getSubdomains API Error:", error);
         });
 };
 
-//const getSubdomains = (data) => {
-//    return data;
-//};
-//import { primeVueLocaleConfig } from "@/primevue/config.js";
 onMounted(() => {
-    //const primevue = usePrimeVue();
-    //primevue.config.locale = primeVueLocaleConfig;
-
     fetchItems();
 });
 
@@ -317,9 +299,9 @@ const getActiveValue = (subdomain) =>
     <AppLayout>
         <Head :title="$t('subdomains')" />
 
-{{ $page.props.available_locales }}
-{{ $page.props.supported_locales }}
-{{ $page.props.locale }}
+        {{ $page.props.available_locales }}
+        {{ $page.props.supported_locales }}
+        {{ $page.props.locale }}
 
         <div class="card">
             <Toolbar class="md-6">
@@ -368,22 +350,25 @@ const getActiveValue = (subdomain) =>
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} subdomains"
             >
-            <!--<DataTable 
-                v-model:filters="filters" 
-                :value="customers" 
-                paginator showGridlines 
-                :rows="10" dataKey="id" 
-                filterDisplay="menu" 
-                :loading="loading" 
-                :globalFilterFields="['name', 'country.name', 'representative.name', 'balance', 'status']"
-            >-->
+            <!--
+            <DataTable
+                v-model:filters="filters"
+                :value="customers"
+                paginator showGridlines
+                :rows="10" dataKey="id"
+                filterDisplay="menu"
+                :loading="loading"
+                :globalFilterFields="['name', 'country.name', 'representative.name', 'balance', 'status']">
+            -->
                 <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <Button 
-                            type="button" 
-                            icon="pi pi-filter-slash" 
-                            label="Clear" 
-                            outlined 
+                    <div
+                        class="flex flex-wrap gap-2 items-center justify-between"
+                    >
+                        <Button
+                            type="button"
+                            icon="pi pi-filter-slash"
+                            label="Clear"
+                            outlined
                             @click="clearFilter()"
                         />
                         <!-- FELIRAT -->
@@ -405,16 +390,19 @@ const getActiveValue = (subdomain) =>
                 </template>
 
                 <template #paginatorstart>
-                    <Button type="button" icon="pi pi-refresh" text @click="fetchItems" />
+                    <Button
+                        type="button"
+                        icon="pi pi-refresh"
+                        text
+                        @click="fetchItems"
+                    />
                 </template>
-
-                <!--<template #paginatorend>
-                    <Button type="button" icon="pi pi-download" text @click="" />
-                </template>-->
 
                 <template #empty> No customers found. </template>
 
-                <template #loading> Loading customers data. Please wait. </template>
+                <template #loading>
+                    Loading customers data. Please wait.
+                </template>
 
                 <!-- Checkbox -->
                 <Column
@@ -424,58 +412,61 @@ const getActiveValue = (subdomain) =>
                 />
 
                 <!-- Nev -->
-                <Column field="name" header="Name" style="min-width: 12rem" sortable>
+                <Column
+                    field="name"
+                    header="Name"
+                    style="min-width: 12rem"
+                    sortable
+                >
                     <template #body="{ data }">
                         {{ data.name }}
                     </template>
                     <template #filter="{ filterModel }">
-                        <InputText v-model="filterModel.value" type="text" placeholder="Search by name" />
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            placeholder="Search by name"
+                        />
                     </template>
                 </Column>
-                <!--<Column
-                    field="name"
-                    :header="$t('name')"
-                    sortable
-                    style="min-width: 16rem"
-                />-->
 
                 <!-- Subdomain -->
-                <Column 
-                    field="subdomain" 
-                    :header="$t('subdomain')" 
-                    style="min-width: 16rem" 
+                <Column
+                    field="subdomain"
+                    :header="$t('subdomain')"
+                    style="min-width: 16rem"
                     sortable
                 />
 
                 <!-- url -->
-                <Column 
-                    field="url" 
-                    :header="$t('url')" 
-                    style="min-width: 16rem" 
+                <Column
+                    field="url"
+                    :header="$t('url')"
+                    style="min-width: 16rem"
                     sortable
                 />
 
                 <!-- db_name -->
-                <Column 
-                    field="db_name" 
-                    :header="$t('db_name')" 
-                    style="min-width: 16rem" 
+                <Column
+                    field="db_name"
+                    :header="$t('db_name')"
+                    style="min-width: 16rem"
                     sortable
                 />
 
                 <!-- db_user -->
-                <Column 
-                    field="db_user" 
-                    :header="$t('db_user')" 
-                    style="min-width: 16rem" 
+                <Column
+                    field="db_user"
+                    :header="$t('db_user')"
+                    style="min-width: 16rem"
                     sortable
                 />
 
                 <!-- db_password -->
-                <Column 
-                    field="db_password" 
-                    :header="$t('db_password')" 
-                    style="min-width: 16rem" 
+                <Column
+                    field="db_password"
+                    :header="$t('db_password')"
+                    style="min-width: 16rem"
                     sortable
                 />
 
@@ -513,7 +504,6 @@ const getActiveValue = (subdomain) =>
                         />
                     </template>
                 </Column>
-
             </DataTable>
         </div>
 

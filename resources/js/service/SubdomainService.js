@@ -22,6 +22,11 @@ class SubdomainService extends BaseService {
         return this.get("/subdomains");
     }
 
+    /**
+     * Szerezd meg a városok listájának elején lévő 10 elemet.
+     *
+     * @returns {Promise<AxiosResponse<Subdomain[]>>}
+     */
     getSubdomainsSmall() {
         return Promise.resolve(this.getSubdomains().slice(0, 10));
     }

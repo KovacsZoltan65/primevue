@@ -132,8 +132,8 @@ const user = ref({
 });
 
 const pwd = ref({
-    password: '',
-    confirm_password: '',
+    password: "",
+    confirm_password: "",
 });
 
 /**
@@ -187,12 +187,18 @@ const rules = {
 
 const pwd_rules = {
     password: {
-        required: helpers.withMessage(trans('validate_required'), required),
-        minLength: helpers.withMessage(trans('validate_min.string'), minLength(8)),
+        required: helpers.withMessage(trans("validate_required"), required),
+        minLength: helpers.withMessage(
+            trans("validate_min.string"),
+            minLength(8),
+        ),
     },
     confirm_password: {
-        required: helpers.withMessage(trans('validate_required'), required),
-        sameAsPassword: helpers.withMessage(trans(''), sameAs(pwd.value.password)),
+        required: helpers.withMessage(trans("validate_required"), required),
+        sameAsPassword: helpers.withMessage(
+            trans(""),
+            sameAs(pwd.value.password),
+        ),
     },
 };
 
@@ -215,7 +221,6 @@ const v_pwd$ = useVuelidate(pwd_rules, pwd);
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
  */
 const fetchItems = () => {
-
     UserService.getUsers()
         .then((response) => {
             //console.log(response);
@@ -349,7 +354,7 @@ const pwdChange = (data) => {
  * Ez a függvény a jelszó módosító dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
  * A user és a pwd változókat is alaphelyzetbe állítja.
  */
- const hidePwrd = () => {
+const hidePwrd = () => {
     // Alaphelyzetbe állítja a user változót.
     user.value = {};
 
@@ -368,20 +373,19 @@ const pwdChange = (data) => {
 const updatePwd = async () => {
     const result = await v_pwd$.value.$validate();
 
-    if(result) {
+    if (result) {
         submitted.value = true;
 
         UserService.updatePassword(user.value.id, pwd.value)
-        .then(response => {
-            console.log('response', response);
+            .then((response) => {
+                console.log("response", response);
 
-            hidePwrd();
-        })
-        .catch(error => {
-            console.log('error', error);
-        });
-    }
-    else {
+                hidePwrd();
+            })
+            .catch((error) => {
+                console.log("error", error);
+            });
+    } else {
         console.log(v_pwd$.value.$errors);
     }
 };
@@ -570,9 +574,7 @@ const getActiveValue = (user) =>
  * @returns {string} A dialógusablak címe.
  */
 const getModalTitle = () => {
-    return user.value.id
-        ? trans("users_edit_title")
-        : trans("users_new_title");
+    return user.value.id ? trans("users_edit_title") : trans("users_new_title");
 };
 
 /**
@@ -586,7 +588,6 @@ const getModalDetails = () => {
         ? trans("users_edit_details")
         : trans("users_new_details");
 };
-
 </script>
 
 <template>
@@ -608,9 +609,7 @@ const getModalDetails = () => {
                         icon="pi pi-trash"
                         severity="secondary"
                         @click="confirmDeleteSelected"
-                        :disabled="
-                            !selectedUsers || !selectedUsers.length
-                        "
+                        :disabled="!selectedUsers || !selectedUsers.length"
                     />
                 </template>
 
@@ -828,7 +827,7 @@ const getModalDetails = () => {
                     <span v-if="user">{{ $t("confirm_delete") }}</span>
                 </div>
             </template>
-        
+
             <template #footer>
                 <!-- "Mégsem" gomb -->
                 <Button
@@ -865,7 +864,9 @@ const getModalDetails = () => {
                     <Password
                         id="password"
                         v-model="pwd.password"
-                        autofocus fluid toggleMask
+                        autofocus
+                        fluid
+                        toggleMask
                     />
                     <small class="text-red-500" v-if="v_pwd$.password.$error">
                         {{ $t(v_pwd$.password.$errors[0].$message) }}
@@ -880,13 +881,17 @@ const getModalDetails = () => {
                     <Password
                         id="confirm_password"
                         v-model="pwd.confirm_password"
-                        autofocus fluid toggleMask
+                        autofocus
+                        fluid
+                        toggleMask
                     />
-                    <small class="text-red-500" v-if="v_pwd$.confirm_password.$error">
+                    <small
+                        class="text-red-500"
+                        v-if="v_pwd$.confirm_password.$error"
+                    >
                         {{ $t(v_pwd$.confirm_password.$errors[0].$message) }}
                     </small>
                 </div>
-
             </div>
 
             <!-- A párbeszédablak lábléce -->
@@ -906,6 +911,5 @@ const getModalDetails = () => {
                 />
             </template>
         </Dialog>
-
     </AppLayout>
 </template>

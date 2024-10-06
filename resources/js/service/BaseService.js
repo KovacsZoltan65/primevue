@@ -70,7 +70,11 @@ class BaseService {
                          * Rossz kérés
                          */
                         case 400:
-                            console.error(trans("error_400") + ": ", error.response.data.message || "Invalid request");
+                            console.error(
+                                trans("error_400") + ": ",
+                                error.response.data.message ||
+                                    "Invalid request",
+                            );
                             break;
                         /**
                          * Jogosulatlan
@@ -83,30 +87,43 @@ class BaseService {
                          * Tiltott
                          */
                         case 403:
-                            console.error(trans("error_403") + ": ", error.response.data.message || "Forbidden");
+                            console.error(
+                                trans("error_403") + ": ",
+                                error.response.data.message || "Forbidden",
+                            );
                             break;
                         /**
                          * Nem található
                          */
                         case 404:
-                            console.error(trans("error_404") + ": ", error.response.data.message || "Not found");
+                            console.error(
+                                trans("error_404") + ": ",
+                                error.response.data.message || "Not found",
+                            );
                             break;
                         /**
                          * Belső szerver hiba
                          */
                         case 500:
-                            console.error(trans("error_500") + ": ", error.response.data.message || "Internal server error");
+                            console.error(
+                                trans("error_500") + ": ",
+                                error.response.data.message ||
+                                    "Internal server error",
+                            );
                             break;
                         /**
                          * Alapértelmezett hibakezelés
                          */
                         default:
-                            console.error(trans("error_default") + ": ", error.response.data.message || "Unknown error");
+                            console.error(
+                                trans("error_default") + ": ",
+                                error.response.data.message || "Unknown error",
+                            );
                             break;
                     }
                 }
                 return Promise.reject(error);
-            }
+            },
         );
     }
 

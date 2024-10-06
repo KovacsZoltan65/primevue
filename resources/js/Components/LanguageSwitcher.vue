@@ -6,12 +6,12 @@ import { usePage } from "@inertiajs/vue3";
 //import { LanguageService } from "@/service/LanguageService";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import Select from "primevue/select";
-import { usePrimeVue } from 'primevue/config';
+import { usePrimeVue } from "primevue/config";
 import { localeEN } from "../../../lang/primevue-en.js";
 import { localeHU } from "../../../lang/primevue-hu.js";
 
 const primevue = usePrimeVue();
-const selectedCountry = ref('');
+const selectedCountry = ref("");
 const supportedleLocales = ref();
 //const availableLocale = ref();
 const countries = ref();
@@ -20,10 +20,6 @@ const responsiveSettingsLanguage = ref(false);
 onMounted(() => {
     const page = usePage();
     const sharedData = page.props;
-
-    //console.log(sharedData.locale);
-    //console.log(sharedData.available_locales);
-    //console.log(sharedData.supported_locales);
 
     /**
      * Kiválasztott nyelv
@@ -35,54 +31,32 @@ onMounted(() => {
      */
     supportedleLocales.val = sharedData.supported_locales;
 
-    //availableLocale.val = sharedData.available_locales;
     /**
      * Elérhető nyelvek
      */
     countries.value = sharedData.available_locales;
-    //console.log('countries.value', countries.value);
-
-    //console.log('selectedCountry', selectedCountry.val);
-
-    //console.log('supportedleLocales', supportedleLocales.val);
-    //console.log('supportedleLocales[0]', supportedleLocales.val[0]);
-
-    //console.log('availableLocale', availableLocale.val);
-    //console.log('availableLocale[0]', availableLocale.val[0]);
-
-    //LanguageService.getLanguages().then((data) => {
-    //    countries.value = data;
-
-    //    console.log('countries.value', countries.value);
-    //    console.log('countries.value[0]', countries.value[0]);
-    //});
-
 });
 
 function setLocale(event) {
 
-    //console.log(event);
-    //console.log(selectedCountry.value);
-    //console.log(selectedCountry.value.code);
-    //console.log(selectedCountry.value.name);
     var locale = selectedCountry.value.code.toLowerCase();
-    //console.log(locale);
-    /*
+
+
     /*
     axios.post(route("language"), { locale: locale }).catch((error) => {
         console.log(error);
     });
     */
-   const primeLocale = locale == 'HU' ? localeHU : localeEN;
-   primevue.config.locale = primeLocale;
+    const primeLocale = locale == "HU" ? localeHU : localeEN;
+    primevue.config.locale = primeLocale;
 }
 
 watch(selectedCountry, (newValue) => {
-    console.log('newValue', newValue);
-    const primeLocale = newValue.code.toLowerCase() == 'hu' ? localeHU : localeEN;
+    console.log("newValue", newValue);
+    const primeLocale =
+        newValue.code.toLowerCase() == "hu" ? localeHU : localeEN;
     primevue.config.locale = primeLocale;
 });
-
 </script>
 <template>
     <Select

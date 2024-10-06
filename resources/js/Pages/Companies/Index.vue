@@ -611,7 +611,6 @@ const getModalDetails = () => {
             :header="getModalTitle()"
             :modal="true"
         >
-
             <div class="flex flex-col gap-6">
                 <!-- NAME -->
                 <div class="flex flex-col grow basis-0 gap-2">
@@ -759,6 +758,5 @@ const getModalDetails = () => {
                 />
             </template>
         </Dialog>
-
     </AppLayout>
 </template>

@@ -10,11 +10,7 @@ import { trans } from "laravel-vue-i18n";
 import useVuelidate from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 
-//import { usePage } from "@inertiajs/vue3";
-//const page = usePage();
-
 import CountryService from "@/service/CountryService";
-//import functions from '../../../helpers/functions.js';
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -26,7 +22,6 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
-//import { setBaseUrl } from "@/helpers/constants";
 
 /**
  * Szerver felöl jövő adatok
@@ -208,7 +203,6 @@ const v$ = useVuelidate(rules, country);
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
  */
 const fetchItems = () => {
-
     CountryService.getCountries()
         .then((response) => {
             //console.log(response);
@@ -491,13 +485,12 @@ const getActiveLabel = (country) =>
 
 const getActiveValue = (country) =>
     ["inactive", "active", "pending"][country.active] || "pending";
-
 </script>
 
 <template>
     <AppLayout>
         <Head :title="$t('countries')" />
-{{ $page.props.baseUrl }}
+        {{ $page.props.baseUrl }}
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>

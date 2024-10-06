@@ -11,7 +11,6 @@ import useVuelidate from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 
 import SubdomainService from "@/service/SubdomainService";
-//import functions from '../../../helpers/functions.js';
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -206,7 +205,6 @@ const v$ = useVuelidate(rules, subdomain);
 const fetchItems = () => {
     SubdomainService.getSubdomains()
         .then((response) => {
-            //console.log(response);
             // A városok listája a subdomains változóban lesz elmentve
             subdomains.value = response.data.data;
         })

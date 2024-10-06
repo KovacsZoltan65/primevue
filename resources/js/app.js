@@ -1,6 +1,4 @@
 import "./bootstrap";
-//import '../css/app.css';
-//import '../css/styles.scss';
 import "../css/styles.scss";
 import "../css/tailwind.css";
 
@@ -13,7 +11,7 @@ import { i18nVue } from "laravel-vue-i18n";
 import Aura from "@primevue/themes/aura";
 
 import PrimeVue from "primevue/config";
-import { localeEN } from "../../lang/primevue-en.js";
+//import { localeEN } from "../../lang/primevue-en.js";
 import { localeHU } from "../../lang/primevue-hu.js";
 
 import ConfirmationService from "primevue/confirmationservice";
@@ -43,13 +41,7 @@ createInertiaApp({
                         darkModaSelector: ".app-dark",
                     },
                 },
-                locale: localeHU
-                /*
-                locale: {
-                    en: localeEN,
-                    hu: localeHU,
-                },
-                */
+                locale: localeHU,
             })
             .use(ToastService)
             .use(ConfirmationService)

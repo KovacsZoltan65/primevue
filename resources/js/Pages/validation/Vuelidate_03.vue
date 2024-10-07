@@ -5,6 +5,7 @@ import { required, maxLength, minLength, helpers } from '@vuelidate/validators';
 
 import ValidationService from '@/service/ValidationService';
 import validationRules from '../../validationRules';
+import { trans } from 'laravel-vue-i18n';
 
 //onMounted(() => {
 //    console.log('onMounted');
@@ -20,9 +21,9 @@ const serverErrors = ref({});
 
 const rules = {
     fieldName: {
-        required: helpers.withMessage('A mező megadása kötelező', required),
-        minLength: helpers.withMessage(({ $params }) => `A szövegnek legalább ${$params.min} karakter hosszúnak kell lennie.`, minLength(validationRules.minStringLength)),
-        maxLength: helpers.withMessage(({ $params }) => `A szövegnek legfeljebb ${$params.max} karakter hosszú lehet.`, maxLength(validationRules.maxStringLength)),
+        required: helpers.withMessage( trans('validate_required') , required),
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
+        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
     }
 };
 

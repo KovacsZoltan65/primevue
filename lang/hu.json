@@ -123,7 +123,7 @@
     "validate_min.numeric": "Ez a szám minimum :min lehet.",
     "validate_min.string": "A karakterláncnak legalább :min karakterből kell állnia.",
     "validate_max.numeric": "Ez a szám maximum :max lehet.",
-    "validate_max.string": "A karakterlánc nem lehet nagyobb, mint :max karakter.",
+    "validate_max.string": "A karakterlánc nem lehet hosszabb, mint :max karakter.",
     "validate_unique": "Ez a mező már foglalt.",
     "validate_boolean": "Ennek a mezőnek igaznak vagy hamisnak kell lennie.",
     "validate_string": "Ennek a mezőnek karakterláncnak kell lennie.",

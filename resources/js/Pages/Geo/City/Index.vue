@@ -8,7 +8,8 @@ import { trans } from "laravel-vue-i18n";
 
 // Validation
 import useVuelidate from "@vuelidate/core";
-import { helpers, required } from "@vuelidate/validators";
+import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
+import validationRules from "../../../Validation/ValidationRules.json";
 
 import CityService from "@/service/CityService";
 
@@ -176,6 +177,11 @@ const submitted = ref(false);
 const rules = {
     name: {
         required: helpers.withMessage("validate_name", required),
+        //minLength: helpers.withMessage(({ $params }) => `A szövegnek legalább ${$params.min} karakter hosszúnak kell lennie.`, minLength(validationRules.minStringLength)),
+        //maxLength: helpers.withMessage(({ $params }) => `A szövegnek legfeljebb ${$params.max} karakter hosszú lehet.`, maxLength(validationRules.maxStringLength)),
+        // "validate_min.string": "A karakterláncnak legalább :min karakterből kell állnia."
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
+        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), minLength(validationRules.maxStringLength)),
     },
     country_id: {
         required: helpers.withMessage("validate_country_id", required),

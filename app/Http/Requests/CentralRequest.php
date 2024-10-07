@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+//use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\BaseRequest;
 
-class CentralRequest extends FormRequest
+class CentralRequest extends BaseRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,23 +23,15 @@ class CentralRequest extends FormRequest
     public function rules(): array
     {
         //$validationRules = json_decode(file_get_contents(resource_path('js/validationRules.json')), true);
-        
-//\Log::info('$validationRules: ' . print_r($validationRules['minStringLength'], true));
-//\Log::info('$validationRules: ' . print_r($validationRules['maxStringLength'], true));
-        /*
+
         $aa = [
             'fieldName' => [
-                'required', 'string', 
-                "min:{$validationRules['minStringLength']}", 
-                "max:{$validationRules['maxStringLength']}"
+                'required', 'string',
+                "min:{$this->validationRules['minStringLength']}",
+                "max:{$this->validationRules['maxStringLength']}"
             ]
         ];
-        */
 
-        $aa = ['fieldName' => 'required|string|min:5|max:6'];
-
-\Log::info('$this->all(): ' . print_r($this->all(), true));
-        
         return $aa;
     }
 }

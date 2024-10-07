@@ -184,10 +184,10 @@ const rules = {
         maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), minLength(validationRules.maxStringLength)),
     },
     country_id: {
-        required: helpers.withMessage("validate_country_id", required),
+        required: helpers.withMessage( trans("validate_country_id") , required),
     },
     region_id: {
-        required: helpers.withMessage("validate_region_id", required),
+        required: helpers.withMessage( trans("validate_region_id") , required),
     },
 };
 

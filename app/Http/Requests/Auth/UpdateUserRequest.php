@@ -2,10 +2,11 @@
 
 namespace App\Http\Auth\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+//use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\BaseRequest;
 use Illuminate\Validation\Rules\Password;
 
-class UpdateUserRequest extends FormRequest
+class UpdateUserRequest extends BaseRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,13 +26,13 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => [
                 'required', 'string', 
-                "min:" . APP_MIN_STRING_LENGTH, 
-                "max:" . APP_MAX_STRING_LENGTH
+                "min:" . $this->validationRules['minStringLength'], 
+                "max:" . $this->validationRules['maxStringLength'],
             ],
             'password' => [
                 // Nem kötelező
                 'confirmed',
-                Password::min(APP_PASSWORD_MIN_LENGTHS)
+                Password::min($this->validationRules['password_min_length'])
                 ->letters()->mixedCase()->numbers()->symbols()
                 /**
                  * A Laravelben a uncompromised() szabály a jelszavak biztonságának ellenőrzésére szolgál. 
@@ -56,11 +57,11 @@ class UpdateUserRequest extends FormRequest
                 ->uncompromised(),
                 function($attribute, $value, $fail): void {
                     // Ellenőrzi, hogy a jelszó tartalmaz-e legalább 2 számot
-                    if (preg_match_all('/[0-9]/', $value) < APP_PASSWORD_MIN_NUMBERS) {
+                    if (preg_match_all('/[0-9]/', $value) < $this->validationRules['password_min_number']) {
                         $fail('The :attribute must contain at least 2 numbers.');
                     }
                     // Ellenőrzi, hogy a jelszó tartalmaz-e legalább 3 betűt
-                    if (preg_match_all('/[a-zA-Z]/', $value) < APP_PASSWORD_MIN_LETTERS) {
+                    if (preg_match_all('/[a-zA-Z]/', $value) < $this->validationRules['password_min_letter']) {
                         $fail('The :attribute must contain at least 3 letters.');
                     }
                 }

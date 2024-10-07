@@ -12,7 +12,7 @@ class StoreCityRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,30 +23,15 @@ class StoreCityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // A város neve karakterlánc, minimum 2, maximum 255 karakter hosszú.
-            // Egyedinek kell lennie a városok nevei között.
             'name' => [
-                'required', 'string', 'unique:cities,name',
-                "min:" . APP_MIN_STRING_LENGTH, 
-                "max:" . APP_MAX_STRING_LENGTH,
+                'required','string',
+                'min','max',
+                Rule::unique('cities', 'name')
             ],
-            // A város országának azonosítója jelen kell lennie, 
-            // és egész számnak kell lennie.
             'country_id' => ['required', 'integer'],
-            // A város régiójának azonosítója jelen kell lennie, 
-            // és egész számnak kell lennie.
             'region_id' => ['required', 'integer'],
-            // A város szélessége tizedesjegy, legfeljebb 10 digit hosszú, 
-            // amiből kettő egész szám.
-            'latitude' => [
-                "decimal:" . APP__DEC_LENGTHS . "," . APP_DEC_DIGITS
-            ],
-            // A város hosszúsága tizedesjegy, legfeljebb 10 digit hosszú, 
-            // amiből kettő egész szám.
-            'longitute' => [
-                "decimal:" . APP__DEC_LENGTHS . "," . APP_DEC_DIGITS
-            ],
-            // A várost aktívként vagy inaktívként kell megjelölni.
+            'latitude' => ["decimal: {$this->validationRules['DecLength']},{$this->validationRules['DecDigits']}"],
+            'longitute' => ["decimal: {$this->validationRules['DecLength']},{$this->validationRules['DecDigits']}"],
             'active' => ['required', 'boolean'],
         ];
     }
@@ -57,8 +42,8 @@ class StoreCityRequest extends FormRequest
             'name' => [
                 'required' => __('validate_required'),
                 'string' => __('validate_string'),
-                'min' => __('validate_min.numeric'),
-                'max' => __('validate_max.numeric'),
+                'min' => __('validate_min.numeric', ['min' => $this->validationRules['minStringLength']]),
+                'max' => __('validate_max.numeric', ['max' => $this->validationRules['maxStringLength']]),
                 'unique' => __('validate_unique'),
             ],
             'country_id' => [
@@ -70,10 +55,10 @@ class StoreCityRequest extends FormRequest
                 'integer' => __('validate_integer'),
             ],
             'latitude' => [
-                'decimal' => __('validate_decimal', ['decimal' => (APP_DEC_LENGTHS - APP_DEC_DIGITS)]),
+                'decimal' => __('validate_decimal', ['decimal' => ($this->DecLength - $this->validationRules['DecDigits'])]),
             ],
             'longitude' => [
-                'decimal' => __('validate_decimal', ['decimal' => (APP_DEC_LENGTHS - APP_DEC_DIGITS)]),
+                'decimal' => __('validate_decimal', ['decimal' => ($this->DecLength - $this->validationRules['DecDigits'])]),
             ],
             'active' => [
                 'required' => __('validate_required'),

@@ -24,16 +24,6 @@ class AppServiceProvider extends ServiceProvider
         define('APP_ACTIVE', 1);
         define('APP_INACTIVE', 0);
 
-        define('APP_MIN_STRING_LENGTH', 3);
-        define('APP_MAX_STRING_LENGTH', 255);
-
-        define('APP_DEC_LENGTHS', 10);
-        define('APP_DEC_DIGITS', 2);
-
-        define('APP_PASSWORD_MIN_LENGTHS', 8);
-        define('APP_PASSWORD_MIN_NUMBERS', 2);
-        define('APP_PASSWORD_MIN_LETTERS', 3);
-
         $available_locales = config('app.available_locales', ['English' => 'en','Hungarian' => 'hu',]);
         $supported_locales = config('app.supported_locales', ['en', 'hu']);
         $locale = ( Session::has('locale') ) ? Session::get('locale') : env('APP_LOCALE');

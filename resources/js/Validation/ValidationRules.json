@@ -1,4 +1,11 @@
 {
     "minStringLength": 3,
-    "maxStringLength": 255
+    "maxStringLength": 255,
+
+    "DecLength": 10,
+    "DecDigits": 2,
+
+    "password_min_length": 8,
+    "password_min_number": 2,
+    "password_min_letter": 3
 }

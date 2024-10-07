@@ -9,7 +9,8 @@ import { trans } from "laravel-vue-i18n";
 
 // Validation
 import useVuelidate from "@vuelidate/core";
-import { helpers, required } from "@vuelidate/validators";
+import { helpers, maxLength, required } from "@vuelidate/validators";
+import validationRules from "../../../Validation/ValidationRules.json";
 
 import CountryService from "@/service/CountryService";
 
@@ -111,13 +112,32 @@ const rules = {
     subdomain: {},
     url: {},
     name: {
-        required: helpers.withMessage("validate_name", required),
+        required: helpers.withMessage( trans("validate_name"), required),
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
+        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
     },
-    db_host: { required },
-    db_port: { required },
-    db_name: { required },
-    db_user: { required },
-    db_password: { required },
+    db_host: {
+        required: helpers.withMessage(trans('validate_field_required', {field: 'db_host'}), required),
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
+    },
+    db_port: {
+        required: helpers.withMessage(trans('validate_field_required', {field: 'db_port'}), required),
+        min: helpers.withMessage( ({ $params }) => trans('validate_min.numeric', { min: $params.min }), minLength(validationRules.mysql_port_min)),
+        max: helpers.withMessage( ({ $params }) => trans('validate_max.numeric', { max: $params.max }), minLength(validationRules.mysql_port_max)),
+
+    },
+    db_name: {
+        required: helpers.withMessage( trans("validate_name"), required),
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
+    },
+    db_user: {
+        required: helpers.withMessage( trans("validate_name"), required),
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
+    },
+    db_password: {
+        required: helpers.withMessage( trans("validate_name"), required),
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
+    },
 };
 
 /**

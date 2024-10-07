@@ -8,10 +8,10 @@ import { trans } from "laravel-vue-i18n";
 
 // Validation
 import useVuelidate from "@vuelidate/core";
-import { helpers, required } from "@vuelidate/validators";
+import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
+import validationRules from "../../../Validation/ValidationRules.json";
 
 import CompanyService from "@/service/CompanyService";
-//import functions from '../../../helpers/functions.js';
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -174,15 +174,60 @@ const filters = ref({
  */
 const submitted = ref(false);
 
+/**
+ * A validációs szabályok tárolása.
+ *
+ * A validációs szabályokat a vuelidate csomag segítségével definiáljuk.
+ * A szabályok a name, country_id és city_id tulajdonságokra vonatkoznak.
+ *
+ * @type {Object}
+ */
 const rules = {
+    /**
+     * A név validációs szabálya.
+     *
+     * A névnek meg kell felelnie a következ  feltételeknek:
+     * - a név nem lehet üres
+     * - a név hosszának minimum 3 karakternek kell lennie
+     * - a név hosszának maximum 255 karakternek kell lennie
+     */
     name: {
-        required: helpers.withMessage("validate_name", required),
+        /**
+         * A név nem lehet üres.
+         */
+        required: helpers.withMessage(trans("validate_name"), required),
+        /**
+         * A név hosszának minimum 3 karakternek kell lennie.
+         */
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
+        /**
+         * A név hosszának maximum 255 karakternek kell lennie.
+         */
+        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
     },
+    /**
+     * Az ország azonosítója validációs szabálya.
+     *
+     * Az ország azonosítójának meg kell felelnie a következ  feltételeknek:
+     * - az ország azonosítója nem lehet üres
+     */
     country_id: {
-        required: helpers.withMessage("validate_country_id", required),
+        /**
+         * Az ország azonosítója nem lehet üres.
+         */
+        required: helpers.withMessage(trans("validate_country_id"), required),
     },
+    /**
+     * A város azonosítója validációs szabálya.
+     *
+     * A város azonosítójának meg kell felelnie a következ  feltételeknek:
+     * - a város azonosítója nem lehet üres
+     */
     city_id: {
-        required: helpers.withMessage("validate_city_id", required),
+        /**
+         * A város azonosítója nem lehet üres.
+         */
+        required: helpers.withMessage(trans("validate_city_id"), required),
     },
 };
 

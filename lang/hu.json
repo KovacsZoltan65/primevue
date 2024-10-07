@@ -112,6 +112,7 @@
     "subdomain_state_title": "Subdomain állapotok kezelése",
 
     "validate_required": "Ez a mező kötelező.",
+    "validate_field_required": "A(z) :field megadása kötelező.",
     "validate_name": "A név megadása kötelező",
     "validate_email": "Az email megadása kötelező",
     "validate_code": "A kód megadása kötelező",

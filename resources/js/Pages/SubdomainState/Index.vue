@@ -9,6 +9,7 @@ import { trans } from "laravel-vue-i18n";
 // Validation
 import useVuelidate from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
+import validationRules from "../../../Validation/ValidationRules.json";
 
 import SubdomainService from "@/service/SubdomainService";
 
@@ -175,13 +176,9 @@ const submitted = ref(false);
 
 const rules = {
     name: {
-        required: helpers.withMessage("validate_name", required),
-    },
-    subdomain_id: {
-        required: helpers.withMessage("validate_subdomain_id", required),
-    },
-    region_id: {
-        required: helpers.withMessage("validate_region_id", required),
+        required: helpers.withMessage( trans("validate_name"), required),
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
+        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
     },
 };
 

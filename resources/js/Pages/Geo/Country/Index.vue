@@ -9,6 +9,7 @@ import { trans } from "laravel-vue-i18n";
 // Validation
 import useVuelidate from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
+import validationRules from "../../../Validation/ValidationRules.json";
 
 import CountryService from "@/service/CountryService";
 
@@ -173,15 +174,29 @@ const filters = ref({
  */
 const submitted = ref(false);
 
+/**
+ * A validációs szabályok, amelyek a városokhoz kapcsolódnak.
+ *
+ * @type {Object}
+ * @property {Object} name - A város neve.
+ * @property {Object} code - A város kódja.
+ */
 const rules = {
+    /**
+     * A város neve.
+     *
+     * @property {Object} required - A név nem lehet üres.
+     */
     name: {
-        required: helpers.withMessage("validate_name", required),
+        required: helpers.withMessage(trans("validate_name"), required),
     },
-    country_id: {
-        required: helpers.withMessage("validate_country_id", required),
-    },
-    region_id: {
-        required: helpers.withMessage("validate_region_id", required),
+    /**
+     * A város kódja.
+     *
+     * @property {Object} required - A kód nem lehet üres.
+     */
+    code: {
+        required: helpers.withMessage(trans("validate_code"), required),
     },
 };
 
@@ -205,7 +220,6 @@ const v$ = useVuelidate(rules, country);
 const fetchItems = () => {
     CountryService.getCountries()
         .then((response) => {
-            //console.log(response);
             // A városok listája a countries változóban lesz elmentve
             countries.value = response.data.data;
         })

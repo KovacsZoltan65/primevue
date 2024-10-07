@@ -7,5 +7,8 @@
 
     "password_min_length": 8,
     "password_min_number": 2,
-    "password_min_letter": 3
+    "password_min_letter": 3,
+
+    "mysql_port_min": 1,
+    "mysql_port_max": 9999
 }

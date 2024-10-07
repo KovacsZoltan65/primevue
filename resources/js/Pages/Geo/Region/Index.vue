@@ -9,9 +9,9 @@ import { trans } from "laravel-vue-i18n";
 // Validation
 import useVuelidate from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
+import validationRules from "../../../Validation/ValidationRules.json";
 
 import RegionService from "@/service/RegionService";
-//import functions from '../../../helpers/functions.js';
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -169,10 +169,10 @@ const submitted = ref(false);
 
 const rules = {
     name: {
-        required: helpers.withMessage("validate_name", required),
+        required: helpers.withMessage( trans("validate_name"), required),
     },
     country_id: {
-        required: helpers.withMessage("validate_country_id", required),
+        required: helpers.withMessage( trans("validate_country_id"), required),
     },
 };
 

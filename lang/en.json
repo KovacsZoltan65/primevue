@@ -112,6 +112,7 @@
     "subdomain_states": "Subdomain States",
 
     "validate_required": "This field is required.",
+    "validate_field_required": "Specifying :field is required.",
     "validate_name": "Name is required",
     "validate_email": "Email is required",
     "validate_code": "Code is required",

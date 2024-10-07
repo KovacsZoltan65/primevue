@@ -27,8 +27,12 @@ class Country extends Model
 	protected $table = 'countries';
 	public $timestamps = false;
 
-	protected $fillable = ['name', 'code'];
+	protected $fillable = ['name', 'code', 'active'];
 
+        protected $casts = [
+            'active' => 'integer',
+        ];
+        
         public function scopeSearch(Builder $query, Request $request)
         {
             return $query->when($request->search, function ($query) use ($request) {

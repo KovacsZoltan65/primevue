@@ -127,11 +127,10 @@ const deleteCountryDialog = ref(false);
  * @property {number} id - A város azonosítója.
  */
 const country = ref({
-    name: "",
-    country_id: null,
-    region_id: null,
-    active: 1,
     id: null,
+    name: '',
+    code: 0,
+    active: 1,
 });
 
 /**
@@ -285,8 +284,6 @@ function openNew() {
  */
 const initialCountry = {
     name: "",
-    //country_id: null,
-    //region_id: null,
     code: "",
     active: 1,
     id: null,
@@ -318,7 +315,7 @@ const hideDialog = () => {
 const editCountry = (data) => {
     // Másolja a kiválasztott város adatait a country változóba.
     country.value = { ...data };
-
+console.log('country.value', country.value);
     // Nyissa meg a dialógusablakot a város szerkesztéséhez.
     countryDialog.value = true;
 };
@@ -585,6 +582,14 @@ const getActiveValue = (country) =>
                     style="min-width: 16rem"
                 />
 
+                <!-- Code-->
+                <Column
+                    field="code"
+                    :header="$t('code')"
+                    sortable
+                    style="min-width: 16rem"
+                />
+
                 <!-- Active -->
                 <Column
                     field="active"
@@ -644,6 +649,22 @@ const getActiveValue = (country) =>
                         />
                         <small class="text-red-500" v-if="v$.name.$error">
                             {{ $t(v$.name.$errors[0].$message) }}
+                        </small>
+                    </div>
+
+                    <!-- Code -->
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <label for="code" class="block font-bold mb-3">{{
+                            $t("code")
+                        }}</label>
+                        <InputText
+                            id="code"
+                            v-model="country.code"
+                            autofocus
+                            fluid
+                        />
+                        <small class="text-red-500" v-if="v$.code.$error">
+                            {{ $t(v$.code.$errors[0].$message) }}
                         </small>
                     </div>
 

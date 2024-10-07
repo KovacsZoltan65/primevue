@@ -9,10 +9,10 @@ import { trans } from "laravel-vue-i18n";
 
 // Validation
 import useVuelidate from "@vuelidate/core";
-import { helpers, maxLength, required } from "@vuelidate/validators";
-import validationRules from "../../../Validation/ValidationRules.json";
+import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
+import validationRules from "../../Validation/validationRules.json";
 
-import CountryService from "@/service/CountryService";
+import SubdomainService from "@/service/SubdomainService";
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -24,8 +24,8 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
-import SubdomainService from "@/service/SubdomainService";
 import { usePrimeVue } from "primevue/config";
+import FileUpload from "primevue/fileupload";
 
 const loading = ref(true);
 
@@ -93,14 +93,7 @@ const deleteSubdomainDialog = ref(false);
 const selectedSubdomains = ref([]);
 
 const filters = ref();
-/*
-const filters = ref({
-    global: {
-        value: null,
-        matchMode: FilterMatchMode.CONTAINS,
-    },
-});
-*/
+
 /**
  * Reaktív hivatkozás a beküldött (submit) állapotára.
  *
@@ -108,32 +101,111 @@ const filters = ref({
  */
 const submitted = ref(false);
 
+/**
+ * A validációs szabályokat tartalmazó objektum.
+ *
+ * A kulcsok a mezők nevei, az értékek pedig a validációs szabályok.
+ *
+ * @type {Object}
+ */
 const rules = {
+    /**
+     * A subdomain mező validációs szabálya.
+     *
+     * @type {Object}
+     */
     subdomain: {},
+
+    /**
+     * A url mező validációs szabálya.
+     *
+     * @type {Object}
+     */
     url: {},
+
+    /**
+     * A name mező validációs szabálya.
+     *
+     * A name mezőnek meg kell felelnie a következ  feltételeknek:
+     * - a name nem lehet üres
+     * - a name hosszának minimum 3 karakternek kell lennie
+     * - a name hosszának maximum 255 karakternek kell lennie
+     *
+     * @type {Object}
+     */
     name: {
         required: helpers.withMessage( trans("validate_name"), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
         maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
     },
+
+    /**
+     * A db_host mező validációs szabálya.
+     *
+     * A db_host mezőnek meg kell felelnie a következ  feltételeknek:
+     * - a db_host nem lehet üres
+     * - a db_host hosszának minimum 3 karakternek kell lennie
+     *
+     * @type {Object}
+     */
     db_host: {
         required: helpers.withMessage(trans('validate_field_required', {field: 'db_host'}), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
     },
+
+    /**
+     * A db_port mező validációs szabálya.
+     *
+     * A db_port mezőnek meg kell felelnie a következ  feltételeknek:
+     * - a db_port nem lehet üres
+     * - a db_port minimum 1-nek kell lennie
+     * - a db_port maximum 9999-nek kell lennie
+     *
+     * @type {Object}
+     */
     db_port: {
         required: helpers.withMessage(trans('validate_field_required', {field: 'db_port'}), required),
         min: helpers.withMessage( ({ $params }) => trans('validate_min.numeric', { min: $params.min }), minLength(validationRules.mysql_port_min)),
         max: helpers.withMessage( ({ $params }) => trans('validate_max.numeric', { max: $params.max }), minLength(validationRules.mysql_port_max)),
-
     },
+
+    /**
+     * A db_name mező validációs szabálya.
+     *
+     * A db_name mezőnek meg kell felelnie a következ  feltételeknek:
+     * - a db_name nem lehet üres
+     * - a db_name hosszának minimum 3 karakternek kell lennie
+     *
+     * @type {Object}
+     */
     db_name: {
         required: helpers.withMessage( trans("validate_name"), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
     },
+
+    /**
+     * A db_user mező validációs szabálya.
+     *
+     * A db_user mezőnek meg kell felelnie a következ  feltételeknek:
+     * - a db_user nem lehet üres
+     * - a db_user hosszának minimum 3 karakternek kell lennie
+     *
+     * @type {Object}
+     */
     db_user: {
         required: helpers.withMessage( trans("validate_name"), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
     },
+
+    /**
+     * A db_password mező validációs szabálya.
+     *
+     * A db_password mezőnek meg kell felelnie a következ  feltételeknek:
+     * - a db_password nem lehet üres
+     * - a db_password hosszának minimum 3 karakternek kell lennie
+     *
+     * @type {Object}
+     */
     db_password: {
         required: helpers.withMessage( trans("validate_name"), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
@@ -149,46 +221,104 @@ const v$ = useVuelidate(rules, subdomain);
 
 // ======================================================
 
+/**
+ * Beállítja az alapértelmezett értékeket a szűrő mezők számára.
+ *
+ * A globális szűrő és a name, subdomain szűrők kezdőértékei.
+ */
 const initFilters = () => {
     filters.value = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        // Globális szűrő
+        global: {
+            value: null, // A szűrő értéke
+            matchMode: FilterMatchMode.CONTAINS, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
+        },
+        // Név szűrő
         name: {
-            operator: FilterOperator.AND,
+            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
             constraints: [
-                { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+                {
+                    value: null, // A szűrő értéke
+                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
+                },
             ],
         },
+        // Alomain szűrő
+        subdomain: {
+            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
+            constraints: [
+                {
+                    value: null, // A szűrő értéke
+                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
+                },
+            ],
+        }
     };
 };
 
+/**
+ * Beállítja az alapértelmezett értékeket a szűrő mezők számára.
+ */
 const clearFilter = () => {
     initFilters();
 };
 
 initFilters();
 
-const fetchItems = () => {
+/**
+ * Lekéri a subdomainok listáját az API-ból.
+ *
+ * Ez a funkció a subdomainok listáját lekéri az API-ból.
+ * A subdomainok listája a subdomains változóban lesz elmentve.
+ *
+ * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
+ */
+const fetchItems = async () => {
     loading.value = true;
 
-    SubdomainService.getSubdomains()
-        .then((response) => {
-            subdomains.value = response.data.data;
-
-            loading.value = false;
-        })
-        .catch((error) => {
-            console.error("getSubdomains API Error:", error);
-        });
+    try {
+        const response = await SubdomainService.getSubdomains();
+        subdomains.value = response.data.data;
+    }catch(error) {
+        console.error("getSubdomains API Error:", error);
+    } finally {
+        loading.value = false;
+    }
 };
 
+/**
+ * Lekéri a városok listáját az API-ból, amikor a komponens létrejön.
+ *
+ * Ez a funkció a városok listáját lekéri az API-ból, amikor a komponens létrejön.
+ * A városok listája a subdomains változóban lesz elmentve.
+ *
+ * @return {void}
+ */
 onMounted(() => {
     fetchItems();
 });
 
+/**
+ * Megerősíti a kiválasztott termékek törlését.
+ *
+ * Ez a funkció akkor hívódik meg, ha a felhasználó törölni szeretné a kiválasztott termékeket.
+ * A deleteSubdomainsDialog változó értékét igazra állítja, ami
+ * megnyílik egy megerősítő párbeszédablak a kiválasztott termékek törléséhez.
+ *
+ * @return {void}
+ */
 function confirmDeleteSelected() {
     deleteSelectedSubdomainsDialog.value = true;
 }
 
+/**
+ * Nyitja meg az új aldomain dialógusablakot.
+ *
+ * Ez a függvény a subdomain változó értékét alaphelyzetbe állítja, a submitted változó értékét False-ra állítja,
+ * és a subdomainDialog változó értékét igazra állítja, amely megnyitja az új aldomain dialógusablakot.
+ *
+ * @return {void}
+ */
 function openNew() {
     subdomain.value = { ...initialSubdomain };
     submitted.value = false;
@@ -214,65 +344,131 @@ const initialSubdomain = {
     last_export: null,
 };
 
+/**
+ * Bezárja a dialógusablakot.
+ *
+ * Ez a függvény a dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
+ * A v$.value.$reset() függvénnyel visszaállítja a validációs objektumot az alapértelmezett állapotába.
+ *
+ * @return {void}
+ */
 const hideDialog = () => {
     subdomainDialog.value = false;
     submitted.value = false;
     v$.value.$reset();
 };
 
+/**
+ * Szerkeszti a kiválasztott aldomainet.
+ *
+ * Ez a funkció a kiválasztott aldomain adatait másolja a subdomain változóba,
+ * és megnyitja a dialógusablakot a város szerkesztéséhez.
+ *
+ * @param {object} data - A kiválasztott aldomain adatai.
+ * @return {void}
+ */
 const editSubdomain = (data) => {
     subdomain.value = { ...data };
     subdomainDialog.value = true;
 };
 
-const confirmDeleteCountry = (data) => {
+/**
+ * Megerősítés a subdomain törléséhez.
+ *
+ * Ez a funkció a kiválasztott subdomain adatait másolja a subdomain változóba,
+ * és megnyitja a dialógusablakot a subdomain törléséhez.
+ *
+ * @param {object} data - A kiválasztott subdomain adatai.
+ * @return {void}
+ */
+const confirmDeleteSubdomain = (data) => {
     subdomain.value = { ...data };
 
     deleteSubdomainDialog.value = true;
 };
-
+/**
+ * Mentse el a subdomaint.
+ *
+ * Ez a funkció ellenőrizni fogja a subdomain változóban lévő adatokat a validációs szabályoknak,
+ * és ha a validáció sikeres, akkor meghívja a createSubdomain() vagy updateSubdomain() függvényt.
+ * A submitted változó értékét igazra állítja, hogy jelezze a beküldött állapotot.
+ *
+ * @return {void}
+ */
 const saveSubdomain = async () => {
     const result = await v$.value.$validate();
     if (result) {
         submitted.value = true;
 
         if (subdomain.value.id) {
+            // Ha a subdomainnak van ID-ja, akkor frissíti a subdomainot.
             updateSubdomain();
         } else {
+            // Ha a subdomainnak nincs ID-ja, akkor létrehozza az új subdomainot.
             createSubdomain();
         }
     } else {
+        // Ha a validáció sikertelen, akkor figyelmeztetést jelenít meg.
         alert("FAIL");
     }
 };
 
+/**
+ * Létrehozza az új aldomainet.
+ *
+ * Ez a funkció meghívja a SubdomainService.createSubdomain() függvényt,
+ * amely létrehozza az új aldomainet a beadott adatokkal.
+ * A létrejött aldomainet a subdomains változóhoz adja hozzá.
+ * A hideDialog() függvénnyel bezárja a dialógusablakot.
+ * Végül figyelmeztetést jelenít meg a sikerrel kapcsolatban.
+ *
+ * @return {void}
+ */
 const createSubdomain = () => {
-    CountryService.createCountry(subdomain.value)
+    SubdomainService.createSubdomain(subdomain.value)
         .then((response) => {
-            subdomains.values.push(response.data);
+            // A létrejött aldomainet a subdomains változóhoz adja hozzá.
+            subdomains.value.push(response.data);
 
+            // Bezárja a dialógusablakot.
             hideDialog();
 
+            // Figyelmeztetést jelenít meg a sikerrel kapcsolatban.
             toast.add({
                 severity: "success",
                 summary: "Successful",
-                detail: "Country Created",
+                detail: "Subdomain Created",
                 life: 3000,
             });
         })
         .catch((error) => {
+            // Jelenítse meg a hibaüzenetet a konzolon
             console.error("createSubdomain API Error:", error);
         });
 };
 
+/**
+ * Frissíti a subdomainot.
+ *
+ * Ez a funkció meghívja a SubdomainService.updateSubdomain() függvényt,
+ * amely frissíti a subdomainot a beadott adatokkal.
+ * A frissített subdomainet a subdomains változóban szereplő listában felülírja.
+ * A hideDialog() függvénnyel bezárja a dialógusablakot.
+ * Végül figyelmeztetést jelenít meg a sikerrel kapcsolatban.
+ *
+ * @return {void}
+ */
 const updateSubdomain = () => {
     SubdomainService.updateSubdomain(subdomain.value.id, subdomain.value)
         .then(() => {
             const index = findIndexById(subdomain.value.id);
+            // A frissített subdomainet a subdomains változóban szereplő listában felülírja.
             subdomains.value.splice(index, 1, subdomain.value);
 
+            // Bezárja a dialógusablakot.
             hideDialog();
 
+            // Figyelmeztetést jelenít meg a sikerrel kapcsolatban.
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -286,18 +482,52 @@ const updateSubdomain = () => {
         });
 };
 
+/**
+ * Megkeresi a megadott azonosítójú aldomain indexét.
+ *
+ * @param {number} id Az aldomain azonosítója
+ * @return {number} Az aldomain indexe
+ */
 const findIndexById = (id) => {
-    return subdomain.value.findIndex((subdomain) => subdomain.id === id);
+    return subdomains.value.findIndex((subdomain) => subdomain.id === id);
 };
 
+/**
+ * Törli a kiválasztott aldomaint.
+ *
+ * A metódus meghívja a SubdomainService.deleteSubdomain() függvényt,
+ * amely törli a kiválasztott aldomaint az API-ból.
+ * A választ megjeleníti a konzolon.
+ *
+ * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megold dik.
+ */
 const deleteSubdomain = () => {
     SubdomainService.deleteSubdomain(subdomain.value.id)
         .then((response) => {
-            //
+            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
+            const index = findIndexById(subdomain.value.id);
+            // A város adatait törli a városok tömbjéb l
+            subdomains.value.splice(index, 1);
+
+            // Bezárja a dialógus ablakot
+            hideDialog();
+
+            // Figyelmeztetést jelenít meg a sikerrel kapcsolatban
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Subdomain Deleted",
+                life: 3000,
+            });
         })
         .catch((error) => {
+            // Jelenítse meg a hibaüzenetet a konzolon
             console.error("deleteSubdomain API Error:", error);
         });
+};
+
+const deleteSelectedSubdomains = () => {
+    console.log(selectedSubdomains.value);
 };
 
 const exportCSV = () => {
@@ -313,6 +543,22 @@ const getActiveLabel = (subdomain) =>
 
 const getActiveValue = (subdomain) =>
     ["inactive", "active", "pending"][subdomain.active] || "pending";
+
+const fileupload = ref();
+
+const upload = () => {
+    fileupload.value.upload();
+};
+
+const onUpload = () => {
+    toast.add({
+        severity: 'info',
+        summary: 'Success',
+        detail: 'File Uploaded',
+        life: 3000
+    });
+};
+
 </script>
 
 <template>
@@ -345,6 +591,17 @@ const getActiveValue = (subdomain) =>
                 </template>
 
                 <template #end>
+                    <FileUpload 
+                        mode="basic" 
+                        accept="image/*" 
+                        :maxFileSize="1000000" 
+                        label="Import" 
+                        customUpload auto 
+                        chooseLabel="Import" 
+                        class="mr-2" 
+                        :chooseButtonProps="{ severity: 'secondary' }"
+                        @upload="onUpload"
+                    />
                     <Button
                         :label="$t('export')"
                         icon="pi pi-upload"
@@ -364,22 +621,12 @@ const getActiveValue = (subdomain) =>
                 :rows="10"
                 :filters="filters"
                 filterDisplay="menu"
-                :globalFilterFields="['name']"
+                :globalFilterFields="['name', 'subdomain']"
                 :loading="loading"
                 :rowsPerPageOptions="[5, 10, 25]"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} subdomains"
             >
-            <!--
-            <DataTable
-                v-model:filters="filters"
-                :value="customers"
-                paginator showGridlines
-                :rows="10" dataKey="id"
-                filterDisplay="menu"
-                :loading="loading"
-                :globalFilterFields="['name', 'country.name', 'representative.name', 'balance', 'status']">
-            -->
                 <template #header>
                     <div
                         class="flex flex-wrap gap-2 items-center justify-between"
@@ -434,7 +681,7 @@ const getActiveValue = (subdomain) =>
                 <!-- Nev -->
                 <Column
                     field="name"
-                    header="Name"
+                    :header="$t('name')"
                     style="min-width: 12rem"
                     sortable
                 >
@@ -451,12 +698,29 @@ const getActiveValue = (subdomain) =>
                 </Column>
 
                 <!-- Subdomain -->
-                <Column
+                <!--<Column
                     field="subdomain"
                     :header="$t('subdomain')"
                     style="min-width: 16rem"
                     sortable
-                />
+                />-->
+                <Column
+                    field="subdomain"
+                    :header="$t('subdomain')"
+                    style="min-width: 12rem"
+                    sortable
+                >
+                    <template #body="{ data }">
+                        {{ data.subdomain }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            placeholder="Search by subdomain"
+                        />
+                    </template>
+                </Column>
 
                 <!-- url -->
                 <Column
@@ -587,7 +851,7 @@ const getActiveValue = (subdomain) =>
             </template>
         </Dialog>
 
-        <!-- Város törlése -->
+        <!-- Subdomain törlése -->
         <!-- Egy megerősítő párbeszédpanel, amely megjelenik, ha a felhasználó törölni szeretne egy várost. -->
         <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést. -->
         <Dialog
@@ -642,14 +906,14 @@ const getActiveValue = (subdomain) =>
                 <Button
                     :label="$t('no')"
                     icon="pi pi-times"
-                    @click="deleteSelectedCountriesDialog = false"
+                    @click="deleteSelectedSubdomainsDialog = false"
                     text
                 />
                 <!-- Megerősítés gomb -->
                 <Button
                     :label="$t('yes')"
                     icon="pi pi-check"
-                    @click="deleteSelectedCountries"
+                    @click="deleteSelectedSubdomains"
                 />
             </template>
         </Dialog>

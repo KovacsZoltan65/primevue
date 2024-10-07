@@ -51,7 +51,8 @@ class Subdomain extends Model
         'is_mirror' => 'bool',
         'sso' => 'bool',
         'acs_id' => 'int',
-        'last_export' => 'datetime'
+        'last_export' => 'datetime',
+        'active' => 'integer',
     ];
 
     protected $fillable = [

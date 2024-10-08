@@ -1,4 +1,5 @@
 https://primevue.org/
+https://primevue.org/datatable/
 https://primevue.org/templates/
 https://tailwind.primevue.org/
 https://github.com/primefaces/primevue-tailwind

@@ -61,6 +61,10 @@
     "longitude": "Husszúság",
     "latitude": "Szélesség",
 
+    "loader": ":data adatok betöltése. Kérjük, várjon.",
+    "data_not_found": "Nem található :data.",
+    "search_by": "Keresés :data szerint",
+
     "cancel": "Mégsem",
     "save": "Mentés",
     "no": "Nem",

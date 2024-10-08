@@ -62,6 +62,10 @@
     "longitude": "Longitute",
     "latitude": "Latitude",
 
+    "loader": "Loading customers data. Please wait.",
+    "data_not_found": "No :data found.",
+    "search_by": "Search by :data",
+
     "cancel": "Cancel",
     "save": "Save",
     "no": "No",

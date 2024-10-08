@@ -252,8 +252,18 @@ const initFilters = () => {
                     matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
                 },
             ],
-        }
-    };
+        },
+        // URL szűrő
+        url: {
+            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
+            constraints: [
+                {
+                    value: null, // A szűrő értéke
+                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
+                },
+            ],
+        },
+    }
 };
 
 /**
@@ -550,6 +560,13 @@ const upload = () => {
     fileupload.value.upload();
 };
 
+/**
+ * A fájl feltöltését kezeli.
+ *
+ * Amikor a fájl feltöltése befejeződik, egy figyelmeztetést jelenít meg a sikerrel kapcsolatban.
+ *
+ * @return {void}
+ */
 const onUpload = () => {
     toast.add({
         severity: 'info',
@@ -621,7 +638,7 @@ const onUpload = () => {
                 :rows="10"
                 :filters="filters"
                 filterDisplay="menu"
-                :globalFilterFields="['name', 'subdomain']"
+                :globalFilterFields="['name', 'subdomain', 'url']"
                 :loading="loading"
                 :rowsPerPageOptions="[5, 10, 25]"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -665,10 +682,12 @@ const onUpload = () => {
                     />
                 </template>
 
-                <template #empty> No customers found. </template>
+                <template #empty>
+                    {{ $t('data_not_found', {data: 'subdomain'} ) }}
+                </template>
 
                 <template #loading>
-                    Loading customers data. Please wait.
+                    {{ $t('loader', {data: 'Subdomain'}) }}
                 </template>
 
                 <!-- Checkbox -->
@@ -692,18 +711,12 @@ const onUpload = () => {
                         <InputText
                             v-model="filterModel.value"
                             type="text"
-                            placeholder="Search by name"
+                            :placeholder="$t('search_by', {data: 'name'})"
                         />
                     </template>
                 </Column>
 
                 <!-- Subdomain -->
-                <!--<Column
-                    field="subdomain"
-                    :header="$t('subdomain')"
-                    style="min-width: 16rem"
-                    sortable
-                />-->
                 <Column
                     field="subdomain"
                     :header="$t('subdomain')"
@@ -717,18 +730,35 @@ const onUpload = () => {
                         <InputText
                             v-model="filterModel.value"
                             type="text"
-                            placeholder="Search by subdomain"
+                            :placeholder="$t('search_by', {data: 'subdomain'})"
                         />
                     </template>
                 </Column>
 
                 <!-- url -->
-                <Column
+                <Column 
                     field="url"
                     :header="$t('url')"
                     style="min-width: 16rem"
                     sortable
-                />
+                >
+                    <template #body="{ data }">
+                        {{ data.url }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'url'})"
+                        />
+                    </template>
+                </Column>
+                <!--<Column
+                    field="url"
+                    :header="$t('url')"
+                    style="min-width: 16rem"
+                    sortable
+                />-->
 
                 <!-- db_name -->
                 <Column

@@ -24,7 +24,7 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
-import { usePrimeVue } from "primevue/config";
+//import { usePrimeVue } from "primevue/config";
 import FileUpload from "primevue/fileupload";
 
 const loading = ref(true);
@@ -59,6 +59,26 @@ const getBools = () => {
     ];
 };
 
+/*
+const getSeverity = (status) => {
+    switch (status) {
+        case 'unqualified':
+            return 'danger';
+
+        case 'qualified':
+            return 'success';
+
+        case 'new':
+            return 'info';
+
+        case 'negotiation':
+            return 'warn';
+
+        case 'renewal':
+            return null;
+    }
+}
+*/
 const toast = useToast();
 
 const dt = ref();
@@ -263,6 +283,25 @@ const initFilters = () => {
                 },
             ],
         },
+        // db_name szűrő
+        db_name: {
+            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
+            constraints: [
+                {
+                    value: null, // A szűrő értéke
+                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
+                },
+            ],
+        },
+        active: {
+            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
+            constraints: [
+                {
+                    value: null, // A szűrő értéke
+                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
+                },
+            ],
+        }
     }
 };
 
@@ -633,13 +672,10 @@ const onUpload = () => {
                 v-model:selection="selectedSubdomains"
                 v-model:filters="filters"
                 :value="subdomains"
-                dataKey="id"
-                :paginator="true"
-                :rows="10"
-                :filters="filters"
-                filterDisplay="menu"
-                :globalFilterFields="['name', 'subdomain', 'url']"
-                :loading="loading"
+                dataKey="id" :paginator="true" :rows="10" sortMode="multiple"
+                :filters="filters" filterDisplay="menu"
+                :globalFilterFields="['name', 'subdomain', 'url', 'db_name', 'active']"
+                :loading="loading" stripedRows removableSort
                 :rowsPerPageOptions="[5, 10, 25]"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} subdomains"
@@ -648,13 +684,15 @@ const onUpload = () => {
                     <div
                         class="flex flex-wrap gap-2 items-center justify-between"
                     >
+                        <!-- SZŰRÉS TÖRLÉSE -->
                         <Button
                             type="button"
                             icon="pi pi-filter-slash"
-                            label="Clear"
+                            :label="$t('clear')"
                             outlined
                             @click="clearFilter()"
                         />
+
                         <!-- FELIRAT -->
                         <div class="font-semibold text-xl mb-1">
                             {{ $t("subdomains_title") }}
@@ -742,9 +780,7 @@ const onUpload = () => {
                     style="min-width: 16rem"
                     sortable
                 >
-                    <template #body="{ data }">
-                        {{ data.url }}
-                    </template>
+                    <template #body="{ data }">{{ data.url }}</template>
                     <template #filter="{ filterModel }">
                         <InputText
                             v-model="filterModel.value"
@@ -753,12 +789,6 @@ const onUpload = () => {
                         />
                     </template>
                 </Column>
-                <!--<Column
-                    field="url"
-                    :header="$t('url')"
-                    style="min-width: 16rem"
-                    sortable
-                />-->
 
                 <!-- db_name -->
                 <Column
@@ -766,7 +796,16 @@ const onUpload = () => {
                     :header="$t('db_name')"
                     style="min-width: 16rem"
                     sortable
-                />
+                >
+                    <template #body="{ data }">{{ data.db_name }}</template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'db_name'})"
+                        />
+                    </template>
+                </Column>
 
                 <!-- db_user -->
                 <Column
@@ -785,6 +824,69 @@ const onUpload = () => {
                 />
 
                 <!-- Active -->
+                <Column 
+                    field="active" 
+                    :header="$t('active')"
+                    :showFilterMenu="false" 
+                    style="min-width: 12rem"
+                    sortable
+                >
+                    <template #body="slotProps">
+                        <Tag 
+                            :value="$t(getActiveValue(slotProps.data))"
+                            :severity="getActiveLabel(slotProps.data)" 
+                        />
+                    </template>
+
+                    <template #filter="{ filterModel, filterCallback }">
+                        <Select 
+                            v-model="filterModel.value" 
+                            @change="filterCallback()" 
+                            :options="getBools()" 
+                            placeholder="Select One" 
+                            style="min-width: 12rem" 
+                            :showClear="true"
+                        >
+                            <template #option="slotProps">
+                                <Tag 
+                                    :value="$t(getActiveValue(slotProps.data))"
+                                    :severity="getActiveLabel(slotProps.data)"
+                                />
+                            </template>
+                        </Select>
+                    </template>
+                </Column>
+                <!--<Column
+                    field="active"
+                    :header="$t('active')"
+                    sortable
+                    style="min-width: 6rem"
+                >
+                    <template #body="slotProps">
+                        <Tag
+                            :value="$t(getActiveValue(slotProps.data))"
+                            :severity="getActiveLabel(slotProps.data)"
+                        />
+                    </template>
+                    <template #filter="{ filterModel, filterCallback }">
+                        <Select
+                            v-model="filterModel.value" 
+                            @change="filterCallback()" 
+                            :options="getBools()" 
+                            placeholder="Select One" 
+                            style="min-width: 12rem" 
+                            :showClear="true"
+                        >
+                            <template #option="slotProps">
+                                <Tag 
+                                    :value="$t(getActiveValue(slotProps.data))" 
+                                    :severity="getActiveLabel(slotProps.data)" 
+                                />
+                            </template>
+                        </Select>
+                    </template>
+                </Column>-->
+
                 <Column
                     field="active"
                     :header="$t('active')"
@@ -818,10 +920,11 @@ const onUpload = () => {
                         />
                     </template>
                 </Column>
+
             </DataTable>
         </div>
 
-        <!-- Város szerkesztése -->
+        <!-- Subdomain szerkesztése -->
         <Dialog
             v-model:visible="subdomainDialog"
             :style="{ width: '550px' }"

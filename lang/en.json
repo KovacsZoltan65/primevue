@@ -61,6 +61,7 @@
     "region": "Region",
     "longitude": "Longitute",
     "latitude": "Latitude",
+    "clear": "Clear",
 
     "loader": "Loading customers data. Please wait.",
     "data_not_found": "No :data found.",

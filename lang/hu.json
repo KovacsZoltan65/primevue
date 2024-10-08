@@ -60,6 +60,7 @@
     "region": "Megye",
     "longitude": "Husszúság",
     "latitude": "Szélesség",
+    "clear": "Törlés",
 
     "loader": ":data adatok betöltése. Kérjük, várjon.",
     "data_not_found": "Nem található :data.",

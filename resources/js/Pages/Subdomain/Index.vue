@@ -59,32 +59,39 @@ const getBools = () => {
     ];
 };
 
-/*
-const getSeverity = (status) => {
-    switch (status) {
-        case 'unqualified':
-            return 'danger';
 
-        case 'qualified':
-            return 'success';
-
-        case 'new':
-            return 'info';
-
-        case 'negotiation':
-            return 'warn';
-
-        case 'renewal':
-            return null;
-    }
-}
-*/
+/**
+ * Reaktív hivatkozás a PrimeVue toast komponensre.
+ *
+ * @type {Object}
+ */
 const toast = useToast();
 
+/**
+ * Reaktív hivatkozás a PrimeVue DataTable komponensre.
+ *
+ * @type {Object}
+ */
 const dt = ref();
 
-const subdomains = ref();
+/**
+ * Reaktív hivatkozás a subdomainek listájára.
+ *
+ * A subdomains változóban lesznek tárolva a subdomainek,
+ * amelyek a DataTable komponensben lesznek megjelenítve.
+ *
+ * @type {ref<Array>}
+ */
+const subdomains = ref([]);
 
+/**
+ * Reaktív hivatkozás a létrehozandó / módosítandó subdomain objektumra.
+ *
+ * A subdomain változóban lesz tárolva a létrehozandó / módosítandó subdomain,
+ * amelyet a PrimeVue dialog komponensben lesz megjelenítve.
+ *
+ * @type {ref<Object>}
+ */
 const subdomain = ref({
     id: null,
     subdomain: "",
@@ -104,15 +111,55 @@ const subdomain = ref({
     last_export: null,
 });
 
+/**
+ * Reaktív hivatkozás a subdomain dialógus ablak állapotára.
+ *
+ * A subdomainDialog változóban lesz tárolva a subdomain dialógus ablak
+ * megnyitott (true) vagy bezárt (false) állapota.
+ *
+ * @type {ref<boolean>}
+ */
 const subdomainDialog = ref(false);
 
+/**
+ * Reaktív hivatkozás a kiválasztott subdomainek törléséhez használt párbeszédpanel megnyitásához.
+ *
+ * A deleteSelectedSubdomainsDialog változóban lesz tárolva a kiválasztott subdomainek törléséhez használt párbeszédpanel
+ * megnyitott (true) vagy bezárt (false) állapota.
+ *
+ * @type {ref<boolean>}
+ */
 const deleteSelectedSubdomainsDialog = ref(false);
 
+/**
+ * Reaktív hivatkozás a kiválasztott subdomain törléséhez használt párbeszédpanel megnyitásához.
+ *
+ * A deleteSubdomainDialog változóban lesz tárolva a kiválasztott subdomain törléséhez használt párbeszédpanel
+ * megnyitott (true) vagy bezárt (false) állapota.
+ *
+ * @type {ref<boolean>}
+ */
 const deleteSubdomainDialog = ref(false);
 
+/**
+ * Reaktív hivatkozás a kiválasztott subdomainekre.
+ *
+ * A selectedSubdomains változóban lesz tárolva a kiválasztott subdomainek
+ * listája, amelyet a DataTable komponensben lesz megjelenítve.
+ *
+ * @type {ref<Array>}
+ */
 const selectedSubdomains = ref([]);
 
-const filters = ref();
+/**
+ * Reaktív hivatkozás a globális keresés szűrőinek tárolására az adattáblában.
+ *
+ * A filters változóban lesz tárolva a globális keresés szűrőinek
+ * objektuma, amelyet a DataTable komponensben lesz megjelenítve.
+ *
+ * @type {Object}
+ */
+const filters = ref({});
 
 /**
  * Reaktív hivatkozás a beküldött (submit) állapotára.
@@ -374,6 +421,29 @@ function openNew() {
     subdomainDialog.value = true;
 }
 
+/**
+ * Az új aldomain objektum alapértelmezett értékei.
+ *
+ * Ez az objektum az új aldomain dialógusablakban szerepl  mez k alapértelmezett értékeit tartalmazza.
+ *
+ * @type {Object}
+ * @property {number} id - Az aldomain azonosítója.
+ * @property {string} subdomain - Az aldomain neve.
+ * @property {string} url - Az aldomain URL-je.
+ * @property {string} name - Az aldomain neve.
+ * @property {string} db_host - Az adatbázis hostja.
+ * @property {number} db_port - Az adatbázis portja.
+ * @property {string} db_name - Az adatbázis neve.
+ * @property {string} db_user - Az adatbázis felhasználója.
+ * @property {string} db_password - Az adatbázis jelszava.
+ * @property {number} notification - Az értesítés állapota.
+ * @property {number} state_id - Az aldomain állapotának azonosítója.
+ * @property {number} is_mirror - Az aldomain tükör-e?
+ * @property {number} sso - Az aldomain SSO-e?
+ * @property {number} acs_id - Az aldomain ACS azonosítója.
+ * @property {number} active - Az aldomain aktív-e?
+ * @property {Date} last_export - Az utolsó export dátuma.
+ */
 const initialSubdomain = {
     id: null,
     subdomain: "",
@@ -463,72 +533,52 @@ const saveSubdomain = async () => {
 };
 
 /**
- * Létrehozza az új aldomainet.
+ * Létrehozza az új aldomaint.
  *
- * Ez a funkció meghívja a SubdomainService.createSubdomain() függvényt,
- * amely létrehozza az új aldomainet a beadott adatokkal.
- * A létrejött aldomainet a subdomains változóhoz adja hozzá.
- * A hideDialog() függvénnyel bezárja a dialógusablakot.
- * Végül figyelmeztetést jelenít meg a sikerrel kapcsolatban.
+ * A metódus meghívja a SubdomainService.createSubdomain() függvényt,
+ * amely létrehozza az új aldomaint az API-ban.
  *
- * @return {void}
+ * @return {Promise<void>} A metódusban visszaadott ígéret.
  */
-const createSubdomain = () => {
-    SubdomainService.createSubdomain(subdomain.value)
-        .then((response) => {
-            // A létrejött aldomainet a subdomains változóhoz adja hozzá.
-            subdomains.value.push(response.data);
+const createSubdomain = async () => {
+    try {
+        // Létrehozza az új aldomaint az API-ban
+        const response = await SubdomainService.createSubdomain(subdomain.value);
 
-            // Bezárja a dialógusablakot.
-            hideDialog();
+        // Felveszi az új aldomaint a lista végére
+        subdomains.value.push(response.data);
 
-            // Figyelmeztetést jelenít meg a sikerrel kapcsolatban.
-            toast.add({
-                severity: "success",
-                summary: "Successful",
-                detail: "Subdomain Created",
-                life: 3000,
-            });
-        })
-        .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("createSubdomain API Error:", error);
+        // Bezárja a dialógusablakot
+        hideDialog();
+
+        // Jelenít meg egy sikeres értesítést
+        toast.add({
+            severity: "success",
+            summary: "Successful",
+            detail: "Subdomain Created",
+            life: 3000,
         });
+    } catch (error) {
+        // Jelenít meg egy hibaüzenetet a konzolon
+        console.error("createSubdomain API Error:", error);
+    }
 };
 
-/**
- * Frissíti a subdomainot.
- *
- * Ez a funkció meghívja a SubdomainService.updateSubdomain() függvényt,
- * amely frissíti a subdomainot a beadott adatokkal.
- * A frissített subdomainet a subdomains változóban szereplő listában felülírja.
- * A hideDialog() függvénnyel bezárja a dialógusablakot.
- * Végül figyelmeztetést jelenít meg a sikerrel kapcsolatban.
- *
- * @return {void}
- */
-const updateSubdomain = () => {
-    SubdomainService.updateSubdomain(subdomain.value.id, subdomain.value)
-        .then(() => {
-            const index = findIndexById(subdomain.value.id);
-            // A frissített subdomainet a subdomains változóban szereplő listában felülírja.
-            subdomains.value.splice(index, 1, subdomain.value);
-
-            // Bezárja a dialógusablakot.
-            hideDialog();
-
-            // Figyelmeztetést jelenít meg a sikerrel kapcsolatban.
-            toast.add({
-                severity: "success",
-                summary: "Successful",
-                detail: "Subdomain Updated",
-                life: 3000,
-            });
-        })
-        .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("updateCountry API Error:", error);
+const updateSubdomain = async () => {
+    const index = findIndexById(subdomain.value.id);
+    try {
+        const response = await SubdomainService.updateSubdomain(subdomain.value.id, subdomain.value);
+        subdomains.value.splice(index, 1, response.data);
+        hideDialog();
+        toast.add({
+            severity: "success",
+            summary: "Successful",
+            detail: "Subdomain Updated",
+            life: 3000,
         });
+    } catch (error) {
+        console.error("updateSubdomain API Error:", error);
+    }
 };
 
 /**

@@ -13,28 +13,27 @@ return new class extends Migration
     {
         Schema::create('entities', function (Blueprint $table) {
             $table->id()->comment('Rekord azonosító');
-            
-            $table->string('name', 255)->comment('Dolgozó neve');
-            $table->string('email', 255)->comment('Dolgozó email címe');
-            
-            $table->unsignedSmallInteger('person_id')->comment('Személy azonosító');
-            
-            $table->unsignedBigInteger('company_id')->comment('Cég azonosító');
-            $table->foreign('company_id')->references('id')->on('companies')->cascadeOnDelete();
-            
-            //$table->integer('active')->default(1)->index()->comment('Aktív');
+
+            $table->unsignedBigInteger('companies_id')->default(1)->comment('Cég azonosító');
+            $table->foreign('companies_id')->references('id')->on('companies')->cascadeOnDelete();
+
+            $table->unsignedBigInteger('persons_id')->default(1)->comment('Személy azonosító');
+            $table->foreign('persons_id')->references('id')->on('persons')->cascadeOnDelete();
+
+            $table->timestamp('start_date')->comment('Belépés dátuma');
+            $table->timestamp('end_date')->comment('Kilépés dátuma');
+            $table->timestamp('last_export')->nullable()->comment('Utoldó export');
+
             $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
-            
+
             $table->timestamps();
             $table->softDeletes();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('entities');
     }
+
 };

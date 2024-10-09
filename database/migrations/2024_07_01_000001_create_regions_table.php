@@ -28,9 +28,12 @@ return new class extends Migration
 
             $table->unsignedBigInteger('country_id')->comment('Ország azonosító. A kapcsolódó ország azonosítója.');
 
-            $table->integer('active')->default(1)->comment('Aktív. A régió aktív-e vagy sem.')->index();
+            $table->integer('active')->default(1)->comment('Aktív.')->index();
 
             $table->foreign('country_id')->references('id')->on('countries')->cascadeOnDelete();
+
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 

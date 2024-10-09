@@ -31,14 +31,29 @@ class SubdomainService extends BaseService {
         return Promise.resolve(this.getSubdomains().slice(0, 10));
     }
 
+    /**
+     * Szerezd meg a városok listájának elején lévő 50 elemet.
+     *
+     * @returns {Promise<AxiosResponse<Subdomain[]>>}
+     */
     getSubdomainsMedium() {
         return Promise.resolve(this.getSubdomains().slice(0, 50));
     }
 
+    /**
+     * Szerezd meg a városok listájának elején lévő 200 elemet.
+     *
+     * @returns {Promise<AxiosResponse<Subdomain[]>>}
+     */
     getSubdomainsLarge() {
         return Promise.resolve(this.getSubdomains().slice(0, 200));
     }
 
+    /**
+     * Szerezd meg a városok listájának elején lévő valamennyi elemet.
+     *
+     * @returns {Promise<AxiosResponse<Subdomain[]>>}
+     */
     getSubdomainsXLarge() {
         return Promise.resolve(this.getSubdomains());
     }

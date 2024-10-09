@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('entities', function (Blueprint $table) {
             $table->id()->comment('Rekord azonosító');
+            
+            $table->string('name', 255)->comment('Név');
+            $table->string('email', 255)->comment('Email cím');
 
             $table->unsignedBigInteger('companies_id')->default(1)->comment('Cég azonosító');
             $table->foreign('companies_id')->references('id')->on('companies')->cascadeOnDelete();

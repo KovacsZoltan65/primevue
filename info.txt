@@ -56,3 +56,20 @@ php artisan make:controller CountryController --resource
 php artisan make:controller CityController --resource
 
 
+php artisan make:model Person
+php artisan make:controller PersonController
+php artisan make:migration CreatePersonTable
+php artisan make:seeder PersonSeeder
+php artisan make:factory PersonFactory
+php artisan make:resource PersonResource
+php artisan make:request StorePersonRequest
+php artisan make:request UpdatePersonRequest
+
+php artisan make:model Entity
+php artisan make:controller EntityController
+php artisan make:migration CreateEntityTable
+php artisan make:seeder EntitySeeder
+php artisan make:factory EntityFactory
+php artisan make:resource EntityResource
+php artisan make:request StoreEntityRequest
+php artisan make:request UpdateEntityRequest

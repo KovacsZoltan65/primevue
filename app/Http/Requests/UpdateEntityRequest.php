@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateEntityRequest extends FormRequest
 {
@@ -24,14 +25,13 @@ class UpdateEntityRequest extends FormRequest
         return [
             'name' => [
                 'required','string','min:2','max:255',
-                Rule::unique('entities', 'name')->ignore($this->id),
             ],
             'email' => ['required','email'],
             'person_id' => ['required'],
             'company_id' => ['required'],
         ];
     }
-    
+
     public function messages()
     {
         return [

@@ -6,12 +6,13 @@ use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\EntityController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\SubdomainController;
 use App\Http\Controllers\SubdomainStateController;
-use App\Http\Controllers\ValidationController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -134,6 +135,20 @@ Route::middleware('auth')->group(function () {
      * =======================================================
      */
     Route::get('/subdomain_states', [SubdomainStateController::class, 'index'])->name('subdomain_states');
+    
+    /**
+     * =======================================================
+     * PERSONS
+     * =======================================================
+     */
+    Route::get('/persons', [PersonController::class, 'index'])->name('persons');
+    
+    /**
+     * =======================================================
+     * ENTITIES
+     * =======================================================
+     */
+    Route::get('/entities', [EntityController::class, 'index'])->name('entities');
 });
 
 require __DIR__.'/auth.php';

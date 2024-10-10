@@ -8,6 +8,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\PersonController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\SubdomainController;
 use App\Http\Controllers\SubdomainStateController;
@@ -150,6 +151,8 @@ Route::delete('/users/{id}', [UserController::class, 'deleteUsers'])->name('api.
  * =======================================================
  */
 Route::get('/roles', [RoleController::class, 'getRoles'])->name('api.get.roles');
+Route::get('/roles/{id}', [RoleController::class, 'getRole'])->name('api.get.role')->where('id', '[0-9]+');
+Route::get('/roles/name/{name}', [RoleController::class, 'getRolesByName'])->name('api.get.role_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
 Route::post('/roles', [RoleController::class, 'createRoles'])->name('api.post.roles');
 Route::put('/roles/{id}', [RoleController::class, 'updateRoles'])->name('api.put.roles')->where('id', '[0-9]+');
 Route::delete('/roles/{id}', [RoleController::class, 'deleteRoles'])->name('api.delete.roles')->where('id', '[0-9]+');
@@ -160,6 +163,8 @@ Route::delete('/roles/{id}', [RoleController::class, 'deleteRoles'])->name('api.
  * =======================================================
  */
 Route::get('/permissions', [PermissionController::class, 'getPermissions'])->name('api.get.permissions');
+Route::get('/permissions/{id}', [PermissionController::class, 'getPermission'])->name('api.get.permission')->where('id', '[0-9]+');
+Route::get('/permissions/name/{name}', [PermissionController::class, 'getPermissionByName'])->name('api.get.permission_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
 Route::post('/permissions', [PermissionController::class, 'createPermissions'])->name('api.post.permissions');
 Route::put('/permissions/{id}', [PermissionController::class, 'updatePermissions'])->name('api.put.permissions')->where('id', '[0-9]+');
 Route::delete('/permissions/{id}', [PermissionController::class, 'deletePermissions'])->name('api.delete.permissions')->where('id', '[0-9]+');
@@ -170,6 +175,8 @@ Route::delete('/permissions/{id}', [PermissionController::class, 'deletePermissi
  * =======================================================
  */
 Route::get('/subdomains', [SubdomainController::class, 'getSubdomains'])->name('api.get.subdomains');
+Route::get('/subdomains/{id}', [SubdomainController::class, 'getSubdomain'])->name('api.get.subdomains')->where('id', '[0-9]+');
+Route::get('/subdomains/name/{name}', [SubdomainController::class, 'getSubdomainByName'])->name('api.get.subdomain_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
 Route::post('/subdomains', [SubdomainController::class, 'createSubdomains'])->name('api.post.subdomains');
 Route::put('/subdomains/{id}', [SubdomainController::class, 'updateSubdomains'])->name('api.put.subdomains')->where('id', '[0-9]+');
 Route::delete('/subdomains/{id}', [SubdomainController::class, 'deleteSubdomains'])->name('api.delete.subdomains')->where('id', '[0-9]+');
@@ -180,6 +187,32 @@ Route::delete('/subdomains/{id}', [SubdomainController::class, 'deleteSubdomains
  * =======================================================
  */
 Route::get('/subdomain_states', [SubdomainStateController::class, 'getSubdomainStates'])->name('api.get.subdomain_states');
+Route::get('/subdomain_states/{id}', [SubdomainStateController::class, 'getSubdomainState'])->name('api.get.subdomain_state')->where('id', '[0-9]+');
+Route::get('/subdomain_states/name/{name}', [SubdomainStateController::class, 'getSubdomainStateByName'])->name('api.get.subdomain_state_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
 Route::post('/subdomain_states', [SubdomainStateController::class, 'createSubdomainStates'])->name('api.post.subdomain_states');
 Route::put('/subdomain_states/{id}', [SubdomainStateController::class, 'updateSubdomainStates'])->name('api.put.subdomain_states')->where('id', '[0-9]+');
 Route::delete('/subdomain_states/{id}', [SubdomainStateController::class, 'deleteSubdomainStates'])->name('api.delete.subdomain_states')->where('id', '[0-9]+');
+
+/**
+ * =======================================================
+ * PERSONS
+ * =======================================================
+ */
+Route::get('/persons', [PersonController::class, 'getPersons'])->name('api.get.persons');
+Route::get('/persons/{id}', [PersonController::class, 'getPerson'])->name('api.get.person')->where('id', '[0-9]+');
+Route::get('/persons/name/{name}', [PersonController::class, 'getPersonByName'])->name('api.get.person_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+Route::post('/persons', [PersonController::class, 'createPersons'])->name('api.post.persons');
+Route::put('/persons/{id}', [PersonController::class, 'updatePersons'])->name('api.put.persons')->where('id', '[0-9]+');
+Route::delete('/persons/{id}', [PersonController::class, 'deletePersons'])->name('api.delete.persons')->where('id', '[0-9]+');
+
+/**
+ * =======================================================
+ * ENTITIES
+ * =======================================================
+ */
+Route::get('/entities', [EntityController::class, 'getEntities'])->name('api.get.entities');
+Route::get('/entities/{id}', [EntityController::class, 'getEntity'])->name('api.get.entity')->where('id', '[0-9]+');
+Route::get('/entities/name/{name}', [EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+Route::post('/entities', [EntityController::class, 'createEntities'])->name('api.post.entities');
+Route::put('/entities/{id}', [EntityController::class, 'updateEntities'])->name('api.put.entities')->where('id', '[0-9]+');
+Route::delete('/entities/{id}', [EntityController::class, 'deleteEntities'])->name('api.delete.entities')->where('id', '[0-9]+');

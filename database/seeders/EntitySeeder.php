@@ -2,7 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Company;
+use App\Models\Entity;
+use App\Models\Person;
+use Faker\Factory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
@@ -14,49 +17,28 @@ class EntitySeeder extends Seeder
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
-        Subdomain::truncate();
+        Entity::truncate();
         Schema::enableForeignKeyConstraints();
         
-        $company_count = \App\Models\Company::all()->count();
+        //$arr_entities = [];
         
-        $arr_entities = [];
-        
-        for( $i = 1; $i == 40; $i++ )
-        {
-            $start_time = fake()->dateTimeBetween('-10 year', 'now');
-            $end_time = fake()->dateBetween('now', '+10 year');
-            $entity_name = 'Entity_' . ($i < 10) ? "0{$i}" : $i;
-            $email = 'entity_' . ($i < 10) ? "0{$i}" : $i . '@company.com';
-            
-            array_push(
-                $arr_entities,
-                [
-                    'id' =>  $i,
-                    'name' => $entity_name,
-                    'email' => $email,
-                    'companies_id' => fake()->randomFloat(null, 1, $company_count),
-                    'persons_id' => '',
-                    'start_date' => $start_time,
-                    'end_date' => $end_time,
-                    'last_export' => NULL,
-                    'active' => 1,
-                ]
-            );
-            
-        }
-        
-        $arr_entities = [
-            ['id' =>  1,'name' => '','email' => '', 'companies_id' => '','persons_id' => '','start_date' => '','end_date' => '','last_export' => '','active' => '',],
-            ['id' =>  2,'name' => '','email' => '','companies_id' => '','persons_id' => '','start_date' => '','end_date' => '','last_export' => '','active' => '',],
-            ['id' =>  3,'name' => '','email' => '','companies_id' => '','persons_id' => '','start_date' => '','end_date' => '','last_export' => '','active' => '',],
-            ['id' =>  4,'name' => '','email' => '','companies_id' => '','persons_id' => '','start_date' => '','end_date' => '','last_export' => '','active' => '',],
-            ['id' =>  5,'name' => '','email' => '','companies_id' => '','persons_id' => '','start_date' => '','end_date' => '','last_export' => '','active' => '',],
-            ['id' =>  6,'name' => '','email' => '','companies_id' => '','persons_id' => '','start_date' => '','end_date' => '','last_export' => '','active' => '',],
-            ['id' =>  7,'name' => '','email' => '','companies_id' => '','persons_id' => '','start_date' => '','end_date' => '','last_export' => '','active' => '',],
-            ['id' =>  8,'name' => '','email' => '','companies_id' => '','persons_id' => '','start_date' => '','end_date' => '','last_export' => '','active' => '',],
-            ['id' =>  9,'name' => '','email' => '','companies_id' => '','persons_id' => '','start_date' => '','end_date' => '','last_export' => '','active' => '',],
-            ['id' => 10,'name' => '','email' => '','companies_id' => '','persons_id' => '','start_date' => '','end_date' => '','last_export' => '','active' => '',],
-        ];
+        $faker = Factory::create();
+        $company_ids = Company::pluck('id')->toArray();
+        $person_ids = Person::pluck('id')->toArray();
+
+        $arr_entities = array_map(function ($i) use ($faker, $company_ids, $person_ids): array {
+            return [
+                'id' => $i,
+                'name' => "Entity_{$i}",
+                'email' => "entity_{$i}@company.com",
+                'companies_id' => $faker->randomElement($company_ids),
+                'persons_id' => $faker->randomElement($person_ids),
+                'start_date' => $faker->dateTimeBetween('-10 year', 'now'),
+                'end_date' => $faker->dateTimeBetween('now', '+10 year'),
+                'last_export' => NULL,
+                'active' => 1,
+            ];
+        }, range(1, 40));
         
         $count = count($arr_entities);
         
@@ -65,9 +47,10 @@ class EntitySeeder extends Seeder
         
         foreach($arr_entities as $entity)
         {
-            \App\Models\Entity::create($entity);
+            Entity::create($entity);
             $this->command->getOutput()->progressAdvance();
         }
+
         $this->command->getOutput()->progressFinish();
         
         $this->command->info(PHP_EOL . __('migration_created_entities') );

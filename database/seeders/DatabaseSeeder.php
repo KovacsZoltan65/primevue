@@ -24,6 +24,9 @@ class DatabaseSeeder extends Seeder
             
             SubdomainStateSeeder::class,    // - Ne változtasd meg a sorrendet!!
             SubdomainsSeeder::class,        // - Ne változtasd meg a sorrendet!!
+
+            PersonSeeder::class,            // - Ne változtasd meg a sorrendet!!
+            EntitySeeder::class,            // - Ne változtasd meg a sorrendet!!
         ]);
 
         // User::factory(10)->create();

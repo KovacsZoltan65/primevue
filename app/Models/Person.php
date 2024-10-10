@@ -14,7 +14,15 @@ class Person extends Model
         SoftDeletes;
     
     protected $table = 'persons';
-    protected $fillable = [];
+    protected $fillable = ['name', 'email', 'password', 'language', 'birthdate', 'active'];
+    protected $attributes = [
+        'name' => '', 
+        'email' => '', 
+        'password' => '', 
+        'language' => 'hu', 
+        'birthdate' => '', 
+        'active' => 1
+    ];
     
     public function scopeSearch(Builder $query, Request $request)
     {

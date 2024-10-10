@@ -14,7 +14,14 @@ class Entity extends Model
         SoftDeletes;
     
     protected $table = 'entities';
-    protected $fillable = ['name', 'email', 'person_id', 'company_id', 'active'];
+    protected $fillable = ['name', 'email', 'persons_id', 'companies_id', 'active'];
+    protected $attributes = [
+        'name' => '', 
+        'email' => '', 
+        'persons_id' => 0, 
+        'companies_id' => 0, 
+        'active' => 1
+    ];
     
     public function scopeSerach(Builder $query, Request $request)
     {

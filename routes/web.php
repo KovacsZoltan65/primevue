@@ -39,14 +39,14 @@ Route::middleware('auth')->group(function () {
      * CÉGEK
      * =====================================================
      *
-     * Define the routes for the CompanyController resource.
-     * These routes use the resource method to define common
-     * CRUD operations. The names method is used to customize
-     * the route names.
+     * Határozza meg a CompanyController erőforrás útvonalait.
+     * Ezek az útvonalak az erőforrás módszert használják a közös meghatározásához
+     * CRUD műveletek. A testreszabáshoz a names metódust használjuk
+     * az útvonalak nevei.
      */
     //Route::get('/getCompanies', [CompanyController::class, 'getCompanies'])->name('getCompanies');
     Route::resource('companies', CompanyController::class)->names([
-        // The index route name is set to 'companies'.
+        // Az index útvonal nevének beállítása „cégek”.
         'index' => 'companies',
         // The create route name is set to 'companies.create'.
         'create' => 'companies.create',
@@ -148,7 +148,6 @@ Route::middleware('auth')->group(function () {
      * ENTITIES
      * =======================================================
      */
-    Route::get('/entities', [EntityController::class, 'index'])->name('entities');
-});
+    Route::get('/entities', [EntityController::class, 'index'])->name('entities');});
 
 require __DIR__.'/auth.php';

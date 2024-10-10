@@ -72,8 +72,25 @@ Route::delete('/items/{id}', [CompanyController::class, 'deleteCompany'])->name(
  * VÁROSOK
  * =======================================================
  */
+/**
+ * =======================================================
+ * VÁROSOK
+ * =======================================================
+ *
+ * A városokhoz tartozó API útvonalak.
+ * A városok listáját szolgáltatja az API-n keresztül.
+ * 
+ * @param CityController $cityController A CityController példány.
+ * @return JsonResponse A városok listáját tartalmazó JSON-válasz.
+ */
 Route::get('/cities', [CityController::class, 'getCities'])->name('api.get.cities');
 
+/**
+ * Egy város lekérése azonosító alapján az API-n keresztül.
+ * 
+ * @param int $id A lekérdezni kívánt város azonosítója.
+ * @return JsonResponse A várost tartalmazó JSON-válasz.
+ */
 Route::get('/cities/{id}', [CityController::class, 'getCity'])->name('api.get.city_by_id')->where('id', '[0-9]+');
 Route::get('/cities/name/{name}', [CityController::class, 'getCityByName'])->name('api.get.city_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
 

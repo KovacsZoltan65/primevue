@@ -29,8 +29,6 @@ class StoreEntityRequest extends BaseRequest
                 "max:{$this->validationRules['maxStringLength']}",
             ],
             'email' => ['required','email'],
-            'person_id' => ['required'],
-            'company_id' => ['required'],
         ];
     }
 

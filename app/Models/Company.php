@@ -65,4 +65,31 @@ class Company extends Model
         // @return \Illuminate\Database\Eloquent\Relations\BelongsTo
         return $this->belongsTo(City::class, 'city');
     }
+    
+    /**
+     * =========================================================
+     * 
+     * =========================================================
+     * $person = Person::find(1);
+     * $entities = $person->entities;
+     * foreach ($entities as $entity) {
+     *     echo $entity->name;
+     * }
+     */
+    public function persons()
+    {
+        return $this->belongsToMany(Person::class, 'person_company');
+    }
+    
+    /**
+     * =========================================================
+     * Egy Company lekérdezése, amelyhez tartozó Entity-je van
+     * =========================================================
+     * $company = Company::find(1);
+     * $entity = $company->entities;
+     */
+    public function entities()
+    {
+        return $this->hasMany(Entity::class, 'company_id');
+    }
 }

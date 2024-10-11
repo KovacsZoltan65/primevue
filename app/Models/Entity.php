@@ -14,12 +14,13 @@ class Entity extends Model
         SoftDeletes;
     
     protected $table = 'entities';
-    protected $fillable = ['name', 'email', 'persons_id', 'companies_id', 'active'];
+    protected $fillable = ['name', 'email', 'start_date', 'end_date', 'last_export', 'active'];
     protected $attributes = [
         'name' => '', 
-        'email' => '', 
-        'persons_id' => 0, 
-        'companies_id' => 0, 
+        'email' => '',
+        'start_date' => '', 
+        'end_date' => NULL, 
+        'last_export' => NULL,
         'active' => 1
     ];
     
@@ -30,5 +31,22 @@ class Entity extends Model
                     $query->where('name', 'like', "%{$request->search}%");
                 });
             })->where('active', APP_ACTIVE);
+    }
+    
+    //public function persons()
+    //{
+    //    return $this->belongsTo(Person::class, 'person_entity_rel');
+    //}
+    
+    /**
+     * =========================================================
+     * Egy Entity lekérdezése, amelyhez tartozó Company-k vannak
+     * =========================================================
+     * $entity = Entity::find(1);
+     * $companies = $entity->company;
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

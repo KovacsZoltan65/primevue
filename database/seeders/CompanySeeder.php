@@ -15,10 +15,7 @@ class CompanySeeder extends Seeder
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
-
-        //\DB::table('companies')->truncate();
         Company::truncate();
-
         Schema::enableForeignKeyConstraints();
 
         $companies = [

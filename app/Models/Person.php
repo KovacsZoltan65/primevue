@@ -32,4 +32,32 @@ class Person extends Model
                 });
             })->where('active', APP_ACTIVE);
     }
+    
+    /*
+     * =========================================================
+     * Egy Person lekérdezése, amelyhez tartozó Company-k vannak
+     * =========================================================
+     * $person = Person::find(1);
+     * $companies = $person->companies;
+     */
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class, 'person_company');
+    }
+    
+    /**
+     * =========================================================
+     * Person -hoz kapcsolódó Entity -k lekérése
+     * =========================================================
+     * Entity::class: Az a modell, amelyet le akarsz kérdezni.
+     * Company::class: Az a köztes modell, amely összeköti a Person-t és az Entity-t.
+     * 'person_company': A köztes táblád neve.
+     * 'company_id': A köztes táblában található Company ID.
+     * 'id': A Person ID.
+     * 'id': Az Entity ID.
+     */
+    public function entities()
+    {
+        return $this->hasManyThrough(Entity::class, Company::class, 'person_company', 'company_id', 'id', 'id');
+    }
 }

@@ -27,8 +27,6 @@ class UpdateEntityRequest extends FormRequest
                 'required','string','min:2','max:255',
             ],
             'email' => ['required','email'],
-            'person_id' => ['required'],
-            'company_id' => ['required'],
         ];
     }
 

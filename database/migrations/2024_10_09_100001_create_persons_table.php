@@ -20,8 +20,6 @@ return new class extends Migration
             $table->string('language', 5)->collation('utf8mb3_general_ci')->default('hu')->comment('Nyelv');
 
             $table->date('birthdate')->nullable()->comment('Születési dátum');
-
-            
             
             $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
 

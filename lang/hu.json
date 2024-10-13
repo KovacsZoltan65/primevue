@@ -155,5 +155,7 @@
     "migration_creating_subdomains": "Aldomainek létrehozása...",
     "migration_created_subdomains": "Aldomainek létrehozva",
     "migration_creating_subdomain_states": "Aldomain állapotok létrehozása...",
-    "migration_created_subdomain_states": "Aldomain állapotok létrehozva"
+    "migration_created_subdomain_states": "Aldomain állapotok létrehozva",
+
+    "command_company_action": ""
 }

@@ -18,7 +18,6 @@ class Company extends Model
 
     public function scopeSearch(Builder $query, Request $request)
     {
-        /*
         // If search parameter is present, filter results by name or email containing the search term
         return $query->when($request->search, function ($query) use ($request) {
             $query->where(function ($query) use ($request) {
@@ -33,7 +32,6 @@ class Company extends Model
         ->when($request->city, function ($query) use ($request) {
             $query->where('city', $request->city);
         });
-        */
     }
 
     /**

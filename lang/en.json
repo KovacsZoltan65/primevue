@@ -155,5 +155,20 @@
     "migration_creating_subdomains": "Creating Subdomains...",
     "migration_created_subdomains": "Subdomains Created",
     "migration_creating_subdomain_states": "Creating Subdomain States ...",
-    "migration_created_subdomain_states": "Subdomain States Created"
+    "migration_created_subdomain_states": "Subdomain States Created",
+
+    "command_company_description": "Create, update, or delete a company with provided data or random values.",
+    "command_company_actions": "create, update, delete or list a company",
+    "command_company_data": "Data in JSON format for the company",
+    "command_company_id": "Company ID to update or delete",
+    "command_company_random": "Use Fakert to generate random data",
+    "command_company_count": "Number of companies to create with random data (--random is required)",
+    "command_company_filter": "Filter companies based on a specific field (e.g. name). It can be used with the --list parameter",
+    "command_company_force": "Delete the company permanently instead of using soft delete",
+    "command_company_random_created": ":count company/companies created with random data successfully.",
+    "command_company_validate": "Validation failed: :error",
+    "command_company_created": "Company created successfully with provided data: ID :id",
+    "command_company_updated": "",
+    "command_company_not_found_with_id": "No companies found with the provided ID(s).",
+    "command_company_": ""
 }

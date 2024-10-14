@@ -157,5 +157,18 @@
     "migration_creating_subdomain_states": "Aldomain állapotok létrehozása...",
     "migration_created_subdomain_states": "Aldomain állapotok létrehozva",
 
-    "command_company_action": ""
+    "command_company_description": "Vállalat létrehozása, frissítése vagy törlése megadott adatokkal vagy véletlenszerű értékekkel.",
+    "command_company_actions": "cég létrehozása, frissítése, törlése vagy listázása",
+    "command_company_data": "JSON formátumú adatok a vállalat számára",
+    "command_company_id": "A cég azonosítója frissítéshez vagy törléshez",
+    "command_company_random": "Használja a Fakert véletlenszerű adatok generálására",
+    "command_company_count": "A véletlenszerű adatokkal létrehozandó vállalatok száma (a --random szükséges)",
+    "command_company_filter": "Vállalatok szűrése egy adott mező (pl. név) alapján. A --list paraméterrel együtt használható",
+    "command_company_force": "A soft delete használata helyett véglegesen törölje a céget",
+    "command_company_random_created": ":count vállalat/vállalatok véletlenszerű adatokkal sikeresen létrehozva.",
+    "command_company_validate": "Az érvényesítés sikertelen: :error",
+    "command_company_created": "A cég sikeresen létrejött a megadott adatokkal: ID :id",
+    "command_company_updated": "",
+    "command_company_not_found_with_id": "Nem található cég a megadott azonosító(k)kal.",
+    "command_company_": ""
 }

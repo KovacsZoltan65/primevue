@@ -13,6 +13,7 @@ dependencies:
     npm install @primevue/themes
     npm install primeicons
     npm install laravel-vue-i18n
+    npm i date-fns                  https://date-fns.org/docs/Getting-Started
 
 devDependencies:
     npm install @primevue/auto-import-resolver

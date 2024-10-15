@@ -25,8 +25,12 @@ class SubdomainState extends Model
 
     protected $table = 'subdomain_states';
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'active'];
 
+    protected $casts = [
+        'active' => 'integer',
+    ];
+    
     public function scopeSearch(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {

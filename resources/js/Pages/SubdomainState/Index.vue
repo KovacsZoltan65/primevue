@@ -8,10 +8,10 @@ import { trans } from "laravel-vue-i18n";
 
 // Validation
 import useVuelidate from "@vuelidate/core";
-import { helpers, required } from "@vuelidate/validators";
-import validationRules from "../../../Validation/ValidationRules.json";
+import { helpers, required, minLength, maxLength } from "@vuelidate/validators";
+import validationRules from "../../Validation/ValidationRules.json";
 
-import SubdomainService from "@/service/SubdomainService";
+import StateService from "@/service/SubdomainStateService";
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -31,17 +31,17 @@ const props = defineProps({
     /**
      * Országok adatai.
      */
-    subdomains: {
-        type: Object,
-        default: () => {},
-    },
+    //subdomains: {
+    //    type: Object,
+    //    default: () => {},
+    //},
     /**
      * Régiók adatai.
      */
-    regions: {
-        type: Object,
-        default: () => {},
-    },
+    //regions: {
+    //    type: Object,
+    //    default: () => {},
+    //},
 });
 
 /**
@@ -93,28 +93,28 @@ const dt = ref();
  *
  * @type {Array}
  */
-const subdomains = ref();
+const states = ref();
 
 /**
  * Reaktív hivatkozás a város adatainak megjelenítő párbeszédpanel megnyitásához.
  *
  * @type {ref<boolean>}
  */
-const subdomainDialog = ref(false);
+const stateDialog = ref(false);
 
 /**
  * Reaktív hivatkozás a városok törléséhez használt párbeszédpanel megnyitásához.
  *
  * @type {ref<boolean>}
  */
-const deleteSelectedSubdomainsDialog = ref(false);
+const deleteSelectedStatesDialog = ref(false);
 
 /**
  * Reaktív hivatkozás a kijelölt város(ok) törléséhez használt párbeszédpanel megnyitásához.
  *
  * @type {ref<boolean>}
  */
-const deleteSubdomainDialog = ref(false);
+const deleteStateDialog = ref(false);
 
 /**
  * Reaktív hivatkozás a város adatainak tárolására.
@@ -126,12 +126,9 @@ const deleteSubdomainDialog = ref(false);
  * @property {number} active - A város státusza.
  * @property {number} id - A város azonosítója.
  */
-const subdomain = ref({
-    name: "",
-    subdomain_id: null,
-    region_id: null,
-    active: 1,
+const state = ref({
     id: null,
+    name: "",
 });
 
 /**
@@ -139,7 +136,7 @@ const subdomain = ref({
  *
  * @type {Array}
  */
-const selectedSubdomains = ref();
+const selectedStates = ref();
 
 /**
  * Reaktív hivatkozás a globális keresés szűrőinek tárolására az adattáblában.
@@ -187,27 +184,27 @@ const rules = {
  *
  * @type {Object}
  */
-const v$ = useVuelidate(rules, subdomain);
+const v$ = useVuelidate(rules, state);
 
 // ======================================================
 
 /**
- * Lekéri a városok listáját az API-ból.
+ * Lekéri a subdomain állapotok listáját az API-ból.
  *
- * Ez a funkció a városok listáját lekéri az API-ból.
- * A városok listája a subdomains változóban lesz elmentve.
+ * Ez a funkció a subdomain állapotok listáját lekéri az API-ból.
+ * A subdomain állapotok listája a states változóban lesz elmentve.
  *
- * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
+ * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
 const fetchItems = () => {
-    SubdomainService.getSubdomains()
+    StateService.getSubdomainStates()
         .then((response) => {
             // A városok listája a subdomains változóban lesz elmentve
-            subdomains.value = response.data.data;
+            states.value = response.data.data;
         })
         .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("getSubdomains API Error:", error);
+            console.error("getSubdomainStates API Error:", error);
         });
 };
 
@@ -224,32 +221,31 @@ onMounted(() => {
 });
 
 /**
- * Megerősíti a kiválasztott termékek törlését.
+ * Megerősíti a kiválasztott állapotok törlését.
  *
- * Ez a funkció akkor hívódik meg, ha a felhasználó törölni szeretné a kiválasztott termékeket.
- * A deleteSubdomainsDialog változó értékét igazra állítja, ami
- * megnyílik egy megerősítő párbeszédablak a kiválasztott termékek törléséhez.
+ * Ez a funkció akkor hívódik meg, ha a felhasználó törölni szeretné a kiválasztott állapotokat.
+ * A deleteStatesDialog változó értékét igazra állítja, ami
+ * megnyílik egy megerősítő párbeszédablak a kiválasztott állapotok törléséhez.
  *
  * @return {void}
  */
 function confirmDeleteSelected() {
-    // Állítsa a deleteSubdomainssDialog változó értékét igazra,
-    // amely megnyitja a megerősítő párbeszédablakot a kiválasztott termékek törléséhez.
-    deleteSelectedSubdomainsDialog.value = true;
+    deleteSelectedStatesDialog.value = true;
 }
 
 /**
- * Nyitja meg az új város dialógusablakot.
+ * Nyitja meg az új állapot dialógusablakot.
  *
- * Ez a függvény a subdomain változó értékét alaphelyzetbe állítja, a submitted változó értékét False-ra állítja,
- * és a subdomainDialog változó értékét igazra állítja, amely megnyitja az új város dialógusablakot.
+ * Ez a függvény a states változó értékét alaphelyzetbe állítja, 
+ * a submitted változó értékét False-ra állítja, és a stateDialog 
+ * változó értékét igazra állítja, amely megnyitja az új állapot dialógusablakot.
  *
  * @return {void}
  */
 function openNew() {
-    subdomain.value = { ...initialSubdomain };
+    state.value = { ...initialState };
     submitted.value = false;
-    subdomainDialog.value = true;
+    stateDialog.value = true;
 }
 
 /**
@@ -265,13 +261,10 @@ function openNew() {
  * @property {number} active - A város aktív-e? (1 igen, 0 nem).
  * @property {number} id - A város azonosítója.
  */
-const initialSubdomain = {
-    name: "",
-    //subdomain_id: null,
-    //region_id: null,
-    code: "",
-    active: 1,
+const initialState = {
     id: null,
+    name: "",
+    active: 1,
 };
 
 /**
@@ -281,7 +274,7 @@ const initialSubdomain = {
  * A v$.value.$reset() függvénnyel visszaállítja a validációs objektumot az alapértelmezett állapotába.
  */
 const hideDialog = () => {
-    subdomainDialog.value = false;
+    stateDialog.value = false;
     submitted.value = false;
 
     // Visszaállítja a validációs objektumot az alapértelmezett állapotába.
@@ -297,12 +290,12 @@ const hideDialog = () => {
  * @param {object} data - A kiválasztott város adatai.
  * @return {void}
  */
-const editSubdomain = (data) => {
+const editState = (data) => {
     // Másolja a kiválasztott város adatait a subdomain változóba.
-    subdomain.value = { ...data };
+    state.value = { ...data };
 
     // Nyissa meg a dialógusablakot a város szerkesztéséhez.
-    subdomainDialog.value = true;
+    stateDialog.value = true;
 };
 
 /**
@@ -314,23 +307,23 @@ const editSubdomain = (data) => {
  * @param {object} data - A kiválasztott város adatai.
  * @return {void}
  */
-const confirmDeleteSubdomain = (data) => {
+const confirmDeleteState = (data) => {
     // Másolja a kiválasztott város adatait a subdomain változóba.
-    subdomain.value = { ...data };
+    state.value = { ...data };
 
     // Nyissa meg a dialógusablakot a város törléséhez.
-    deleteSubdomainDialog.value = true;
+    deleteStateDialog.value = true;
 };
 
-const saveSubdomain = async () => {
+const saveState = async () => {
     const result = await v$.value.$validate();
     if (result) {
         submitted.value = true;
 
-        if (subdomain.value.id) {
-            updateSubdomain();
+        if (state.value.id) {
+            updateState();
         } else {
-            createSubdomain();
+            createState();
         }
     } else {
         alert("FAIL");
@@ -346,24 +339,24 @@ const saveSubdomain = async () => {
  *
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
-const createSubdomain = () => {
-    SubdomainService.createSubdomain(subdomain.value)
+const createState = () => {
+    StateService.createSubdomainState(state.value)
         .then((response) => {
             //console.log('response', response);
-            subdomains.values.push(response.data);
+            states.values.push(response.data);
 
             hideDialog();
 
             toast.add({
                 severity: "success",
                 summary: "Successful",
-                detail: "Subdomain Created",
+                detail: "SubdomainState Created",
                 life: 3000,
             });
         })
         .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("createSubdomain API Error:", error);
+            console.error("createSubdomainState API Error:", error);
         });
 };
 
@@ -378,13 +371,13 @@ const createSubdomain = () => {
  * @param {object} data - A város új adatai.
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
-const updateSubdomain = () => {
-    SubdomainService.updateSubdomain(subdomain.value.id, subdomain.value)
+const updateState = () => {
+    StateService.updateSubdomain(state.value.id, state.value)
         .then(() => {
             // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
-            const index = findIndexById(subdomain.value.id);
+            const index = findIndexById(state.value.id);
             // A város adatait frissíti a városok tömbjében
-            subdomains.value.splice(index, 1, subdomain.value);
+            states.value.splice(index, 1, state.value);
 
             // Bezárja a dialógus ablakot
             hideDialog();
@@ -393,13 +386,13 @@ const updateSubdomain = () => {
             toast.add({
                 severity: "success",
                 summary: "Successful",
-                detail: "Subdomain Updated",
+                detail: "SubdomainState Updated",
                 life: 3000,
             });
         })
         .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("updateSubdomain API Error:", error);
+            console.error("updateSubdomainState API Error:", error);
         });
 };
 
@@ -410,16 +403,16 @@ const updateSubdomain = () => {
  * @returns {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
  */
 const findIndexById = (id) => {
-    return subdomains.value.findIndex((subdomain) => subdomain.id === id);
+    return states.value.findIndex((state) => state.id === id);
 };
 
-const deleteSubdomain = () => {
-    SubdomainService.deleteSubdomain(subdomain.value.id)
+const deleteState = () => {
+    StateService.deleteSubdomainState(state.value.id)
         .then((response) => {
             //
         })
         .catch((error) => {
-            console.error("deleteSubdomain API Error:", error);
+            console.error("deleteSubdomainState API Error:", error);
         });
 };
 
@@ -427,27 +420,9 @@ const exportCSV = () => {
     dt.value.exportCSV();
 };
 
-const deleteSelectedSubdomains = () => {
-    console.log(selectedSubdomains.value);
+const deleteSelectedStates = () => {
+    console.log(selectedStates.value);
 };
-
-//const getSubdomainName = (id) => {
-//    return props.subdomains.find((subdomain) => subdomain.id === id).name;
-//};
-
-//const getRegionName = (id) => {
-//console.log('props.regions', props.regions);
-//console.log('id', id);
-
-//    let region = props.regions.find((region) => region.subdomain_id === id);
-
-//    if( region )
-//    {
-//        console.log('region', region);
-//    }
-
-//return props.regions.find((region) => region.id === id).name;
-//};
 
 const getActiveLabel = (subdomain) =>
     ["danger", "success", "warning"][subdomain.active || 2];
@@ -476,7 +451,7 @@ const getActiveValue = (subdomain) =>
                         severity="secondary"
                         @click="confirmDeleteSelected"
                         :disabled="
-                            !selectedSubdomains || !selectedSubdomains.length
+                            !selectedStates || !selectedStates.length
                         "
                     />
                 </template>
@@ -493,8 +468,8 @@ const getActiveValue = (subdomain) =>
 
             <DataTable
                 ref="dt"
-                v-model:selection="selectedSubdomains"
-                :value="subdomains"
+                v-model:selection="selectedStates"
+                :value="states"
                 dataKey="id"
                 :paginator="true"
                 :rows="10"
@@ -563,14 +538,14 @@ const getActiveValue = (subdomain) =>
                             outlined
                             rounded
                             class="mr-2"
-                            @click="editSubdomain(slotProps.data)"
+                            @click="editState(slotProps.data)"
                         />
                         <Button
                             icon="pi pi-trash"
                             outlined
                             rounded
                             severity="danger"
-                            @click="confirmDeleteSubdomain(slotProps.data)"
+                            @click="confirmDeleteState(slotProps.data)"
                         />
                     </template>
                 </Column>
@@ -579,7 +554,7 @@ const getActiveValue = (subdomain) =>
 
         <!-- Város szerkesztése -->
         <Dialog
-            v-model:visible="subdomainDialog"
+            v-model:visible="stateDialog"
             :style="{ width: '550px' }"
             :header="$t('subdomains_details')"
             :modal="true"
@@ -593,7 +568,7 @@ const getActiveValue = (subdomain) =>
                         }}</label>
                         <InputText
                             id="name"
-                            v-model="subdomain.name"
+                            v-model="state.name"
                             autofocus
                             fluid
                         />
@@ -612,7 +587,7 @@ const getActiveValue = (subdomain) =>
                         <Select
                             id="active"
                             name="active"
-                            v-model="subdomain.active"
+                            v-model="state.active"
                             :options="getBools()"
                             optionLabel="label"
                             optionValue="value"
@@ -632,7 +607,7 @@ const getActiveValue = (subdomain) =>
                 <Button
                     :label="$t('save')"
                     icon="pi pi-check"
-                    @click="saveSubdomain"
+                    @click="saveState"
                 />
             </template>
         </Dialog>
@@ -641,7 +616,7 @@ const getActiveValue = (subdomain) =>
         <!-- Egy megerősítő párbeszédpanel, amely megjelenik, ha a felhasználó törölni szeretne egy várost. -->
         <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést. -->
         <Dialog
-            v-model:visible="deleteSubdomainDialog"
+            v-model:visible="deleteStateDialog"
             :style="{ width: '450px' }"
             :header="$t('confirm')"
             :modal="true"
@@ -651,8 +626,8 @@ const getActiveValue = (subdomain) =>
                 <!-- A figyelmeztető ikon -->
                 <i class="pi pi-exclamation-triangle !text-3xl" />
                 <!-- A szöveg, amely megjelenik a párbeszédpanelen -->
-                <span v-if="subdomain"
-                    >{{ $t("confirm_delete_2") }} <b>{{ subdomain.name }}</b
+                <span v-if="state"
+                    >{{ $t("confirm_delete_2") }} <b>{{ state.name }}</b
                     >?</span
                 >
             </div>
@@ -662,14 +637,14 @@ const getActiveValue = (subdomain) =>
                 <Button
                     :label="$t('no')"
                     icon="pi pi-times"
-                    @click="deleteSubdomainDialog = false"
+                    @click="deleteStateDialog = false"
                     text
                 />
                 <!-- A "Igen" gomb, amely törli a várost -->
                 <Button
                     :label="$t('yes')"
                     icon="pi pi-check"
-                    @click="deleteSubdomain"
+                    @click="deleteState"
                 />
             </template>
         </Dialog>
@@ -678,28 +653,28 @@ const getActiveValue = (subdomain) =>
         <!-- Ez a párbeszédpanel akkor jelenik meg, ha a felhasználó több várost szeretne törölni -->
         <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést -->
         <Dialog
-            v-model:visible="deleteSelectedSubdomainsDialog"
+            v-model:visible="deleteSelectedStatesDialog"
             :style="{ width: '450px' }"
             :header="$t('confirm')"
             :modal="true"
         >
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="subdomain">{{ $t("confirm_delete") }}</span>
+                <span v-if="state">{{ $t("confirm_delete") }}</span>
             </div>
             <template #footer>
                 <!-- "Mégsem" gomb -->
                 <Button
                     :label="$t('no')"
                     icon="pi pi-times"
-                    @click="deleteSelectedSubdomainsDialog = false"
+                    @click="deleteSelectedStatesDialog = false"
                     text
                 />
                 <!-- Megerősítés gomb -->
                 <Button
                     :label="$t('yes')"
                     icon="pi pi-check"
-                    @click="deleteSelectedSubdomains"
+                    @click="deleteSelectedStates"
                 />
             </template>
         </Dialog>

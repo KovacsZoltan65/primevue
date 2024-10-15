@@ -36,9 +36,8 @@ class SubdomainStateController extends Controller
     public function getSubdomainStates(Request $request): AnonymousResourceCollection
     {
         $subdomainStateQuery = SubdomainState::search($request);
-
-        $subdomainStates = SubdomainStateResource::collection($subdomainStateQuery);
-
+        $subdomainStates = SubdomainStateResource::collection($subdomainStateQuery->get());
+        
         return $subdomainStates;
     }
 

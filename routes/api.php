@@ -71,11 +71,6 @@ Route::delete('/items/{id}', [CompanyController::class, 'deleteCompany'])->name(
  * =======================================================
  * VÁROSOK
  * =======================================================
- */
-/**
- * =======================================================
- * VÁROSOK
- * =======================================================
  *
  * A városokhoz tartozó API útvonalak.
  * A városok listáját szolgáltatja az API-n keresztül.

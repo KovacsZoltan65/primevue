@@ -17,7 +17,7 @@ class PersonController extends Controller
     
     public function index(Request $request)
     {
-        Inertia::render('Person/Index');
+        return Inertia::render('Person/Index');
     }
     
     public function applySearch(Builder $query, string $search)

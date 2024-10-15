@@ -63,6 +63,7 @@ export const MenuService = {
                         to: "/companies",
                     },
                     { label: "subdomains", icon: "", to: "/subdomains" },
+                    { label: "persons", icon: "", to: "/persons" },
                 ],
             },
         ];

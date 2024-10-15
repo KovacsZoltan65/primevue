@@ -9,7 +9,7 @@ import { trans } from "laravel-vue-i18n";
 // Validation
 import useVuelidate from "@vuelidate/core";
 import { helpers, minValue, maxValue, maxLength, minLength, required, email } from "@vuelidate/validators";
-import validationRules from "../../Validation/validationRules.json";
+import validationRules from "@/Validation/validationRules.json";
 
 import PersonService from "@/service/PersonService";
 
@@ -51,7 +51,7 @@ const deleteSelectedPersonsDialog = ref(false);
 
 const deletePersonDialog = ref(false);
 
-const city = ref({
+const person = ref({
     id: null,
     name: "",
     email: "",
@@ -72,6 +72,20 @@ const filters = ref({
 
 const submitted = ref(false);
 
+
+/**
+ * const minDate = '1950-01-01';
+ * const maxDate = () => new Date(Date.now() - 20 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+*/
+
+const minDate = new Date('1950-01-01').toISOString().split('T')[0];
+
+const maxDate = computed(() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 20);
+    return date.toISOString().split('T')[0];
+});
+
 const rules = {
     name: {
         required: helpers.withMessage(trans('validation.required'), required),
@@ -84,11 +98,65 @@ const rules = {
         required: helpers.withMessage(trans('validate.'), required),
     },
     birthdate: {
-        required: helpers.withMessage(trans('validate'), required),
-        minValue: helpers.withMessage(trans('validate'), minDate),
-        maxValue: helpers.withMessage(trans('validate"'), maxDate)
+        required: helpers.withMessage('birth date request', required),
+        minValue: helpers.withMessage('birth date minValue', minValue(minDate) ),
+        maxValue: helpers.withMessage('birth date maxValue', maxValue(maxDate) )
     }
 };
 
+const v$ = useVuelidate(rules, person);
+
+const fetchItems = async () => {
+    console.log('fetchItems');
+}
+
+onMounted(() => {
+    fetchItems();
+})
+
+const openNew = () => {};
+
+const exportCSV = () => {
+    dt.value.exportCSV();
+};
+
 </script>
-<template></template>
+
+<template>
+    <AppLayout>
+        <Head :title="$t('persons')" />
+
+        <div class="card">
+            <Toolbar class="md-6">
+                <template #start>
+                    <Button
+                        :label="$t('new')"
+                        icon="pi pi-plus"
+                        severity="secondary"
+                        class="mr-2"
+                        @click="openNew"
+                    />
+
+                    <Button
+                        :label="$t('delete')"
+                        icon="pi pi-trash"
+                        severity="secondary"
+                        class="mr-2"
+                        @click="confirmDeleteSelected"
+                        :disabled="!selectedPersons || !selectedPersons.length"
+                    />
+                </template>
+
+                <template #end>
+                    <Button
+                        :label="$t('export')"
+                        icon="pi pi-upload"
+                        severity="secondary"
+                        @click="exportCSV($event)"
+                    />
+                </template>
+            </Toolbar>
+        </div>
+
+    </AppLayout>
+</template>

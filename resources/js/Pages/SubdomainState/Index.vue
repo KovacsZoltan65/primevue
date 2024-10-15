@@ -23,6 +23,7 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
+import SubdomainService from "@/service/SubdomainService";
 
 /**
  * Szerver felöl jövő adatok
@@ -120,15 +121,14 @@ const deleteStateDialog = ref(false);
  * Reaktív hivatkozás a város adatainak tárolására.
  *
  * @type {Object}
- * @property {string} name - A város neve.
- * @property {number} subdomain_id - Az ország azonosítója.
- * @property {number} region_id - A régió azonosítója.
- * @property {number} active - A város státusza.
  * @property {number} id - A város azonosítója.
+ * @property {string} name - A város neve.
+ * @property {number} active - A város státusza.
  */
 const state = ref({
     id: null,
     name: "",
+    active: 1,
 });
 
 /**
@@ -255,11 +255,9 @@ function openNew() {
  * megjelenő új város formban.
  *
  * @type {Object}
- * @property {string} name - A város neve.
- * @property {number} subdomain_id - Az ország azonosítója.
- * @property {number} region_id - A régió azonosítója.
- * @property {number} active - A város aktív-e? (1 igen, 0 nem).
- * @property {number} id - A város azonosítója.
+ * @property {string} name - Az állapot neve.
+ * @property {number} active - Az állapot aktív-e? (1 igen, 0 nem).
+ * @property {number} id - Az állapot azonosítója.
  */
 const initialState = {
     id: null,
@@ -282,16 +280,16 @@ const hideDialog = () => {
 };
 
 /**
- * Szerkeszti a kiválasztott várost.
+ * Szerkeszti a kiválasztott állapotot.
  *
- * Ez a funkció a kiválasztott város adatait másolja a subdomain változóba,
- * és megnyitja a dialógusablakot a város szerkesztéséhez.
+ * Ez a funkció a kiválasztott állapot adatait másolja a state változóba,
+ * és megnyitja a dialógusablakot az állapot szerkesztéséhez.
  *
- * @param {object} data - A kiválasztott város adatai.
+ * @param {object} data - A kiválasztott állapot adatai.
  * @return {void}
  */
 const editState = (data) => {
-    // Másolja a kiválasztott város adatait a subdomain változóba.
+    // Másolja a kiválasztott állapot adatait a subdomain változóba.
     state.value = { ...data };
 
     // Nyissa meg a dialógusablakot a város szerkesztéséhez.
@@ -299,19 +297,19 @@ const editState = (data) => {
 };
 
 /**
- * Megerősítés a város törléséhez.
+ * Megerősítés az állapot törléséhez.
  *
- * Ez a funkció a subdomain változóba másolja a kiválasztott város adatait,
- * és megnyitja a dialógusablakot a város törléséhez.
+ * Ez a funkció a state változóba másolja a kiválasztott állapot adatait,
+ * és megnyitja a dialógusablakot az állapot törléséhez.
  *
- * @param {object} data - A kiválasztott város adatai.
+ * @param {object} data - A kiválasztott állapot adatai.
  * @return {void}
  */
 const confirmDeleteState = (data) => {
-    // Másolja a kiválasztott város adatait a subdomain változóba.
+    // Másolja a kiválasztott állapot adatait a state változóba.
     state.value = { ...data };
 
-    // Nyissa meg a dialógusablakot a város törléséhez.
+    // Nyissa meg a dialógusablakot az állapot törléséhez.
     deleteStateDialog.value = true;
 };
 
@@ -331,10 +329,10 @@ const saveState = async () => {
 };
 
 /**
- * Hozzon létre új várost az API-nak küldött POST-kéréssel.
+ * Hozzon létre új állapotot az API-nak küldött POST-kéréssel.
  *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor létrehoz egy új várost az API-ban.
+ * A metódus ellenörzi az állapot adatait a validációs szabályok alapján,
+ * és ha a validáció sikerült, akkor létrehoz egy új állapotot az API-ban.
  * A választ megjeleníti a konzolon.
  *
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
@@ -361,20 +359,20 @@ const createState = () => {
 };
 
 /**
- * Frissít egy várost az API-nak küldött PUT-kéréssel.
+ * Frissít egy állapotot az API-nak küldött PUT-kéréssel.
  *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor frissíti a várost az API-ban.
+ * A metódus ellenörzi az állapot adatait a validációs szabályok alapján,
+ * és ha a validáció sikerült, akkor frissíti az állapotot az API-ban.
  * A választ megjeleníti a konzolon.
  *
- * @param {number} id - A frissítendő város azonosítója.
- * @param {object} data - A város új adatai.
+ * @param {number} id - A frissítendő állapot azonosítója.
+ * @param {object} data - Az állapot új adatai.
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
 const updateState = () => {
     StateService.updateSubdomain(state.value.id, state.value)
         .then(() => {
-            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
+            // Megkeresi az állapot indexét a városok tömbjében az azonosítója alapján
             const index = findIndexById(state.value.id);
             // A város adatait frissíti a városok tömbjében
             states.value.splice(index, 1, state.value);
@@ -397,21 +395,45 @@ const updateState = () => {
 };
 
 /**
- * Megkeresi egy város indexét a városok tömbjében az azonosítója alapján.
+ * Megkeresi egy állapot indexét az állapotok tömbjében az azonosítója alapján.
  *
- * @param {number} id - A keresendő város azonosítója.
- * @returns {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
+ * @param {number} id - A keresendő állapot azonosítója.
+ * @returns {number} Az állapot indexe az állapotok tömbjében, vagy -1, ha nem található.
  */
 const findIndexById = (id) => {
     return states.value.findIndex((state) => state.id === id);
 };
 
+/**
+ * Törli az állapotot az API-ból.
+ *
+ * A metódus ellenörzi az állapotot a validációs szabályok alapján,
+ * és ha a validáció sikerült, akkor törli az állapotot az API-ban.
+ * A választ megjeleníti a konzolon.
+ *
+ * @param {number} id - A törölni kívánt állapot azonosítója.
+ * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
+ */
 const deleteState = () => {
     StateService.deleteSubdomainState(state.value.id)
         .then((response) => {
-            //
+            // Törli az állapotot a városok tömbjéb l
+            const index = findIndexById(state.value.id);
+            states.value.splice(index, 1);
+
+            // Bezárja a dialógus ablakot
+            hideDialog();
+
+            // Siker-értesítést jelenít meg
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "SubdomainState Deleted",
+                life: 3000,
+            });
         })
         .catch((error) => {
+            // Jelenítse meg a hibaüzenetet a konzolon
             console.error("deleteSubdomainState API Error:", error);
         });
 };
@@ -421,7 +443,21 @@ const exportCSV = () => {
 };
 
 const deleteSelectedStates = () => {
-    console.log(selectedStates.value);
+    
+    SubdomainService.deleteSubdomainStates(selectedStates.value);
+    
+    states.value = states.value.filter(
+        (val) => !selectedStates.value.includes(val),
+    );
+    deleteStateDialog.value = false;
+    selectedStates.value = null;
+
+    toast.add({
+        severity: "success",
+        summary: "Successful",
+        detail: "Subdomain Deleted",
+        life: 3000,
+    });
 };
 
 const getActiveLabel = (subdomain) =>
@@ -552,11 +588,11 @@ const getActiveValue = (subdomain) =>
             </DataTable>
         </div>
 
-        <!-- Város szerkesztése -->
+        <!-- Állapot szerkesztése -->
         <Dialog
             v-model:visible="stateDialog"
             :style="{ width: '550px' }"
-            :header="$t('subdomains_details')"
+            :header="$t('subdomain_states_details')"
             :modal="true"
         >
             <div class="flex flex-col gap-6">
@@ -580,10 +616,11 @@ const getActiveValue = (subdomain) =>
                     <div class="flex flex-col grow basis-0 gap-2">
                         <!-- Active -->
                         <label
-                            for="inventoryStatus"
+                            for="active"
                             class="block font-bold mb-3"
-                            >{{ $t("active") }}</label
                         >
+                            {{ $t("active") }}
+                        </label>
                         <Select
                             id="active"
                             name="active"
@@ -591,7 +628,7 @@ const getActiveValue = (subdomain) =>
                             :options="getBools()"
                             optionLabel="label"
                             optionValue="value"
-                            placeholder="Subdomains"
+                            placeholder="SubdomainStates"
                         />
                     </div>
                 </div>
@@ -612,8 +649,8 @@ const getActiveValue = (subdomain) =>
             </template>
         </Dialog>
 
-        <!-- Város törlése -->
-        <!-- Egy megerősítő párbeszédpanel, amely megjelenik, ha a felhasználó törölni szeretne egy várost. -->
+        <!-- Állapot törlése -->
+        <!-- Egy megerősítő párbeszédpanel, amely megjelenik, ha a felhasználó törölni szeretne egy állapotot. -->
         <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést. -->
         <Dialog
             v-model:visible="deleteStateDialog"
@@ -631,6 +668,7 @@ const getActiveValue = (subdomain) =>
                     >?</span
                 >
             </div>
+
             <!-- A párbeszédpanel lábléc, amely tartalmazza a gombokat -->
             <template #footer>
                 <!-- A "Nem" gomb -->
@@ -640,7 +678,7 @@ const getActiveValue = (subdomain) =>
                     @click="deleteStateDialog = false"
                     text
                 />
-                <!-- A "Igen" gomb, amely törli a várost -->
+                <!-- A "Igen" gomb, amely törli az állapotot -->
                 <Button
                     :label="$t('yes')"
                     icon="pi pi-check"
@@ -649,8 +687,8 @@ const getActiveValue = (subdomain) =>
             </template>
         </Dialog>
 
-        <!-- Erősítse meg a kiválasztott városok törlését párbeszédpanelen -->
-        <!-- Ez a párbeszédpanel akkor jelenik meg, ha a felhasználó több várost szeretne törölni -->
+        <!-- Erősítse meg a kiválasztott állapotok törlését párbeszédpanelen -->
+        <!-- Ez a párbeszédpanel akkor jelenik meg, ha a felhasználó több állapotot szeretne törölni -->
         <!-- A párbeszédpanel felkéri a felhasználót, hogy erősítse meg a törlést -->
         <Dialog
             v-model:visible="deleteSelectedStatesDialog"

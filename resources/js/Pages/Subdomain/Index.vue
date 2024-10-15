@@ -1002,10 +1002,11 @@ const onUpload = () => {
                     <div class="flex flex-col grow basis-0 gap-2">
                         <!-- Active -->
                         <label
-                            for="inventoryStatus"
+                            for="active"
                             class="block font-bold mb-3"
-                            >{{ $t("active") }}</label
                         >
+                            {{ $t("active") }}
+                        </label>
                         <Select
                             id="active"
                             name="active"

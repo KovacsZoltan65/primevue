@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEntityRequest;
 use App\Http\Requests\UpdateEntityRequest;
+use App\Http\Resources\EntityResource;
 use App\Models\Entity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -31,8 +32,8 @@ class EntityController extends Controller
     
     public function getEntities(Request $request)
     {
-        $entityQuery = Entity::Search($reauest);
-        $entities = EntitiResource::collection($entityQuery->get());
+        $entityQuery = Entity::Search($request);
+        $entities = EntityResource::collection($entityQuery->get());
         
         return $entities;
     }

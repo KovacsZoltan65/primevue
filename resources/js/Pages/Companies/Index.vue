@@ -9,7 +9,8 @@ import { trans } from "laravel-vue-i18n";
 // Validation
 import useVuelidate from "@vuelidate/core";
 import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
-import validationRules from "../../../Validation/ValidationRules.json";
+//import validationRules from "../../../Validation/ValidationRules.json";
+import validationRules from '@/Validation/ValidationRules.json';
 
 import CompanyService from "@/service/CompanyService";
 

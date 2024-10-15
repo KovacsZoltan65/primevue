@@ -340,6 +340,15 @@ const initFilters = () => {
                 },
             ],
         },
+        db_user: {
+            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
+            constraints: [
+                {
+                    value: null, // A szűrő értéke
+                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
+                },
+            ],
+        },
         active: {
             operator: FilterOperator.AND, // Logikai operátor (és, vagy)
             constraints: [
@@ -724,7 +733,7 @@ const onUpload = () => {
                 :value="subdomains"
                 dataKey="id" :paginator="true" :rows="10" sortMode="multiple"
                 :filters="filters" filterDisplay="menu"
-                :globalFilterFields="['name', 'subdomain', 'url', 'db_name', 'active']"
+                :globalFilterFields="['name', 'subdomain', 'url', 'db_name', 'db_user', 'active']"
                 :loading="loading" stripedRows removableSort
                 :rowsPerPageOptions="[5, 10, 25]"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -863,7 +872,22 @@ const onUpload = () => {
                     :header="$t('db_user')"
                     style="min-width: 16rem"
                     sortable
-                />
+                >
+                    <template #body="{ data }">{{ data.db_user }}</template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'db_user'})"
+                        />
+                    </template>
+                </Column>
+                <!--<Column
+                    field="db_user"
+                    :header="$t('db_user')"
+                    style="min-width: 16rem"
+                    sortable
+                />-->
 
                 <!-- db_password -->
                 <Column
@@ -874,69 +898,6 @@ const onUpload = () => {
                 />
 
                 <!-- Active -->
-                <Column 
-                    field="active" 
-                    :header="$t('active')"
-                    :showFilterMenu="false" 
-                    style="min-width: 12rem"
-                    sortable
-                >
-                    <template #body="slotProps">
-                        <Tag 
-                            :value="$t(getActiveValue(slotProps.data))"
-                            :severity="getActiveLabel(slotProps.data)" 
-                        />
-                    </template>
-
-                    <template #filter="{ filterModel, filterCallback }">
-                        <Select 
-                            v-model="filterModel.value" 
-                            @change="filterCallback()" 
-                            :options="getBools()" 
-                            placeholder="Select One" 
-                            style="min-width: 12rem" 
-                            :showClear="true"
-                        >
-                            <template #option="slotProps">
-                                <Tag 
-                                    :value="$t(getActiveValue(slotProps.data))"
-                                    :severity="getActiveLabel(slotProps.data)"
-                                />
-                            </template>
-                        </Select>
-                    </template>
-                </Column>
-                <!--<Column
-                    field="active"
-                    :header="$t('active')"
-                    sortable
-                    style="min-width: 6rem"
-                >
-                    <template #body="slotProps">
-                        <Tag
-                            :value="$t(getActiveValue(slotProps.data))"
-                            :severity="getActiveLabel(slotProps.data)"
-                        />
-                    </template>
-                    <template #filter="{ filterModel, filterCallback }">
-                        <Select
-                            v-model="filterModel.value" 
-                            @change="filterCallback()" 
-                            :options="getBools()" 
-                            placeholder="Select One" 
-                            style="min-width: 12rem" 
-                            :showClear="true"
-                        >
-                            <template #option="slotProps">
-                                <Tag 
-                                    :value="$t(getActiveValue(slotProps.data))" 
-                                    :severity="getActiveLabel(slotProps.data)" 
-                                />
-                            </template>
-                        </Select>
-                    </template>
-                </Column>-->
-
                 <Column
                     field="active"
                     :header="$t('active')"

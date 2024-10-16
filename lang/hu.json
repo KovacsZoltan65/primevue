@@ -65,6 +65,7 @@
     "loader": ":data adatok betöltése. Kérjük, várjon.",
     "data_not_found": "Nem található :data.",
     "search_by": "Keresés :data szerint",
+    "current_page_report_template": "{totalRecords}/{first}-{last} :table megjelenítése",
 
     "cancel": "Mégsem",
     "save": "Mentés",

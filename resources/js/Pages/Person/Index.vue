@@ -1,8 +1,8 @@
 <script setup>
-import { computed, ComputedRef, onMounted, ref, reactive } from "vue";
+import { computed, onMounted, ref, reactive } from "vue";
 import { Head } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
-import { FilterMatchMode } from "@primevue/core/api";
+import { FilterMatchMode, FilterOperator } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { trans } from "laravel-vue-i18n";
 import { format } from "date-fns";
@@ -42,6 +42,7 @@ const getBools = () => {
 };
 
 const toast = useToast();
+const loading = ref(true);
 
 const dt = ref();
 
@@ -65,12 +66,7 @@ const person = ref({
 
 const selectedPersons = ref();
 
-const filters = ref({
-    global: {
-        value: null,
-        matchMode: FilterMatchMode.CONTAINS,
-    }
-});
+const filters = ref({});
 
 const submitted = ref(false);
 
@@ -83,7 +79,6 @@ const minDate = format(new Date(validationRules['minDate']), 'yyyy-MM-dd');
 /**
  * A születési dátum érvényesítésének maximális dátuma
  * A maximális dátum 20 évvel korábbi, mint a jelenlegi dátum
- * @type {ComputedRef<String>}
  */
 const maxDate = computed(() => {
     const date = new Date();
@@ -112,24 +107,70 @@ const rules = {
 const v$ = useVuelidate(rules, person);
 
 const fetchItems = async () => {
-    console.log('fetchItems');
+    loading.value = true;
+
+    try {
+        const response = await PersonService.getPersons();
+        persons.value = response.data.data;
+    } catch(error) {
+        console.error("getPersons API Error:", error);
+    } finally {
+        loading.value = false;
+    }
 }
 
 onMounted(() => {
     fetchItems();
 })
 
-const openNew = () => {};
+const openNew = () => {
+    person.value = { ...initialPerson };
+};
+
+const initialPerson = () => {
+    return person.value;
+}
+
+const confirmDeleteSelected = () => {
+    deleteSelectedPersonsDialog.value = true;
+};
 
 const exportCSV = () => {
     dt.value.exportCSV();
 };
+
+const initFilters = () => {
+    filters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: {
+            operator: FilterOperator.AND,
+            constraints: [ { value: null, matchMode: FilterMatchMode.STARTS_WITH }, ],
+        },
+        email: {
+            operator: FilterOperator.AND,
+            constraints: [ { value: null, matchMode: FilterMatchMode.STARTS_WITH }, ],
+        },
+        language: {
+            operator: FilterOperator.AND,
+            constraints: [ { value: null, matchMode: FilterMatchMode.STARTS_WITH }, ],
+        }
+    }
+};
+
+const clearFilter = () => {
+    initFilters();
+};
+
+initFilters();
 
 </script>
 
 <template>
     <AppLayout>
         <Head :title="$t('persons')" />
+
+        {{ $page.props.available_locales }}
+
 
         <div class="card">
             <Toolbar class="md-6">
@@ -161,6 +202,155 @@ const exportCSV = () => {
                     />
                 </template>
             </Toolbar>
+
+            <DataTable
+            ref="dt"
+                v-model:selection="selectedPersons"
+                v-model:filters="filters"
+                :value="persons"
+                dataKey="id" :paginator="true" :rows="10" sortMode="multiple"
+                :filters="filters" filterDisplay="menu"
+                :globalFilterFields="['name', 'email', 'language']"
+                :loading="loading" stripedRows removableSort
+                :rowsPerPageOptions="[5, 10, 25]"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                :currentPageReportTemplate="$t('current_page_report_template', {table: 'aldomain'})"
+            >
+                <!-- FEJLÉC -->
+                <template #header>
+                    <div
+                        class="flex flex-wrap gap-2 items-center justify-between"
+                    >
+                        <!-- SZŰRÉS TÖRLÉSE -->
+                        <Button
+                            type="button"
+                            icon="pi pi-filter-slash"
+                            :label="$t('clear')"
+                            outlined
+                            @click="clearFilter()"
+                        />
+
+                        <!-- FELIRAT -->
+                        <div class="font-semibold text-xl mb-1">
+                            {{ $t("persons_title") }}
+                        </div>
+
+                        <!-- KERESÉS -->
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText
+                                v-model="filters['global'].value"
+                                :placeholder="$t('search')"
+                            />
+                        </IconField>
+                    </div>
+                </template>
+
+                <!-- LAPOZÓ -->
+                <template #paginatorstart>
+                    <Button
+                        type="button"
+                        icon="pi pi-refresh"
+                        text
+                        @click="fetchItems"
+                    />
+                </template>
+                <!-- NINCS ADAT -->
+                <template #empty>{{ $t('data_not_found', {data: 'persons'} ) }}</template>
+                <!-- BETÖLTŐ -->
+                <template #loading>{{ $t('loader', {data: 'Persons'}) }}</template>
+
+                <!-- Checkbox -->
+                <Column
+                    selectionMode="multiple"
+                    style="min-width: 3rem"
+                    :exportable="false"
+                />
+
+                <!-- Nev -->
+                <Column
+                    field="name"
+                    :header="$t('name')"
+                    style="min-width: 12rem" 
+                    sortable
+                >
+                    <template #body="{ data }">{{ data.name }}</template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'name'})"
+                        />
+                    </template>
+                </Column>
+
+                <!-- email -->
+                <Column
+                    field="email"
+                    :header="$t('email')"
+                    style="min-width: 16rem"
+                    sortable
+                >
+                    <template #body="{ data }">{{ data.email }}</template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'email'})"
+                        />
+                    </template>
+                </Column>
+
+                <!-- languages -->
+                <Column
+                    field="language"
+                    :header="$t('language')"
+                    style="min-width: 16rem"
+                    sortable
+                >
+                    <template #body="{ data }">{{ data.language }}</template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'language'})"
+                        />
+                    </template>
+                </Column>
+
+                <!-- languages 2 -->
+                <Column
+                    field="language" sortable
+                    :header="$t('language')"
+                >
+                    <template #body="{ data }">{{ data.language }}</template>
+                    <template #filter="{ filterModel }"></template>
+                </Column>
+
+                <!-- Actions -->
+                <Column :exportable="false" style="min-width: 12rem">
+                    <template #body="slotProps">
+                        <Button
+                            icon="pi pi-pencil"
+                            outlined
+                            rounded
+                            class="mr-2"
+                            @click="editSubdomain(slotProps.data)"
+                        />
+
+                        <!-- Actions -->
+                        <Button
+                            icon="pi pi-trash"
+                            outlined
+                            rounded
+                            severity="danger"
+                            @click="confirmDeleteSubdomain(slotProps.data)"
+                        />
+                    </template>
+                </Column>
+            </DataTable>
         </div>
 
     </AppLayout>

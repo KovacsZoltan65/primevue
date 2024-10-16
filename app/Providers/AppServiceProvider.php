@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
     {
         define('APP_ACTIVE', 1);
         define('APP_INACTIVE', 0);
+        define('APP_DATE_FORMAT', 'yyyy-MM-dd');
 
         $available_locales = config('app.available_locales', ['English' => 'en','Hungarian' => 'hu',]);
         $supported_locales = config('app.supported_locales', ['en', 'hu']);
@@ -37,6 +38,9 @@ class AppServiceProvider extends ServiceProvider
             'available_locales' => $available_locales,
             'supported_locales' => $supported_locales,
             'locale' => $locale,
+            'APP_ACTIVE' => APP_ACTIVE,
+            'APP_INACTIVE' => APP_INACTIVE,
+            'APP_DATE_FORMAT' => APP_DATE_FORMAT,
         ]);
 
         Inertia::share('flash', function(){

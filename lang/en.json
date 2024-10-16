@@ -66,6 +66,7 @@
     "loader": "Loading customers data. Please wait.",
     "data_not_found": "No :data found.",
     "search_by": "Search by :data",
+    "current_page_report_template": "Showing {first} to {last} of {totalRecords} :table",
 
     "cancel": "Cancel",
     "save": "Save",

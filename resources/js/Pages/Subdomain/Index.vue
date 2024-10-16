@@ -91,6 +91,22 @@ const subdomains = ref([]);
  * amelyet a PrimeVue dialog komponensben lesz megjelenítve.
  *
  * @type {ref<Object>}
+ * @property {number} id - Az aldomain azonosítója.
+ * @property {string} subdomain - Az aldomain neve.
+ * @property {string} url - Az aldomain URL-je.
+ * @property {string} name - Az aldomain neve.
+ * @property {string} db_host - Az adatbázis hostja.
+ * @property {number} db_port - Az adatbázis portja.
+ * @property {string} db_name - Az adatbázis neve.
+ * @property {string} db_user - Az adatbázis felhasználója.
+ * @property {string} db_password - Az adatbázis jelszava.
+ * @property {number} notification - Az értesítés állapota.
+ * @property {number} state_id - Az aldomain állapotának azonosítója.
+ * @property {number} is_mirror - Az aldomain tükör-e?
+ * @property {number} sso - Az aldomain SSO-e?
+ * @property {number} acs_id - Az aldomain ACS azonosítója.
+ * @property {number} active - Az aldomain aktív-e?
+ * @property {Date} last_export - Az utolsó export dátuma.
  */
 const subdomain = ref({
     id: null,
@@ -436,40 +452,9 @@ function openNew() {
  * Ez az objektum az új aldomain dialógusablakban szerepl  mez k alapértelmezett értékeit tartalmazza.
  *
  * @type {Object}
- * @property {number} id - Az aldomain azonosítója.
- * @property {string} subdomain - Az aldomain neve.
- * @property {string} url - Az aldomain URL-je.
- * @property {string} name - Az aldomain neve.
- * @property {string} db_host - Az adatbázis hostja.
- * @property {number} db_port - Az adatbázis portja.
- * @property {string} db_name - Az adatbázis neve.
- * @property {string} db_user - Az adatbázis felhasználója.
- * @property {string} db_password - Az adatbázis jelszava.
- * @property {number} notification - Az értesítés állapota.
- * @property {number} state_id - Az aldomain állapotának azonosítója.
- * @property {number} is_mirror - Az aldomain tükör-e?
- * @property {number} sso - Az aldomain SSO-e?
- * @property {number} acs_id - Az aldomain ACS azonosítója.
- * @property {number} active - Az aldomain aktív-e?
- * @property {Date} last_export - Az utolsó export dátuma.
  */
-const initialSubdomain = {
-    id: null,
-    subdomain: "",
-    url: "",
-    name: "",
-    db_host: "",
-    db_port: 3306,
-    db_name: "",
-    db_user: "",
-    db_password: "",
-    notification: 1,
-    state_id: 1,
-    is_mirror: 0,
-    sso: 0,
-    acs_id: 0,
-    active: 1,
-    last_export: null,
+const initialSubdomain = () => {
+    return subdomain;
 };
 
 /**
@@ -680,6 +665,7 @@ const onUpload = () => {
     <AppLayout>
         <Head :title="$t('subdomains')" />
 
+        {{ $page.props }}
         {{ $page.props.available_locales }}
         {{ $page.props.supported_locales }}
         {{ $page.props.locale }}

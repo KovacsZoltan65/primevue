@@ -45,8 +45,8 @@ bootstrap\providers.php
     ]
 php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
 
-
-
+Vite cache törlése:
+rm -rf node_modules/.vite
 
 
 php artisan optimize:clear

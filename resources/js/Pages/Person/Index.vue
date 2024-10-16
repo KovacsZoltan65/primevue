@@ -1,10 +1,12 @@
 <script setup>
-import { computed, onMounted, ref, reactive } from "vue";
+import { computed, ComputedRef, onMounted, ref, reactive } from "vue";
 import { Head } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { trans } from "laravel-vue-i18n";
+import { format } from "date-fns";
+import { hu } from "date-fns/locale";
 
 // Validation
 import useVuelidate from "@vuelidate/core";
@@ -72,14 +74,17 @@ const filters = ref({
 
 const submitted = ref(false);
 
+/**
+ * A születési dátum érvényesítésének minimális dátuma
+ * @type {String}
+ */
+const minDate = format(new Date(validationRules['minDate']), 'yyyy-MM-dd');
 
 /**
- * const minDate = '1950-01-01';
- * const maxDate = () => new Date(Date.now() - 20 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-*/
-
-const minDate = new Date('1950-01-01').toISOString().split('T')[0];
-
+ * A születési dátum érvényesítésének maximális dátuma
+ * A maximális dátum 20 évvel korábbi, mint a jelenlegi dátum
+ * @type {ComputedRef<String>}
+ */
 const maxDate = computed(() => {
     const date = new Date();
     date.setFullYear(date.getFullYear() - 20);

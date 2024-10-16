@@ -2,6 +2,8 @@
     "minStringLength": 3,
     "maxStringLength": 255,
 
+    "minDate": "1950-01-01",
+
     "DecLength": 10,
     "DecDigits": 2,
 

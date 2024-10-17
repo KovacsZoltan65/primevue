@@ -3,11 +3,11 @@
     <div class="card">
         <DataTable 
             v-model:filters="filters" 
-            v-model:selection="selectedCustomers" 
-            :value="customers" paginator 
+            :value="customers" paginator showGridlines 
             :rows="10" 
-            dataKey="id" 
-            filterDisplay="menu"
+            dataKey="id"
+            filterDisplay="menu" 
+            :loading="loading" 
             :globalFilterFields="['name', 'country.name', 'representative.name', 'balance', 'status']"
         >
             <template #header>
@@ -22,10 +22,10 @@
                 </div>
             </template>
             <template #empty> No customers found. </template>
+            <template #loading> Loading customers data. Please wait. </template>
 
-            <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-
-            <Column field="name" header="Name" sortable style="min-width: 14rem">
+            <!-- name -->
+            <Column field="name" header="Name" style="min-width: 12rem">
                 <template #body="{ data }">
                     {{ data.name }}
                 </template>
@@ -33,7 +33,9 @@
                     <InputText v-model="filterModel.value" type="text" placeholder="Search by name" />
                 </template>
             </Column>
-            <Column header="Country" sortable sortField="country.name" filterField="country.name" style="min-width: 14rem">
+
+            <!-- country -->
+            <Column header="Country" filterField="country.name" style="min-width: 12rem">
                 <template #body="{ data }">
                     <div class="flex items-center gap-2">
                         <img alt="flag" src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png" :class="`flag flag-${data.country.code}`" style="width: 24px" />
@@ -43,9 +45,19 @@
                 <template #filter="{ filterModel }">
                     <InputText v-model="filterModel.value" type="text" placeholder="Search by country" />
                 </template>
+                <template #filterclear="{ filterCallback }">
+                    <Button type="button" icon="pi pi-times" @click="filterCallback()" severity="secondary"></Button>
+                </template>
+                <template #filterapply="{ filterCallback }">
+                    <Button type="button" icon="pi pi-check" @click="filterCallback()" severity="success"></Button>
+                </template>
+                <template #filterfooter>
+                    <div class="px-4 pt-0 pb-4 text-center">Customized Buttons</div>
+                </template>
             </Column>
 
-            <Column header="Agent" sortable sortField="representative.name" filterField="representative" :showFilterMatchModes="false" :filterMenuStyle="{ width: '14rem' }" style="min-width: 14rem">
+            <!-- Agent -->
+            <Column header="Agent" filterField="representative" :showFilterMatchModes="false" :filterMenuStyle="{ width: '14rem' }" style="min-width: 14rem">
                 <template #body="{ data }">
                     <div class="flex items-center gap-2">
                         <img :alt="data.representative.name" :src="`https://primefaces.org/cdn/primevue/images/avatar/${data.representative.image}`" style="width: 32px" />
@@ -64,10 +76,9 @@
                 </template>
             </Column>
 
-            <!-- date -->
+            <!-- Date -->
             <Column 
-                field="date" 
-                header="Date" sortable 
+                header="Date" 
                 filterField="date" 
                 dataType="date" 
                 style="min-width: 10rem"
@@ -84,7 +95,8 @@
                 </template>
             </Column>
 
-            <Column field="balance" header="Balance" sortable filterField="balance" dataType="numeric" style="min-width: 10rem">
+            <!-- Balance -->
+            <Column header="Balance" filterField="balance" dataType="numeric" style="min-width: 10rem">
                 <template #body="{ data }">
                     {{ formatCurrency(data.balance) }}
                 </template>
@@ -93,37 +105,22 @@
                 </template>
             </Column>
 
-            <Column
-                header="Status"
-                field="status" sortable
-                :filterMenuStyle="{ width: '14rem' }"
-                style="min-width: 12rem"
-            >
+            <!-- Status -->
+            <Column header="Status" field="status" :filterMenuStyle="{ width: '14rem' }" style="min-width: 12rem">
                 <template #body="{ data }">
                     <Tag :value="data.status" :severity="getSeverity(data.status)" />
                 </template>
                 <template #filter="{ filterModel }">
-                    <Select
-                        v-model="filterModel.value"
-                        :options="statuses"
-                        placeholder="Select One" showClear
-                    >
+                    <Select v-model="filterModel.value" :options="statuses" placeholder="Select One" showClear>
                         <template #option="slotProps">
-                            <Tag
-                                :value="slotProps.option"
-                                :severity="getSeverity(slotProps.option)"
-                            />
+                            <Tag :value="slotProps.option" :severity="getSeverity(slotProps.option)" />
                         </template>
                     </Select>
                 </template>
             </Column>
 
-            <Column
-                field="activity"
-                header="Activity" sortable
-                :showFilterMatchModes="false"
-                style="min-width: 12rem"
-            >
+            <!-- Activity -->
+            <Column field="activity" header="Activity" :showFilterMatchModes="false" style="min-width: 12rem">
                 <template #body="{ data }">
                     <ProgressBar :value="data.activity" :showValue="false" style="height: 6px"></ProgressBar>
                 </template>
@@ -136,12 +133,16 @@
                 </template>
             </Column>
 
-            <Column headerStyle="width: 5rem; text-align: center" bodyStyle="text-align: center; overflow: visible">
-                <template #body>
-                    <Button type="button" icon="pi pi-cog" rounded />
+            <!-- Verified -->
+            <Column field="verified" header="Verified" dataType="boolean" bodyClass="text-center" style="min-width: 8rem">
+                <template #body="{ data }">
+                    <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.verified, 'pi-times-circle text-red-500': !data.verified }"></i>
+                </template>
+                <template #filter="{ filterModel }">
+                    <label for="verified-filter" class="font-bold"> Verified </label>
+                    <Checkbox v-model="filterModel.value" :indeterminate="filterModel.value === null" binary inputId="verified-filter" />
                 </template>
             </Column>
-
         </DataTable>
     </div>
 </template>
@@ -152,7 +153,6 @@ import { CustomerService } from '@/service/CustomerService';
 import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
 
 const customers = ref();
-const selectedCustomers = ref();
 const filters = ref();
 const representatives = ref([
     { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -167,10 +167,12 @@ const representatives = ref([
     { name: 'XuXue Feng', image: 'xuxuefeng.png' }
 ]);
 const statuses = ref(['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal']);
+const loading = ref(true);
 
 onMounted(() => {
-    CustomerService.getCustomersLarge().then((data) => {
+    CustomerService.getCustomersMedium().then((data) => {
         customers.value = getCustomers(data);
+        loading.value = false;
     });
 });
 

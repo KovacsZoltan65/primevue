@@ -24,6 +24,7 @@ import InputIcon from "primevue/inputicon";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
+import MultiSelect from "primevue/multiselect";
 import Tag from "primevue/tag";
 
 const props = defineProps({});
@@ -63,6 +64,11 @@ const person = ref({
     birthdate: "",
     active: 1,
 });
+
+const languages = ref([
+    { name: "hu", code: "hu" },
+    { name: "en", code: "en" },
+]);
 
 const selectedPersons = ref();
 
@@ -150,10 +156,7 @@ const initFilters = () => {
             operator: FilterOperator.AND,
             constraints: [ { value: null, matchMode: FilterMatchMode.STARTS_WITH }, ],
         },
-        language: {
-            operator: FilterOperator.AND,
-            constraints: [ { value: null, matchMode: FilterMatchMode.STARTS_WITH }, ],
-        }
+        language: { value: null, matchMode: FilterMatchMode.IN }
     }
 };
 
@@ -210,7 +213,7 @@ initFilters();
                 :value="persons"
                 dataKey="id" :paginator="true" :rows="10" sortMode="multiple"
                 :filters="filters" filterDisplay="menu"
-                :globalFilterFields="['name', 'email', 'language']"
+                :globalFilterFields="['name', 'email', 'language.code']"
                 :loading="loading" stripedRows removableSort
                 :rowsPerPageOptions="[5, 10, 25]"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -273,7 +276,7 @@ initFilters();
                 <Column
                     field="name"
                     :header="$t('name')"
-                    style="min-width: 12rem" 
+                    style="min-width: 12rem"
                     sortable
                 >
                     <template #body="{ data }">{{ data.name }}</template>
@@ -305,28 +308,42 @@ initFilters();
 
                 <!-- languages -->
                 <Column
-                    field="language"
-                    :header="$t('language')"
-                    style="min-width: 16rem"
-                    sortable
+                    header="language" sortable
+                    sortField="language.code"
+                    filterField="language"
+                    :showFilterMatchModes="false"
+                    :filterMenuStyle="{ with: '14rem' }"
+                    style="min-width: 14rem"
                 >
-                    <template #body="{ data }">{{ data.language }}</template>
-                    <template #filter="{ filterModel }">
-                        <InputText
-                            v-model="filterModel.value"
-                            type="text"
-                            :placeholder="$t('search_by', {data: 'language'})"
-                        />
+                    <template #body="{ data }">
+                        {{ data.language }}
                     </template>
-                </Column>
 
-                <!-- languages 2 -->
-                <Column
-                    field="language" sortable
-                    :header="$t('language')"
-                >
-                    <template #body="{ data }">{{ data.language }}</template>
-                    <template #filter="{ filterModel }"></template>
+                    <template #filter="{ filterModel }">
+                        <Select
+                            id="language"
+                            v-model="filterModel.value"
+                            :options="languages"
+                            optionLabel="code"
+                            optionValue="code"
+                            placeholder="Any"
+                        />
+                        <!--
+                        <MultiSelect
+                            v-model="filterModel.value"
+                            :options="languages"
+                            optionLabel="code"
+                            placeholder="Any"
+                        >
+                            <template #option="slotProps">
+                                <div class="flex items-center gap-2">
+                                    <span>{{ slotProps.option.code }}</span>
+                                </div>
+                            </template>
+                        </MultiSelect>
+                        -->
+                    </template>
+
                 </Column>
 
                 <!-- Actions -->

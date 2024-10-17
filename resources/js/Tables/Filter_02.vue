@@ -1,16 +1,8 @@
 
 <template>
     <div class="card">
-        <DataTable
-            v-model:filters="filters"
-            v-model:selection="selectedCustomers"
-            :value="customers" paginator
-            :rows="10"
-            dataKey="id"
-            filterDisplay="menu"
-            :globalFilterFields="['name', 'country.name', 'representative.name', 'balance', 'status']"
-        >
-
+        <DataTable v-model:filters="filters" v-model:selection="selectedCustomers" :value="customers" paginator :rows="10" dataKey="id" filterDisplay="menu"
+            :globalFilterFields="['name', 'country.name', 'representative.name', 'balance', 'status']">
             <template #header>
                 <div class="flex justify-between">
                     <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined @click="clearFilter()" />
@@ -22,11 +14,8 @@
                     </IconField>
                 </div>
             </template>
-
             <template #empty> No customers found. </template>
-
             <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-
             <Column field="name" header="Name" sortable style="min-width: 14rem">
                 <template #body="{ data }">
                     {{ data.name }}
@@ -35,7 +24,6 @@
                     <InputText v-model="filterModel.value" type="text" placeholder="Search by name" />
                 </template>
             </Column>
-
             <Column header="Country" sortable sortField="country.name" filterField="country.name" style="min-width: 14rem">
                 <template #body="{ data }">
                     <div class="flex items-center gap-2">
@@ -48,44 +36,21 @@
                 </template>
             </Column>
 
-            <!-- AGENT -->
-            <Column
-                header="Agent" sortable
-                sortField="representative.name"
-                filterField="representative"
-                :showFilterMatchModes="false"
-                :filterMenuStyle="{ width: '14rem' }"
-                style="min-width: 14rem"
-            >
+            <Column header="Agent" sortable sortField="representative.name" filterField="representative" :showFilterMatchModes="false" :filterMenuStyle="{ width: '14rem' }" style="min-width: 14rem">
                 <template #body="{ data }">
                     <div class="flex items-center gap-2">
-                        <img
-                            :alt="data.representative.name"
-                            :src="`https://primefaces.org/cdn/primevue/images/avatar/${data.representative.image}`"
-                            style="width: 32px"
-                        />
+                        <img :alt="data.representative.name" :src="`https://primefaces.org/cdn/primevue/images/avatar/${data.representative.image}`" style="width: 32px" />
                         <span>{{ data.representative.name }}</span>
                     </div>
                 </template>
-
                 <template #filter="{ filterModel }">
-                    <MultiSelect
-                        v-model="filterModel.value"
-                        :options="representatives"
-                        optionLabel="name"
-                        placeholder="Any"
-                    >
+                    <MultiSelect v-model="filterModel.value" :options="representatives" optionLabel="name" placeholder="Any">
                         <template #option="slotProps">
                             <div class="flex items-center gap-2">
-                                <img
-                                    :alt="slotProps.option.name"
-                                    :src="`https://primefaces.org/cdn/primevue/images/avatar/${slotProps.option.image}`"
-                                    style="width: 32px"
-                                />
+                                <img :alt="slotProps.option.name" :src="`https://primefaces.org/cdn/primevue/images/avatar/${slotProps.option.image}`" style="width: 32px" />
                                 <span>{{ slotProps.option.name }}</span>
                             </div>
                         </template>
-
                     </MultiSelect>
                 </template>
             </Column>
@@ -98,6 +63,7 @@
                     <DatePicker v-model="filterModel.value" dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" />
                 </template>
             </Column>
+
             <Column field="balance" header="Balance" sortable filterField="balance" dataType="numeric" style="min-width: 10rem">
                 <template #body="{ data }">
                     {{ formatCurrency(data.balance) }}
@@ -106,19 +72,38 @@
                     <InputNumber v-model="filterModel.value" mode="currency" currency="USD" locale="en-US" />
                 </template>
             </Column>
-            <Column header="Status" field="status" sortable :filterMenuStyle="{ width: '14rem' }" style="min-width: 12rem">
+
+            <Column
+                header="Status"
+                field="status" sortable
+                :filterMenuStyle="{ width: '14rem' }"
+                style="min-width: 12rem"
+            >
                 <template #body="{ data }">
                     <Tag :value="data.status" :severity="getSeverity(data.status)" />
                 </template>
                 <template #filter="{ filterModel }">
-                    <Select v-model="filterModel.value" :options="statuses" placeholder="Select One" showClear>
+                    <Select
+                        v-model="filterModel.value"
+                        :options="statuses"
+                        placeholder="Select One" showClear
+                    >
                         <template #option="slotProps">
-                            <Tag :value="slotProps.option" :severity="getSeverity(slotProps.option)" />
+                            <Tag
+                                :value="slotProps.option"
+                                :severity="getSeverity(slotProps.option)"
+                            />
                         </template>
                     </Select>
                 </template>
             </Column>
-            <Column field="activity" header="Activity" sortable :showFilterMatchModes="false" style="min-width: 12rem">
+
+            <Column
+                field="activity"
+                header="Activity" sortable
+                :showFilterMatchModes="false"
+                style="min-width: 12rem"
+            >
                 <template #body="{ data }">
                     <ProgressBar :value="data.activity" :showValue="false" style="height: 6px"></ProgressBar>
                 </template>
@@ -130,6 +115,7 @@
                     </div>
                 </template>
             </Column>
+
             <Column headerStyle="width: 5rem; text-align: center" bodyStyle="text-align: center; overflow: visible">
                 <template #body>
                     <Button type="button" icon="pi pi-cog" rounded />

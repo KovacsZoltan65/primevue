@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Person;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePersonRequest extends FormRequest
 {
@@ -22,10 +24,13 @@ class UpdatePersonRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'email' => 'required|email',
-            'password' => 'required',
-            'birthdate' => 'date',
+            'name'      => ['required','string'],
+            'email'     => [
+                'required','email',
+                Rule::unique(Person::class)->ignore($this->id)
+            ],
+            'password'  => ['required'],
+            'birthdate' => ['date'],
         ];
     }
 }

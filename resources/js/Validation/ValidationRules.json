@@ -3,7 +3,16 @@
     "maxStringLength": 255,
 
     "minDate": "1950-01-01",
+    
+    "int_false": 0,
+    "int_true": 1,
 
+    "bool_false": 0,
+    "bool_true": 1,
+
+    "int_0": 0,
+    "int_1": 1,
+    
     "DecLength": 10,
     "DecDigits": 2,
 

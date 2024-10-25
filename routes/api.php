@@ -8,6 +8,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\SubdomainController;
@@ -29,6 +30,22 @@ Route::get('/user', function (Request $request) {
  */
 Route::get('/languages', [LanguageController::class, 'getLanguages'])->name('get.languages');
 
+/**
+ * =======================================================
+ * MENÜ
+ * =======================================================
+ */
+//Route::get('/menu-items', [MenuController::class,'getMenu'])->name('menu.get');
+Route::get('/menu-items', [MenuController::class, 'getSortedMenuItems'])->name('get.menu');
+/*
+Route::prefix('admin/menu')->group(function () {
+    Route::get('/', [MenuController::class, 'index'])->name('menu.index'); // Menüpontok listázása
+    Route::post('/', [MenuController::class, 'store'])->name('menu.store'); // Új menüpont létrehozása
+    Route::get('/{menuItem}', [MenuController::class, 'show'])->name('menu.show'); // Egyedi menüpont megtekintése
+    Route::put('/{menuItem}', [MenuController::class, 'update'])->name('menu.update'); // Menüpont frissítése
+    Route::delete('/{menuItem}', [MenuController::class, 'destroy'])->name('menu.destroy'); // Menüpont törlése
+});
+*/
 /**
  * =======================================================
  * COMPANIES

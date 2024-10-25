@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import AppMenuItem from "./AppMenuItem.vue";
-import { MenuService } from "@/service/MenuService";
+import MenuService from "@/service/MenuService";
 
 /**
  * Tároló a MenuService-ből letöltött menüelemek tárolásához.
@@ -10,18 +10,23 @@ import { MenuService } from "@/service/MenuService";
  */
 const menuItems = ref();
 
+const fetchItems = () => {
+    MenuService.getMenuItems()
+    .then((response) => {
+        menuItems.value = response.data;
+console.log(menuItems.value);
+    })
+    .catch((error) => {
+        console.error("getMenuItems API Error:", error);
+    });
+}
+
 /**
  * Ez a funkció akkor hívódik meg, amikor az összetevő fel van szerelve.
  * Lekéri a menüelemeket a MenuService-ből, és a menuItems reaktív változóban tárolja.
  */
 onMounted(() => {
-    // A menüelemek lekérése a MenuService-ből.
-    // A MenuService.getMenuItems() metódus egy ígéretet ad vissza, amely feloldja a menüadatokat.
-    MenuService.getMenuItems().then((data) => {
-        // Tárolja a menüadatokat a menuItems reactive változóban.
-        // A menuItems változó a menüelemek megjelenítésére szolgál a sablonban.
-        menuItems.value = data;
-    });
+    fetchItems();
 });
 </script>
 

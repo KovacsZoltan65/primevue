@@ -119,7 +119,9 @@ watch(
  * @return {void}
  */
 function itemClick(event, item) {
-    // Ellenőrzi, hogy a kattintott elem nem letiltott, majd megszakítja a kattintás feldolgozását.
+    // Ellenőrzi, hogy a kattintott elem nem letiltott,
+    // majd megszakítja a kattintás feldolgozását.
+
     if (item.disabled) {
         event.preventDefault();
         return;
@@ -143,7 +145,7 @@ function itemClick(event, item) {
     // Meghatározza a kattintott elem kulcsát.
     // Ha a kattintott elem almenüelemeket tartalmaz, akkor az itemKey alapján a parentItemKey-t használja.
     // Ha nem, akkor az itemKey-t használja.
-    const foundItemKey = item.items
+    const foundItemKey = item.children && item.children.length > 0
         ? isActiveMenu.value
             ? props.parentItemKey
             : itemKey
@@ -183,8 +185,8 @@ function checkActiveRoute(item) {
         </div>
 
         <a
-            v-if="(!item.to || item.items) && item.visible !== false"
-            :href="item.url"
+            v-if="item.visible !== false"
+            :href="item.to || item.url"
             @click="itemClick($event, item, index)"
             :class="item.class"
             :target="item.target"
@@ -194,47 +196,23 @@ function checkActiveRoute(item) {
             <span class="layout-menuitem-text">{{ item.label }}</span>
             <i
                 class="pi pi-fw pi-angle-down layout-submenu-toggler"
-                v-if="item.items"
+                v-if="item.children && item.children.length > 0"
             ></i>
         </a>
-        <!--
-        <a v-if="item.to && !item.items && item.visible !== false" 
-           @click="itemClick($event, item, index)" 
-           :class="[item.class, { 'active-route': checkActiveRoute(item) }]" 
-           tabindex="0" :to="item.to">
-            <i :class="item.icon" class="layout-menuitem-icon"></i>
-            <span class="layout-menuitem-text">{{ $t(item.label) }}</span>
-            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
-        </a>
-    -->
-        <a
-            v-if="item.to && !item.items && item.visible !== false"
-            @click="itemClick($event, item, index)"
-            :class="[item.class, { 'active-route': checkActiveRoute(item) }]"
-            tabindex="0"
-            :href="item.to"
-        >
-            <i :class="item.icon" class="layout-menuitem-icon"></i>
-            <span class="layout-menuitem-text">{{ $t(item.label) }}</span>
-            <i
-                class="pi pi-fw pi-angle-down layout-submenu-toggler"
-                v-if="item.items"
-            ></i>
-        </a>
+
         <Transition
-            v-if="item.items && item.visible !== false"
+            v-if="item.children && item.children.length > 0 && item.visible !== false"
             name="layout-submenu"
         >
             <ul v-show="root ? true : isActiveMenu" class="layout-submenu">
-                <app-menu-item
-                    v-for="(child, i) in item.items"
+                <AppMenuItem
+                    v-for="(child, i) in item.children"
                     :key="child"
                     :index="i"
                     :item="child"
                     :parentItemKey="itemKey"
                     :root="false"
-                >
-                </app-menu-item>
+                ></AppMenuItem>
             </ul>
         </Transition>
     </li>

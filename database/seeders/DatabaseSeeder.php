@@ -27,7 +27,9 @@ class DatabaseSeeder extends Seeder
 
             //PersonSeeder::class,            // - Ne változtasd meg a sorrendet!!
             //EntitySeeder::class,            // - Ne változtasd meg a sorrendet!!
-            PersonCompanyEntitySeeder::class
+            PersonCompanyEntitySeeder::class,
+                
+            MenuItemSeeder::class,
         ]);
 
         // User::factory(10)->create();

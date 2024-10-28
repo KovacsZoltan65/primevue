@@ -33,6 +33,7 @@ const fetchItems = () => {
             loading.value = false;
         });
 };
+
 /*
 const columns = [
     { field: 'name', header: 'Name' },
@@ -42,20 +43,60 @@ const columns = [
 ];
 */
 
+/**
+ * Inicializálja az adattábla szűrőit.
+ * 
+ * Ez a funkció minden oszlophoz beállítja az alapértelmezett szűrőértékeket és az illesztési módokat
+ * az adattáblázatban, amely lehetővé teszi az adatok keresését és szűrését.
+ */
 const initFilters = () => {
     filters.value = {
-        global:    { value: null, matchMode: FilterMatchMode.CONTAINS },
-        name:      { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-        email:     { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-        language:  { value: null, matchMode: FilterMatchMode.EQUALS },
-        birthdate: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] }
+        // Globális szűrő minden oszlopra alkalmazva
+        global: { 
+            value: null, 
+            matchMode: FilterMatchMode.CONTAINS 
+        },
+        // Szűrje a 'név' oszlopot, a megadott értékkel kezdődő bejegyzéseket
+        name: { 
+            value: null, 
+            matchMode: FilterMatchMode.STARTS_WITH 
+        },
+        // Szűrje az 'e-mail' oszlopot, az adott értékkel kezdődő bejegyzéseket
+        email: { 
+            value: null, 
+            matchMode: FilterMatchMode.STARTS_WITH 
+        },
+        // Szűrje a „nyelv” oszlopot, és a megadott értékkel megegyező bejegyzéseket adja meg
+        language: { 
+            value: null, 
+            matchMode: FilterMatchMode.EQUALS 
+        },
+        // Szűrje a „születési dátum” oszlopot, amely megköveteli az összes megkötés teljesítését
+        birthdate: { 
+            operator: FilterOperator.AND, 
+            constraints: [
+                { 
+                    value: null, 
+                    matchMode: FilterMatchMode.EQUALS 
+                }
+            ] 
+        }
     };
 };
 
 initFilters();
 
+/**
+ * Leképezi a személyek adatait egy használhatóbb formátumra.
+ *
+ * @param {Array|Object} data A személyek adatai
+ * @returns {Array} A feltérképezett személyek adatai
+ */
 const getPersons = (data) => {
     return [...(data || [])].map((d) => {
+        // Leképezi a személyek születési dátumát egy Date objektumra
+        // A személyek születési dátuma a szerveren egy ISO 8601 formátumú dátumként lesz elmentve
+        // A Date konstruktorral leképezzük ezt a szerveren elmentett dátumot egy Date objektumra
         d.birthdate = new Date(d.birthdate);
 
         return d;
@@ -66,15 +107,13 @@ onMounted(() => {
     fetchItems();
 })
 
+/**
+ * A dátumot 'MM/nn/yyyy' formában formálja.
+ *
+ * @param {string|Date} value A formázandó dátum
+ * @returns {string} A formázott dátum
+ */
 const formatDate = (value) => {
-    /*
-    return value.toLocaleDateString('en-US', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    });
-    */
-    
     const date = new Date(value);
 
     return date.toLocaleDateString('en-US', {
@@ -82,7 +121,6 @@ const formatDate = (value) => {
         month: '2-digit',
         year: 'numeric'
     });
-    
 };
 
 </script>

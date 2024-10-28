@@ -2,9 +2,16 @@
 import { onMounted, ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
+import { useToast } from "primevue/usetoast";
+import { trans } from "laravel-vue-i18n";
 
 import AppLayout from '@/Layouts/AppLayout.vue';
 import PersonService from '@/service/PersonService';
+
+// Validation
+import useVuelidate from "@vuelidate/core";
+import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
+import validationRules from "../../../Validation/ValidationRules.json";
 
 import Button from 'primevue/button';
 import DataTable from 'primevue/datatable';
@@ -16,11 +23,31 @@ import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
 import Checkbox from 'primevue/checkbox';
 import DatePicker from 'primevue/datepicker';
+import { helpers } from '@vuelidate/validators';
 
 const persons = ref([]);
 const languages = ref(['hu', 'en']);
 const loading = ref(true);
 const filters = ref();
+const dt = ref();
+const selectedPersons = ref();
+const submitted = ref(false);
+
+const toast = useToast();
+
+const personDialog = ref(false);
+const deleteSelectedPersonsDialog = ref(false);
+const deletePersonDialog = ref(false);
+
+const person = ref({
+    id: null,
+    name: '',
+    email: '',
+    password: '',
+    language: '',
+    birthdate: '',
+    active: 1
+})
 
 const fetchItems = () => {
     PersonService.getPersons()
@@ -49,42 +76,42 @@ const columns = [
  * Ez a funkció minden oszlophoz beállítja az alapértelmezett szűrőértékeket és az illesztési módokat
  * az adattáblázatban, amely lehetővé teszi az adatok keresését és szűrését.
  */
-const initFilters = () => {
-    filters.value = {
+const filter = ref({
         // Globális szűrő minden oszlopra alkalmazva
-        global: { 
-            value: null, 
-            matchMode: FilterMatchMode.CONTAINS 
-        },
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         // Szűrje a 'név' oszlopot, a megadott értékkel kezdődő bejegyzéseket
-        name: { 
-            value: null, 
-            matchMode: FilterMatchMode.STARTS_WITH 
-        },
+        name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
         // Szűrje az 'e-mail' oszlopot, az adott értékkel kezdődő bejegyzéseket
-        email: { 
-            value: null, 
-            matchMode: FilterMatchMode.STARTS_WITH 
-        },
+        email: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
         // Szűrje a „nyelv” oszlopot, és a megadott értékkel megegyező bejegyzéseket adja meg
-        language: { 
-            value: null, 
-            matchMode: FilterMatchMode.EQUALS 
-        },
+        language: { value: null, matchMode: FilterMatchMode.EQUALS },
         // Szűrje a „születési dátum” oszlopot, amely megköveteli az összes megkötés teljesítését
-        birthdate: { 
-            operator: FilterOperator.AND, 
-            constraints: [
-                { 
-                    value: null, 
-                    matchMode: FilterMatchMode.EQUALS 
-                }
-            ] 
-        }
-    };
-};
+        birthdate: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] }
+    }
+);
 
-initFilters();
+const rules = {
+    name: {
+        required: helpers.withMessage(trans('validate_name'), required),
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
+        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
+    },
+    email: {
+        required: '',
+    },
+    password: {
+        required: helpers.withMessage(trans('validate_password'), required),
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
+        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
+    },
+    language: {
+        required: '',
+    },
+    birthdate: {
+        required: '',
+    },
+    active: {}
+}
 
 /**
  * Leképezi a személyek adatait egy használhatóbb formátumra.
@@ -123,6 +150,20 @@ const formatDate = (value) => {
     });
 };
 
+const exportCSV = () => {
+    dt.value.exportCSV();
+}
+
+const deleteSelectedPersons = () => {
+    PersonService.deletePersons(selectedPersons.value)
+        .then((response) => {
+            fetchItems();
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
+
 </script>
 
 <template>
@@ -142,6 +183,8 @@ const formatDate = (value) => {
                         :label="$t('delete')"
                         icon="pi pi-trash"
                         severity="secondary"
+                        @click="deleteSelectedPersons"
+                        :disabled="!selectedPersons || !selectedPersons.length"
                     />
                 </template>
                 <template #end>
@@ -154,7 +197,8 @@ const formatDate = (value) => {
             </Toolbar>
 
             <DataTable 
-                v-model:filters="filters" 
+                :filters="filters" 
+                v-model:selection="selectedPersons"
                 :value="persons" paginator 
                 :rows="10" 
                 dataKey="id" 
@@ -175,6 +219,13 @@ const formatDate = (value) => {
                         </IconField>
                     </div>
                 </template>
+
+                <!-- checkbox -->
+                <Column 
+                    selectionMode="multiple" 
+                    style="min-width: 3rem" 
+                    :exportable="false"
+                />
 
                 <!-- name -->
                 <Column 

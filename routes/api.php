@@ -35,8 +35,11 @@ Route::get('/languages', [LanguageController::class, 'getLanguages'])->name('get
  * MENÜ
  * =======================================================
  */
-//Route::get('/menu-items', [MenuController::class,'getMenu'])->name('menu.get');
 Route::get('/menu-items', [MenuController::class, 'getSortedMenuItems'])->name('get.menu');
+
+Route::resource('menu-items', MenuController::class);
+
+
 /*
 Route::prefix('admin/menu')->group(function () {
     Route::get('/', [MenuController::class, 'index'])->name('menu.index'); // Menüpontok listázása

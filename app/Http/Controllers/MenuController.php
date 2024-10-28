@@ -11,7 +11,7 @@ class MenuController extends Controller
     // Listázás adminisztrációs nézethez
     public function index()
     {
-        $menuItems = MenuItem::all();
+        $menuItems = MenuItem::with('children')->whereNull('parent_id')->get();
         return response()->json($menuItems);
     }
 
@@ -26,9 +26,10 @@ class MenuController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'icon' => 'nullable|string|max:255',
             'url' => 'nullable|string|max:255',
-            'parent_id' => 'nullable|exists:menu_items,id',
-            'default_weight' => 'required|integer',
+            'default_weight' => 'nullable|integer',
+            'parent_id' => 'nullable|exists:menu_items,id'
         ]);
 
         $menuItem = MenuItem::create($validated);
@@ -53,7 +54,7 @@ class MenuController extends Controller
     public function destroy(MenuItem $menuItem)
     {
         $menuItem->delete();
-        return response()->json(null, 204);
+        return response()->noContent();
     }
     
     public function getMenu()
@@ -65,32 +66,11 @@ class MenuController extends Controller
     
     public function getSortedMenuItems()
     {
-\DB::enableQueryLog(); // Enable query log
-        // Lekéri a menüpontokat, és azok hierarchiáját rendezett sorrendben
         $menuItems = MenuItem::whereNull('parent_id')
             ->with(['children'])
             ->orderBy('default_weight', 'asc')
             ->get();
-        /*
-        $menuItems = MenuItem::with(['children' => function ($query) {
-                $query->withCount(['usages as total_usage' => function($query) {
-                    $query->where('user_id', auth()->id());
-                }])->orderByDesc('total_usage')
-                  ->orderBy('default_weight');
-            }])
-            ->whereNull('parent_id') // Csak a főmenüpontokat kérdezi le, amelyeknek nincs szülőjük
-            ->withCount(['usages as total_usage' => function($query) {
-                $query->where('user_id', auth()->id());
-            }])
-            ->orderByDesc('total_usage')
-            ->orderBy('default_weight')
-            ->get();
-        */
-\Log::info( print_r(\DB::getQueryLog(), true)); // Show results of log
-\DB::disableQueryLog();
-\Log::info( print_r( json_encode($menuItems) , true) );
-
-        //return $menuItems;
+        
         return response()->json($menuItems);
     }
     

@@ -45,8 +45,11 @@ bootstrap\providers.php
 php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
 
 
-
-
+Lekérdezés kiírása:
+\DB::enableQueryLog();
+ADATLEKÉRÉS ...
+\Log::info( print_r(\DB::getQueryLog(), true)); // Show results of log
+\DB::disableQueryLog();
 
 php artisan optimize:clear
 

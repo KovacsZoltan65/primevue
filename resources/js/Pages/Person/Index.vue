@@ -11,7 +11,7 @@ import PersonService from '@/service/PersonService';
 // Validation
 import useVuelidate from "@vuelidate/core";
 import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
-import validationRules from "../../../Validation/ValidationRules.json";
+import validationRules from "@/Validation/ValidationRules.json"
 
 import Button from 'primevue/button';
 import DataTable from 'primevue/datatable';
@@ -23,12 +23,11 @@ import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
 import Checkbox from 'primevue/checkbox';
 import DatePicker from 'primevue/datepicker';
-import { helpers } from '@vuelidate/validators';
 
 const persons = ref([]);
 const languages = ref(['hu', 'en']);
 const loading = ref(true);
-const filters = ref();
+//const filters = ref();
 const dt = ref();
 const selectedPersons = ref();
 const submitted = ref(false);
@@ -76,7 +75,7 @@ const columns = [
  * Ez a funkció minden oszlophoz beállítja az alapértelmezett szűrőértékeket és az illesztési módokat
  * az adattáblázatban, amely lehetővé teszi az adatok keresését és szűrését.
  */
-const filter = ref({
+const filters = ref({
         // Globális szűrő minden oszlopra alkalmazva
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         // Szűrje a 'név' oszlopot, a megadott értékkel kezdődő bejegyzéseket
@@ -101,14 +100,14 @@ const rules = {
     },
     password: {
         required: helpers.withMessage(trans('validate_password'), required),
-        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
-        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
+        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.password', { min: $params.min }), minLength(validationRules.password_min_length)),
+        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.password', { max: $params.max }), maxLength(validationRules.password_max_length)),
     },
     language: {
-        required: '',
+        required: helpers.withMessage(trans('validate_required'), required),
     },
     birthdate: {
-        required: '',
+        required: helpers.withMessage(trans('validate_required'), required),
     },
     active: {}
 }
@@ -131,6 +130,7 @@ const getPersons = (data) => {
 }
 
 onMounted(() => {
+    loading.value = true;
     fetchItems();
 })
 

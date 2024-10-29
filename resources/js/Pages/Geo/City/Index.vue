@@ -95,6 +95,8 @@ const dt = ref();
  */
 const cities = ref();
 
+const loading = ref(true);
+
 /**
  * Reaktív hivatkozás a város adatainak megjelenítő párbeszédpanel megnyitásához.
  *
@@ -214,6 +216,8 @@ const fetchItems = () => {
         .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon
             console.error("getCities API Error:", error);
+        }).finally(() => {
+            loading.value = false;
         });
 };
 
@@ -226,6 +230,8 @@ const fetchItems = () => {
  * @return {void}
  */
 onMounted(() => {
+    loading.value = true;
+
     fetchItems();
 });
 
@@ -492,6 +498,7 @@ const getActiveValue = (city) =>
                 :paginator="true"
                 :rows="10"
                 :filters="filters"
+                :loading="loading"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} cities"

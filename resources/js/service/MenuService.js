@@ -1,32 +1,49 @@
-import BaseService from "./BaseService";
-
-class MenuService extends BaseService {
-    constructor() {
-        super();
-    }
+export const MenuService = {
+    getMenuData() {
+        return [
+            {
+                label: "home",
+                items: [
+                    { label: "dashboard", icon: "pi pi-fw pi-home", to: "/dashboard", }, ],
+            },
+            {
+                label: "sandbox",
+                items: [
+                    { label: "TableFilter_01", icon: "pi pi-fw pi-home", to: "/tablefilter_01", },
+                ]
+            },
+            {
+                label: "administration",
+                items: [
+                    { label: "users", icon: "pi pi-fw pi-users", to: "/users" },
+                    { label: "roles", icon: "pi pi-fw pi-users", to: "/roles" },
+                    { label: "permissions", icon: "pi pi-fw pi-users", to: "/permissions", },
+                ],
+            },
+            {
+                label: "system",
+                items: [
+                    {
+                        label: "geo",
+                        items: [
+                            { label: "countries", icon: "pi pi-fw pi-map-marker", to: "/countries", },
+                            { label: "regions", icon: "pi pi-fw pi-map-marker", to: "/regions", },
+                            { label: "cities", icon: "pi pi-fw pi-map-marker", to: "/cities", },
+                        ],
+                    },
+                    { label: "subdomain_states", icon: "", to: "/subdomain_states", },
+                ],
+            },
+            {
+                label: "specimens",
+                items: [
+                    { label: "companies", icon: "pi pi-fw pi-briefcase", to: "/companies", },
+                    { label: "subdomains", icon: "", to: "/subdomains" },
+                ],
+            },
+        ];
+    },
     getMenuItems() {
-        return this.get("/menu-items");
-    }
-
-    getMenuItem(id) {
-        return this.get(`/menu-items/${id}`);
-    }
-
-    createMenuItem(data) {
-        return this.post("/menu-items", data);
-    }
-
-    updateMenuItem(id, data) {
-        return this.put(`/menu-items/${id}`, data);
-    }
-
-    deleteMenuItem(id) {
-        return this.delete(`/menu-items/${id}`);
-    }
-
-    updateMenuUsage(id) {
-        return this.put(`/menu-items/${id}/usage`);
-    }
-}
-
-export default new MenuService();
+        return Promise.resolve(this.getMenuData());
+    },
+};

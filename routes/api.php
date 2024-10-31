@@ -36,8 +36,11 @@ Route::get('/languages', [LanguageController::class, 'getLanguages'])->name('get
  * =======================================================
  */
 Route::get('/menu-items', [MenuController::class, 'getSortedMenuItems'])->name('get.menu');
+Route::post('/menu-items', [MenuController::class, 'createMenu'])->name('api.post.menu-items');
+Route::put('/menu-items/{id}', [MenuController::class, 'updateMenu'])->name('api.put.menu-items')->where('id', '[0-9]+');
+Route::delete('/menu-items/{id}', [MenuController::class, 'deleteMenu'])->name('api.delete.menu-items')->where('id', '[0-9]+');
 
-Route::resource('menu-items', MenuController::class);
+//Route::resource('menu-items', MenuController::class);
 
 
 /*

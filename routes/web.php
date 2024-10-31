@@ -11,6 +11,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegionController;
+use App\Http\Controllers\SandboxController;
 use App\Http\Controllers\SubdomainController;
 use App\Http\Controllers\SubdomainStateController;
 use Illuminate\Foundation\Application;
@@ -33,6 +34,13 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+
+    /**
+     * =====================================================
+     * SANDBOX
+     * =====================================================
+     */
+    Route::get('/table_filter_01', [SandboxController::class, 'table_filter_01_index'])->name('table_filter_01');
 
     /**
      * =====================================================

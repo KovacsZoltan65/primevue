@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -31,7 +32,14 @@ class SubdomainState extends Model
         'active' => 'integer',
     ];
     
-    public function scopeSearch(Builder $query, Request $request)
+    /**
+     * Határozza meg a lekérdezést, hogy a keresési kifejezésnek megfelelő névvel rendelkező aldomain állapotokat is tartalmazzon.
+     *
+     * @param Builder $query A lekérdezéskészítő példány.
+     * @param Request $request Az aktuális HTTP-kérelem objektum, amely keresési paramétereket tartalmaz.
+     * @return Builder A módosított lekérdezéskészítő példány.
+     */
+    public function scopeSearch(Builder $query, Request $request): Builder
     {
         return $query->when($request->search, function ($query) use ($request) {
             $query->where(function ($query) use ($request) {
@@ -39,7 +47,13 @@ class SubdomainState extends Model
             });
         });
     }
-    public function subdomains()
+    
+    /**
+     * Szerezze be az ehhez az aldomain állapothoz társított aldomaineket.
+     *
+     * @return HasMany
+     */
+    public function subdomains(): HasMany
     {
         return $this->hasMany(Subdomain::class, 'state_id');
     }

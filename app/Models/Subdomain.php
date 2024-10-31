@@ -79,7 +79,15 @@ class Subdomain extends Model
         'last_export' => '',
     ];
     */
-    public function scopeSearch(Builder $query, Request $request)
+    
+    /**
+     * Scope a query to only include subdomains with a name matching the search term.
+     *
+     * @param Builder $query The query builder instance.
+     * @param Request $request The current HTTP request object containing search parameters.
+     * @return Builder The modified query builder instance.
+     */
+    public function scopeSearch(Builder $query, Request $request): Builder
     {
         return $query->when($request->search, function ($query) use ($request) {
             $query->where(function ($query) use ($request) {
@@ -88,12 +96,23 @@ class Subdomain extends Model
         });
     }
 
-    public static function getSubdomainById(int $subdomain_id)
+    /**
+     * Aldomaint keres az azonosítója alapján.
+     *
+     * @param int $subdomain_id A keresendő aldomain azonosítója.
+     * @return Subdomain|null Az adott azonosítónak megfelelő aldomain, vagy nulla, ha nem található.
+     */
+    public static function getSubdomainById(int $subdomain_id): Subdomain
     {
         //return self::where('id', $subdomain_id)->first();
         return self::find($subdomain_id);
     }
 
+    /**
+     * Szerezze be az aldomainhez társított aldomain állapotát
+     *
+     * @return BelongsTo
+     */
     public function subdomainState(): BelongsTo
     {
         return $this->belongsTo(SubdomainState::class, 'state_id');

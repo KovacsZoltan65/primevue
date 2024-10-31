@@ -7,8 +7,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 
 /**
@@ -28,10 +30,9 @@ class Region extends Model
     ;
 
     protected $table = 'regions';
-    public $timestamps = false;
 
     protected $casts = [
-            'country_id' => 'int'
+        'country_id' => 'int'
     ];
 
     protected $fillable = [
@@ -40,7 +41,14 @@ class Region extends Model
         'country_id'
     ];
 
-    public function scopeSearch(Builder $query, Request $request)
+    /**
+     * A régiók listázásához keresési feltételek
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @return Builder
+     */
+    public function scopeSearch(Builder $query, Request $request): Builder
     {
         return $query->when($request->search, function ($query) use ($request) {
             $query->where(function ($query) use ($request) {
@@ -54,7 +62,7 @@ class Region extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function country()
+    public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'country_id');
     }
@@ -64,7 +72,7 @@ class Region extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function cities()
+    public function cities(): HasMany
     {
         return $this->hasMany(City::class, 'region_id');
     }

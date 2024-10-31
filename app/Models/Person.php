@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Person extends Model
 {
@@ -33,30 +35,22 @@ class Person extends Model
             })->where('active', APP_ACTIVE);
     }
     
-    /*
-     * =========================================================
-     * Egy Person lekérdezése, amelyhez tartozó Company-k vannak
-     * =========================================================
-     * $person = Person::find(1);
-     * $companies = $person->companies;
+    /**
+     * Azok a cégek, amelyekhez az adott személy tartozik.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function companies()
+    public function companies(): BelongsToMany
     {
         return $this->belongsToMany(Company::class, 'person_company');
     }
     
     /**
-     * =========================================================
-     * Person -hoz kapcsolódó Entity -k lekérése
-     * =========================================================
-     * Entity::class: Az a modell, amelyet le akarsz kérdezni.
-     * Company::class: Az a köztes modell, amely összeköti a Person-t és az Entity-t.
-     * 'person_company': A köztes táblád neve.
-     * 'company_id': A köztes táblában található Company ID.
-     * 'id': A Person ID.
-     * 'id': Az Entity ID.
+     * Azok az entitások, amelyekhez az adott személy a cégén keresztül tartozik.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
      */
-    public function entities()
+    public function entities(): HasManyThrough
     {
         return $this->hasManyThrough(Entity::class, Company::class, 'person_company', 'company_id', 'id', 'id');
     }

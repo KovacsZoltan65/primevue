@@ -5,24 +5,48 @@ namespace App\Http\Controllers;
 use App\Models\MenuItem;
 use App\Models\MenuItemUsage;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Http\JsonResponse;
 
 class MenuController extends Controller
 {
-    // Listázás adminisztrációs nézethez
+    /**
+     * Megjeleníti a legfelső szintű menüelemek listáját.
+     *
+     * Ez a módszer lekéri az összes olyan menüelemet, amelynek nincs szülője,
+     * gyermekeikkel együtt, és visszaküldi őket JSON-válaszként.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function index()
     {
         $menuItems = MenuItem::with('children')->whereNull('parent_id')->get();
         return response()->json($menuItems);
     }
 
-    // Egy menüpont megtekintése
-    public function show(MenuItem $menuItem)
+    /**
+     * Egy menüpont megjelenítése.
+     *
+     * Egyetlen menüpontot jelenít meg, a gyermekeivel együtt.
+     *
+     * @param \App\Models\MenuItem $menuItem A megjelenítendő menüpont.
+     * @return \Illuminate\Http\JsonResponse A menüpont JSON-válasza.
+     */
+    public function show(MenuItem $menuItem): JsonResponse
     {
         return response()->json($menuItem->load('children'));
     }
     
-    // Új menüpont létrehozása
-    public function store(Request $request)
+    /**
+     * Létrehoz egy új menüpontot.
+     *
+     * A menüpontot a $request-ben kapott adatokkal hozza létre, és a létrehozott
+     * menüpontot visszaküldi JSON-válaszként.
+     *
+     * @param \Illuminate\Http\Request $request A menüpont adatait tartalmazó HTTP kérési objektum.
+     * @return \Illuminate\Http\JsonResponse A létrehozott menüpont JSON-válasza.
+     */
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -36,8 +60,17 @@ class MenuController extends Controller
         return response()->json($menuItem, 201);
     }
     
-    // Menüpont frissítése
-    public function update(Request $request, MenuItem $menuItem)
+    /**
+     * Frissít egy meglévő menüpontot.
+     *
+     * A menüpontot a $request-ben kapott adatokkal frissíti, és a frissített
+     * menüpontot visszaküldi JSON-válaszként.
+     *
+     * @param \Illuminate\Http\Request $request A menüpont adatait tartalmazó HTTP kérési objektum.
+     * @param \App\Models\MenuItem $menuItem A frissítendő menüpont.
+     * @return \Illuminate\Http\JsonResponse A frissített menüpont JSON-válasza.
+     */
+    public function update(Request $request, MenuItem $menuItem): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
@@ -50,21 +83,44 @@ class MenuController extends Controller
         return response()->json($menuItem);
     }
     
-    // Menüpont törlése
-    public function destroy(MenuItem $menuItem)
+    /**
+     * Törli a megadott menüpontot.
+     *
+     * Törli a megadott menüpontot, és a HTTP válaszban a 204-es státuszkódot
+     * adja vissza, jelezve, hogy a művelet sikeres volt.
+     *
+     * @param \App\Models\MenuItem $menuItem A törlendő menüpont.
+     * @return \Illuminate\Http\Response A HTTP válasz.
+     */
+    public function destroy(MenuItem $menuItem): Response
     {
         $menuItem->delete();
         return response()->noContent();
     }
     
-    public function getMenu()
+    /**
+     * A legfelső szint menüpontjainak lekérese.
+     *
+     * Egy JSON-válaszban visszaküldi a legfelső szint menüpontjait, gyermekeikkel együtt.
+     *
+     * @return \Illuminate\Http\JsonResponse A menüpontok JSON-válasza.
+     */
+    public function getMenu(): JsonResponse
     {
         $menuItems = MenuItem::whereNull('parent_id')->with('children')->get();
         
         return response()->json($menuItems);
     }
     
-    public function getSortedMenuItems()
+    /**
+     * A legfelső szint menüpontjainak lekérese, a default_weight mező alapján rendezve.
+     *
+     * Egy JSON-válaszban visszaküldi a legfelső szint menüpontjait, gyermekeikkel együtt.
+     * A menüpontokat a default_weight mező alapján rendezze.
+     *
+     * @return \Illuminate\Http\JsonResponse A menüpontok JSON-válasza.
+     */
+    public function getSortedMenuItems(): JsonResponse
     {
         $menuItems = MenuItem::whereNull('parent_id')
             ->with(['children'])
@@ -74,7 +130,15 @@ class MenuController extends Controller
         return response()->json($menuItems);
     }
     
-    public function updateMenuUsage($menuItemId)
+    /**
+     * A menüpont használatának számlálása.
+     *
+     * Ha a felhasználó egy menüpontot használ, akkor a menüpont használatát számlálja.
+     *
+     * @param int $menuItemId A menüpont azonosítója.
+     * @return void
+     */
+    public function updateMenuUsage($menuItemId): void
     {
         $usage = MenuItemUsage::firstOrCreate([
             'menu_item_id' => $menuItemId,
@@ -84,7 +148,17 @@ class MenuController extends Controller
         $usage->increment('usage_count');
     }
     
-    public function updateUsage(Request $request)
+    /**
+     * Frissíti a menüpont használatát.
+     *
+     * Egy HTTP kérésben megadott menüpont azonosító alapján frissíti a menüpont
+     * használatát, és egy JSON-válaszban visszaadja a művelet sikerességéről
+     * szóló üzenetet.
+     *
+     * @param \Illuminate\Http\Request $request A HTTP kérés objektum.
+     * @return \Illuminate\Http\JsonResponse A JSON-válasz.
+     */
+    public function updateUsage(Request $request): JsonResponse
     {
         $menuItemId = $request->get('menu_item_id');
         $this->updateMenuUsage($menuItemId);

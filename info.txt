@@ -33,9 +33,10 @@ require
 
 require-dev
 
-// ==============================
+// ---------------------------------------
 // spatie/laravel-permission
-// ==============================
+// ---------------------------------------
+https://laraveltuts.com/laravel-9-vue-js-roles-and-permission-vite-js/
 composer require spatie/laravel-permission
 bootstrap\providers.php
     return [
@@ -44,6 +45,10 @@ bootstrap\providers.php
     ]
 php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
 
+// ---------------------------------------
+// Routing
+// ---------------------------------------
+php artisan route:list --name=users
 
 Lekérdezés kiírása:
 \DB::enableQueryLog();

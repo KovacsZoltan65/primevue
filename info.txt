@@ -46,6 +46,14 @@ bootstrap\providers.php
 php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
 
 // ---------------------------------------
+// ACTIVITY LOG
+// ---------------------------------------
+https://packagist.org/packages/spatie/laravel-activitylog
+https://spatie.be/docs/laravel-activitylog/v4/introduction
+composer require spatie/laravel-activitylog
+php artisan vendor:publish --provider="Spatie\Activitylog\ActivitylogServiceProvider" --tag="activitylog-migrations"
+
+// ---------------------------------------
 // Routing
 // ---------------------------------------
 php artisan route:list --name=users

@@ -1,316 +1,314 @@
 <script setup>
-import { onMounted, ref } from 'vue';
-import { Head } from '@inertiajs/vue3';
-import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
+import PersonService from "@/service/PersonService";
 import { useToast } from "primevue/usetoast";
-import { trans } from "laravel-vue-i18n";
-
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PersonService from '@/service/PersonService';
-
-// Validation
-import useVuelidate from "@vuelidate/core";
-import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
-import validationRules from "@/Validation/ValidationRules.json"
-
-import Button from 'primevue/button';
-import DataTable from 'primevue/datatable';
-import Toolbar from 'primevue/toolbar';
-import Column from 'primevue/column';
-import InputIcon from 'primevue/inputicon';
-import IconField from 'primevue/iconfield';
-import InputText from 'primevue/inputtext';
-import Select from 'primevue/select';
-import Checkbox from 'primevue/checkbox';
-import DatePicker from 'primevue/datepicker';
-
-const persons = ref([]);
-const languages = ref(['hu', 'en']);
-const loading = ref(true);
-//const filters = ref();
-const dt = ref();
-const selectedPersons = ref();
-const submitted = ref(false);
+import { onMounted } from "vue";
+import { createId } from "@/helpers/functions";
 
 const toast = useToast();
+const dt = ref();
+const loading = ref(true);
+const persons = ref([]);
+const person = ref({});
+//const originalPerson = ref({});
 
 const personDialog = ref(false);
 const deleteSelectedPersonsDialog = ref(false);
 const deletePersonDialog = ref(false);
+const selectedPersons = ref([]);
+const filters = ref({});
+const submitted = ref(false);
 
-const person = ref({
-    id: null,
-    name: '',
-    email: '',
-    password: '',
-    language: '',
-    birthdate: '',
-    active: 1
-})
-
-const fetchItems = () => {
-    PersonService.getPersons()
-        .then((response) => {
-            persons.value = getPersons(response.data.data);
-        })
-        .catch((error) => {
-            console.log(error);
-        }).finally(() => {
-            loading.value = false;
-        });
-};
-
-/*
-const columns = [
-    { field: 'name', header: 'Name' },
-    { field: 'email', header: 'Email' },
-    { field: 'language', header: 'Language' },
-    { field: 'birthdate', header: 'Birthdate' },
-];
-*/
-
-/**
- * Inicializálja az adattábla szűrőit.
- * 
- * Ez a funkció minden oszlophoz beállítja az alapértelmezett szűrőértékeket és az illesztési módokat
- * az adattáblázatban, amely lehetővé teszi az adatok keresését és szűrését.
- */
-const filters = ref({
-        // Globális szűrő minden oszlopra alkalmazva
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        // Szűrje a 'név' oszlopot, a megadott értékkel kezdődő bejegyzéseket
-        name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-        // Szűrje az 'e-mail' oszlopot, az adott értékkel kezdődő bejegyzéseket
-        email: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-        // Szűrje a „nyelv” oszlopot, és a megadott értékkel megegyező bejegyzéseket adja meg
-        language: { value: null, matchMode: FilterMatchMode.EQUALS },
-        // Szűrje a „születési dátum” oszlopot, amely megköveteli az összes megkötés teljesítését
-        birthdate: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] }
+const props = defineProps({
+    countries: {
+        type: Object,
+        default: () => {},
+    },
+    regions: {
+        type: Object,
+        default: () => {},
     }
-);
+});
 
 const rules = {
-    name: {
-        required: helpers.withMessage(trans('validate_name'), required),
-        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
-        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
-    },
-    email: {
-        required: '',
-    },
-    password: {
-        required: helpers.withMessage(trans('validate_password'), required),
-        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.password', { min: $params.min }), minLength(validationRules.password_min_length)),
-        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.password', { max: $params.max }), maxLength(validationRules.password_max_length)),
-    },
-    language: {
-        required: helpers.withMessage(trans('validate_required'), required),
-    },
-    birthdate: {
-        required: helpers.withMessage(trans('validate_required'), required),
-    },
-    active: {}
+    name: {},
+    email: {},
+    password: {},
+    birthdate: {},
+    language: {}
 }
 
-/**
- * Leképezi a személyek adatait egy használhatóbb formátumra.
- *
- * @param {Array|Object} data A személyek adatai
- * @returns {Array} A feltérképezett személyek adatai
- */
-const getPersons = (data) => {
-    return [...(data || [])].map((d) => {
-        // Leképezi a személyek születési dátumát egy Date objektumra
-        // A személyek születési dátuma a szerveren egy ISO 8601 formátumú dátumként lesz elmentve
-        // A Date konstruktorral leképezzük ezt a szerveren elmentett dátumot egy Date objektumra
-        d.birthdate = new Date(d.birthdate);
+const v$ = useVuelidate(rules, person);
 
-        return d;
-    });
+const initialPerson = () => {
+    return person;
 }
 
-onMounted(() => {
-    loading.value = true;
-    fetchItems();
-})
+const confirmDeleteSelected = () => {
+    deleteSelectedPersonsDialog.value = true;
+}
 
-/**
- * A dátumot 'MM/nn/yyyy' formában formálja.
- *
- * @param {string|Date} value A formázandó dátum
- * @returns {string} A formázott dátum
- */
-const formatDate = (value) => {
-    const date = new Date(value);
+const openNew = () => {
+    person.value = { ...initialPerson };
+    submitted.value = false;
+    personDialog.value = true;
+}
 
-    return date.toLocaleDateString('en-US', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    });
+const editPerson = (person) => {
+    person.value = { ...person };
+    //originalPerson.value = { ...person };
+    personDialog.value = true;
+}
+
+
+
+const savePerson = async () => {
+    const result = await v$.value.$validate();
+    if( result ) {
+        submitted.value = true;
+
+        if( person.value.id ) {
+            updatePerson();
+        } else {
+            createPerson();
+        }
+    } else {
+        console.log('ERROR');
+    }
+}
+
+const createPerson = async () => {
+    // Optimista frissítés - ideiglenesen hozzáadjuk a person-t, amíg a válaszra várunk
+    // ideiglenes id-vel.
+    //const tempPerson = { ...person.value, id: Date.now() };
+    const tempPerson = { ...person.value, id: createId() };
+    persons.value.push(tempPerson);
+
+    try {
+        // Mentés
+        const response = await PersonService.createPerson(person.value);
+
+        // A tempPerson helyére beszúrjuk az API által visszaadott adatokat
+        const index = persons.value.findIndex(p => p.id === tempPerson.id);
+        persons.value.splice(index, 1, response.data);
+
+        hideDialog();
+
+        toast.add({
+            severity: "success",
+            summary: "Sikeres létrehozás",
+            detail: "Személy létrehozva",
+            life: 3000,
+        });
+
+    } catch ( error ) {
+        // Ha hiba történt, eltávolítjuk a tempPerson-t
+        persons.value = persons.value.filter(p => p.id !== tempPerson.id);
+        console.error("createPerson API Error:", error);
+
+        toast.add({
+            severity: "error",
+            summary: "Hiba",
+            detail: "Nem sikerült létrehozni a személyt",
+            life: 3000,
+        });
+    }finally {
+        //
+    }
 };
 
-const exportCSV = () => {
-    dt.value.exportCSV();
+const updatePerson = async () => {
+    // mentjük az eredeti adatokat optimista frissítéshez
+    const index = findIndexById(person.value.id);
+    const originalPerson = persons.value[index];
+
+    const hasChanges = JSON.stringify(person.value) !== JSON.stringify(originalPerson);
+
+    // Nincs változás, nincs módosítás.
+    if( !hasChanges ) {
+        toast.add({
+            severity: "info",
+            summary: "Nincs változás",
+            detail: "Nincs módosítás",
+            life: 3000,
+        });
+        return;
+    }
+
+    try {
+        // optimista frissítés
+        persons.value.splice(index, 1, person.value);
+        hideDialog();
+        const response = await PersonService.updatePerson(person.value.id, person.value);
+        // frissítjük a pontos válasszal
+        persons.value.splice(index, 1, response.data);
+
+        toast.add({
+            severity: "success",
+            summary: "Sikeres frissítés",
+            detail: "Személy frissítve",
+            life: 3000,
+        });
+
+    } catch( error ) {
+        // visszaállítjuk az eredeti adatokat
+        persons.value.splice(index, 1, originalData);
+        console.error("updatePerson API Error:", error);
+        toast.add({
+            severity: "error",
+            summary: "Hiba",
+            detail: "Nem sikerült frissíteni a személyt",
+            life: 3000,
+        });
+    } finally {
+        //
+    }
+};
+
+const findIndexById = (id) => {
+    return persons.value.findIndexById(() => person.value.id === id);
 }
 
-const deleteSelectedPersons = () => {
-    PersonService.deletePersons(selectedPersons.value)
-        .then((response) => {
-            fetchItems();
-        })
-        .catch((error) => {
-            console.log(error);
-        });
+const confirmDeletePerson = (data) => {
+    person.value = { ...data };
+
+    deletePersonDialog.value = true;
 }
+
+const deletePerson = async () => {
+    
+    deletePersonDialog.value = false;
+    // Keressük meg az eltávolítandó elem indexét
+    const index = findIndexById(person.value.id);
+    // Elmentjük az eredeti adatokat optimista frissítéshez
+    const originalPerson = persons.value[index];
+    // Ideiglenesen eltávolítjuk a személyt
+    persons.value.splice(index, 1);
+
+    try {
+        await PersonService.deletePerson(person.value.id);
+
+        hideDialog();
+
+        toast.add({
+            severity: "success",
+            summary: "Sikeres törlés",
+            detail: "Személy törölve",
+            life: 3000,
+        });
+
+    } catch(error) {
+        // Hiba esetén visszaállítjuk az eltávolított személyt
+        persons.value.splice(index, 0, originalPerson);
+        console.error("deletePerson API Error:", error);
+
+        toast.add({
+            severity: "error",
+            summary: "Hiba",
+            detail: "Nem sikerült törölni a személyt",
+            life: 3000,
+        });
+    } finally {
+        deletePersonDialog.value = false;
+    }
+
+    /*
+    deletePersonDialog.value = true;
+
+    try {
+        await PersonService.deletePerson(person.value.id);
+
+        const index = findIndexById(subdomain.value.id);
+        persons.value.splice(index, 1);
+
+        hideDialog();
+
+        toast.add({
+            severity: "success",
+            summary: "Successful",
+            detail: "Person Deleted",
+            life: 3000,
+        });
+    } catch(error) {
+        console.error("deletePerson API Error:", error);
+
+        toast.add({
+            severity: "error",
+            summary: "Hiba",
+            detail: "Nem sikerült frissíteni a személyt",
+            life: 3000,
+        });
+    } finally {
+        deletePersonDialog.value = false;
+    }
+    */
+}
+
+const confirmDeletePersons = () => {
+    selectedPersons.value = true;
+}
+
+const deletePersons = async () => {
+    const aa = PersonService.deletePersons(selectedPersons.value);
+}
+
+const hideDialog = () => {
+    personDialog.value = false;
+    submitted.value = false;
+    v$.value.$reset();
+}
+
+const hideDeletePersonDialog = () => {
+    deletePersonDialog.value = false;
+    submitted.value = false;
+    v$.value.$reset();
+}
+
+const hideDeletePersonsDialog = () => {
+    deleteSelectedPersonsDialog.value = false;
+    submitted.value = false;
+    v$.value.$reset();
+}
+
+const getBools = () => {
+    return [
+        {
+            label: trans("inactive"),
+            value: 0,
+        },
+        {
+            label: trans("active"),
+            value: 1,
+        },
+    ];
+};
+
+const fetchItems = () => {
+    try {
+        const response = PersonService.getPersons();
+        persons.value = response.data.data;
+    } catch( error ) {
+        console.error("getPersons API Error:", error);
+    } finally {
+        loading.value = false;
+    }
+};
+
+const initFilters = () => {
+    filters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        email: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        birthdate: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        language: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    }
+};
+
+initFilters();
+
+onMounted(() => {
+    fetchItems();
+});
 
 </script>
 
-<template>
-    <AppLayout>
-        <Head :title="$t('persons')" />
-
-        <div class="card">
-            <Toolbar>
-                <template #start>
-                    <Button 
-                        :label="$t('new')"
-                        icon="pi pi-plus"
-                        severity="secondary"
-                        class="mr-2"
-                    />
-                    <Button 
-                        :label="$t('delete')"
-                        icon="pi pi-trash"
-                        severity="secondary"
-                        @click="deleteSelectedPersons"
-                        :disabled="!selectedPersons || !selectedPersons.length"
-                    />
-                </template>
-                <template #end>
-                    <Button
-                        :label="$t('export')"
-                        icon="pi pi-upload"
-                        severity="secondary"
-                    />
-                </template>
-            </Toolbar>
-
-            <DataTable 
-                :filters="filters" 
-                v-model:selection="selectedPersons"
-                :value="persons" paginator 
-                :rows="10" 
-                dataKey="id" 
-                filterDisplay="row" 
-                :loading="loading"
-                :globalFilterFields="['name', 'email', 'status', 'birthdate']"
-            >
-                <template #header>
-                    <div class="flex justify-end">
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText 
-                                v-model="filters['global'].value" 
-                                placeholder="Keyword Search"
-                            />
-                        </IconField>
-                    </div>
-                </template>
-
-                <!-- checkbox -->
-                <Column 
-                    selectionMode="multiple" 
-                    style="min-width: 3rem" 
-                    :exportable="false"
-                />
-
-                <!-- name -->
-                <Column 
-                    field="name" 
-                    header="Name" 
-                    style="min-width: 12rem"
-                >
-                    <template #body="{ data }">
-                        {{ data.name }}
-                    </template>
-                    <template #filter="{ filterModel, filterCallback }">
-                        <InputText 
-                            v-model="filterModel.value" 
-                            type="text" 
-                            @input="filterCallback()" 
-                            :placeholder="$t('search_by_name')"
-                        />
-                    </template>
-                </Column>
-
-                <!-- email -->
-                <Column 
-                    field="email" 
-                    header="Email" 
-                    style="min-width: 12rem"
-                >
-                    <template #body="{ data }">
-                        {{ data.email }}
-                    </template>
-                    <template #filter="{ filterModel, filterCallback }">
-                        <InputText 
-                            v-model="filterModel.value" 
-                            type="text" 
-                            @input="filterCallback()" 
-                            :placeholder="$t('search_by_email')"
-                        />
-                    </template>
-                </Column>
-
-                <!-- language -->
-                <Column 
-                    field="language" 
-                    header="Language"
-                    :showFilterMenu="false" 
-                    style="min-width: 12rem"
-                >
-                    <template #body="{ data }">
-                        {{ data.language }}
-                    </template>
-                    <template #filter="{ filterModel, filterCallback }">
-                        <Select 
-                            v-model="filterModel.value"
-                            :options="languages"
-                            :placeholder="$t('select_one')" 
-                            style="min-width: 12rem" 
-                            :showClear="true"
-                            @change="filterCallback()"
-                        />
-                    </template>
-                </Column>
-
-                <!-- birthdate -->
-                <Column 
-                    field="birthdate" 
-                    header="Birth Date" sortable 
-                    filterField="birthdate" 
-                    dataType="date" 
-                    style="min-width: 10rem"
-                >
-                    <template #body="{ data }">
-                        {{ formatDate(data.birthdate) }}
-                    </template>
-                    
-                    <template #filter="{ filterModel }">
-                        <DatePicker 
-                            v-model="filterModel.value" 
-                            dateFormat="mm/dd/yy" 
-                            placeholder="mm/dd/yyyy"
-                        />
-                    </template>
-                    
-                </Column>
-            
-            </DataTable>
-        </div>
-
-    </AppLayout>
-</template>
+<template></template>

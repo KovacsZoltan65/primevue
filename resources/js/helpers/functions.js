@@ -17,3 +17,10 @@ export function formatDate(date) {
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(date).toLocaleString(undefined, options);
 }
+
+export function createId(length = 5) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    return Array
+        .from({ length }, () => chars.charAt(Math.floor(Math.random() * chars.length)))
+        .join('');
+}

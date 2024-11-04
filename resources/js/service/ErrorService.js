@@ -15,19 +15,19 @@ class ErrorService extends BaseService {
     }
 
     getLogs() {
-        return this.get('/logs');
+        return this.get('/log-errors');
     }
 
     getLogByDate(date) {
-        return this.get(`/logs/${date}`);
+        return this.get(`/log-errors/${date}`);
     }
 
     getLogsByDateInterval(startDate, endDate) {
-        return this.get(`/logs/${startDate}/${endDate}`);
+        return this.get(`/log-errors/${startDate}/${endDate}`);
     }
 
     createLog(data) {
-        return this.post("/logs", data);
+        return this.post("/log-errors", data);
     }
 }
 

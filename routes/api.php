@@ -7,6 +7,7 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
+use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PersonController;
@@ -21,7 +22,15 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-//Route::get('/items', function(){ \Log::info('API/GET'); });
+/**
+ * =====================================================
+ * FRONTEND ERRORS
+ * =====================================================
+ */
+Route::post('/log-errors', [ErrorController::class, 'createLog'])->name('post.log-errors');
+Route::get('/log-errors', [ErrorController::class, 'getLogs'])->name('get.get_logs');
+Route::get('/log-errors/{date}', [ErrorController::class, 'getLogByDate'])->name('get.get_log_by_date');
+Route::get('/log-errors/{start_date}/{end_date}', [ErrorController::class, 'getLogsByDateRange'])->name('get.get_log_by_interval');
 
 /**
  * =======================================================

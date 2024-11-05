@@ -3,6 +3,8 @@ import PersonService from "@/service/PersonService";
 import { useToast } from "primevue/usetoast";
 import { onMounted } from "vue";
 import { createId } from "@/helpers/functions";
+import AppLayout from "@/Layouts/AppLayout.vue";
+import DataTable from "primevue/datatable";
 
 const toast = useToast();
 const dt = ref();
@@ -58,8 +60,6 @@ const editPerson = (person) => {
     //originalPerson.value = { ...person };
     personDialog.value = true;
 }
-
-
 
 const savePerson = async () => {
     const result = await v$.value.$validate();
@@ -175,7 +175,7 @@ const confirmDeletePerson = (data) => {
 }
 
 const deletePerson = async () => {
-    
+
     deletePersonDialog.value = false;
     // Keressük meg az eltávolítandó elem indexét
     const index = findIndexById(person.value.id);
@@ -210,37 +210,6 @@ const deletePerson = async () => {
     } finally {
         deletePersonDialog.value = false;
     }
-
-    /*
-    deletePersonDialog.value = true;
-
-    try {
-        await PersonService.deletePerson(person.value.id);
-
-        const index = findIndexById(subdomain.value.id);
-        persons.value.splice(index, 1);
-
-        hideDialog();
-
-        toast.add({
-            severity: "success",
-            summary: "Successful",
-            detail: "Person Deleted",
-            life: 3000,
-        });
-    } catch(error) {
-        console.error("deletePerson API Error:", error);
-
-        toast.add({
-            severity: "error",
-            summary: "Hiba",
-            detail: "Nem sikerült frissíteni a személyt",
-            life: 3000,
-        });
-    } finally {
-        deletePersonDialog.value = false;
-    }
-    */
 }
 
 const confirmDeletePersons = () => {
@@ -251,38 +220,34 @@ const deletePersons = async () => {
     const aa = PersonService.deletePersons(selectedPersons.value);
 }
 
-const hideDialog = () => {
-    personDialog.value = false;
+const hideDialog = (dialogType) => {
+    dialogType.value = false;
     submitted.value = false;
     v$.value.$reset();
+};
+
+const hideEditDialog = () => {
+    hideDialog(personDialog);
 }
 
 const hideDeletePersonDialog = () => {
-    deletePersonDialog.value = false;
-    submitted.value = false;
-    v$.value.$reset();
+    hideDialog(deletePersonDialog);
 }
 
 const hideDeletePersonsDialog = () => {
-    deleteSelectedPersonsDialog.value = false;
-    submitted.value = false;
-    v$.value.$reset();
+    hideDialog(deleteSelectedPersonsDialog);
 }
 
 const getBools = () => {
     return [
-        {
-            label: trans("inactive"),
-            value: 0,
-        },
-        {
-            label: trans("active"),
-            value: 1,
-        },
+        { label: trans("inactive"), value: 0, },
+        { label: trans("active"), value: 1, },
     ];
 };
 
 const fetchItems = () => {
+    loading.value = true;
+
     try {
         const response = PersonService.getPersons();
         persons.value = response.data.data;
@@ -303,6 +268,19 @@ const initFilters = () => {
     }
 };
 
+const exportCSV = () => {
+    dt.value.exportCSV();
+};
+
+const onUpload = () => {
+    toast.add({
+        severity: 'info',
+        summary: 'Success',
+        detail: 'File Uploaded',
+        life: 3000
+    });
+};
+
 initFilters();
 
 onMounted(() => {
@@ -311,4 +289,79 @@ onMounted(() => {
 
 </script>
 
-<template></template>
+<template>
+    <AppLayout>
+
+        <Head :title="$t('persons')" />
+
+        <div class="card">
+            <Toolbar class="md-6">
+                <template #start>
+                    <Button
+                        :label="$t('new')"
+                        icon="pi pi-plus"
+                        severity="secondary"
+                        class="mr-2"
+                        @click="openNew"
+                    />
+                    <Button
+                        :label="$t('delete')"
+                        icon="pi pi-trash"
+                        severity="secondary"
+                        @click="confirmDeleteSelected"
+                        :disabled="
+                            !selectedPersons || !selectedPersons.length
+                        "
+                    />
+                </template>
+
+                <template #end>
+                    <FileUpload
+                        mode="basic"
+                        accept="image/*"
+                        :maxFileSize="1000000"
+                        label="Import"
+                        customUpload auto
+                        chooseLabel="Import"
+                        class="mr-2"
+                        :chooseButtonProps="{ severity: 'secondary' }"
+                        @upload="onUpload"
+                    />
+                    <Button
+                        :label="$t('export')"
+                        icon="pi pi-upload"
+                        severity="secondary"
+                        @click="exportCSV($event)"
+                    />
+                </template>
+
+            </Toolbar>
+
+            <DataTable
+            ref="dt"
+                v-model:selection="selectedPersons"
+                v-model:filters="filters"
+                :value="persons"
+                dataKey="id"
+                :paginator="true"
+                :rows="10"
+                sortMode="multiple"
+                :filters="filters"
+                filterDisplay="menu"
+                :globalFilterFields="['name', 'email', 'birthdate', 'language']"
+                :loading="loading"
+                stripedRows removableSort
+                :rowsPerPageOptions="[5, 10, 25]"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} subdomains"
+            >
+                <template #header></template>
+                <template #paginatorstart></template>
+                <template #enpty></template>
+                <template #loading></template>
+            </DataTable>
+
+        </div>
+
+    </AppLayout>
+</template>

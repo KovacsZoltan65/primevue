@@ -28,7 +28,11 @@ class StoreEntityRequest extends BaseRequest
                 "min:{$this->validationRules['minStringLength']}",
                 "max:{$this->validationRules['maxStringLength']}",
             ],
-            'email' => ['required','email'],
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('entities', 'email')
+            ],
         ];
     }
 
@@ -44,6 +48,7 @@ class StoreEntityRequest extends BaseRequest
             'email' => [
                 'required' => __('validate_required'),
                 'email' => __('validate_email'),
+                'unique' => __('validate_unique')
             ]
         ];
     }

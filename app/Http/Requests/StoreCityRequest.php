@@ -17,7 +17,7 @@ class StoreCityRequest extends FormRequest
 
     /**
      * Szerezze meg a kérelemre vonatkozó érvényesítési szabályokat.
-     * 
+     *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
@@ -25,7 +25,8 @@ class StoreCityRequest extends FormRequest
         return [
             'name' => [
                 'required','string',
-                'min','max',
+                "min:{$this->validationRules['minStringLength']}",
+                "max:{$this->validationRules['maxStringLength']}",
                 Rule::unique('cities', 'name')
             ],
             'country_id' => ['required', 'integer'],
@@ -35,7 +36,7 @@ class StoreCityRequest extends FormRequest
             'active' => ['required', 'boolean'],
         ];
     }
-    
+
     public function messages(): array
     {
         return [
@@ -66,5 +67,5 @@ class StoreCityRequest extends FormRequest
             ],
         ];
     }
-    
+
 }

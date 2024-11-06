@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateEntityRequest extends FormRequest
+class UpdateEntityRequest extends BaseRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,10 @@ class UpdateEntityRequest extends FormRequest
     {
         return [
             'name' => [
-                'required','string','min:2','max:255',
+                'required','string',
+                "min:{$this->validationRules['minStringLength']}",
+                "max:{$this->validationRules['maxStringLength']}",
+                Rule::unique('entities', 'name')->ignore($this->id),
             ],
             'email' => ['required','email'],
         ];

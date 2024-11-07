@@ -22,7 +22,9 @@ class PersonService extends BaseService {
      * @returns {Promise<AxiosResponse<Person[]>>} 
      */
     getPersons() {
-        return this.get("/persons");
+        let response = this.get("/persons");
+        //console.log('response', response);
+        return response;
     }
 
     /**

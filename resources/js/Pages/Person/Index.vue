@@ -1,17 +1,27 @@
 <script setup>
+import { onMounted, ref } from "vue";
+import { Head } from "@inertiajs/vue3";
 import PersonService from "@/service/PersonService";
 import { useToast } from "primevue/usetoast";
-import { onMounted } from "vue";
 import { createId } from "@/helpers/functions";
+import { FilterMatchMode, FilterOperator } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
+import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
+import Button from "primevue/button";
+import FileUpload from "primevue/fileupload";
+
+// Validation
+import useVuelidate from "@vuelidate/core";
+import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
+import validationRules from "../../Validation/validationRules.json";
+import { Column, IconField, InputIcon, InputText } from "primevue";
 
 const toast = useToast();
 const dt = ref();
 const loading = ref(true);
 const persons = ref([]);
 const person = ref({});
-//const originalPerson = ref({});
 
 const personDialog = ref(false);
 const deleteSelectedPersonsDialog = ref(false);
@@ -32,11 +42,21 @@ const props = defineProps({
 });
 
 const rules = {
-    name: {},
-    email: {},
-    password: {},
-    birthdate: {},
-    language: {}
+    name: {
+        required
+    },
+    email: {
+        required
+    },
+    password: {
+        required
+    },
+    birthdate: {
+        required
+    },
+    language: {
+        required
+    }
 }
 
 const v$ = useVuelidate(rules, person);
@@ -245,12 +265,14 @@ const getBools = () => {
     ];
 };
 
-const fetchItems = () => {
+const fetchItems = async () => {
     loading.value = true;
 
     try {
-        const response = PersonService.getPersons();
+        const response = await PersonService.getPersons();
+        //console.log('response',response.data.data);
         persons.value = response.data.data;
+        //console.log('persons',persons);
     } catch( error ) {
         console.error("getPersons API Error:", error);
     } finally {
@@ -355,10 +377,137 @@ onMounted(() => {
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} subdomains"
             >
-                <template #header></template>
-                <template #paginatorstart></template>
-                <template #enpty></template>
-                <template #loading></template>
+                <template #header>
+                    <div
+                        class="flex flex-wrap gap-2 items-center justify-between"
+                    >
+                        <!-- SZŰRÉS TÖRLÉSE -->
+                        <Button
+                            type="button"
+                            icon="pi pi-filter-slash"
+                            :label="$t('clear')"
+                            outlined
+                            @click="clearFilter()"
+                        />
+
+                        <!-- FELIRAT -->
+                        <div class="font-semibold text-xl mb-1">
+                            {{ $t("persons_title") }}
+                        </div>
+
+                        <!-- KERESÉS -->
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText
+                                v-model="filters['global'].value"
+                                :placeholder="$t('search')"
+                            />
+                        </IconField>
+                    </div>
+                </template>
+
+                <template #paginatorstart>
+                    <Button
+                        type="button"
+                        icon="pi pi-refresh"
+                        text
+                        @click="fetchItems"
+                    />
+                </template>
+
+                <template #empty>
+                    {{ $t('data_not_found', {data: 'person'} ) }}
+                </template>
+
+                <template #loading>
+                    {{ $t('loader', {data: 'Person'}) }}
+                </template>
+
+                <!-- Checkbox -->
+                <Column
+                    selectionMode="multiple"
+                    style="min-width: 3rem"
+                    :exportable="false"
+                />
+
+                <!-- Nev -->
+                <Column
+                    field="name"
+                    :header="$t('name')"
+                    style="min-width: 12rem"
+                    sortable
+                >
+                    <template #body="{ data }">
+                        {{ data.name }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'name'})"
+                        />
+                    </template>
+                </Column>
+
+                <!-- Email -->
+                <Column
+                    field="email"
+                    :header="$t('email')"
+                    style="min-width: 12rem"
+                    sortable
+                >
+                    <template #body="{ data }">
+                        {{ data.subdomain }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'email'})"
+                        />
+                    </template>
+                </Column>
+
+                <!-- Subdomain -->
+                <Column
+                    field="birthdate"
+                    :header="$t('birthdate')"
+                    style="min-width: 12rem"
+                    sortable
+                >
+                    <template #body="{ data }">
+                        {{ data.subdomain }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'birthdate'})"
+                        />
+                    </template>
+                </Column>
+
+                <!-- Subdomain -->
+                <Column
+                    field="language"
+                    :header="$t('language')"
+                    style="min-width: 12rem"
+                    sortable
+                >
+                    <template #body="{ data }">
+                        {{ data.subdomain }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'language'})"
+                        />
+                    </template>
+                </Column>
+
             </DataTable>
 
         </div>

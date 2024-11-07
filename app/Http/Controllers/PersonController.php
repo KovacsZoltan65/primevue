@@ -17,7 +17,9 @@ class PersonController extends Controller
     
     public function index(Request $request)
     {
-        return Inertia::render('Person/Index');
+        return Inertia::render('Person/Index', [
+            'search' => $request->get('search')
+        ]);
     }
     
     public function applySearch(Builder $query, string $search)
@@ -30,9 +32,9 @@ class PersonController extends Controller
     public function getPersons(Request $request)
     {
         $personQuery = Person::Search($request);
-        $person = PersonResource::collection($personQuery->get());
+        $persons = PersonResource::collection($personQuery->get());
         
-        return $person;
+        return $persons;
     }
     
     public function getPerson(int $id)

@@ -16,11 +16,13 @@ class EntityController extends Controller
     public function __construct() {
         //
     }
-    
+
     public function index(Request $request){
-        Inertia::render('Entity/Index');
+        Inertia::render('Entity/Index',[
+            'search' => request('search')
+        ]);
     }
-    
+
     public function applySearch(Builder $query, string $search)
     {
         return $query->when($search, function($query, string $search) {
@@ -29,50 +31,50 @@ class EntityController extends Controller
             $query->where('name', 'LIKE', "%{$search}%");
         });
     }
-    
+
     public function getEntities(Request $request)
     {
         $entityQuery = Entity::Search($request);
         $entities = EntityResource::collection($entityQuery->get());
-        
+
         return $entities;
     }
-    
+
     public function getEntity(int $id)
     {
         $entity = Entity::find($id);
-        
+
         return response()->json($entity, Response::HTTP_OK);
     }
-    
+
     public function getEntityByName(string $name)
     {
         $entity = Entity::where('name', $name)->first();
-        
+
         return response()->json($entity, Response::HTTP_OK);
     }
-    
+
     public function createEntity(StoreEntityRequest $request)
     {
-        $entity = Entity::create($request);
-        
+        $entity = Entity::create($request->all());
+
         return response()->json($entity, Response::HTTP_OK);
     }
-    
+
     public function updateEntity(UpdateEntityRequest $request, int $id)
     {
         $old_entity = Entity::find($id);
-        
+
         $success = $old_entity->update($request->all());
-        
+
         return response()->json(['success' => $success], Response::HTTP_OK);
     }
-    
+
     public function deleteEntity(int $id)
     {
         $entity = Entity::find($id);
         $success = $entity->delete();
-        
+
         return response()->json(['success' => $success], Response::HTTP_OK);
     }
 }

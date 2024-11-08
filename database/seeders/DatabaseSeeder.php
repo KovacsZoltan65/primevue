@@ -21,15 +21,16 @@ class DatabaseSeeder extends Seeder
             CitySeeder::class,              // - Ne változtasd meg a sorrendet!!
 
             //CompanySeeder::class,           // - Ne változtasd meg a sorrendet!!
-            
+
             SubdomainStateSeeder::class,    // - Ne változtasd meg a sorrendet!!
             SubdomainsSeeder::class,        // - Ne változtasd meg a sorrendet!!
 
             //PersonSeeder::class,            // - Ne változtasd meg a sorrendet!!
             //EntitySeeder::class,            // - Ne változtasd meg a sorrendet!!
             PersonCompanyEntitySeeder::class,
-                
+
             MenuItemSeeder::class,
+            MenuItemEntitiesSeeder::class,
         ]);
 
         // User::factory(10)->create();

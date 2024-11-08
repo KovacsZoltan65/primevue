@@ -24,6 +24,7 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
+import FileUpload from "primevue/fileupload";
 
 /**
  * Szerver felöl jövő adatok
@@ -117,6 +118,8 @@ const deleteSelectedCompaniesDialog = ref(false);
  */
 const deleteCompanyDialog = ref(false);
 
+const loading = ref(true);
+
 /**
  * Reaktív hivatkozás a város adatainak tárolására.
  *
@@ -147,26 +150,7 @@ const selectedCompanies = ref();
  *
  * @type {Object}
  */
-const filters = ref({
-    // A globális szűrőobjektum.
-    // Van egy érték tulajdonsága a keresési lekérdezés tárolására
-    // és egy matchMode tulajdonsága a keresés típusának megadásához.
-    global: {
-        /**
-         * A globális szűrő értéke.
-         *
-         * @type {string | null}
-         */
-        value: null,
-
-        /**
-         * A globális szűrő illesztési módja.
-         *
-         * @type {FilterMatchMode}
-         */
-        matchMode: FilterMatchMode.CONTAINS,
-    },
-});
+ const filters = ref({});
 
 /**
  * Reaktív hivatkozás a beküldött (submit) állapotára.
@@ -250,6 +234,8 @@ const v$ = useVuelidate(rules, company);
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
  */
 const fetchItems = () => {
+    loading.value = true;
+
     CompanyService.getCompanies()
         .then((response) => {
             // A városok listája a companies változóban lesz elmentve
@@ -258,6 +244,8 @@ const fetchItems = () => {
         .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon
             console.error("getCompanies API Error:", error);
+        }).finally(() => {
+            loading.value = false;
         });
 };
 
@@ -509,6 +497,29 @@ const getModalDetails = () => {
         ? trans("companies_edit_details")
         : trans("companies_new_details");
 };
+
+const onUpload = () => {
+    toast.add({
+        severity: 'info',
+        summary: 'Success',
+        detail: 'File Uploaded',
+        life: 3000
+    });
+};
+
+const initFilters = () => {
+    filters.value = {
+        global: {value: null, matchMode: FilterMatchMode.CONTAINS},
+        name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+    }
+}
+
+const clearFilter = () => {
+    initFilters();
+};
+
+initFilters();
+
 </script>
 
 <template>
@@ -539,6 +550,17 @@ const getModalDetails = () => {
                 </template>
 
                 <template #end>
+                    <FileUpload 
+                        mode="basic" 
+                        accept="image/*" 
+                        :maxFileSize="1000000" 
+                        label="Import" 
+                        customUpload auto 
+                        chooseLabel="Import" 
+                        class="mr-2" 
+                        :chooseButtonProps="{ severity: 'secondary' }"
+                        @upload="onUpload"
+                    />
                     <Button
                         :label="$t('export')"
                         icon="pi pi-upload"
@@ -551,11 +573,13 @@ const getModalDetails = () => {
             <DataTable
                 ref="dt"
                 v-model:selection="selectedCompanies"
+                v-model:filters="filters"
+                :filters="filters" filterDisplay="menu"
                 :value="companies"
                 dataKey="id"
-                :paginator="true"
-                :rows="10"
-                :filters="filters"
+                :paginator="true" :rows="10" sortMode="multiple"
+                :loading="loading" stripedRows removableSort
+                :globalFilterFields="['name']"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
@@ -564,19 +588,21 @@ const getModalDetails = () => {
                     <div
                         class="flex flex-wrap gap-2 items-center justify-between"
                     >
+                        <!-- SZŰRÉS TÖRLÉSE -->
+                        <Button
+                            type="button"
+                            icon="pi pi-filter-slash"
+                            :label="$t('clear')"
+                            outlined
+                            @click="clearFilter()"
+                        />
+
+                        <!-- FELIRAT -->
                         <div class="font-semibold text-xl mb-1">
                             {{ $t("companies_title") }}
                         </div>
-                        <!--
-                        <div class="font-semibold text-xl mb-1">
-                            <Select id="country_id" class="w-full"
-                                    v-model="country"
-                                    :options="props.countries"
-                                    optionLabel="name"
-                                    optionValue="id"
-                                    :placholder="$t('name')" />
-                        </div>
-                    -->
+                        
+                        <!-- KERESÉS -->
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
@@ -587,6 +613,23 @@ const getModalDetails = () => {
                             />
                         </IconField>
                     </div>
+                </template>
+
+                <template #paginatorstart>
+                    <Button
+                        type="button"
+                        icon="pi pi-refresh"
+                        class="p-button-text"
+                        @click="fetchItems"
+                    />
+                </template>
+
+                <template #empty>
+                    {{ $t("data_not_found", { data: "company" }) }}
+                </template>
+
+                <template #loading>
+                    {{ $t("loader", { data: "Company" }) }}
                 </template>
 
                 <!-- SELECTION -->
@@ -602,7 +645,18 @@ const getModalDetails = () => {
                     :header="$t('name')"
                     sortable
                     style="min-width: 16rem"
-                />
+                >
+                    <template #body="slotProps">
+                        {{ slotProps.data.name }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'name'})"
+                        />
+                    </template>
+                </Column>
 
                 <!-- COUNTRY -->
                 <Column

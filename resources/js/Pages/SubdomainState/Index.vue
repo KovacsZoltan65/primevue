@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, reactive } from "vue";
 import { Head } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
-import { FilterMatchMode } from "@primevue/core/api";
+import { FilterMatchMode, FilterOperator } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { trans } from "laravel-vue-i18n";
 
@@ -24,6 +24,8 @@ import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
 import SubdomainService from "@/service/SubdomainService";
+
+const loading = ref(true);
 
 /**
  * Szerver felöl jövő adatok
@@ -197,6 +199,8 @@ const v$ = useVuelidate(rules, state);
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
 const fetchItems = () => {
+    loading.value = true;
+
     StateService.getSubdomainStates()
         .then((response) => {
             // A városok listája a subdomains változóban lesz elmentve
@@ -205,8 +209,26 @@ const fetchItems = () => {
         .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon
             console.error("getSubdomainStates API Error:", error);
+        }).finally(() => {
+            loading.value = false;
         });
 };
+
+const initFilters = () => {
+    filters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS, },
+        name: {
+            operator: FilterOperator.AND,
+            constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH, },],
+        },
+    };
+}
+
+const clearFilter = () => {
+    initFilters();
+};
+
+initFilters();
 
 /**
  * Eseménykezelő, amely a komponens létrejöttekor hívódik meg.
@@ -469,7 +491,7 @@ const getActiveValue = (subdomain) =>
 
 <template>
     <AppLayout>
-        <Head :title="$t('subdomains')" />
+        <Head :title="$t('subdomain_states')" />
 
         <div class="card">
             <Toolbar class="md-6">
@@ -505,11 +527,12 @@ const getActiveValue = (subdomain) =>
             <DataTable
                 ref="dt"
                 v-model:selection="selectedStates"
+                v-model:filters="filters"
                 :value="states"
-                dataKey="id"
-                :paginator="true"
-                :rows="10"
-                :filters="filters"
+                dataKey="id" :paginator="true" :rows="10" sortMode="multiple"
+                :filters="filters" filterDisplay="menu"
+                :loading="loading" stripedRows removableSort
+                :globalFilterFields="['name']"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} subdomains"
@@ -518,9 +541,18 @@ const getActiveValue = (subdomain) =>
                     <div
                         class="flex flex-wrap gap-2 items-center justify-between"
                     >
+                        <!-- SZŰRÉS TÖRLÉSE -->
+                        <Button
+                            type="button"
+                            icon="pi pi-filter-slash"
+                            :label="$t('clear')"
+                            outlined
+                            @click="clearFilter()"
+                        />
+
                         <!-- FELIRAT -->
                         <div class="font-semibold text-xl mb-1">
-                            {{ $t("subdomains_title") }}
+                            {{ $t("subdomain_state_title") }}
                         </div>
 
                         <!-- KERESÉS -->
@@ -536,6 +568,23 @@ const getActiveValue = (subdomain) =>
                     </div>
                 </template>
 
+                <template #paginatorstart>
+                    <Button
+                        type="button"
+                        icon="pi pi-refresh"
+                        text
+                        @click="fetchItems"
+                    />
+                </template>
+
+                <template #empty>
+                    {{ $t('data_not_found', {data: 'subdomain_state'} ) }}
+                </template>
+
+                <template #loading>
+                    {{ $t('loader', {data: 'Subdomain State'}) }}
+                </template>
+
                 <!-- Checkbox -->
                 <Column
                     selectionMode="multiple"
@@ -549,7 +598,18 @@ const getActiveValue = (subdomain) =>
                     :header="$t('name')"
                     sortable
                     style="min-width: 16rem"
-                />
+                >
+                    <template #body="{ data }">
+                        {{ data.name }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'name'})"
+                        />
+                    </template>
+                </Column>
 
                 <!-- Active -->
                 <Column

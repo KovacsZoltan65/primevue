@@ -54,26 +54,8 @@ const props = defineProps({
  */
 const getBools = () => {
     return [
-        {
-            /**
-             * Az inaktív állapot címkéje.
-             */
-            label: trans("inactive"),
-            /**
-             * Az inaktív állapot értéke.
-             */
-            value: 0,
-        },
-        {
-            /**
-             * Az aktív állapot címkéje.
-             */
-            label: trans("active"),
-            /**
-             * Az aktív állapot értéke.
-             */
-            value: 1,
-        },
+        { label: trans("inactive"), value: 0, },
+        { label: trans("active"), value: 1, },
     ];
 };
 

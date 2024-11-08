@@ -48,14 +48,8 @@ const props = defineProps({
 
 const getBools = () => {
     return [
-        {
-            label: trans("inactive"),
-            value: 0,
-        },
-        {
-            label: trans("active"),
-            value: 1,
-        },
+        { label: trans("inactive"), value: 0, },
+        { label: trans("active"), value: 1, },
     ];
 };
 
@@ -190,89 +184,33 @@ const rules = {
      */
     url: {},
 
-    /**
-     * A name mező validációs szabálya.
-     *
-     * A name mezőnek meg kell felelnie a következ  feltételeknek:
-     * - a name nem lehet üres
-     * - a name hosszának minimum 3 karakternek kell lennie
-     * - a name hosszának maximum 255 karakternek kell lennie
-     *
-     * @type {Object}
-     */
     name: {
         required: helpers.withMessage( trans("validate_name"), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
         maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
     },
 
-    /**
-     * A db_host mező validációs szabálya.
-     *
-     * A db_host mezőnek meg kell felelnie a következ  feltételeknek:
-     * - a db_host nem lehet üres
-     * - a db_host hosszának minimum 3 karakternek kell lennie
-     *
-     * @type {Object}
-     */
     db_host: {
         required: helpers.withMessage(trans('validate_field_required', {field: 'db_host'}), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
     },
 
-    /**
-     * A db_port mező validációs szabálya.
-     *
-     * A db_port mezőnek meg kell felelnie a következ  feltételeknek:
-     * - a db_port nem lehet üres
-     * - a db_port minimum 1-nek kell lennie
-     * - a db_port maximum 9999-nek kell lennie
-     *
-     * @type {Object}
-     */
     db_port: {
         required: helpers.withMessage(trans('validate_field_required', {field: 'db_port'}), required),
         min: helpers.withMessage( ({ $params }) => trans('validate_min.numeric', { min: $params.min }), minLength(validationRules.mysql_port_min)),
         max: helpers.withMessage( ({ $params }) => trans('validate_max.numeric', { max: $params.max }), minLength(validationRules.mysql_port_max)),
     },
 
-    /**
-     * A db_name mező validációs szabálya.
-     *
-     * A db_name mezőnek meg kell felelnie a következ  feltételeknek:
-     * - a db_name nem lehet üres
-     * - a db_name hosszának minimum 3 karakternek kell lennie
-     *
-     * @type {Object}
-     */
     db_name: {
         required: helpers.withMessage( trans("validate_name"), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
     },
 
-    /**
-     * A db_user mező validációs szabálya.
-     *
-     * A db_user mezőnek meg kell felelnie a következ  feltételeknek:
-     * - a db_user nem lehet üres
-     * - a db_user hosszának minimum 3 karakternek kell lennie
-     *
-     * @type {Object}
-     */
     db_user: {
         required: helpers.withMessage( trans("validate_name"), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
     },
 
-    /**
-     * A db_password mező validációs szabálya.
-     *
-     * A db_password mezőnek meg kell felelnie a következ  feltételeknek:
-     * - a db_password nem lehet üres
-     * - a db_password hosszának minimum 3 karakternek kell lennie
-     *
-     * @type {Object}
-     */
     db_password: {
         required: helpers.withMessage( trans("validate_name"), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
@@ -286,8 +224,6 @@ const rules = {
  */
 const v$ = useVuelidate(rules, subdomain);
 
-// ======================================================
-
 /**
  * Beállítja az alapértelmezett értékeket a szűrő mezők számára.
  *
@@ -297,65 +233,47 @@ const initFilters = () => {
     filters.value = {
         // Globális szűrő
         global: {
-            value: null, // A szűrő értéke
-            matchMode: FilterMatchMode.CONTAINS, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
+            value: null,
+            matchMode: FilterMatchMode.CONTAINS,
         },
         // Név szűrő
         name: {
-            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
+            operator: FilterOperator.AND,
             constraints: [
-                {
-                    value: null, // A szűrő értéke
-                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
-                },
+                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
             ],
         },
         // Alomain szűrő
         subdomain: {
-            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
+            operator: FilterOperator.AND,
             constraints: [
-                {
-                    value: null, // A szűrő értéke
-                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
-                },
+                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
             ],
         },
         // URL szűrő
         url: {
-            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
+            operator: FilterOperator.AND,
             constraints: [
-                {
-                    value: null, // A szűrő értéke
-                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
-                },
+                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
             ],
         },
         // db_name szűrő
         db_name: {
-            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
+            operator: FilterOperator.AND,
             constraints: [
-                {
-                    value: null, // A szűrő értéke
-                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
-                },
+                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
             ],
         },
         db_user: {
-            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
+            operator: FilterOperator.AND,
             constraints: [
-                {
-                    value: null, // A szűrő értéke
-                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
-                },
+                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
             ],
         },
         active: {
-            operator: FilterOperator.AND, // Logikai operátor (és, vagy)
+            operator: FilterOperator.AND,
             constraints: [
-                {
-                    value: null, // A szűrő értéke
-                    matchMode: FilterMatchMode.STARTS_WITH, // A szűrő típusa (tartalmazza, kezdődik, pontosan)
-                },
+                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
             ],
         }
     }
@@ -394,7 +312,7 @@ const fetchItems = async () => {
 /**
  * Lekéri a városok listáját az API-ból, amikor a komponens létrejön.
  *
- * Ez a funkció a városok listáját lekéri az API-ból, amikor a komponens létrejön.
+ * Ez a funkció a subdomainek listáját lekéri az API-ból, amikor a komponens létrejön.
  * A városok listája a subdomains változóban lesz elmentve.
  *
  * @return {void}

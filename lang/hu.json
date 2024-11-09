@@ -170,5 +170,7 @@
     "command_company_created": "A cég sikeresen létrejött a megadott adatokkal: ID :id",
     "command_company_updated": "",
     "command_company_not_found_with_id": "Nem található cég a megadott azonosító(k)kal.",
-    "command_company_": ""
+    "command_company_": "",
+    
+    "exception_entity_not_found": "A(z) :id azonosítóhoz nem található entitás."
 }

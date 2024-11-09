@@ -19,14 +19,12 @@ class PersonNotFoundException extends Exception
      * @var int
      */
     protected int $personId;
-/*************  ✨ Codeium Command 🌟  *************/
     /**
      * A kivétel megjelenésekor megjelenő üzenet.
      *
      * @var string
      */
     protected string $message = '';
-/******  9f99798c-d697-44db-bfc1-fba2bcc7c92c  *******/
 
     // TODO: Nyelvesítés még nincs megoldva
     public function __construct(int $id) {

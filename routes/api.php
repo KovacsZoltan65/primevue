@@ -54,7 +54,7 @@ Route::prefix('admin/menu')->group(function () {
  * COMPANIES
  * =======================================================
  * A cégek listájának lekérése az API-n keresztül.
- * 
+ *
  * @param CompanyController $companyController A cégvezérlő példány.
  * @return JsonResponse A vállalatok listáját tartalmazó JSON-válasz.
  */
@@ -89,12 +89,12 @@ Route::delete('/items/{id}', [CompanyController::class, 'deleteCompany'])->name(
 
 /**
  * =======================================================
- * VÁROSOK
+ * CITIES
  * =======================================================
  *
  * A városokhoz tartozó API útvonalak.
  * A városok listáját szolgáltatja az API-n keresztül.
- * 
+ *
  * @param CityController $cityController A CityController példány.
  * @return JsonResponse A városok listáját tartalmazó JSON-válasz.
  */
@@ -102,7 +102,7 @@ Route::get('/cities', [CityController::class, 'getCities'])->name('api.get.citie
 
 /**
  * Egy város lekérése azonosító alapján az API-n keresztül.
- * 
+ *
  * @param int $id A lekérdezni kívánt város azonosítója.
  * @return JsonResponse A várost tartalmazó JSON-válasz.
  */
@@ -145,9 +145,9 @@ Route::delete('/countries/{id}', [CountryController::class, 'deleteCountry'])->n
  * JOGI SZEMÉLYEK (legal entity)
  * =======================================================
  */
-Route::get('/entities', [EntityController::class, 'getEntities'])->name('api.get.entities');
+Route::get(uri: '/entities', action: [EntityController::class, 'getEntities'])->name(name: 'api.get.entities');
 
-Route::get('/entities/{id}', [EntityController::class, 'getEntity'])->name('api.get.entity_by_id')->where('id', '[0-9]+');
+Route::get(uri: '/entities/{id}', action: [EntityController::class, 'getEntity'])->name(name: 'api.get.entity_by_id')->where(name: 'id', expression: '[0-9]+');
 Route::get('/entities/name/{name}', [EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
 
 Route::post('/entities', [EntityController::class, 'createEntity'])->name('api.post.entities');

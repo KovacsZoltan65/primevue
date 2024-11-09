@@ -16,23 +16,54 @@ use App\Http\Controllers\SubdomainStateController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
+use Illuminate\Http\Response;
 
+
+/**
+ * A POST /language útvonal fogadja a nyelvválasztó formot és változtatja a nyelvet.
+ */
 Route::post('/language', [LanguageController::class, 'index'])->name('language');
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
+/**
+ * Határozza meg az alkalmazás gyökérútvonalát.
+ *
+ * Ez az útvonal az „Üdvözöljük” komponenst az Inertia segítségével jeleníti meg.
+ * Számos kellék az összetevőhöz, beleértve a bejelentkezést és a regisztrációt
+ * elérhetőek az útvonalak, valamint a jelenlegi Laravel és PHP verziók.
+ */
+Route::get(uri: '/', action: function (): InertiaResponse {
+    return Inertia::render(component: 'Welcome', props: [
+        // Ellenőrizze, hogy a bejelentkezési útvonal meg van-e határozva
+        'canLogin' => Route::has(name: 'login'),
+
+        // Ellenőrizze, hogy a regisztrációs útvonal meg van-e határozva
+        'canRegister' => Route::has(name: 'register'),
+
+        // Szerezd meg az aktuális Laravel verziót
         'laravelVersion' => Application::VERSION,
+
+        // Szerezd meg a PHP aktuális verzióját
         'phpVersion' => PHP_VERSION,
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+/**
+ * Határozza meg a főoldal útvonalát.
+ *
+ * Ez az útvonal az Auth middleware-t használja,
+ * hogy biztosítsa a felhasználó bejelentkezését a rendszerbe,
+ * mielőtt elérheti a főoldalt.
+ */
+Route::get(uri: '/dashboard', action: function (): InertiaResponse {
+    return Inertia::render(component: 'Dashboard');
+})->middleware(middleware: ['auth', 'verified'])->name(name: 'dashboard');
 
-Route::middleware('auth')->group(function () {
+/**
+ * Ezeket az útvonalakat az "auth" middleware-nek kell végrehajtania,
+ * hogy ellenőrizze, hogy a felhasználó bejelentkezett-e a rendszerbe.
+ */
+Route::middleware(middleware: 'auth')->group(callback: function (): void {
 
     /**
      * =====================================================
@@ -40,21 +71,21 @@ Route::middleware('auth')->group(function () {
      * =====================================================
      *
      * Határozza meg a CompanyController erőforrás útvonalait.
-     * Ezek az útvonalak az erőforrás módszert használják a közös meghatározásához
+     * Ezek az útvonalak a resource módszert használják a közös meghatározásához
      * CRUD műveletek. A testreszabáshoz a names metódust használjuk
      * az útvonalak nevei.
      */
     //Route::get('/getCompanies', [CompanyController::class, 'getCompanies'])->name('getCompanies');
     Route::resource('companies', CompanyController::class)->names([
-        // Az index útvonal nevének beállítása „cégek”.
+        // Az index útvonal nevének beállítása „companies”.
         'index' => 'companies',
-        // The create route name is set to 'companies.create'.
+        // Az útvonal létrehozásának neve "companies.create"-re van állítva.
         'create' => 'companies.create',
-        // The store route name is set to 'companies.store'.
+        // Az üzlet útvonalának neve "companies.store"-ra van állítva.
         'store' => 'companies.store',
-        // The update route name is set to 'companies.update'.
+        // A frissítési útvonal neve "companies.update"-re van állítva.
         'update' => 'companies.update',
-        // The destroy route name is set to 'companies.destroy'.
+        // A megsemmisítési útvonal neve "companies.destroy"-ra van állítva.
         'destroy' => 'companies.destroy',
     ]);
 
@@ -62,11 +93,6 @@ Route::middleware('auth')->group(function () {
      * =====================================================
      * VÁROSOK
      * =====================================================
-     *
-     * Határozza meg a CityController erőforrás útvonalait.
-     * Ezek az útvonalak az erőforrás módszert használják a közös meghatározásához
-     * CRUD műveletek. A testreszabáshoz a names metódust használjuk
-     * az útvonalak nevei.
      */
     //Route::resource('/cities', CityController::class)->names([
     //    'index' => 'cities',
@@ -75,23 +101,31 @@ Route::middleware('auth')->group(function () {
     //    'update' => 'cities.update',
     //    'destroy' => 'cities.destroy',
     //]);
-    Route::get('/cities', [CityController::class, 'index'])->name('cities');
+    Route::get(uri: '/cities', action: [CityController::class, 'index'])->name(name: 'cities');
 
-
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    /**
+     * Ez az útvonal a ProfileController osztály edit metódusát hívja meg,
+     * hogy megjelenítse a profil szerkesztési oldalát.
+     */
+    Route::get(uri: '/profile', action: [ProfileController::class, 'edit'])->name(name: 'profile.edit');
+    /**
+     * Ez az útvonal a ProfileController osztály update metódusát hívja meg,
+     * hogy frissítse a profil adatait.
+     */
+    Route::patch(uri: '/profile', action: [ProfileController::class, 'update'])->name(name: 'profile.update');
+    /**
+     * Ez az útvonal a ProfileController osztály destroy metódusát hívja meg,
+     * hogy törölje a felhasználó profilját.
+     */
+    Route::delete(uri: '/profile', action: [ProfileController::class, 'destroy'])->name(name: 'profile.destroy');
 
     /**
      * =====================================================
      * ORSZÁGOK
      * =====================================================
-     *
-     * Határozza meg a CountryController erőforrás útvonalait.
-     * Ezek az útvonalak az erőforrás módszert használják a közös meghatározásához
-     * CRUD műveletek. A testreszabáshoz a names metódust használjuk
-     * az útvonalak nevei.
      */
+    // Ez az útvonal a CountryController osztály index metódusát hívja meg,
+    // hogy megjelenítse az országok listáját.
     Route::get('/countries', [CountryController::class, 'index'])->name('countries');
 
     /**
@@ -135,14 +169,14 @@ Route::middleware('auth')->group(function () {
      * =======================================================
      */
     Route::get('/subdomain_states', [SubdomainStateController::class, 'index'])->name('subdomain_states');
-    
+
     /**
      * =======================================================
      * PERSONS
      * =======================================================
      */
     Route::get('/persons', [PersonController::class, 'index'])->name('persons');
-    
+
     /**
      * =======================================================
      * ENTITIES

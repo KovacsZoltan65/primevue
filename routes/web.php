@@ -32,13 +32,13 @@ Route::post('/language', [LanguageController::class, 'index'])->name('language')
  * Számos kellék az összetevőhöz, beleértve a bejelentkezést és a regisztrációt
  * elérhetőek az útvonalak, valamint a jelenlegi Laravel és PHP verziók.
  */
-Route::get(uri: '/', action: function (): InertiaResponse {
+Route::get('/', action: function (): InertiaResponse {
     return Inertia::render(component: 'Welcome', props: [
         // Ellenőrizze, hogy a bejelentkezési útvonal meg van-e határozva
-        'canLogin' => Route::has(name: 'login'),
+        'canLogin' => Route::has('login'),
 
         // Ellenőrizze, hogy a regisztrációs útvonal meg van-e határozva
-        'canRegister' => Route::has(name: 'register'),
+        'canRegister' => Route::has('register'),
 
         // Szerezd meg az aktuális Laravel verziót
         'laravelVersion' => Application::VERSION,
@@ -55,15 +55,15 @@ Route::get(uri: '/', action: function (): InertiaResponse {
  * hogy biztosítsa a felhasználó bejelentkezését a rendszerbe,
  * mielőtt elérheti a főoldalt.
  */
-Route::get(uri: '/dashboard', action: function (): InertiaResponse {
+Route::get('/dashboard', action: function (): InertiaResponse {
     return Inertia::render(component: 'Dashboard');
-})->middleware(middleware: ['auth', 'verified'])->name(name: 'dashboard');
+})->middleware(middleware: ['auth', 'verified'])->name('dashboard');
 
 /**
  * Ezeket az útvonalakat az "auth" middleware-nek kell végrehajtania,
  * hogy ellenőrizze, hogy a felhasználó bejelentkezett-e a rendszerbe.
  */
-Route::middleware(middleware: 'auth')->group(callback: function (): void {
+Route::middleware('auth')->group(function () {
 
     /**
      * =====================================================
@@ -101,23 +101,23 @@ Route::middleware(middleware: 'auth')->group(callback: function (): void {
     //    'update' => 'cities.update',
     //    'destroy' => 'cities.destroy',
     //]);
-    Route::get(uri: '/cities', action: [CityController::class, 'index'])->name(name: 'cities');
+    Route::get('/cities', action: [CityController::class, 'index'])->name('cities');
 
     /**
      * Ez az útvonal a ProfileController osztály edit metódusát hívja meg,
      * hogy megjelenítse a profil szerkesztési oldalát.
      */
-    Route::get(uri: '/profile', action: [ProfileController::class, 'edit'])->name(name: 'profile.edit');
+    Route::get('/profile', action: [ProfileController::class, 'edit'])->name('profile.edit');
     /**
      * Ez az útvonal a ProfileController osztály update metódusát hívja meg,
      * hogy frissítse a profil adatait.
      */
-    Route::patch(uri: '/profile', action: [ProfileController::class, 'update'])->name(name: 'profile.update');
+    Route::patch('/profile', action: [ProfileController::class, 'update'])->name('profile.update');
     /**
      * Ez az útvonal a ProfileController osztály destroy metódusát hívja meg,
      * hogy törölje a felhasználó profilját.
      */
-    Route::delete(uri: '/profile', action: [ProfileController::class, 'destroy'])->name(name: 'profile.destroy');
+    Route::delete('/profile', action: [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     /**
      * =====================================================

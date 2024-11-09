@@ -10,10 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class MenuItem extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'menu_items';
-    protected $fillable = ['title', 'icon', 'url', 'default_weight', 'parent_id'];
-    
+    protected $fillable = ['label', 'icon', 'url', 'default_weight', 'parent_id'];
+
     /**
      * Az aktuális menüpont gyermekmenüpontjainak lekérése.
      *
@@ -53,4 +53,31 @@ class MenuItem extends Model
     {
         return $this->hasMany(MenuItemUsage::class);
     }
+
+    /**
+     * Lekéri a menüpontot címke alapján.
+     *
+     * Ezzel visszaadja a menüpontot, amelynek a címke (label) megegyezik a megadotttal.
+     * Ha nincs ilyen menüpont, akkor null értéket ad vissza.
+     *
+     * @param string $label A keresett menüpont címke.
+     * @return static|null A megtalált menüpont, vagy null, ha nincs ilyen.
+     */
+    public static function findByLabel(string $label): ?self {
+        return self::where('label', '=', $label)->first();
+    }
+
+    /**
+     * Lekéri a menüpontok default_weight oszlopának maximumát.
+     *
+     * Ezzel visszaadja a menüpontok default_weight oszlopának maximumát.
+     * A visszatérési érték egész szám lesz.
+     *
+     * @return int A maximum default_weight érték.
+     */
+    public static function getMaxDefaultWeight(): int
+    {
+        return (int) self::max('default_weight') ?? 1;
+    }
+
 }

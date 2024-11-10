@@ -459,14 +459,14 @@ const getActiveValue = (city) =>
             <Toolbar class="md-6">
                 <template #start>
                     <Button
-                        :label="$t('new')"
+                        :label="$t('add_new')"
                         icon="pi pi-plus"
                         severity="secondary"
                         class="mr-2"
                         @click="openNew"
                     />
                     <Button
-                        :label="$t('delete')"
+                        :label="$t('delete_selected')"
                         icon="pi pi-trash"
                         severity="secondary"
                         @click="confirmDeleteSelected"

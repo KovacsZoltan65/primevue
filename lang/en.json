@@ -37,8 +37,8 @@
     "remember_me": "Remember Me",
     "forgot_password": "Forgot password",
 
-    "new": "New",
-    "delete": "Delete",
+    "add_new": "New",
+    "delete_selected": "Delete",
     "export": "Export",
     "search": "Search...",
     "code": "Code",
@@ -171,6 +171,6 @@
     "command_company_updated": "",
     "command_company_not_found_with_id": "No companies found with the provided ID(s).",
     "command_company_": "",
-    
+
     "exception_entity_not_found": "Queueable entity not found for ID [{$id}]."
 }

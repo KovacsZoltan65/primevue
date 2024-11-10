@@ -688,14 +688,14 @@ const onUpload = () => {
             <Toolbar class="md-6">
                 <template #start>
                     <Button
-                        :label="$t('new')"
+                        :label="$t('add_new')"
                         icon="pi pi-plus"
                         severity="secondary"
                         class="mr-2"
                         @click="openNew"
                     />
                     <Button
-                        :label="$t('delete')"
+                        :label="$t('delete_selected')"
                         icon="pi pi-trash"
                         severity="secondary"
                         @click="confirmDeleteSelected"
@@ -706,14 +706,14 @@ const onUpload = () => {
                 </template>
 
                 <template #end>
-                    <FileUpload 
-                        mode="basic" 
-                        accept="image/*" 
-                        :maxFileSize="1000000" 
-                        label="Import" 
-                        customUpload auto 
-                        chooseLabel="Import" 
-                        class="mr-2" 
+                    <FileUpload
+                        mode="basic"
+                        accept="image/*"
+                        :maxFileSize="1000000"
+                        label="Import"
+                        customUpload auto
+                        chooseLabel="Import"
+                        class="mr-2"
                         :chooseButtonProps="{ severity: 'secondary' }"
                         @upload="onUpload"
                     />
@@ -833,7 +833,7 @@ const onUpload = () => {
                 </Column>
 
                 <!-- url -->
-                <Column 
+                <Column
                     field="url"
                     :header="$t('url')"
                     style="min-width: 16rem"

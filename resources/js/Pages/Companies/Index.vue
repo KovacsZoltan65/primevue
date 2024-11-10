@@ -530,7 +530,7 @@ initFilters();
             <Toolbar class="md-6">
                 <template #start>
                     <Button
-                        :label="$t('new')"
+                        :label="$t('add_new')"
                         icon="pi pi-plus"
                         severity="secondary"
                         class="mr-2"
@@ -538,7 +538,7 @@ initFilters();
                     />
 
                     <Button
-                        :label="$t('delete')"
+                        :label="$t('delete_selected')"
                         icon="pi pi-trash"
                         severity="secondary"
                         class="mr-2"
@@ -550,14 +550,14 @@ initFilters();
                 </template>
 
                 <template #end>
-                    <FileUpload 
-                        mode="basic" 
-                        accept="image/*" 
-                        :maxFileSize="1000000" 
-                        label="Import" 
-                        customUpload auto 
-                        chooseLabel="Import" 
-                        class="mr-2" 
+                    <FileUpload
+                        mode="basic"
+                        accept="image/*"
+                        :maxFileSize="1000000"
+                        label="Import"
+                        customUpload auto
+                        chooseLabel="Import"
+                        class="mr-2"
                         :chooseButtonProps="{ severity: 'secondary' }"
                         @upload="onUpload"
                     />
@@ -601,7 +601,7 @@ initFilters();
                         <div class="font-semibold text-xl mb-1">
                             {{ $t("companies_title") }}
                         </div>
-                        
+
                         <!-- KERESÉS -->
                         <IconField>
                             <InputIcon>

@@ -182,6 +182,7 @@ Route::middleware('auth')->group(function () {
      * ENTITIES
      * =======================================================
      */
-    Route::get('/entities', [EntityController::class, 'index'])->name('entities');});
+    Route::get('/entities', [EntityController::class, 'index'])->name('entities');}
+);
 
 require __DIR__.'/auth.php';

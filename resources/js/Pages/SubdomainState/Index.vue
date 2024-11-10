@@ -236,8 +236,8 @@ function confirmDeleteSelected() {
 /**
  * Nyitja meg az új állapot dialógusablakot.
  *
- * Ez a függvény a states változó értékét alaphelyzetbe állítja, 
- * a submitted változó értékét False-ra állítja, és a stateDialog 
+ * Ez a függvény a states változó értékét alaphelyzetbe állítja,
+ * a submitted változó értékét False-ra állítja, és a stateDialog
  * változó értékét igazra állítja, amely megnyitja az új állapot dialógusablakot.
  *
  * @return {void}
@@ -443,9 +443,9 @@ const exportCSV = () => {
 };
 
 const deleteSelectedStates = () => {
-    
+
     SubdomainService.deleteSubdomainStates(selectedStates.value);
-    
+
     states.value = states.value.filter(
         (val) => !selectedStates.value.includes(val),
     );
@@ -475,14 +475,14 @@ const getActiveValue = (subdomain) =>
             <Toolbar class="md-6">
                 <template #start>
                     <Button
-                        :label="$t('new')"
+                        :label="$t('add_new')"
                         icon="pi pi-plus"
                         severity="secondary"
                         class="mr-2"
                         @click="openNew"
                     />
                     <Button
-                        :label="$t('delete')"
+                        :label="$t('delete_selected')"
                         icon="pi pi-trash"
                         severity="secondary"
                         @click="confirmDeleteSelected"

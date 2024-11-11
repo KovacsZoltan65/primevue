@@ -113,8 +113,14 @@
     "companies_delete_details_2": "Confirm Deletion",
 
     "subdomains": "Subdomains",
+    "subdomains_title": "Subdomainek kezelése",
 
     "subdomain_states": "Subdomain States",
+    "subdomain_state_title": "Subdomain állapotok kezelése",
+
+    "entities": "Entities",
+    "entity": "Entity",
+    "entities_title": "Legal Entities",
 
     "validate_required": "This field is required.",
     "validate_field_required": "Specifying :field is required.",

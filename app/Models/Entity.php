@@ -24,7 +24,7 @@ class Entity extends Model
         'active' => 1
     ];
     
-    public function scopeSerach(Builder $query, Request $request)
+    public function scopeSearch(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {
                 $query->where(function ($query) use ($request) {

@@ -116,6 +116,10 @@
     "subdomain_states": "Subdomain állapotok",
     "subdomain_state_title": "Subdomain állapotok kezelése",
 
+    "entities": "Entitások",
+    "entity": "Entitás",
+    "entities_title": "Dolgozók kezelése",
+
     "validate_required": "Ez a mező kötelező.",
     "validate_field_required": "A(z) :field megadása kötelező.",
     "validate_name": "A név megadása kötelező",

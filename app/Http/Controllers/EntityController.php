@@ -19,8 +19,8 @@ class EntityController extends Controller
 
     public function index(Request $request)
     {
-        Inertia::render('Entities/Index',[
-            'search' => request('search')
+        return Inertia::render('Entity/Index', [
+            'search' => $request->get('search')
         ]);
     }
 

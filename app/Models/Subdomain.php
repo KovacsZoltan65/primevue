@@ -79,7 +79,7 @@ class Subdomain extends Model
         'last_export' => '',
     ];
     */
-    
+
     /**
      * Scope a query to only include subdomains with a name matching the search term.
      *
@@ -94,6 +94,17 @@ class Subdomain extends Model
                 $query->where('name', 'like', "%{$request->search}%");
             });
         });
+    }
+
+    /**
+     * Határozza meg a lekérdezést, hogy csak az aktív aldomaineket tartalmazza.
+     *
+     * @param Builder $query A lekérdezéskészítő példány.
+     * @return Builder A módosított lekérdezéskészítő példány.
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', APP_ACTIVE);
     }
 
     /**

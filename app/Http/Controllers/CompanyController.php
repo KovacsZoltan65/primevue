@@ -29,8 +29,20 @@ class CompanyController extends Controller
         // Szerezze le a vállalatokat a lekérdezésből, és alakítsa őket AnonymousResourceCollection-vé.
         //$companies = CompanyResource::collection($companyQuery->get());
 
-        $cities = City::where('active', 1)->orderBy('name')->select('id', 'name')->get()->toArray();
-        $countries = Country::where('active', 1)->orderBy('name')->select('id', 'name')->get()->toArray();
+        /*
+        $cities = City::where('active', 1)
+            ->orderBy('name')
+            ->select('id', 'name')
+            ->get()->toArray();
+        */
+        $cities = City::select('id', 'name')
+                ->active()
+                ->orderBy('name')
+                ->get()->toArray();
+        $countries = Country::select('id', 'name')
+                ->active()
+                ->orderBy('name')
+                ->get()->toArray();
 
         // Adjon vissza egy Inertia választ a vállalatok és a keresési paraméterek megadásával.
         return Inertia::render("Companies/Index", [

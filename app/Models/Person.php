@@ -14,18 +14,18 @@ class Person extends Model
 {
     use HasFactory,
         SoftDeletes;
-    
+
     protected $table = 'persons';
     protected $fillable = ['name', 'email', 'password', 'language', 'birthdate', 'active'];
     protected $attributes = [
-        'name' => '', 
-        'email' => '', 
-        'password' => '', 
-        'language' => 'hu', 
-        'birthdate' => '', 
+        'name' => '',
+        'email' => '',
+        'password' => '',
+        'language' => 'hu',
+        'birthdate' => '',
         'active' => 1
     ];
-    
+
     public function scopeSearch(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {
@@ -34,7 +34,19 @@ class Person extends Model
                 });
             })->where('active', APP_ACTIVE);
     }
-    
+
+    /**
+     * A lekérdezést úgy módosítja, hogy csak azokat a személyeket tartalmazza,
+     * akiknél az 'active' mező 'APP_ACTIVE'-ra van állítva.
+     *
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', APP_ACTIVE);
+    }
+
     /**
      * Azok a cégek, amelyekhez az adott személy tartozik.
      *
@@ -44,7 +56,7 @@ class Person extends Model
     {
         return $this->belongsToMany(Company::class, 'person_company');
     }
-    
+
     /**
      * Azok az entitások, amelyekhez az adott személy a cégén keresztül tartozik.
      *

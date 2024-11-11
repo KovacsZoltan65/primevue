@@ -56,7 +56,20 @@ class Region extends Model
             });
         })->where('active', 1);
     }
-    
+
+/*************  ✨ Codeium Command ⭐  *************/
+/**
+ * Határozza meg a lekérdezést, hogy csak az aktív régiókat tartalmazza.
+ *
+ * @param Builder $query A lekérdezéskészítő példány.
+ * @return Builder A módosított lekérdezéskészítő példány.
+ */
+/******  44861449-bf10-46bc-8206-f761aa3e8697  *******/
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', APP_ACTIVE);
+    }
+
     /**
      * A régióhoz tartozó ország
      *

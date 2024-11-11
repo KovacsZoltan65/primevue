@@ -31,7 +31,7 @@ class SubdomainState extends Model
     protected $casts = [
         'active' => 'integer',
     ];
-    
+
     /**
      * Határozza meg a lekérdezést, hogy a keresési kifejezésnek megfelelő névvel rendelkező aldomain állapotokat is tartalmazzon.
      *
@@ -47,7 +47,19 @@ class SubdomainState extends Model
             });
         });
     }
-    
+
+    /**
+     * Határozza meg a lekérdezést, hogy csak az aktív aldomain állapotokat tartalmazza.
+     *
+     * @param Builder $query A lekérdezéskészítő példány.
+     * @return Builder A módosított lekérdezéskészítő példány.
+     */
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', APP_ACTIVE);
+    }
+
     /**
      * Szerezze be az ehhez az aldomain állapothoz társított aldomaineket.
      *

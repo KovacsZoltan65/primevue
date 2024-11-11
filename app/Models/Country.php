@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 
 /**
  * Class Country
- * 
+ *
  * @property int $id
  * @property string $name
  * @property string $code
@@ -29,19 +29,39 @@ class Country extends Model
 
 	protected $fillable = ['name', 'code', 'active'];
 
-        protected $casts = [
-            'active' => 'integer',
-        ];
-        
-        public function scopeSearch(Builder $query, Request $request)
-        {
-            return $query->when($request->search, function ($query) use ($request) {
-                $query->where(function ($query) use ($request) {
-                    $query->where('name', 'like', "%{$request->search}%");
-                });
-            })->where('active', APP_ACTIVE);
-        }
-        
+    protected $casts = [
+        'active' => 'integer',
+    ];
+
+    /**
+     * Határozza meg a lekérdezést, hogy csak olyan országokat tartalmazzon,
+     * amelyek neve megegyezik a keresési kifejezéssel.
+     *
+     * @param Builder $query A lekérdezéskészítő példány.
+     * @param Request $request Az aktuális HTTP-kérelem objektum,
+     *        amely keresési paramétereket tartalmaz.
+     * @return Builder A módosított lekérdezéskészítő példány.
+     */
+    public function scopeSearch(Builder $query, Request $request)
+    {
+        return $query->when($request->search, function ($query) use ($request) {
+            $query->where(function ($query) use ($request) {
+                $query->where('name', 'like', "%{$request->search}%");
+            });
+        })->active();
+    }
+
+    /**
+     * Határozza meg a lekérdezést, hogy csak az aktív városokat tartalmazza.
+     *
+     * @param Builder $query
+     * @return Builder
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', APP_ACTIVE);
+    }
+
 	/**
 	 * A kapcsolódó városok listája.
 	 *
@@ -61,7 +81,7 @@ class Country extends Model
 	 */
 	public function regions()
 	{
-            return $this->hasMany(Region::class, 'region_id');
+        return $this->hasMany(Region::class, 'region_id');
 	}
 }
 

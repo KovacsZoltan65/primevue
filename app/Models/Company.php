@@ -12,7 +12,7 @@ class Company extends Model
 {
     use HasFactory,
         SoftDeletes;
-    
+
     protected $table = 'companies';
     protected $fillable = ['name', 'country', 'city'];
 
@@ -34,6 +34,17 @@ class Company extends Model
         });
     }
 
+/**
+ * Módosítsa a lekérdezést úgy, hogy csak az aktív cégeket tartalmazza.
+ *
+ * @param Builder $query A lekérdezéskészítő példány.
+ * @return Builder A módosított lekérdezéskészítő példány.
+ */
+    public function scopeActive(Builder $query)
+    {
+        return $query->where('active', APP_ACTIVE);
+    }
+
     /**
      * Get the country that owns the Company
      *
@@ -42,9 +53,9 @@ class Company extends Model
     public function country()
     {
         // A vállalat tartozó országa
-        // 
+        //
         // Az ország, amelyhez a vállalat tartozik.
-        // 
+        //
         // @return \Illuminate\Database\Eloquent\Relations\BelongsTo
         return $this->belongsTo(Country::class, 'country');
     }
@@ -57,16 +68,16 @@ class Company extends Model
     public function city()
     {
         // A vállalat tartozó városa
-        // 
+        //
         // Egy vállalatnak pontosan egy városa van.
-        // 
+        //
         // @return \Illuminate\Database\Eloquent\Relations\BelongsTo
         return $this->belongsTo(City::class, 'city');
     }
-    
+
     /**
      * =========================================================
-     * 
+     *
      * =========================================================
      * $person = Person::find(1);
      * $entities = $person->entities;
@@ -78,7 +89,7 @@ class Company extends Model
     {
         return $this->belongsToMany(Person::class, 'person_company');
     }
-    
+
     /**
      * =========================================================
      * Egy Company lekérdezése, amelyhez tartozó Entity-je van

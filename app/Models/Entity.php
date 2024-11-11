@@ -12,18 +12,18 @@ class Entity extends Model
 {
     use HasFactory,
         SoftDeletes;
-    
+
     protected $table = 'entities';
     protected $fillable = ['name', 'email', 'start_date', 'end_date', 'last_export', 'active'];
     protected $attributes = [
-        'name' => '', 
+        'name' => '',
         'email' => '',
-        'start_date' => '', 
-        'end_date' => NULL, 
+        'start_date' => '',
+        'end_date' => NULL,
         'last_export' => NULL,
         'active' => 1
     ];
-    
+
     public function scopeSearch(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {
@@ -32,12 +32,24 @@ class Entity extends Model
                 });
             })->where('active', APP_ACTIVE);
     }
-    
+
+    /**
+     * A lekérdezést úgy módosítja, hogy csak azokat a szervezeteket tartalmazza,
+     * amelyeknél az 'active' mező 'APP_ACTIVE'-ra van állítva.
+     *
+     * @param Builder $query A lekérdezéskészítő példány.
+     * @return Builder A módosított lekérdezéskészítő példány.
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', APP_ACTIVE);
+    }
+
     //public function persons()
     //{
     //    return $this->belongsTo(Person::class, 'person_entity_rel');
     //}
-    
+
     /**
      * =========================================================
      * Egy Entity lekérdezése, amelyhez tartozó Company-k vannak

@@ -991,7 +991,7 @@ const onUpload = () => {
                 <Button
                     :label="$t('save')"
                     icon="pi pi-check"
-                    @click="saveCountry"
+                    @click="saveSubdomain"
                 />
             </template>
         </Dialog>

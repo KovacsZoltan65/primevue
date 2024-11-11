@@ -4,8 +4,14 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
 
 import EntityService from '@/service/EntityService';
-
+import { trans } from "laravel-vue-i18n";
 import { FilterMatchMode, FilterOperator } from "@primevue/core/api";
+import { formatCurrency, formatDate } from "@/helpers/functions";
+
+// Validation
+import useVuelidate from "@vuelidate/core";
+import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
+import validationRules from "../../Validation/validationRules.json";
 
 import { useToast } from "primevue/usetoast";
 import Button from 'primevue/button';
@@ -14,12 +20,25 @@ import Toolbar from 'primevue/toolbar';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import InputText from 'primevue/inputtext';
-import { IconField, InputIcon } from 'primevue';
+import { Dialog, IconField, InputIcon } from 'primevue';
 
 const toast = useToast();
 
 const dt = ref();
 const loading = ref(true);
+
+const rules = {
+    name: {
+        required: helpers.withMessage(trans("validate_required"), required),
+    },
+    email: {
+        required: helpers.withMessage(trans("validate_required"), required),
+    },
+    start_date: {
+        required: helpers.withMessage(trans("validate_required"), required),
+    },
+    end_date: {}
+};
 
 const entities = ref([]);
 const entity = {
@@ -33,14 +52,29 @@ const entity = {
     active: true
 };
 
+const v$ = useVuelidate(rules, entity);
+
 const submitted = ref(false);
 
 const selectedEntities = ref([]);
 
-const confirmDeleteSelected = () => {}
-
+/**
+ * ======================================
+ * Dialog ablakok
+ * ======================================
+ */
 const entityDialog = ref(false);
+const deleteEntityDialog = ref(false);
+const deleteSelectedEntitiesDialog = ref(false);
 
+const confirmDeleteSelected = () => {};
+const hideDialog = () => {};
+
+/**
+ * ======================================
+ * Filterek
+ * ======================================
+ */
 const filters = ref({});
 
 const initFilters = () => {
@@ -49,7 +83,10 @@ const initFilters = () => {
             value: null,
             matchMode: FilterMatchMode.CONTAINS
         },
-        name: {}
+        name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+        email: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+        start_date: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+        end_date: { value: null, matchMode: FilterMatchMode.STARTS_WITH }
     };
 }
 
@@ -93,6 +130,31 @@ const onUpload = () => {
         detail: 'File Uploaded',
         life: 3000
     });
+};
+
+const saveEntity = async () => {
+    const result = await v$value.$validate();
+    if(result) {
+        submitted.value = true;
+
+        if( entity.value.id ) {
+            updateEntity();
+        } else {
+            createEntity();
+        }
+    } else {
+        //
+    }
+};
+
+const editEntity = (data) => {
+    entity.value = {...data};
+    entityDialog.value = true;
+};
+
+const confirmDeleteEntity = (data) => {
+    entity.value = {...data};
+    deleteEntityDialog.value = true;
 };
 
 const exportCSV = () => {
@@ -161,8 +223,8 @@ const exportCSV = () => {
                 v-model:filters="filters"
                 :value="entities"
                 dataKey="id" :paginator="true" :rows="10" sortMode="multiple"
-                :filters="filters" filterDisplay="menu"
-                :globalFilterFields="['name']"
+                :filters="filters" filterDisplay="row"
+                :globalFilterFields="['name','email','start_date','end_date']"
                 :loading="loading" stripedRows removableSort
                 :rowsPerPageOptions="[5, 10, 25]"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -229,14 +291,15 @@ const exportCSV = () => {
                     style="min-width: 12rem"
                     sortable
                 >
-                    <template #body="{ data }">
-                        {{ data.name }}
+                    <template #body="slotProps">
+                        {{ slotProps.data.name }}
                     </template>
-                    <template #filter="{ filterModel }">
+                    <template #filter="{ filterModel, filterCallback }">
                         <InputText
                             v-model="filterModel.value"
                             type="text"
-                            :placeholder="$t('search_by', {data: 'name'})"
+                            :placeholder="$t('search_by', {data: $t('name') })"
+                            @input="filterCallback()"
                         />
                     </template>
                 </Column>
@@ -252,18 +315,143 @@ const exportCSV = () => {
                     <template #body="slotProps">
                         {{ slotProps.data.email }}
                     </template>
-                    <template #filter="slotProps">
+                    <template #filter="{ filterModel, filterCallback }">
                         <InputText
-                            v-model="slotProps.filterValue"
+                            v-model="filterModel.value"
                             type="text"
                             :placeholder="$t('search_by', {data: 'email'})"
+                            @input="filterCallback()"
                         />
                     </template>
                 </Column>
 
-            </DataTable>
+                <!-- Start Date -->
+                <Column 
+                    field="start_date"
+                    :header="$t('start_date')"
+                    style="min-width: 12rem"
+                    sortable
+                >
+                    <template #body="slotProps">
+                        {{ formatDate(slotProps.data.start_date) }}
+                    </template>
+                    <template #filter="{ filterModel, filterCallback }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: $t('start_date')})"
+                            @input="filterCallback()"
+                        />
+                    </template>
+                </Column>
 
+                <!-- End Date -->
+                <Column 
+                    field="end_date"
+                    :header="$t('end_date')"
+                    style="min-width: 12rem"
+                    sortable
+                >
+                    <template #body="slotProps">
+                        {{ formatDate(slotProps.data.end_date) }}
+                    </template>
+                    <template #filter="{ filterModel, filterCallback }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: $t('end_date')})"
+                            @input="filterCallback()"
+                        />
+                    </template>
+                </Column>
+
+                <!-- Actions -->
+                <Column :exportable="false" style="min-width: 12rem">
+                    <template #body="slotProps">
+                        <Button
+                            icon="pi pi-pencil"
+                            outlined rounded
+                            class="mr-2"
+                            @click="editEntity(slotProps.data)"
+                        />
+                        <Button
+                            icon="pi pi-trash"
+                            outlined rounded
+                            severity="danger"
+                            @click="confirmDeleteEntity(slotProps.data)"
+                        />
+                    </template>
+                </Column>
+            </DataTable>
         </div>
+
+        <!-- szerkesztés -->
+        <Dialog
+            v-model:visible="entityDialog"
+            :style="{ width: '450px' }"
+            :header="$t('entity_details')"
+            :modal="true"
+        >
+            <div class="flex flex-col gap-6">
+                <div class="flex flex-wrap gap-4">
+                    <!-- Name -->
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <label for="name" class="block font-bold mb-3">
+                            {{ $t("name") }}
+                        </label>
+                        <InputText 
+                            id="name"
+                            v-model="entity.name"
+                            autofocus 
+                            fluid
+                        />
+                        <small 
+                            class="text-red-500" 
+                            v-if="v$.name.$error">
+                            {{ $t(v$.name.$errors[0].$message) }}
+                        </small>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <label for="email" class="block font-bold mb-3">
+                            {{ $t("email") }}
+                        </label>
+                        <InputText 
+                            id="email"
+                            v-model="entity.email"
+                            fluid
+                        />
+                        <small 
+                            class="text-red-500" 
+                            v-if="v$.email.$error">
+                            {{ $t(v$.email.$errors[0].$message) }}
+                        </small>
+                    </div>
+
+                </div>
+            </div>
+
+            <template #footer>
+                <Button
+                    :label="$t('cancel')"
+                    icon="pi pi-times"
+                    text
+                    @click="hideDialog"
+                />
+                <Button
+                    :label="$t('save')"
+                    icon="pi pi-check"
+                    @click="saveEntity"
+                />
+            </template>
+        </Dialog>
+
+        <!-- Egy elem törlése -->
+        <Dialog></Dialog>
+
+        <!-- Kijelölt elemek törlése -->
+        <Dialog></Dialog>
 
     </AppLayout>
 </template>

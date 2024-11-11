@@ -57,6 +57,8 @@
     "electronics": "Electronics",
     "fitness": "Fitness",
     "quantity": "Quantity",
+    "start_date": "Start Date",
+    "end_date": "End Date",
 
     "region": "Region",
     "longitude": "Longitute",

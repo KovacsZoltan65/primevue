@@ -26,13 +26,22 @@ class Person extends Model
         'active' => 1
     ];
 
+    /**
+     * Határozza meg a lekérdezést, hogy csak azokat a személyeket tartalmazza,
+     * akiknek a neve megegyezik a keresési kifejezéssel.
+     *
+     * @param Builder $query A lekérdezéskészítő példány.
+     * @param Request $request Az aktuális HTTP-kérelem objektum,
+     *                         amely keresési paramétereket tartalmaz.
+     * @return Builder A módosított lekérdezéskészítő példány.
+     */
     public function scopeSearch(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {
                 $query->where(function ($query) use ($request) {
                     $query->where('name', 'like', "%{$request->search}%");
                 });
-            })->where('active', APP_ACTIVE);
+            })->active();
     }
 
     /**

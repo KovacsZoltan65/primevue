@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 
@@ -24,13 +25,20 @@ class Entity extends Model
         'active' => 1
     ];
 
+    /**
+     * Entitások keresése név szerint
+     *
+     * @param Builder $query
+     * @param Request $request
+     * @return Builder
+     */
     public function scopeSearch(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {
-                $query->where(function ($query) use ($request) {
-                    $query->where('name', 'like', "%{$request->search}%");
-                });
-            })->where('active', APP_ACTIVE);
+            $query->where(function ($query) use ($request) {
+                $query->where('name', 'like', "%{$request->search}%");
+            });
+        })->active();
     }
 
     /**
@@ -45,19 +53,28 @@ class Entity extends Model
         return $query->where('active', APP_ACTIVE);
     }
 
-    //public function persons()
-    //{
-    //    return $this->belongsTo(Person::class, 'person_entity_rel');
-    //}
+    /**
+     * =========================================================
+     * A szervezethez tartozó személy.
+     * =========================================================
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function persons(): BelongsTo
+    {
+        return $this->belongsTo(Person::class, 'person_entity_rel');
+    }
 
     /**
      * =========================================================
-     * Egy Entity lekérdezése, amelyhez tartozó Company-k vannak
+     * Egy Entity-hez tartozó Company.
      * =========================================================
      * $entity = Entity::find(1);
      * $companies = $entity->company;
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function company()
+    public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
     }

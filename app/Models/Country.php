@@ -39,7 +39,7 @@ class Country extends Model
      *
      * @param Builder $query A lekérdezéskészítő példány.
      * @param Request $request Az aktuális HTTP-kérelem objektum,
-     *        amely keresési paramétereket tartalmaz.
+     *                         amely keresési paramétereket tartalmaz.
      * @return Builder A módosított lekérdezéskészítő példány.
      */
     public function scopeSearch(Builder $query, Request $request)

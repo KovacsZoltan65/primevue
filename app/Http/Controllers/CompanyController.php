@@ -29,12 +29,6 @@ class CompanyController extends Controller
         // Szerezze le a vállalatokat a lekérdezésből, és alakítsa őket AnonymousResourceCollection-vé.
         //$companies = CompanyResource::collection($companyQuery->get());
 
-        /*
-        $cities = City::where('active', 1)
-            ->orderBy('name')
-            ->select('id', 'name')
-            ->get()->toArray();
-        */
         $cities = City::select('id', 'name')
                 ->active()
                 ->orderBy('name')

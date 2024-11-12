@@ -38,12 +38,13 @@ class City extends Model
          *
          * @param Builder $query A lekérdezéskészítő példány.
          * @param Request $request Az aktuális HTTP-kérelem objektum,
-         *        amely keresési paramétereket tartalmaz.
+         *                         amely keresési paramétereket tartalmaz.
          * @return Builder A módosított lekérdezéskészítő példány.
          */
     public function scopeSearch(Builder $query, Request $request): Builder
     {
-        // If search parameter is present, filter results by name or email containing the search term
+        // Ha van keresési paraméter, szűrje az eredményeket név 
+        // vagy a keresési kifejezést tartalmazó e-mail cím alapján
         return $query->when($request->search, function ($query) use ($request) {
             $query->where(function ($query) use ($request) {
                 $query->where('name', 'like', "%{$request->search}%");
@@ -63,7 +64,7 @@ class City extends Model
     }
 
     /**
-     * Get the region that owns the City
+     * Szerezd meg a várost birtokló régiót
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -73,7 +74,7 @@ class City extends Model
     }
 
     /**
-     * Get the country that owns the City
+     * Szerezd meg azt az országot, amelyik a város tulajdonosa
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */

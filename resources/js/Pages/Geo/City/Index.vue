@@ -28,20 +28,8 @@ import Tag from "primevue/tag";
  * Szerver felöl jövő adatok
  */
 const props = defineProps({
-    /**
-     * Országok adatai.
-     */
-    countries: {
-        type: Object,
-        default: () => {},
-    },
-    /**
-     * Régiók adatai.
-     */
-    regions: {
-        type: Object,
-        default: () => {},
-    },
+    countries: { type: Object, default: () => {}, },
+    regions: { type: Object, default: () => {}, },
 });
 
 /**
@@ -51,26 +39,8 @@ const props = defineProps({
  */
 const getBools = () => {
     return [
-        {
-            /**
-             * Az inaktív állapot címkéje.
-             */
-            label: trans("inactive"),
-            /**
-             * Az inaktív állapot értéke.
-             */
-            value: 0,
-        },
-        {
-            /**
-             * Az aktív állapot címkéje.
-             */
-            label: trans("active"),
-            /**
-             * Az aktív állapot értéke.
-             */
-            value: 1,
-        },
+        { label: trans("inactive"), value: 0, },
+        { label: trans("active"), value: 1, },
     ];
 };
 
@@ -134,6 +104,10 @@ const city = ref({
     active: 1,
 });
 
+const initialCity = () => {
+    return {...city};
+};
+
 /**
  * Reaktív hivatkozás a kijelölt városok tárolására.
  *
@@ -150,21 +124,7 @@ const filters = ref({
     // A globális szűrőobjektum.
     // Van egy érték tulajdonsága a keresési lekérdezés tárolására
     // és egy matchMode tulajdonsága a keresés típusának megadásához.
-    global: {
-        /**
-         * A globális szűrő értéke.
-         *
-         * @type {string | null}
-         */
-        value: null,
-
-        /**
-         * A globális szűrő illesztési módja.
-         *
-         * @type {FilterMatchMode}
-         */
-        matchMode: FilterMatchMode.CONTAINS,
-    },
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS, },
 });
 
 /**
@@ -239,8 +199,6 @@ onMounted(() => {
  * @return {void}
  */
 function confirmDeleteSelected() {
-    // Állítsa a deleteCitiessDialog változó értékét igazra,
-    // amely megnyitja a megerősítő párbeszédablakot a kiválasztott termékek törléséhez.
     deleteSelectedCitiesDialog.value = true;
 }
 
@@ -257,27 +215,6 @@ function openNew() {
     submitted.value = false;
     cityDialog.value = true;
 }
-
-/**
- * Az új város objektum alapértelmezett értékei.
- *
- * A cityDialog változó értékét igazra állítva, ez az objektum lesz a dialógusablakban
- * megjelenő új város formban.
- *
- * @type {Object}
- * @property {string} name - A város neve.
- * @property {number} country_id - Az ország azonosítója.
- * @property {number} region_id - A régió azonosítója.
- * @property {number} active - A város aktív-e? (1 igen, 0 nem).
- * @property {number} id - A város azonosítója.
- */
-const initialCity = {
-    name: "",
-    country_id: null,
-    region_id: null,
-    active: 1,
-    id: null,
-};
 
 /**
  * Bezárja a dialógusablakot.
@@ -352,6 +289,39 @@ const saveCity = async () => {
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
 const createCity = () => {
+    const newCity = { ...city.value };
+    cities.values.push(newCity);
+
+    hideDialog();
+
+    toast.add({
+        severity: "success",
+        summary: "Successful",
+        detail: "City Created",
+        life: 3000,
+    });
+
+    CityService.createCity(city.value)
+    .then((response) => {
+        Object.assign(newCity, response.data);
+    })
+    .catch((error) => {
+        const index = cities.values.indexOf(newCity);
+        if (index !== -1) {
+            cities.values.splice(index, 1);
+        }
+
+        console.error("createCity API Error:", error);
+
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to create city",
+            life: 3000,
+        });
+    });
+
+    /*
     CityService.createCity(city.value)
         .then((response) => {
             //console.log('response', response);
@@ -370,6 +340,7 @@ const createCity = () => {
             // Jelenítse meg a hibaüzenetet a konzolon
             console.error("createCity API Error:", error);
         });
+        */
 };
 
 /**

@@ -1,0 +1,189 @@
+Companies:
+    createCompany
+    updateCompany
+    deleteCompany
+    deleteSelected
+
+
+
+MINTÁK:
+============================================
+    CREATE:
+        const createCompany = () => {
+        // Hozzáadjuk optimistán a céget a listához, és eltároljuk az eredeti állapotot.
+        const newCompany = { ...company.value };
+        companies.values.push(newCompany); // Optimista frissítés
+        hideDialog();
+
+        // Azonnal megjelenítünk egy sikeres üzenetet
+        toast.add({
+            severity: "success",
+            summary: "Successful",
+            detail: "Company Created",
+            life: 3000,
+        });
+
+        CompanyService.createCompany(company.value)
+        .then((response) => {
+            //
+        })
+        .catch((error) => {
+            // Ha hiba történt, visszavonjuk a változást
+            const index = companies.values.indexOf(newCompany);
+            if (index !== -1) {
+                companies.values.splice(index, 1); // Töröljük az optimistán hozzáadott céget
+            }
+            console.error("createCompany API Error:", error);
+
+            // Értesítés a hibáról
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to create company",
+                life: 3000,
+            });
+        });
+============================================
+    UPDATE:
+        const updateCompany = (updatedCompany) => {
+            // Keresd meg az eredeti céget és tárold el az aktuális állapotát
+            const index = companies.values.findIndex(company => company.id === updatedCompany.id);
+            if (index === -1) return;
+
+            // Eredeti állapot mentése a visszaállításhoz, ha hiba történik
+            const originalCompany = { ...companies.values[index] };
+
+            // Optimista frissítés: azonnal frissítjük az UI-t az új értékekkel
+            companies.values[index] = { ...updatedCompany };
+
+            // Siker üzenet az optimista frissítés után
+            toast.add({
+                severity: "info",
+                summary: "Updating...",
+                detail: "Company update in progress",
+                life: 2000,
+            });
+
+            CompanyService.updateCompany(updatedCompany)
+                .then((response) => {
+                    // Ha az API sikeres, frissítjük a cég adatait a válasszal (ha szükséges)
+                    companies.values[index] = response.data;
+
+                    // Értesítés a sikeres frissítésről
+                    toast.add({
+                        severity: "success",
+                        summary: "Successful",
+                        detail: "Company Updated",
+                        life: 3000,
+                    });
+                })
+                .catch((error) => {
+                    // Ha hiba történik, visszaállítjuk az eredeti állapotot
+                    companies.values[index] = originalCompany;
+
+                    console.error("updateCompany API Error:", error);
+
+                    // Értesítés a hibáról
+                    toast.add({
+                        severity: "error",
+                        summary: "Error",
+                        detail: "Failed to update company",
+                        life: 3000,
+                    });
+                });
+        };
+============================================
+    DELETE:
+        const deleteCompany = (id) => {
+            // Megkeresi a cég indexét az azonosítója alapján
+            const index = findIndexById(id);
+            if (index === -1) return;
+
+            // Eredeti cégadat mentése, hogy visszaállíthassuk, ha a törlés sikertelen
+            const originalCompany = { ...companies.value[index] };
+
+            // Optimista törlés: azonnal eltávolítjuk a céget a listából
+            companies.value.splice(index, 1);
+
+            // Törlési értesítés optimista frissítés után
+            toast.add({
+                severity: "info",
+                summary: "Deleting...",
+                detail: "Company deletion in progress",
+                life: 2000,
+            });
+
+            CompanyService.deleteCompany(id)
+            .then((response) => {
+                // Sikeres törlés esetén értesítés
+                toast.add({
+                    severity: "success",
+                    summary: "Successful",
+                    detail: "Company Deleted",
+                    life: 3000,
+                });
+            })
+            .error((error) => {
+                // Hiba esetén visszaállítjuk a céget az eredeti helyére
+                companies.value.splice(index, 0, originalCompany);
+
+                console.error("deleteCompany API Error:", error);
+
+                // Hibaüzenet megjelenítése a felhasználói felületen
+                toast.add({
+                    severity: "error",
+                    summary: "Error",
+                    detail: "Failed to delete company",
+                    life: 3000,
+                });
+            });
+        };
+============================================
+    MULTY DELETE:
+        const deleteSelectedCompanies = () => {
+            // Eredeti állapot mentése az összes kiválasztott céghez, hogy visszaállíthassuk hiba esetén
+            const originalCompanies = [...companies.value];
+
+            // Optimista törlés: azonnal eltávolítjuk az összes kijelölt céget
+            selectedCompanies.value.forEach(selectedCompany => {
+                const index = companies.value.findIndex(company => company.id === selectedCompany.id);
+                if (index !== -1) {
+                    companies.value.splice(index, 1);
+                }
+            });
+
+            // Törlési értesítés optimista frissítés után
+            toast.add({
+                severity: "info",
+                summary: "Deleting...",
+                detail: "Deleting selected companies...",
+                life: 2000,
+            });
+
+            CompanyService.deleteCompanies(selectedCompanies.value.map(company => company.id))
+            .then((response) => {
+                // Sikeres törlés esetén értesítés
+                toast.add({
+                    severity: "success",
+                    summary: "Successful",
+                    detail: "Selected companies deleted",
+                    life: 3000,
+                });
+                // Törölt elemek eltávolítása a selectedCompanies-ből
+                selectedCompanies.value = [];
+            })
+            .error((error) => {
+                // Hiba esetén visszaállítjuk az eredeti állapotot
+                companies.value = originalCompanies;
+
+                console.error("deleteSelectedCompanies API Error:", error);
+
+                // Hibaüzenet megjelenítése a felhasználói felületen
+                toast.add({
+                    severity: "error",
+                    summary: "Error",
+                    detail: "Failed to delete selected companies",
+                    life: 3000,
+                });
+            });
+        };

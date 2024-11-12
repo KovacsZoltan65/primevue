@@ -30,20 +30,8 @@ import FileUpload from "primevue/fileupload";
  * Szerver felöl jövő adatok
  */
 const props = defineProps({
-    /**
-     * Országok adatai.
-     */
-    countries: {
-        type: Object,
-        default: () => {},
-    },
-    /**
-     * Régiók adatai.
-     */
-    cities: {
-        type: Object,
-        default: () => {},
-    },
+    countries: { type: Object, default: () => {}, },
+    cities: { type: Object, default: () => {}, },
 });
 
 /**
@@ -53,26 +41,8 @@ const props = defineProps({
  */
 const getBools = () => {
     return [
-        {
-            /**
-             * Az inaktív állapot címkéje.
-             */
-            label: trans("inactive"),
-            /**
-             * Az inaktív állapot értéke.
-             */
-            value: 0,
-        },
-        {
-            /**
-             * Az aktív állapot címkéje.
-             */
-            label: trans("active"),
-            /**
-             * Az aktív állapot értéke.
-             */
-            value: 1,
-        },
+        {label: trans("inactive"),value: 0,},
+        {label: trans("active"),value: 1,},
     ];
 };
 
@@ -138,6 +108,10 @@ const company = ref({
     active: 1,
 });
 
+const initialCompany = () => {
+    return {...company};
+};
+
 /**
  * Reaktív hivatkozás a kijelölt városok tárolására.
  *
@@ -177,17 +151,8 @@ const rules = {
      * - a név hosszának maximum 255 karakternek kell lennie
      */
     name: {
-        /**
-         * A név nem lehet üres.
-         */
         required: helpers.withMessage(trans("validate_name"), required),
-        /**
-         * A név hosszának minimum 3 karakternek kell lennie.
-         */
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
-        /**
-         * A név hosszának maximum 255 karakternek kell lennie.
-         */
         maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
     },
     /**
@@ -196,24 +161,14 @@ const rules = {
      * Az ország azonosítójának meg kell felelnie a következ  feltételeknek:
      * - az ország azonosítója nem lehet üres
      */
-    country_id: {
-        /**
-         * Az ország azonosítója nem lehet üres.
-         */
-        required: helpers.withMessage(trans("validate_country_id"), required),
-    },
+    country_id: { required: helpers.withMessage(trans("validate_country_id"), required), },
     /**
      * A város azonosítója validációs szabálya.
      *
      * A város azonosítójának meg kell felelnie a következ  feltételeknek:
      * - a város azonosítója nem lehet üres
      */
-    city_id: {
-        /**
-         * A város azonosítója nem lehet üres.
-         */
-        required: helpers.withMessage(trans("validate_city_id"), required),
-    },
+    city_id: { required: helpers.withMessage(trans("validate_city_id"), required), },
 };
 
 /**
@@ -271,16 +226,15 @@ onMounted(() => {
  * @return {void}
  */
 function confirmDeleteSelected() {
-    // Állítsa a deleteCompaniessDialog változó értékét igazra,
-    // amely megnyitja a megerősítő párbeszédablakot a kiválasztott termékek törléséhez.
     deleteSelectedCompaniesDialog.value = true;
 }
 
 /**
- * Nyitja meg az új város dialógusablakot.
+ * Megnyitja az új város dialógusablakot.
  *
- * Ez a függvény a company változó értékét alaphelyzetbe állítja, a submitted változó értékét False-ra állítja,
- * és a companyDialog változó értékét igazra állítja, amely megnyitja az új város dialógusablakot.
+ * Ez a függvény a company változó értékét alaphelyzetbe állítja, 
+ * a submitted változó értékét False-ra állítja, és a companyDialog változó 
+ * értékét igazra állítja, amely megnyitja az új város dialógusablakot.
  *
  * @return {void}
  */
@@ -291,27 +245,6 @@ function openNew() {
 }
 
 /**
- * Az új város objektum alapértelmezett értékei.
- *
- * A companyDialog változó értékét igazra állítva, ez az objektum lesz a dialógusablakban
- * megjelenő új város formban.
- *
- * @type {Object}
- * @property {string} name - A város neve.
- * @property {number} country_id - Az ország azonosítója.
- * @property {number} region_id - A régió azonosítója.
- * @property {number} active - A város aktív-e? (1 igen, 0 nem).
- * @property {number} id - A város azonosítója.
- */
-const initialCompany = {
-    name: "",
-    country_id: null,
-    region_id: null,
-    active: 1,
-    id: null,
-};
-
-/**
  * Bezárja a dialógusablakot.
  *
  * Ez a függvény a dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
@@ -319,6 +252,8 @@ const initialCompany = {
  */
 const hideDialog = () => {
     companyDialog.value = false;
+    deleteCompanyDialog.value = false;
+    deleteSelectedCompaniesDialog.value = false;
     submitted.value = false;
 
     // Visszaállítja a validációs objektumot az alapértelmezett állapotába.
@@ -335,10 +270,8 @@ const hideDialog = () => {
  * @return {void}
  */
 const editCompany = (data) => {
-    // Másolja a kiválasztott város adatait a company változóba.
     company.value = { ...data };
 
-    // Nyissa meg a dialógusablakot a város szerkesztéséhez.
     companyDialog.value = true;
 };
 
@@ -352,10 +285,8 @@ const editCompany = (data) => {
  * @return {void}
  */
 const confirmDeleteCompany = (data) => {
-    // Másolja a kiválasztott város adatait a company változóba.
     company.value = { ...data };
 
-    // Nyissa meg a dialógusablakot a város törléséhez.
     deleteCompanyDialog.value = true;
 };
 
@@ -374,98 +305,178 @@ const saveCompany = async () => {
     }
 };
 
-/**
- * Hozzon létre új várost az API-nak küldött POST-kéréssel.
- *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor létrehoz egy új várost az API-ban.
- * A választ megjeleníti a konzolon.
- *
- * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
- */
 const createCompany = () => {
+    const newCompany = { ...company.value };
+    companies.values.push(newCompany);
+
+    hideDialog();
+
+    toast.add({
+        severity: "success",
+        summary: "Successful",
+        detail: "Company Created",
+        life: 3000,
+    });
+
     CompanyService.createCompany(company.value)
-        .then((response) => {
-            //console.log('response', response);
-            companies.values.push(response.data);
-
-            hideDialog();
-
-            toast.add({
-                severity: "success",
-                summary: "Successful",
-                detail: "Company Created",
-                life: 3000,
-            });
+        .then((result) => {
+            // Ha az API sikeres, frissítjük a cég adatát a válasszal (ha szükséges)
+            Object.assign(newCompany, result.data);
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
+            const index = companies.values.indexOf(newCompany);
+            if (index !== -1) {
+                companies.values.splice(index, 1);
+            }
             console.error("createCompany API Error:", error);
-        });
-};
 
-/**
- * Frissít egy várost az API-nak küldött PUT-kéréssel.
- *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor frissíti a várost az API-ban.
- * A választ megjeleníti a konzolon.
- *
- * @param {number} id - A frissítendő város azonosítója.
- * @param {object} data - A város új adatai.
- * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
- */
-const updateCompany = () => {
-    CompanyService.updateCompany(company.value.id, company.value)
-        .then(() => {
-            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
-            const index = findIndexById(company.value.id);
-            // A város adatait frissíti a városok tömbjében
-            companies.value.splice(index, 1, company.value);
-
-            // Bezárja a dialógus ablakot
-            hideDialog();
-
-            // Siker-értesítést jelenít meg
             toast.add({
-                severity: "success",
-                summary: "Successful",
-                detail: "Company Updated",
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to create company",
                 life: 3000,
             });
-        })
-        .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("updateCompany API Error:", error);
         });
 };
 
-/**
- * Megkeresi egy város indexét a városok tömbjében az azonosítója alapján.
- *
- * @param {number} id - A keresendő város azonosítója.
- * @returns {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
- */
+const updateCompany = () => {
+    const index = findIndexById(company.value.id);
+    if (index === -1) return;
+
+    const originalCompany = { ...companies.value[index] };
+
+    companies.value.splice(index, 1, { ...company.value });
+    hideDialog();
+
+    toast.add({
+        severity: "info",
+        summary: "Updating...",
+        detail: "Company update in progress",
+        life: 2000,
+    });
+
+    CompanyService.updateCompany(company.value.id, company.value)
+    .then((response) => {
+        toast.add({
+            severity: "success",
+            summary: "Successful",
+            detail: "Company Updated",
+            life: 3000,
+        });
+    })
+    .cache((error) => {
+        companies.value.splice(index, 1, originalCompany);
+
+        console.error("updateCompany API Error:", error);
+
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to update company",
+            life: 3000,
+        });
+    });
+};
+
+const deleteSelectedCompanies = () => {
+    // Eredeti állapot mentése az összes kiválasztott céghez, hogy visszaállíthassuk hiba esetén
+    const originalCompanies = [...companies.value];
+
+    // Optimista törlés: azonnal eltávolítjuk az összes kijelölt céget
+    selectedCompanies.value.forEach(selectedCompany => {
+        const index = companies.value.findIndex(company => company.id === selectedCompany.id);
+        if (index !== -1) {
+            companies.value.splice(index, 1);
+        }
+    });
+
+    // Törlési értesítés optimista frissítés után
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Deleting selected companies...",
+        life: 2000,
+    });
+
+    CompanyService.deleteCompanies(selectedCompanies.value.map(company => company.id))
+    .then((response) => {
+        // Sikeres törlés esetén értesítés
+        toast.add({
+            severity: "success",
+            summary: "Successful",
+            detail: "Selected companies deleted",
+            life: 3000,
+        });
+        // Törölt elemek eltávolítása a selectedCompanies-ből
+        selectedCompanies.value = [];
+    })
+    .error((error) => {
+        // Hiba esetén visszaállítjuk az eredeti állapotot
+        companies.value = originalCompanies;
+
+        console.error("deleteSelectedCompanies API Error:", error);
+
+        // Hibaüzenet megjelenítése a felhasználói felületen
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to delete selected companies",
+            life: 3000,
+        });
+    });
+};
+
+const deleteCompany = (id) => {
+    // Megkeresi a cég indexét az azonosítója alapján
+    const index = findIndexById(id);
+    if (index === -1) return;
+
+    // Eredeti cégadat mentése, hogy visszaállíthassuk, ha a törlés sikertelen
+    const originalCompany = { ...companies.value[index] };
+
+    // Optimista törlés: azonnal eltávolítjuk a céget a listából
+    companies.value.splice(index, 1);
+
+    // Törlési értesítés optimista frissítés után
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Company deletion in progress",
+        life: 2000,
+    });
+
+    CompanyService.deleteCompany(id)
+    .then((response) => {
+        // Sikeres törlés esetén értesítés
+        toast.add({
+            severity: "success",
+            summary: "Successful",
+            detail: "Company Deleted",
+            life: 3000,
+        });
+    })
+    .error((error) => {
+        // Hiba esetén visszaállítjuk a céget az eredeti helyére
+        companies.value.splice(index, 0, originalCompany);
+
+        console.error("deleteCompany API Error:", error);
+
+        // Hibaüzenet megjelenítése a felhasználói felületen
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to delete company",
+            life: 3000,
+        });
+    });
+};
+
 const findIndexById = (id) => {
     return companies.value.findIndex((company) => company.id === id);
 };
 
-const deleteCompany = () => {
-    CompanyService.deleteCompany(company.value.id)
-        .then((response) => {
-            //
-        })
-        .catch((error) => {
-            console.error("deleteCompany API Error:", error);
-        });
-};
-
 const exportCSV = () => {
     dt.value.exportCSV();
-};
-
-const deleteSelectedCompanies = () => {
-    console.log(selectedCompanies.value);
 };
 
 const getCountryName = (id) => {
@@ -529,6 +540,7 @@ initFilters();
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
+                    <!-- New Button -->
                     <Button
                         :label="$t('add_new')"
                         icon="pi pi-plus"
@@ -536,7 +548,7 @@ initFilters();
                         class="mr-2"
                         @click="openNew"
                     />
-
+                    <!-- Delete Selected Button -->
                     <Button
                         :label="$t('delete_selected')"
                         icon="pi pi-trash"

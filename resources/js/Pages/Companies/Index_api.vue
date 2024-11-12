@@ -54,8 +54,6 @@ const updateItem = (id) => {
             console.log("response", response);
 
             const index = items.value.findIndex((b) => {
-                //console.log('id', id);
-                //console.log('b.id', b.id);
                 return b.id === id;
             });
 

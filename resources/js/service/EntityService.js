@@ -85,6 +85,10 @@ class EntityService extends BaseService {
     deleteEntity(id) {
         return this.delete(`/entities/${id}`);
     }
+
+    deleteEntities(entityIds) {
+        return this.delete(`/entities`, { data: { ids: entityIds } });
+    }
 }
 
 export default new EntityService();

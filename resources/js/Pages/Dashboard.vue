@@ -145,6 +145,23 @@ const statuses = ref([
     { label: "OUTOFSTOCK", value: "outofstock" },
 ]);
 
+const loading = ref(true);
+
+const fetchItem = () => {
+    loading.value = true;
+
+    ProductService.getProducts()
+    .then((data) => {
+        products.value = data;
+    })
+    .catch((error) => {
+        console.error("getProducts API Error:", error);
+    })
+    .finally(() => {
+        loading.value = false;
+    });
+};
+
 /**
  * A komponens betöltésekor lekérdezjük a termékeket a ProductService-ből.
  * A lekérdezett termékeket a products hivatkozásban tároljuk.
@@ -152,37 +169,8 @@ const statuses = ref([
  * @return {void}
  */
 onMounted(() => {
-    ProductService.getProducts().then((data) => {
-        products.value = data;
-    });
-
-    /*
-    // A ProductService getProducts() metódusát hívjuk meg,
-    // amely visszaadja a termékeket.
-    ProductService.getProd()
-        .then((data) => {
-            // A lekérdezett termékeket a products hivatkozásban tároljuk.
-            products.value = data;
-        });
-    */
+    fetchItem();
 });
-
-/**
- * Egy számot valutakarakterláncként formáz.
- *
- * @param {number | undefined} value - A formázandó szám.
- * @return {string | undefined} A formázott pénznem-karakterlánc, vagy hamis az érték definiálatlan.
- */
-//function formatCurrency(value) {
-// Ha az érték false (undefined, null, 0 stb.), adja vissza az undefined értéket.
-//    if (!value) return;
-
-// Formázza a számot valutakarakterláncként az amerikai angol nyelvterület és az USD pénznem használatával.
-//    return value.toLocaleString("en-US", {
-//        style: "currency",
-//        currency: "USD",
-//    });
-//}
 
 /**
  * Ez a funkció megnyitja az új termék párbeszédpanelt.
@@ -444,8 +432,6 @@ function exportCSV() {
  * @return {void}
  */
 function confirmDeleteSelected() {
-    // Állítsa a deleteProductsDialog változó értékét igazra,
-    // amely megnyitja a megerősítő párbeszédablakot a kiválasztott termékek törléséhez.
     deleteProductsDialog.value = true;
 }
 
@@ -485,6 +471,7 @@ function getStatusLabel(status) {
             <div clas="card">
                 <Toolbar class="md-6">
                     <template #start>
+                        <!-- New button -->
                         <Button
                             :label="$t('add_new')"
                             icon="pi pi-plus"
@@ -492,6 +479,7 @@ function getStatusLabel(status) {
                             class="mr-2"
                             @click="openNew"
                         />
+                        <!-- Delete selected button -->
                         <Button
                             :label="$t('delete_selected')"
                             icon="pi pi-trash"
@@ -504,6 +492,7 @@ function getStatusLabel(status) {
                     </template>
 
                     <template #end>
+                        <!-- Export button -->
                         <Button
                             :label="$t('export')"
                             icon="pi pi-upload"
@@ -863,12 +852,16 @@ function getStatusLabel(status) {
                     <span v-if="product">{{ $t("confirm_delete") }}</span>
                 </div>
                 <template #footer>
+
+                    <!-- "Mégsem" gomb -->
                     <Button
                         :label="$t('no')"
                         icon="pi pi-times"
                         text
                         @click="deleteProductsDialog = false"
                     />
+
+                    <!-- Megerősítés gomb -->
                     <Button
                         :label="$t('yes')"
                         icon="pi pi-check"

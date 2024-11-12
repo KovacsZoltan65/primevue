@@ -69,6 +69,10 @@ class CompanyService extends BaseService {
     deleteCompany(id) {
         return this.delete(`/companies/${id}`);
     }
+
+    deleteCompanies(companyIds) {
+        return this.delete(`/companies`, { data: { ids: companyIds } });
+    }
 }
 
 export default new CompanyService();

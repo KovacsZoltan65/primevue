@@ -319,9 +319,9 @@ const createCompany = () => {
     });
 
     CompanyService.createCompany(company.value)
-        .then((result) => {
+        .then((response) => {
             // Ha az API sikeres, frissítjük a cég adatát a válasszal (ha szükséges)
-            Object.assign(newCompany, result.data);
+            Object.assign(newCompany, response.data);
         })
         .catch((error) => {
             const index = companies.values.indexOf(newCompany);
@@ -426,9 +426,9 @@ const deleteSelectedCompanies = () => {
     });
 };
 
-const deleteCompany = (id) => {
+const deleteCompany = () => {
     // Megkeresi a cég indexét az azonosítója alapján
-    const index = findIndexById(id);
+    const index = findIndexById(company.value.id);
     if (index === -1) return;
 
     // Eredeti cégadat mentése, hogy visszaállíthassuk, ha a törlés sikertelen

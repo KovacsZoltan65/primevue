@@ -541,14 +541,6 @@ const saveSubdomain = async () => {
     }
 };
 
-/**
- * Létrehozza az új aldomaint.
- *
- * A metódus meghívja a SubdomainService.createSubdomain() függvényt,
- * amely létrehozza az új aldomaint az API-ban.
- *
- * @return {Promise<void>} A metódusban visszaadott ígéret.
- */
 const createSubdomain = async () => {
     const newSubdomain = { ...subdomain.value, id: createId() };
     subdomains.value.push(newSubdomain);
@@ -559,33 +551,81 @@ const createSubdomain = async () => {
         detail: "Subdomain creation in progress",
         life: 2000,
     });
+
+    SubdomainService.createSubdomain(newSubdomain)
+        .then((response) => {
+            const index = subdomains.value.findIndex(sub => sub.id === newSubdomain.id);
+            subdomains.value.splice(index, 1, response.data);
+
+            hideDialog();
+
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Subdomain Created",
+                life: 3000,
+            });
+        })
+        .catch((error) => {
+            const index = subdomains.value.findIndex(sub => sub.id === newSubdomain.id);
+            if (index !== -1) {
+                entities.value.splice(index, 1);
+            }
+
+            console.error("createSubdomain API Error:", error);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to create entity",
+                life: 3000,
+            });
+        });
 };
 
 const updateSubdomain = async () => {
     const index = findIndexById(subdomain.value.id);
-    try {
-        const response = await SubdomainService.updateSubdomain(subdomain.value.id, subdomain.value);
-        subdomains.value.splice(index, 1, response.data);
-        hideDialog();
-        toast.add({
-            severity: "success",
-            summary: "Successful",
-            detail: "Subdomain Updated",
-            life: 3000,
-        });
-    } catch (error) {
-        console.error("updateSubdomain API Error:", error);
+    if (index === -1) {
+        console.error(`Subdomain with id ${subdomain.value.id} not found`);
+        return;
     }
-};
 
-/**
- * Megkeresi a megadott azonosítójú aldomain indexét.
- *
- * @param {number} id Az aldomain azonosítója
- * @return {number} Az aldomain indexe
- */
-const findIndexById = (id) => {
-    return subdomains.value.findIndex((subdomain) => subdomain.id === id);
+    const originalSubdomain = { ...subdomains.value[index] };
+    subdomains.value.splice(index, 1, { ...subdomain.value });
+
+    hideDialog();
+
+    toast.add({
+        severity: "info",
+        summary: "Updating...",
+        detail: "Subdomain update in progress",
+        life: 2000,
+    });
+
+    SubdomainService.updateSubdomain(subdomain.value)
+        .then((response) => {
+            // Cserélje ki az eredeti aldomaint az API-válasz frissített aldomainjére.
+            subdomains.value.splice(index, 1, response.data);
+
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Subdomain Updated",
+                life: 3000,
+            });
+        })
+        .catch((error) => {
+            countries.value.splice(index, 1, originalCountry);
+
+            console.error("updateSubdomain API Error:", error);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: error.response.data.message,
+                life: 3000,
+            });
+        });
 };
 
 /**
@@ -598,17 +638,25 @@ const findIndexById = (id) => {
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megold dik.
  */
 const deleteSubdomain = () => {
+    const index = findIndexById(subdomain.value.id);
+    if (index === -1) {
+        console.warn("No subdomain found with the given id:", subdomain.value.id);
+        return;
+    }
+
+    const originalSubdomain = { ...subdomains.value[index] };
+
+    subdomains.value.splice(index, 1);
+
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Subdomain deletion in progress",
+        life: 2000,
+    });
+
     SubdomainService.deleteSubdomain(subdomain.value.id)
         .then((response) => {
-            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
-            const index = findIndexById(subdomain.value.id);
-            // A város adatait törli a városok tömbjéb l
-            subdomains.value.splice(index, 1);
-
-            // Bezárja a dialógus ablakot
-            hideDialog();
-
-            // Figyelmeztetést jelenít meg a sikerrel kapcsolatban
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -617,13 +665,69 @@ const deleteSubdomain = () => {
             });
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
+            subdomains.value.splice(index, 0, originalSubdomain);
+
             console.error("deleteSubdomain API Error:", error);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete subdomain",
+                life: 3000,
+            });
         });
 };
 
 const deleteSelectedSubdomains = () => {
-    console.log(selectedSubdomains.value);
+    const originalSubdomains = [...subdomains.value];
+
+    selectedSubdomains.value.forEach((subdomain) => {
+        const index = findIndexById(subdomain.id);
+        if (index !== -1) {
+            subdomains.value.splice(index, 1);
+        }
+    });
+
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Deleting selected subdomains...",
+        life: 2000,
+    });
+
+    SubdomainService.deleteSubdomains(selectedSubdomains.value.map(sub => sub.id))
+        .then((response) => {
+            toast.add({
+            severity: "success",
+            summary: "Successful",
+            detail: "Selected subdomains deleted",
+            life: 3000,
+        });
+        // Törölt elemek eltávolítása a selectedSubdomains-ből
+        selectedSubdomains.value = [];
+        })
+        .catch((error) => {
+            subdomains.value = originalSubdomains;
+
+            console.error("deleteSelectedSubdomains API Error:", error);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete selected subdomains",
+                life: 3000,
+            });
+        });
+};
+
+/**
+ * Megkeresi a megadott azonosítójú aldomain indexét.
+ *
+ * @param {number} id Az aldomain azonosítója
+ * @return {number} Az aldomain indexe
+ */
+ const findIndexById = (id) => {
+    return subdomains.value.findIndex((subdomain) => subdomain.id === id);
 };
 
 const exportCSV = () => {

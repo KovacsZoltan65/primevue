@@ -436,45 +436,13 @@ const updateCity = () => {
         });
 };
 
-/**
- * Törli a kiválasztott városokat a szerverr l.
- *
- * A metódus elküld egy API kérést a kiválasztott városok azonosítóival,
- * és eltávolítja a városokat a cities változóból.
- *
- * Ha a törlés sikeres, akkor egy sikerüzenetet jelenít meg a felhasználónak.
- * Hiba esetén visszaállítja az eredeti városokat, és egy hibaüzenetet jelenít meg a felhasználónak.
- *
- * @return {void}
- */
 const deleteSelectedCities = () => {
-    /**
-     * Tárolja el a városok eredeti tömbjét, hogy vissza tudjuk állítani,
-     * ha a városok törlése sikertelen.
-     *
-     * @type {Array}
-     */
     const originalCity = [...cities.value];
 
-    /**
-     * Hozzon létre egy Set-et a kiválasztott városok azonosítóiból.
-     * A Set-et használjuk arra, hogy gyorsan ellenőrzhessük, 
-     * hogy a város szerepel-e a törlendő városok között.
-     *
-     * @type {Set<number>}
-     */
     const selectedCityIds = new Set(selectedCities.value.map(city => city.id));
 
-    /**
-     * Módosítsa a városok tömbjét, hogy csak azokat a városokat tartalmazza, 
-     * amelyek nincsenek a kiválasztott városok között.
-     * A filter() metódus egy új tömböt ad vissza, amelyben a városok csak akkor szerepelnek, 
-     * ha az azonosítójuk nincs a selectedCityIds Set-ben.
-     */
     cities.value = cities.value.filter(city => !selectedCityIds.has(city.id));
 
-    // Küldjön egy értesítést, hogy a városok törlése folyamatban van.
-    // A toast értesítés 2 másodperc múlva eltűnik.
     toast.add({
         severity: "info",
         summary: "Deleting...",
@@ -482,16 +450,8 @@ const deleteSelectedCities = () => {
         life: 2000,
     });
 
-    /**
-     * Elküld egy API kérést a kiválasztott városok azonosítóival,
-     * és eltávolítja a városokat a cities változóból.
-     *
-     * @param {Set<number>} selectedCityIds - A kiválasztott városok azonosítóinak Set-je.
-     * @return {Promise<void>}
-     */
     CityService.deleteSelectedCities(selectedCityIds)
         .then(() => {
-            // Sikerüzenet megjelenítése a felhasználónak
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -500,16 +460,15 @@ const deleteSelectedCities = () => {
             });
         })
         .catch(error => {
-            // Visszaállítja az eredeti városokat, ha a városok törlése sikertelen
             cities.value = originalCity;
-            // Hibaüzenet megjelenítése a felhasználónak
+            
             toast.add({
                 severity: "error",
                 summary: "Error",
                 detail: "Failed to delete selected cities",
                 life: 3000,
             });
-            // Hibaüzenet megjelenítése a konzolon
+            
             console.error("deleteSelectedCities API Error:", error);
         });
 };
@@ -551,14 +510,9 @@ const deleteCity = () => {
     // Jelenítse meg egy figyelmeztető toast üzenetet a felhasználónak,
     // hogy a város törlése folyamatban van.
     toast.add({
-        // A súlyosság szintje, amely meghatározza a toast színét.
-        // A "info" érték egy szürke színű toastot jelenít meg.
         severity: "info",
-        // A toast címe.
         summary: "Deleting...",
-        // A toast részletei.
         detail: "City deletion in progress",
-        // A toast megjelenítésének időtartama másodpercben.
         life: 2000,
     });
 

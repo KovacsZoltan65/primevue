@@ -361,6 +361,8 @@ const updateCompany = () => {
 
     CompanyService.updateCompany(company.value.id, company.value)
         .then((response) => {
+            companies.value.splice(index, 1, response.data);
+
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -431,9 +433,11 @@ const deleteSelectedCompanies = () => {
 };
 
 const deleteCompany = () => {
-    // Megkeresi a cég indexét az azonosítója alapján
     const index = findIndexById(company.value.id);
-    if (index === -1) return;
+    if (index === -1) {
+        console.warn("No company found with the given id:", company.value.id);
+        return;
+    }
 
     // Eredeti cégadat mentése, hogy visszaállíthassuk, ha a törlés sikertelen
     const originalCompany = { ...companies.value[index] };
@@ -450,29 +454,29 @@ const deleteCompany = () => {
     });
 
     CompanyService.deleteCompany(id)
-    .then((response) => {
-        // Sikeres törlés esetén értesítés
-        toast.add({
-            severity: "success",
-            summary: "Successful",
-            detail: "Company Deleted",
-            life: 3000,
-        });
-    })
-    .error((error) => {
-        // Hiba esetén visszaállítjuk a céget az eredeti helyére
-        companies.value.splice(index, 0, originalCompany);
+        .then((response) => {
+            // Sikeres törlés esetén értesítés
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Company Deleted",
+                life: 3000,
+            });
+        })
+        .error((error) => {
+            // Hiba esetén visszaállítjuk a céget az eredeti helyére
+            companies.value.splice(index, 0, originalCompany);
 
-        console.error("deleteCompany API Error:", error);
+            console.error("deleteCompany API Error:", error);
 
-        // Hibaüzenet megjelenítése a felhasználói felületen
-        toast.add({
-            severity: "error",
-            summary: "Error",
-            detail: "Failed to delete company",
-            life: 3000,
+            // Hibaüzenet megjelenítése a felhasználói felületen
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete company",
+                life: 3000,
+            });
         });
-    });
 };
 
 const findIndexById = (id) => {

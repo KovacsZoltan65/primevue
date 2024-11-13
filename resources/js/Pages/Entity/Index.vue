@@ -208,6 +208,7 @@ const updateEntity = () => {
 
     // Optimista frissítés: azonnal frissítjük az UI-t az új értékekkel
     entities.value.splice(index, 1, { ...entity.value });
+    
     hideDialog();
 
     // Azonnal megjelenítünk egy sikeres üzenetet
@@ -220,7 +221,7 @@ const updateEntity = () => {
 
     EntityService.updateEntity(entity.value.id, entity.value)
     .then((response) => {
-        // Ha az API sikeres, nincs további teendő, az érték már frissítve van
+        entities.value.splice(index, 1, response.data);
         toast.add({
             severity: "success",
             summary: "Successful",
@@ -245,9 +246,11 @@ const updateEntity = () => {
 };
 
 const deleteEntity = () => {
-    // Megkeresi a cég indexét a companies tömbben az ID alapján
     const index = findIndexById(entity.value.id);
-    if (index === -1) return;
+    if (index === -1) {
+        console.warn("No entity found with the given id:", entity.value.id);
+        return;
+    }
 
     // Eredeti állapot mentése, hogy hiba esetén visszaállíthassuk
     const originalEntity = { ...entities.value[index] };
@@ -264,33 +267,34 @@ const deleteEntity = () => {
     });
 
     EntityService.deleteEntity(entity.value.id)
-    .then((response) => {
-        // Sikeres törlés esetén értesítés
-        toast.add({
-            severity: "success",
-            summary: "Successful",
-            detail: "Entity Deleted",
-            life: 3000,
-        });
-    })
-    .catch((error) => {
-        // Hiba esetén visszaállítjuk a céget az eredeti helyére
-        entities.value.splice(index, 0, originalEntity);
+        .then((response) => {
+            // Sikeres törlés esetén értesítés
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Entity Deleted",
+                life: 3000,
+            });
+        })
+        .catch((error) => {
+            // Hiba esetén visszaállítjuk a céget az eredeti helyére
+            entities.value.splice(index, 0, originalEntity);
 
-        console.error("deleteEntity API Error:", error);
+            console.error("deleteEntity API Error:", error);
 
-        // Hibaüzenet megjelenítése a felhasználói felületen
-        toast.add({
-            severity: "error",
-            summary: "Error",
-            detail: "Failed to delete entity",
-            life: 3000,
+            // Hibaüzenet megjelenítése a felhasználói felületen
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete entity",
+                life: 3000,
+            });
         });
-    });
 };
 
 const deleteSelectedEntities = () => {
-    // Eredeti állapot mentése az összes kiválasztott céghez, hogy visszaállíthassuk hiba esetén
+    // Eredeti állapot mentése az összes kiválasztott céghez, 
+    // hogy visszaállíthassuk hiba esetén
     const originalEntities = [...selectedEntities.value];
 
     // Optimista törlés: azonnal eltávolítjuk az összes kijelölt céget
@@ -322,7 +326,7 @@ const deleteSelectedEntities = () => {
         })
         .catch((error) => {
             // Hiba esetén visszaállítjuk az eredeti állapotot
-            companies.value = originalEntities;
+            entities.value = originalEntities;
 
             console.error("deleteSelectedEntities API Error:", error);
 

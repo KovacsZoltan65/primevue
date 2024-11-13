@@ -448,6 +448,9 @@ const updateCountry = () => {
 
     CountryService.updateCountry(country.value.id, country.value)
         .then((response) => {
+            // Frissíti a városok listáját a válaszban kapott új adatokkal.
+            countries.value.splice(index, 1, response.data);
+
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -456,6 +459,8 @@ const updateCountry = () => {
             });
         })
         .catch((error) => {
+            // Ha a frissítési kísérlet meghiúsul,
+            // akkor visszaállítjuk az eredeti értékeket.
             countries.value.splice(index, 1, originalCountry);
 
             console.error("updateCountry API Error:", error);
@@ -469,44 +474,68 @@ const updateCountry = () => {
         });
 };
 
-/**
- * Megkeresi egy város indexét a városok tömbjében az azonosítója alapján.
- *
- * @param {number} id - A keresendő város azonosítója.
- * @returns {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
- */
-const findIndexById = (id) => {
-    return countries.value.findIndex((country) => country.id === id);
+const deleteSelectedCountries = () => {
+    const originalCountries = [...countries.value];
+
+    selectedCountries.value.forEach(selectedCountry => {
+        const index = countries.value.findIndex(country => country.id === selectedCountry.id);
+        if (index !== -1) {
+            countries.value.splice(index, 1);
+        }
+    });
+
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Deleting selected countries...",
+        life: 2000,
+    });
+
+    CountryService.deleteSelectedCountries(selectedCountries.value)
+        .then((response) => {
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Selected countries deleted",
+                life: 3000,
+            });
+
+            selectedCountries.value = [];
+        })
+        .catch((error) => {
+            countries.value = originalCountries;
+
+            console.error("deleteSelectedCountries API Error:", error);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete selected countries",
+                life: 3000,
+            });
+        });
 };
 
-/**
- * Törli a kiválasztott várost az API-ból.
- *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor törli a várost az API-ból.
- * A választ megjeleníti a konzolon.
- *
- * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megold dik.
- */
 const deleteCountry = () => {
-    // Ellen rizi a város adatait a validációs szabályok alapján.
-    if (v$.value.$invalid) {
-        alert("FAIL");
+    const index = findIndexById(country.value.id);
+    if (index === -1) {
+        console.warn("No country found with the given id:", country.value.id);
         return;
     }
 
-    // Törli a várost az API-ból.
+    const originalCountry = { ...countries.value[index] };
+
+    countries.value.splice(index, 1);
+
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Country deletion in progress",
+        life: 2000,
+    });
+
     CountryService.deleteCountry(country.value.id)
         .then((response) => {
-            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
-            const index = findIndexById(country.value.id);
-            // A város adatait törli a városok tömbjéb l
-            countries.value.splice(index, 1);
-
-            // Bezárja a dialógus ablakot
-            hideDialog();
-
-            // Siker-értesítést jelenít meg
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -515,17 +544,31 @@ const deleteCountry = () => {
             });
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
+            countries.value.splice(index, 0, originalCountry);
+
             console.error("deleteCountry API Error:", error);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete country",
+                life: 3000,
+            });
         });
+};
+
+/**
+ * Megkeresi egy város indexét a városok tömbjében az azonosítója alapján.
+ *
+ * @param {number} id - A keresendő város azonosítója.
+ * @returns {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
+ */
+ const findIndexById = (id) => {
+    return countries.value.findIndex((country) => country.id === id);
 };
 
 const exportCSV = () => {
     dt.value.exportCSV();
-};
-
-const deleteSelectedCountries = () => {
-    console.log(selectedCountries.value);
 };
 
 const getActiveLabel = (country) =>

@@ -24,6 +24,11 @@ import Dialog from 'primevue/dialog';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import Checkbox from 'primevue/checkbox';
+import Select from 'primevue/select';
+
+const props = defineProps({
+    companies: { type: Object, default: () => {}, },
+});
 
 const toast = useToast();
 
@@ -211,7 +216,7 @@ const updateEntity = () => {
 
     // Optimista frissítés: azonnal frissítjük az UI-t az új értékekkel
     entities.value.splice(index, 1, { ...entity.value });
-    
+
     hideDialog();
 
     // Azonnal megjelenítünk egy sikeres üzenetet
@@ -296,7 +301,7 @@ const deleteEntity = () => {
 };
 
 const deleteSelectedEntities = () => {
-    // Eredeti állapot mentése az összes kiválasztott céghez, 
+    // Eredeti állapot mentése az összes kiválasztott céghez,
     // hogy visszaállíthassuk hiba esetén
     const originalEntities = [...selectedEntities.value];
 
@@ -506,8 +511,8 @@ const exportCSV = () => {
                 </Column>
 
                 <!-- Email -->
-                <Column 
-                    field="email" 
+                <Column
+                    field="email"
                     :header="$t('email')"
                     style="min-width: 12rem"
                     sortable
@@ -527,7 +532,7 @@ const exportCSV = () => {
                 </Column>
 
                 <!-- Start Date -->
-                <Column 
+                <Column
                     field="start_date"
                     :header="$t('start_date')"
                     style="min-width: 12rem"
@@ -547,7 +552,7 @@ const exportCSV = () => {
                 </Column>
 
                 <!-- End Date -->
-                <Column 
+                <Column
                     field="end_date"
                     :header="$t('end_date')"
                     style="min-width: 12rem"
@@ -569,7 +574,7 @@ const exportCSV = () => {
                 <!-- Actions -->
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
-                        
+
                         <!-- szerkesztés -->
                         <Button
                             icon="pi pi-pencil"
@@ -598,15 +603,15 @@ const exportCSV = () => {
             :modal="true"
         >
             <div class="flex flex-col gap-6">
-                
+
                 <!-- Name -->
                 <div>
-                    <label 
-                        for="name" 
+                    <label
+                        for="name"
                         class="block font-bold mb-2"
                     >{{ $t("name") }}</label>
-                    <InputText 
-                        id="name" 
+                    <InputText
+                        id="name"
                         v-model="entity.name" autofocus fluid
                     />
                     <small class="text-red-500" v-if="v$.name.$error">
@@ -616,70 +621,76 @@ const exportCSV = () => {
 
                 <!-- Email -->
                 <div>
-                    <label 
-                        for="email" 
+                    <label
+                        for="email"
                         class="block font-bold mb-2"
                     >{{ $t("email") }}</label>
-                    <InputText 
-                        id="email" 
+                    <InputText
+                        id="email"
                         v-model="entity.email" fluid
                     />
+                </div>
+
+                <!-- Company ID -->
+                <div>
+                    <label
+                        for="company_id"
+                        class="block font-bold mb-2"
+                    >{{ $t("company_id") }}</label>
+
+                    <Select
+                        id="company_id"
+                        v-model="entity.company_id"
+                        :options="props.companies"
+                        optionLabel="name"
+                        optionValue="id"
+                        :placeholder="$t('company')"
+                        fluid
+                    ></Select>
                 </div>
 
                 <div class="grid grid-cols-12 gap-4">
                     <!-- Start Date -->
                     <div class="col-span-4">
-                        <label 
-                            for="start_date" 
-                            class="block font-bold mb-2" 
+                        <label
+                            for="start_date"
+                            class="block font-bold mb-2"
                         >{{ $t("start_date") }}</label>
-                        <InputText 
-                            id="start_date" 
+                        <InputText
+                            id="start_date"
                             v-model="entity.start_date" fluid
                         />
                     </div>
 
                     <!-- End Date -->
                     <div class="col-span-4">
-                        <label 
-                            for="end_date" 
-                            class="block font-bold mb-2" 
+                        <label
+                            for="end_date"
+                            class="block font-bold mb-2"
                         >{{ $t("end_date") }}</label>
-                        <InputText 
-                            id="end_date" 
+                        <InputText
+                            id="end_date"
                             v-model="entity.end_date" fluid
                         />
-                    </div>  
+                    </div>
 
                     <!-- Last Export -->
                     <div class="col-span-4">
-                        <label 
-                            for="last_export" 
+                        <label
+                            for="last_export"
                             class="block font-bold mb-2"
                         >{{ $t("last_export") }}</label>
                         <InputText id="last_export" v-model="entity.last_export" fluid/>
                     </div>
 
-                    <!-- Company ID -->
-                    <div class="col-span-4">
-                        <label 
-                            for="company_id" 
-                            class="block font-bold mb-2"
-                        >{{ $t("company_id") }}</label>
-                        <InputText 
-                            id="company_id" 
-                            v-model="entity.company_id" fluid
-                        />
-                    </div>
-
                     <!-- Active Status -->
                     <div class="col-span-4">
-                        <label 
-                            for="active" 
+                        <label
+                            for="active"
                             class="block font-bold mb-2"
                         >{{ $t("active") }}</label>
-                        <Checkbox 
-                            inputId="active" 
+                        <Checkbox
+                            inputId="active"
                             v-model="entity.active"
                         />
                     </div>
@@ -748,7 +759,7 @@ const exportCSV = () => {
             </div>
 
             <template #footer>
-                <Button 
+                <Button
                     :label="$t('no')"
                     icon="" text
                     @click="deleteSelectedEntitiesDialog = false"

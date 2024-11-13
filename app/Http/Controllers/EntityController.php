@@ -19,8 +19,12 @@ class EntityController extends Controller
 
     public function index(Request $request)
     {
+        $companies = \App\Models\Company::select('id', 'name')
+            ->orderBy('name')->get()->toArray();
+        
         return Inertia::render('Entity/Index', [
-            'search' => $request->get('search')
+            'search' => $request->get('search'),
+            'companies' => $companies
         ]);
     }
 

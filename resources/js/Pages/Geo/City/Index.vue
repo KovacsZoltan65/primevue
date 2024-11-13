@@ -280,20 +280,33 @@ const saveCity = async () => {
 };
 
 /**
- * Hozzon létre új várost az API-nak küldött POST-kéréssel.
+ * Hozzon létre új várost.
  *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor létrehoz egy új várost az API-ban.
- * A választ megjeleníti a konzolon.
+ * A metódus létrehoz egy új várost a szerveren a CityService.createCity() függvénnyel,
+ * és a választ megjeleníti a datatable-ben.
  *
- * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
+ * Ha a város létrehozása sikeres, akkor a dialógusablakot bezárja,
+ * és egy sikerüzenetet jelenít meg a felhasználónak.
+ *
+ * Ha a város létrehozása sikertelen, akkor a dialógusablakot bezárja,
+ * és egy hibaüzenetet jelenít meg a felhasználónak.
+ *
+ * @return {void}
  */
 const createCity = () => {
+    /**
+     * Hozz létre egy új város objektumot a jelenlegi város adataival.
+     * A város adatait egy új objektumba másolja, amelyet a városok tömbjéhez ad.
+     */
     const newCity = { ...city.value };
+
+    // Add hozzá az új várost a városok tömbjéhez.
     cities.values.push(newCity);
 
+    // Zárja be a dialógusablakot.
     hideDialog();
 
+    // Sikerüzenetet jelenít meg a felhasználónak.
     toast.add({
         severity: "success",
         summary: "Successful",
@@ -301,71 +314,103 @@ const createCity = () => {
         life: 3000,
     });
 
-    CityService.createCity(city.value)
-    .then((response) => {
-        Object.assign(newCity, response.data);
-    })
-    .catch((error) => {
-        const index = cities.values.indexOf(newCity);
-        if (index !== -1) {
-            cities.values.splice(index, 1);
-        }
-
-        console.error("createCity API Error:", error);
-
-        toast.add({
-            severity: "error",
-            summary: "Error",
-            detail: "Failed to create city",
-            life: 3000,
-        });
-    });
-
-    /*
+    // Küldjön egy API kérést az új város létrehozására.
     CityService.createCity(city.value)
         .then((response) => {
-            //console.log('response', response);
-            cities.values.push(response.data);
-
-            hideDialog();
-
-            toast.add({
-                severity: "success",
-                summary: "Successful",
-                detail: "City Created",
-                life: 3000,
-            });
+            // Frissítse az új város objektumot a szervertől kapott válasszal.
+            Object.assign(newCity, response.data);
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
+            // Ha hiba történik, távolítsa el az új várost a városok tömbjéből.
+            const index = cities.values.indexOf(newCity);
+            if (index !== -1) {
+                cities.values.splice(index, 1);
+            }
+
+            // Jelenítse meg a hibaüzenetet a konzolon.
             console.error("createCity API Error:", error);
+
+            // Hibaüzenetet jelenít meg a felhasználónak.
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to create city",
+                life: 3000,
+            });
         });
-        */
 };
 
 /**
- * Frissít egy várost az API-nak küldött PUT-kéréssel.
+ * Frissíti a kiválasztott várost a szerveren.
  *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor frissíti a várost az API-ban.
- * A választ megjeleníti a konzolon.
+ * A metódus frissíti a kiválasztott várost a szerveren a CityService.updateCity() függvénnyel,
+ * és a választ megjeleníti a datatable-ben.
  *
- * @param {number} id - A frissítendő város azonosítója.
- * @param {object} data - A város új adatai.
- * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
+ * Ha a város frissítése sikeres, akkor a dialógusablakot bezárja,
+ * és egy sikerüzenetet jelenít meg a felhasználónak.
+ *
+ * Ha a város frissítése sikertelen, akkor a dialógusablakot bezárja,
+ * és egy hibaüzenetet jelenít meg a felhasználónak.
  */
 const updateCity = () => {
+    /**
+     * Keresse meg a város indexét a városok tömbjében az azonosítója alapján.
+     * -1-et ad vissza, ha a város nem található.
+     *
+     * @param {number} id A keresendő város azonosítója.
+     * @returns {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
+     */
+    const index = findIndexById(city.value.id);
+
+    /**
+     * Ellenőrzi, hogy létezik-e a város a városok tömbjében az azonosítója alapján.
+     * Ha nem található, akkor vége a metódusnak.
+     */
+    if (index === -1) {
+        console.error(`City with id ${city.value.id} not found`);
+        return;
+    }
+
+    /**
+     * Tárolja el a jelenlegi város adatait, hogy vissza tudjuk állítani,
+     * ha a város frissítése sikertelen.
+     *
+     * @type {Object}
+     */
+    const originalCity = { ...cities.value[index] };
+
+    // Tárolja el a módosított város adatait a városok tömbjében.
+    // A ...city.value szintaxissal másoljuk a city.value objektumot,
+    // hogy ne legyen referencia a régi város adatokra.
+    cities.value.splice(index, 1, { ...city.value });
+
+    // Bezárja a dialógusablakot, miután a városok tömbjében elmentette a módosított város adatait.
+    // A hideDialog() függvényt a submitCity() függvényben is használjuk,
+    // azért hívjuk meg itt is, hogy a dialógusablakot bezárjuk,
+    // miután a város adatait elmentettük a szerveren.
+    hideDialog();
+
+    // Jelenít meg egy információs üzenetet, hogy a város frissítése folyamatban van.
+    // A life tulajdonsággal beállítjuk, hogy az üzenet 2 másodperc múlva eltűnjön.
+    toast.add({
+        severity: "info",
+        summary: "Updating...",
+        detail: "City update in progress",
+        life: 2000,
+    });
+
+    /**
+     * Hívja meg az API-t a város frissítésére az azonosító alapján.
+     *
+     * A sikeres API hívás esetén frissíti a város adatait a szerver válasza alapján.
+     * Hiba esetén visszaállítja az eredeti város adatait.
+     */
     CityService.updateCity(city.value.id, city.value)
-        .then(() => {
-            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
-            const index = findIndexById(city.value.id);
-            // A város adatait frissíti a városok tömbjében
-            cities.value.splice(index, 1, city.value);
+        .then((response) => {
+            // Frissítse a város adatait a szerver válaszával
+            cities.value.splice(index, 1, response.data);
 
-            // Bezárja a dialógus ablakot
-            hideDialog();
-
-            // Siker-értesítést jelenít meg
+            // Sikerüzenet megjelenítése a felhasználónak
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -374,8 +419,178 @@ const updateCity = () => {
             });
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
+            // Állítsa vissza az eredeti város adatokat hiba esetén
+            cities.value.splice(index, 1, originalCity);
+
+            // Hibaüzenet megjelenítése a konzolon
             console.error("updateCity API Error:", error);
+
+            // Hibaüzenet megjelenítése a felhasználónak
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to update city",
+                life: 3000,
+            });
+        });
+};
+
+/**
+ * Törli a kiválasztott városokat a szerverr l.
+ *
+ * A metódus elküld egy API kérést a kiválasztott városok azonosítóival,
+ * és eltávolítja a városokat a cities változóból.
+ *
+ * Ha a törlés sikeres, akkor egy sikerüzenetet jelenít meg a felhasználónak.
+ * Hiba esetén visszaállítja az eredeti városokat, és egy hibaüzenetet jelenít meg a felhasználónak.
+ *
+ * @return {void}
+ */
+const deleteSelectedCities = () => {
+    /**
+     * Tárolja el a városok eredeti tömbjét, hogy vissza tudjuk állítani,
+     * ha a városok törlése sikertelen.
+     *
+     * @type {Array}
+     */
+    const originalCity = [...cities.value];
+
+    /**
+     * Hozzon létre egy Set-et a kiválasztott városok azonosítóiból.
+     * A Set-et használjuk arra, hogy gyorsan ellenőrzhessük, 
+     * hogy a város szerepel-e a törlendő városok között.
+     *
+     * @type {Set<number>}
+     */
+    const selectedCityIds = new Set(selectedCities.value.map(city => city.id));
+
+    /**
+     * Módosítsa a városok tömbjét, hogy csak azokat a városokat tartalmazza, 
+     * amelyek nincsenek a kiválasztott városok között.
+     * A filter() metódus egy új tömböt ad vissza, amelyben a városok csak akkor szerepelnek, 
+     * ha az azonosítójuk nincs a selectedCityIds Set-ben.
+     */
+    cities.value = cities.value.filter(city => !selectedCityIds.has(city.id));
+
+    // Küldjön egy értesítést, hogy a városok törlése folyamatban van.
+    // A toast értesítés 2 másodperc múlva eltűnik.
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Deleting selected cities...",
+        life: 2000,
+    });
+
+    /**
+     * Elküld egy API kérést a kiválasztott városok azonosítóival,
+     * és eltávolítja a városokat a cities változóból.
+     *
+     * @param {Set<number>} selectedCityIds - A kiválasztott városok azonosítóinak Set-je.
+     * @return {Promise<void>}
+     */
+    CityService.deleteSelectedCities(selectedCityIds)
+        .then(() => {
+            // Sikerüzenet megjelenítése a felhasználónak
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Deleted selected cities",
+                life: 3000,
+            });
+        })
+        .catch(error => {
+            // Visszaállítja az eredeti városokat, ha a városok törlése sikertelen
+            cities.value = originalCity;
+            // Hibaüzenet megjelenítése a felhasználónak
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete selected cities",
+                life: 3000,
+            });
+            // Hibaüzenet megjelenítése a konzolon
+            console.error("deleteSelectedCities API Error:", error);
+        });
+};
+
+/**
+ * Törli a kiválasztott várost a szerverről.
+ *
+ * A metódus elküld egy API kérést a város azonosítójával,
+ * és eltávolítja a várost a cities változóból.
+ *
+ * Ha a törlés sikeres, akkor egy sikerüzenetet jelenít meg a felhasználónak.
+ * Hiba esetén visszaállítja az eredeti várost, és egy hibaüzenetet jelenít meg 
+ * a felhasználónak.
+ *
+ * @return {void}
+ */
+const deleteCity = () => {
+    // Keresse meg a kiválasztott város indexét a cities tömbben.
+    const index = findIndexById(city.value.id);
+    // Ellenőrizze, hogy a kiválasztott város indexe érvényes-e.
+    // Ha nem, akkor nem csinál semmit, és kilép a függvényből.
+    if (index === -1) {
+        console.warn("No city found with the given id:", city.value.id);
+        return;
+    }
+
+    // Tárolja el a kiválasztott város eredeti értékeit, hogy vissza tudjuk állítani,
+    // ha a város törlése sikertelen.
+    const originalCity = { ...cities.value[index] };
+
+    // Törli a kiválasztott várost a cities tömbből.
+    // A splice() metódus használatával törli a várost a tömbből.
+    // A splice() metódus két paramétert vár:
+    // 1. Az index, ahol el kell kezdeni a törlést.
+    // 2. A törlendő elemek száma.
+    // Mivel csak egy elemet akarunk törölni, ezért a második paraméter 1.
+    cities.value.splice(index, 1);
+
+    // Jelenítse meg egy figyelmeztető toast üzenetet a felhasználónak,
+    // hogy a város törlése folyamatban van.
+    toast.add({
+        // A súlyosság szintje, amely meghatározza a toast színét.
+        // A "info" érték egy szürke színű toastot jelenít meg.
+        severity: "info",
+        // A toast címe.
+        summary: "Deleting...",
+        // A toast részletei.
+        detail: "City deletion in progress",
+        // A toast megjelenítésének időtartama másodpercben.
+        life: 2000,
+    });
+
+    /**
+     * Törli a várost az azonosítója alapján az API-ból.
+     *
+     * Az API kérés sikeres válasza esetén megjelenít egy sikerüzenetet.
+     * Hiba esetén visszaállítja az eredeti várost, és megjelenít egy hibaüzenetet.
+     */
+    CityService.deleteCity(city.value.id)
+        .then(() => {
+            // Sikeres törlés esetén megjelenít egy sikerüzenetet toastban.
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "City Deleted",
+                life: 3000,
+            });
+        })
+        .catch(error => {
+            // Hiba esetén visszaállítja az eredeti várost a tömbben.
+            cities.value.splice(index, 0, originalCity);
+
+            // Kiírja a hibát a konzolra.
+            console.error("deleteCity API Error:", error);
+            
+            // Megjelenít egy hibaüzenetet toastban.
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete city",
+                life: 3000,
+            });
         });
 };
 
@@ -385,26 +600,12 @@ const updateCity = () => {
  * @param {number} id - A keresendő város azonosítója.
  * @returns {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
  */
-const findIndexById = (id) => {
+ const findIndexById = (id) => {
     return cities.value.findIndex((city) => city.id === id);
-};
-
-const deleteCity = () => {
-    CityService.deleteCity(city.value.id)
-        .then((response) => {
-            //
-        })
-        .catch((error) => {
-            console.error("deleteCity API Error:", error);
-        });
 };
 
 const exportCSV = () => {
     dt.value.exportCSV();
-};
-
-const deleteSelectedCities = () => {
-    console.log(selectedCities.value);
 };
 
 const getCountryName = (id) => {

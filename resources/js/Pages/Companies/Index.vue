@@ -25,6 +25,7 @@ import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
 import FileUpload from "primevue/fileupload";
+import { createId } from "@/helpers/functions";
 
 /**
  * Szerver felöl jövő adatok
@@ -306,22 +307,22 @@ const saveCompany = async () => {
 };
 
 const createCompany = () => {
-    const newCompany = { ...company.value };
+    const newCompany = { ...company.value, id: createId() };
     companies.values.push(newCompany);
 
     hideDialog();
 
     toast.add({
         severity: "success",
-        summary: "Successful",
-        detail: "Company Created",
+        summary: "Creating...",
+        detail: "Company creation in progress",
         life: 3000,
     });
 
     CompanyService.createCompany(company.value)
         .then((response) => {
-            // Ha az API sikeres, frissítjük a cég adatát a válasszal (ha szükséges)
-            Object.assign(newCompany, response.data);
+            const index = companies.value.findIndex(comp => comp.id === newCompany.id);
+            companies.value.splice(index, 1, response.data);
         })
         .catch((error) => {
             const index = companies.values.indexOf(newCompany);
@@ -341,7 +342,10 @@ const createCompany = () => {
 
 const updateCompany = () => {
     const index = findIndexById(company.value.id);
-    if (index === -1) return;
+    if (index === -1) {
+        console.error(`Company with id ${country.value.id} not found`);
+        return;
+    }
 
     const originalCompany = { ...companies.value[index] };
 
@@ -356,26 +360,26 @@ const updateCompany = () => {
     });
 
     CompanyService.updateCompany(company.value.id, company.value)
-    .then((response) => {
-        toast.add({
-            severity: "success",
-            summary: "Successful",
-            detail: "Company Updated",
-            life: 3000,
-        });
-    })
-    .cache((error) => {
-        companies.value.splice(index, 1, originalCompany);
+        .then((response) => {
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Company Updated",
+                life: 3000,
+            });
+        })
+        .cache((error) => {
+            companies.value.splice(index, 1, originalCompany);
 
-        console.error("updateCompany API Error:", error);
+            console.error("updateCompany API Error:", error);
 
-        toast.add({
-            severity: "error",
-            summary: "Error",
-            detail: "Failed to update company",
-            life: 3000,
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to update company",
+                life: 3000,
+            });
         });
-    });
 };
 
 const deleteSelectedCompanies = () => {

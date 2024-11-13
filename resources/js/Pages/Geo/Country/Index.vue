@@ -23,6 +23,7 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
+import { createId } from "@/helpers/functions";
 
 /**
  * Szerver felöl jövő adatok
@@ -145,26 +146,16 @@ const selectedCountries = ref();
  *
  * @type {Object}
  */
-const filters = ref({
-    // A globális szűrőobjektum.
-    // Van egy érték tulajdonsága a keresési lekérdezés tárolására
-    // és egy matchMode tulajdonsága a keresés típusának megadásához.
-    global: {
-        /**
-         * A globális szűrő értéke.
-         *
-         * @type {string | null}
-         */
-        value: null,
+const filters = ref({});
 
-        /**
-         * A globális szűrő illesztési módja.
-         *
-         * @type {FilterMatchMode}
-         */
-        matchMode: FilterMatchMode.CONTAINS,
-    },
-});
+const initFilters = () => {
+    filters.value = {
+        global: {value: null, matchMode: FilterMatchMode.CONTAINS},
+        name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+    }
+};
+
+initFilters();
 
 /**
  * Reaktív hivatkozás a beküldött (submit) állapotára.
@@ -346,7 +337,7 @@ const confirmDeleteCountry = (data) => {
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megold dik.
  */
 const saveCountry = async () => {
-    // Ellen rizi a város adatait a validációs szabályok alapján.
+    // Ellenőrizi a város adatait a validációs szabályok alapján.
     const result = await v$.value.$validate();
 
     // Ha a validáció sikerült, akkor mentse el a város adatait az API-ban.
@@ -357,7 +348,7 @@ const saveCountry = async () => {
         if (country.value.id) {
             updateCountry();
         } else {
-            // Ellenkez  esetben hozzon létre egy új várost az API-ban.
+            // Ellenkező esetben hozzon létre egy új várost az API-ban.
             createCountry();
         }
     } else {
@@ -376,10 +367,23 @@ const saveCountry = async () => {
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
 const createCountry = () => {
+    const newCountry = { ...country.value, id: createId() };
+
+    countries.value.push(newCountry);
+
+    hideDialog();
+
+    toast.add({
+        severity: "success",
+        summary: "Creating...",
+        detail: "Country creation in progress",
+        life: 3000,
+    });
+
     CountryService.createCountry(country.value)
         .then((response) => {
-            //console.log('response', response);
-            countries.values.push(response.data);
+            const index = countries.value.findIndex(count => count.id === newCountry.id);
+            countries.value.splice(index, 1, response.data);
 
             hideDialog();
 
@@ -391,8 +395,23 @@ const createCountry = () => {
             });
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
+            // Keresse meg az új ország indexét az országok tömbjében
+            // hogy eltávolíthassuk, ha az API hívás meghiúsul.
+            const index = countries.value.findIndex(count => count.id === newCountry.id);
+            // Ha az index nem -1, akkor eltávolítjuk az új országot
+            // az országok tömbjéb l, mert a létrehozás meghiúsult.
+            if (index !== -1) {
+                countries.value.splice(index, 1);
+            }
+
             console.error("createCountry API Error:", error);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: error.response.data.message,
+                life: 3000,
+            });
         });
 };
 
@@ -408,17 +427,27 @@ const createCountry = () => {
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
 const updateCountry = () => {
+    const index = findIndexById(country.value.id);
+    if (index === -1) {
+        console.error(`Country with id ${country.value.id} not found`);
+        return;
+    }
+
+    const originalCountry = { ...countries.value[index] };
+
+    countries.value.splice(index, 1, { ...country.value });
+
+    hideDialog();
+
+    toast.add({
+        severity: "info",
+        summary: "Updating...",
+        detail: "Country update in progress",
+        life: 2000,
+    });
+
     CountryService.updateCountry(country.value.id, country.value)
-        .then(() => {
-            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
-            const index = findIndexById(country.value.id);
-            // A város adatait frissíti a városok tömbjében
-            countries.value.splice(index, 1, country.value);
-
-            // Bezárja a dialógus ablakot
-            hideDialog();
-
-            // Siker-értesítést jelenít meg
+        .then((response) => {
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -427,8 +456,16 @@ const updateCountry = () => {
             });
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
+            countries.value.splice(index, 1, originalCountry);
+
             console.error("updateCountry API Error:", error);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: error.response.data.message,
+                life: 3000,
+            });
         });
 };
 

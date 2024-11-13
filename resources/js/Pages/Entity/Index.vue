@@ -151,8 +151,8 @@ const saveEntity = async () => {
 
 const createEntity = () => {
     // Optimista frissítés: az új cég ideiglenes hozzáadása a listához
-    const tempEntity = { ...entity.value, id: createId() }; // Generálunk egy ideiglenes ID-t
-    companies.value.push(tempEntity);
+    const newEntity = { ...entity.value, id: createId() }; // Generálunk egy ideiglenes ID-t
+    companies.value.push(newEntity);
 
     // Azonnal megjelenítünk egy sikeres üzenetet
     toast.add({
@@ -165,7 +165,7 @@ const createEntity = () => {
     EntityService.createCompany(entity.value)
         .then((response) => {
             // Frissítjük az ideiglenes elemet a tényleges adatokkal, ha a létrehozás sikeres
-            const index = entities.value.findIndex(ent => ent.id === tempEntity.id);
+            const index = entities.value.findIndex(ent => ent.id === newEntity.id);
             entities.value.splice(index, 1, response.data);
 
             hideDialog();
@@ -179,7 +179,7 @@ const createEntity = () => {
         })
         .catch((error) => {
             // Hiba esetén eltávolítjuk az ideiglenes elemet a listából
-            const index = entities.value.findIndex(ent => ent.id === tempEntity.id);
+            const index = entities.value.findIndex(ent => ent.id === newEntity.id);
             if (index !== -1) {
                 entities.value.splice(index, 1);
             }
@@ -198,7 +198,10 @@ const createEntity = () => {
 const updateEntity = () => {
     // Megkeresi a cég indexét a companies tömbben az ID alapján
     const index = findIndexById(entity.value.id);
-    if (index === -1) return;
+    if (index === -1) {
+        console.error(`Entity with id ${country.value.id} not found`);
+        return;
+    }
 
     // Eredeti állapot mentése, hogy hiba esetén visszaállíthassuk
     const originalEntity = { ...entities.value[index] };
@@ -233,11 +236,11 @@ const updateEntity = () => {
 
         // Hibaüzenet megjelenítése a felhasználói felületen
         toast.add({
-                severity: "error",
-                summary: "Error",
-                detail: "Failed to update entity",
-                life: 3000,
-            });
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to update entity",
+            life: 3000,
+        });
     });
 };
 

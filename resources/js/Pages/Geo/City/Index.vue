@@ -23,6 +23,7 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
+import { createId } from "@/helpers/functions";
 
 /**
  * Szerver felöl jövő adatok
@@ -120,12 +121,18 @@ const selectedCities = ref();
  *
  * @type {Object}
  */
-const filters = ref({
-    // A globális szűrőobjektum.
-    // Van egy érték tulajdonsága a keresési lekérdezés tárolására
-    // és egy matchMode tulajdonsága a keresés típusának megadásához.
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS, },
-});
+const filters = ref({});
+
+const initFilters = () => {
+    filters.value = {
+        // A globális szűrőobjektum.
+        // Van egy érték tulajdonsága a keresési lekérdezés tárolására
+        // és egy matchMode tulajdonsága a keresés típusának megadásához.
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS, },
+    }
+};
+
+initFilters();
 
 /**
  * Reaktív hivatkozás a beküldött (submit) állapotára.
@@ -295,10 +302,15 @@ const saveCity = async () => {
  */
 const createCity = () => {
     /**
-     * Hozz létre egy új város objektumot a jelenlegi város adataival.
-     * A város adatait egy új objektumba másolja, amelyet a városok tömbjéhez ad.
+     * Létrehoz egy új város objektumot az aktuális város adataival és egy új azonosítóval.
+     * 
+     * A city.value objektum másolatát hozza létre, és hozzáad egy új egyedi azonosítót 
+     * az új városhoz.
+     * 
+     * @type {Object}
+     * @property {number} id - Az új város egyedi azonosítója.
      */
-    const newCity = { ...city.value };
+    const newCity = { ...city.value, id: createId() };
 
     // Add hozzá az új várost a városok tömbjéhez.
     cities.values.push(newCity);
@@ -309,8 +321,8 @@ const createCity = () => {
     // Sikerüzenetet jelenít meg a felhasználónak.
     toast.add({
         severity: "success",
-        summary: "Successful",
-        detail: "City Created",
+        summary: "Creating...",
+        detail: "City creation in progress",
         life: 3000,
     });
 
@@ -318,7 +330,8 @@ const createCity = () => {
     CityService.createCity(city.value)
         .then((response) => {
             // Frissítse az új város objektumot a szervertől kapott válasszal.
-            Object.assign(newCity, response.data);
+            const index = cities.value.findIndex(cit => cit.id === newCity.id);
+            cities.value.splice(index, 1, response.data);
         })
         .catch((error) => {
             // Ha hiba történik, távolítsa el az új várost a városok tömbjéből.
@@ -340,18 +353,6 @@ const createCity = () => {
         });
 };
 
-/**
- * Frissíti a kiválasztott várost a szerveren.
- *
- * A metódus frissíti a kiválasztott várost a szerveren a CityService.updateCity() függvénnyel,
- * és a választ megjeleníti a datatable-ben.
- *
- * Ha a város frissítése sikeres, akkor a dialógusablakot bezárja,
- * és egy sikerüzenetet jelenít meg a felhasználónak.
- *
- * Ha a város frissítése sikertelen, akkor a dialógusablakot bezárja,
- * és egy hibaüzenetet jelenít meg a felhasználónak.
- */
 const updateCity = () => {
     /**
      * Keresse meg a város indexét a városok tömbjében az azonosítója alapján.

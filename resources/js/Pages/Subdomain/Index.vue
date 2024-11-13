@@ -550,27 +550,15 @@ const saveSubdomain = async () => {
  * @return {Promise<void>} A metódusban visszaadott ígéret.
  */
 const createSubdomain = async () => {
-    try {
-        // Létrehozza az új aldomaint az API-ban
-        const response = await SubdomainService.createSubdomain(subdomain.value);
+    const newSubdomain = { ...subdomain.value, id: createId() };
+    subdomains.value.push(newSubdomain);
 
-        // Felveszi az új aldomaint a lista végére
-        subdomains.value.push(response.data);
-
-        // Bezárja a dialógusablakot
-        hideDialog();
-
-        // Jelenít meg egy sikeres értesítést
-        toast.add({
-            severity: "success",
-            summary: "Successful",
-            detail: "Subdomain Created",
-            life: 3000,
-        });
-    } catch (error) {
-        // Jelenít meg egy hibaüzenetet a konzolon
-        console.error("createSubdomain API Error:", error);
-    }
+    toast.add({
+        severity: "info",
+        summary: "Creating...",
+        detail: "Subdomain creation in progress",
+        life: 2000,
+    });
 };
 
 const updateSubdomain = async () => {

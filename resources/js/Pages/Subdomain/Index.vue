@@ -1038,16 +1038,19 @@ const onUpload = () => {
                 <div class="flex flex-wrap gap-4">
                     <!-- Name -->
                     <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="name" class="block font-bold mb-3">{{
-                            $t("name")
-                        }}</label>
+                        <label for="name" class="block font-bold mb-3">
+                            {{ $t("name") }}
+                        </label>
                         <InputText
                             id="name"
                             v-model="subdomain.name"
                             autofocus
                             fluid
                         />
-                        <small class="text-red-500" v-if="v$.name.$error">
+                        <small 
+                            class="text-red-500" 
+                            v-if="v$.name.$error"
+                        >
                             {{ $t(v$.name.$errors[0].$message) }}
                         </small>
                     </div>

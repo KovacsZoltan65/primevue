@@ -19,8 +19,11 @@ import FileUpload from 'primevue/fileupload';
 import Toolbar from 'primevue/toolbar';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import InputText from 'primevue/inputtext';
-import { Dialog, IconField, InputIcon } from 'primevue';
+import InputText from "primevue/inputtext";
+import Dialog from 'primevue/dialog';
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
+import Checkbox from 'primevue/checkbox';
 
 const toast = useToast();
 
@@ -35,7 +38,7 @@ const rules = {
 };
 
 const entities = ref([]);
-const entity = {
+const entity = ref({
     id: null,
     name: '',
     email: '',
@@ -44,7 +47,7 @@ const entity = {
     last_export: '',
     company_id: null,
     active: true
-};
+});
 
 const v$ = useVuelidate(rules, entity);
 
@@ -347,7 +350,7 @@ const editEntity = (data) => {
 };
 
 const confirmDeleteEntity = (data) => {
-    entity.value = {...data};
+    entity.value = { ...data };
     deleteEntityDialog.value = true;
 };
 
@@ -590,47 +593,96 @@ const exportCSV = () => {
         <!-- szerkesztés -->
         <Dialog
             v-model:visible="entityDialog"
-            :style="{ width: '450px' }"
+            :style="{ width: '550px' }"
             :header="$t('entity_details')"
             :modal="true"
         >
             <div class="flex flex-col gap-6">
-                <div class="flex flex-wrap gap-4">
-                    <!-- Name -->
-                    <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="name" class="block font-bold mb-3">
-                            {{ $t("name") }}
-                        </label>
+                
+                <!-- Name -->
+                <div>
+                    <label 
+                        for="name" 
+                        class="block font-bold mb-2"
+                    >{{ $t("name") }}</label>
+                    <InputText 
+                        id="name" 
+                        v-model="entity.name" autofocus fluid
+                    />
+                    <small class="text-red-500" v-if="v$.name.$error">
+                        {{ v$.name.$errors[0].$message }}
+                    </small>
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label 
+                        for="email" 
+                        class="block font-bold mb-2"
+                    >{{ $t("email") }}</label>
+                    <InputText 
+                        id="email" 
+                        v-model="entity.email" fluid
+                    />
+                </div>
+
+                <div class="grid grid-cols-12 gap-4">
+                    <!-- Start Date -->
+                    <div class="col-span-4">
+                        <label 
+                            for="start_date" 
+                            class="block font-bold mb-2" 
+                        >{{ $t("start_date") }}</label>
                         <InputText 
-                            id="name"
-                            v-model="entity.name"
-                            autofocus 
-                            fluid
+                            id="start_date" 
+                            v-model="entity.start_date" fluid
                         />
-                        <small 
-                            class="text-red-500" 
-                            v-if="v$.name.$error">
-                            {{ $t(v$.name.$errors[0].$message) }}
-                        </small>
                     </div>
 
-                    <!-- Email -->
-                    <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="email" class="block font-bold mb-3">
-                            {{ $t("email") }}
-                        </label>
+                    <!-- End Date -->
+                    <div class="col-span-4">
+                        <label 
+                            for="end_date" 
+                            class="block font-bold mb-2" 
+                        >{{ $t("end_date") }}</label>
                         <InputText 
-                            id="email"
-                            v-model="entity.email"
-                            fluid
+                            id="end_date" 
+                            v-model="entity.end_date" fluid
                         />
-                        <small 
-                            class="text-red-500" 
-                            v-if="v$.email.$error">
-                            {{ $t(v$.email.$errors[0].$message) }}
-                        </small>
+                    </div>  
+
+                    <!-- Last Export -->
+                    <div class="col-span-4">
+                        <label 
+                            for="last_export" 
+                            class="block font-bold mb-2"
+                        >{{ $t("last_export") }}</label>
+                        <InputText id="last_export" v-model="entity.last_export" fluid/>
                     </div>
 
+                    <!-- Company ID -->
+                    <div class="col-span-4">
+                        <label 
+                            for="company_id" 
+                            class="block font-bold mb-2"
+                        >{{ $t("company_id") }}</label>
+                        <InputText 
+                            id="company_id" 
+                            v-model="entity.company_id" fluid
+                        />
+                    </div>
+
+                    <!-- Active Status -->
+                    <div class="col-span-4">
+                        <label 
+                            for="active" 
+                            class="block font-bold mb-2"
+                        >{{ $t("active") }}</label>
+                        <Checkbox 
+                            inputId="active" 
+                            v-model="entity.active"
+                        />
+                    </div>
                 </div>
             </div>
 

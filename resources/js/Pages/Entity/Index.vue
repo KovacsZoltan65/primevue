@@ -13,7 +13,10 @@ import useVuelidate from "@vuelidate/core";
 import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
 import validationRules from "../../Validation/validationRules.json";
 
+// TOAST
 import { useToast } from "primevue/usetoast";
+import { Toast } from 'primevue';
+
 import Button from 'primevue/button';
 import FileUpload from 'primevue/fileupload';
 import Toolbar from 'primevue/toolbar';
@@ -58,7 +61,7 @@ const v$ = useVuelidate(rules, entity);
 
 const submitted = ref(false);
 
-const selectedEntities = ref([]);
+const selectedEntities = ref();
 
 /**
  * ======================================
@@ -69,7 +72,10 @@ const entityDialog = ref(false);
 const deleteEntityDialog = ref(false);
 const deleteSelectedEntitiesDialog = ref(false);
 
-const confirmDeleteSelected = () => {};
+const confirmDeleteSelected = () => {
+    deleteSelectedEntitiesDialog.value = true;
+};
+
 const hideDialog = () => {
     entityDialog.value = false;
     deleteEntityDialog.value = false;
@@ -128,7 +134,7 @@ const initialEntity = () => {
 };
 
 const openNew = () => {
-    EntityService.value = {...initialEntity};
+    entity.value = {...initialEntity};
     submitted.value = false;
     entityDialog.value = true;
 }
@@ -159,9 +165,9 @@ const saveEntity = async () => {
 
 const createEntity = () => {
     // Optimista frissítés: az új cég ideiglenes hozzáadása a listához
-    const newEntity = { ...entity.value, id: createId() }; // Generálunk egy ideiglenes ID-t
-    companies.value.push(newEntity);
-
+    const newEntity = { ...entity.value, id: createId() };
+    entities.value.push(newEntity);
+console.log('newEntity', newEntity);
     // Azonnal megjelenítünk egy sikeres üzenetet
     toast.add({
         severity: "info",
@@ -170,7 +176,7 @@ const createEntity = () => {
         life: 2000,
     });
 
-    EntityService.createCompany(entity.value)
+    EntityService.createEntity(entity.value)
         .then((response) => {
             // Frissítjük az ideiglenes elemet a tényleges adatokkal, ha a létrehozás sikeres
             const index = entities.value.findIndex(ent => ent.id === newEntity.id);
@@ -201,13 +207,14 @@ const createEntity = () => {
                 life: 3000,
             });
         });
+        
 }
 
 const updateEntity = () => {
     // Megkeresi a cég indexét a companies tömbben az ID alapján
     const index = findIndexById(entity.value.id);
     if (index === -1) {
-        console.error(`Entity with id ${country.value.id} not found`);
+        console.error(`Entity with id ${entity.value.id} not found`);
         return;
     }
 
@@ -228,45 +235,64 @@ const updateEntity = () => {
     });
 
     EntityService.updateEntity(entity.value.id, entity.value)
-    .then((response) => {
-        entities.value.splice(index, 1, response.data);
-        toast.add({
-            severity: "success",
-            summary: "Successful",
-            detail: "Entity Updated",
-            life: 3000,
-        });
-    })
-    .catch((error) => {
-        // Hiba esetén visszaállítjuk az eredeti állapotot
-        entities.value.splice(index, 1, originalEntity);
+        .then((response) => {
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Entity Updated",
+                life: 3000,
+            });
+        })
+        .catch((error) => {
+            companies.value.splice(index, 1, originalEntity);
 
-        console.error("updateEntity API Error:", error);
-
-        // Hibaüzenet megjelenítése a felhasználói felületen
-        toast.add({
-            severity: "error",
-            summary: "Error",
-            detail: "Failed to update entity",
-            life: 3000,
+            // Hibaüzenet megjelenítése a felhasználói felületen
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to update entity",
+                life: 3000,
+            });
         });
-    });
 };
 
+/**
+ * Töröljön egy entitást a felhasználói felületen, az adatbázisból és az API-ból.
+ *
+ * A törlési folyamat:
+ * - Megkeresi a törlendő entitás indexét az entities tömbben az ID alapján
+ * - Ha a cég megtalálható, akkor eltávolítjuk a tömbből
+ * - Azonnal megjelenítünk egy üzenetet a felhasználónak a törlési folyamatról
+ * - Az API-ban a deleteEntity függvénnyel törli az entitást
+ * - Sikeres törlés esetén sikeres üzenetet jelenít meg a felhasználónak
+ * - Hiba esetén visszaállítja az eredeti állapotot, és hibaüzenetet jelenít meg a
+ *   felhasználónak
+ */
 const deleteEntity = () => {
+
+    // Keresse meg az entitás indexét az entitástömbben az azonosítójával
     const index = findIndexById(entity.value.id);
+    
+    // Ellenőrizze, hogy az entitás nem található-e
     if (index === -1) {
+        // Figyelmeztető üzenet naplózása, ha nem található entitás a megadott azonosítóval
         console.warn("No entity found with the given id:", entity.value.id);
+        
+        // Korábban lépjen ki a funkcióból, mert nincs mit törölni
         return;
     }
 
-    // Eredeti állapot mentése, hogy hiba esetén visszaállíthassuk
+    // Elmentjük az eredeti állapotot, hogy hiba esetén visszaállíthassuk
     const originalEntity = { ...entities.value[index] };
 
-    // Optimista törlés: azonnal eltávolítjuk a céget a listából
-    companies.value.splice(index, 1);
+    // Törlési folyamat:
+    // - A törlendő cég indexét megkeressük az entities tömbben az ID alapján
+    // - Ha a cég megtalálható, akkor eltávolítjuk a tömbből
+    entities.value.splice(index, 1);
 
-    // Törlési értesítés optimista frissítés után
+    // Bezárja a dialógusablakot, hogy a felhasználó ne lássa a régi adatokat
+    hideDialog();
+
     toast.add({
         severity: "info",
         summary: "Deleting...",
@@ -276,7 +302,7 @@ const deleteEntity = () => {
 
     EntityService.deleteEntity(entity.value.id)
         .then((response) => {
-            // Sikeres törlés esetén értesítés
+            // Sikeres üzenet megjelenítése az entitás sikeres törlésekor
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -285,12 +311,12 @@ const deleteEntity = () => {
             });
         })
         .catch((error) => {
-            // Hiba esetén visszaállítjuk a céget az eredeti helyére
+            // Hiba esetén visszaállítjuk az eredeti állapotot,
+            // mert az optimista törlés nem sikerült
             entities.value.splice(index, 0, originalEntity);
 
             console.error("deleteEntity API Error:", error);
 
-            // Hibaüzenet megjelenítése a felhasználói felületen
             toast.add({
                 severity: "error",
                 summary: "Error",
@@ -301,11 +327,87 @@ const deleteEntity = () => {
 };
 
 const deleteSelectedEntities = () => {
-    // Eredeti állapot mentése az összes kiválasztott céghez,
-    // hogy visszaállíthassuk hiba esetén
+
+    // A módosítás előtt készítsen másolatot az eredeti entitástömbről
+    // Ez egy védekező másolat, így ha a törlés nem sikerül, megtehetjük
+    // visszaállítja az entitástömb eredeti állapotát
+    const originalEntities = [...entities.value];
+
+    // Törlési folyamat:
+    // - A kijelölt elemek törléséhez létrehozunk egy új tömböt, amely nem tartalmazza a
+    //   kijelölt elemeket.
+    // - A findIndexById függvénnyel megkeressük a kijelölt elemek indexét az eredeti tömbben.
+    // - Ha a keresés sikeres, akkor a splice függvénnyel töröljük a kijelölt elemet az eredeti
+    //   tömbből.
+    entities.value = entities.value.filter(
+        (val) => !selectedEntities.value.includes(val)
+    );
+
+    // Bezárja a dialógusablakot, miután a felhasználó kiválasztotta a törlési lehetőséget
+    hideDialog();
+
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Deleting selected entities...",
+        life: 2000,
+    });
+
+    // A kijelölt entitások törléséhez szolgáló API-végpont meghívása.
+    // A then függvénnyel megvárjuk a választ, és ha a válasz sikeres, akkor a
+    // selectedCompanies tömböt is frissítjük.
+    EntityService.deleteEntities(selectedEntities.value)
+        .then((response) => {
+            //console.log('response', response);
+
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Selected entities deleted",
+                life: 3000,
+            });
+            
+            // A selectedEntities tömböt is frissítjük, hogy a felhasználó
+            // ne lássa a már törölt elemeket a kiválasztott elemek listájában.
+            selectedEntities.value = [];
+        })
+        .catch((error) => {
+            console.log('error', error);
+            // Ha a törlés nem sikerül, akkor visszaállítjuk az eredeti állapotot
+            // a companies változóban.
+            entities.value = originalEntities;
+
+            console.error("deleteSelectedEntities API Error:", error);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete selected entities",
+                life: 3000,
+            });
+        });
+/*
     const originalEntities = [...selectedEntities.value];
 
-    // Optimista törlés: azonnal eltávolítjuk az összes kijelölt céget
+    console.log("selectedEntities", selectedEntities.value);
+
+    selectedEntities.value.forEach(selectedEntity => {
+
+        console.log("selectedEntity", selectedEntity);
+
+        //const index = entities.value.findIndex(entity => entity.id === selectedEntity.id);
+        const index = findIndexById(selectedEntity.id);
+        console.log("index", index);
+        if (index !== -1) {
+            entities.value.splice(index, 1);
+        }
+    });
+*/
+    
+
+    /*
+    const originalEntities = [...selectedEntities.value];
+
     selectedEntities.value.forEach(selectedEntity => {
         const index = entities.value.findIndex(ent => ent.id === selectedEntity.id);
         if (index !== -1) {
@@ -321,32 +423,33 @@ const deleteSelectedEntities = () => {
         });
 
         EntityService.deleteEntities()
-        .then((response) => {
-            // Sikeres törlés esetén értesítés
-            toast.add({
-                severity: "success",
-                summary: "Successful",
-                detail: "Selected entities deleted",
-                life: 3000,
-            });
-            // Törölt elemek eltávolítása a selectedCompanies-ből
-            selectedEntities.value = [];
-        })
-        .catch((error) => {
-            // Hiba esetén visszaállítjuk az eredeti állapotot
-            entities.value = originalEntities;
+            .then((response) => {
+                // Sikeres törlés esetén értesítés
+                toast.add({
+                    severity: "success",
+                    summary: "Successful",
+                    detail: "Selected entities deleted",
+                    life: 3000,
+                });
+                // Törölt elemek eltávolítása a selectedCompanies-ből
+                selectedEntities.value = [];
+            })
+            .catch((error) => {
+                // Hiba esetén visszaállítjuk az eredeti állapotot
+                entities.value = originalEntities;
 
-            console.error("deleteSelectedEntities API Error:", error);
+                console.error("deleteSelectedEntities API Error:", error);
 
-            // Hibaüzenet megjelenítése a felhasználói felületen
-            toast.add({
-                severity: "error",
-                summary: "Error",
-                detail: "Failed to delete selected entities",
-                life: 3000,
+                // Hibaüzenet megjelenítése a felhasználói felületen
+                toast.add({
+                    severity: "error",
+                    summary: "Error",
+                    detail: "Failed to delete selected entities",
+                    life: 3000,
+                });
             });
-        });
     });
+    */
 };
 
 const editEntity = (data) => {
@@ -372,6 +475,8 @@ const exportCSV = () => {
 <template>
     <AppLayout>
         <Head :title="$t('entities')" />
+
+        <Toast />
 
         <div class="card">
 
@@ -690,7 +795,7 @@ const exportCSV = () => {
                             class="block font-bold mb-2"
                         >{{ $t("active") }}</label>
                         <Checkbox
-                            inputId="active"
+                            inputId="active" binary
                             v-model="entity.active"
                         />
                     </div>
@@ -755,7 +860,7 @@ const exportCSV = () => {
         >
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="product">{{ $t("confirm_delete") }}</span>
+                <span v-if="entity">{{ $t("confirm_delete") }}</span>
             </div>
 
             <template #footer>
@@ -771,6 +876,5 @@ const exportCSV = () => {
                 />
             </template>
         </Dialog>
-
     </AppLayout>
 </template>

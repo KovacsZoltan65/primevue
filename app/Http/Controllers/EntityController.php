@@ -61,8 +61,9 @@ class EntityController extends Controller
 
     public function createEntity(StoreEntityRequest $request)
     {
+        //\Log::info('$request->all(): ', $request->all());
         $entity = Entity::create($request->all());
-
+\Log::info('$entity' . print_r($entity, true));
         return response()->json($entity, Response::HTTP_OK);
     }
 
@@ -81,5 +82,37 @@ class EntityController extends Controller
         $success = $entity->delete();
 
         return response()->json(['success' => $success], Response::HTTP_OK);
+    }
+
+    public function deleteEntities(Request $request)
+    {
+        \Log::info('deleteEntities', $request->all());
+
+        $ids = collect($request->input('entities'))->pluck('id')->all();
+        \Log::info('deleteEntities ids: ' . print_r($ids, true));
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'No valid IDs provided'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        \DB::enableQueryLog();
+
+        // A rekordok törlése a kigyűjtött ID-k alapján
+        $deleted = Entity::whereIn('id', $ids)->delete();
+
+        $queries = \DB::getQueryLog();
+        \Log::info('$queries: ' . print_r($queries, true));
+        \DB::disableQueryLog();
+
+        // Ellenőrizzük, hogy sikerült-e bármilyen rekordot törölni
+        $success = $deleted > 0;
+
+        return response()->json([
+            'success' => $success, 
+            'deleted_count' => $deleted
+        ], Response::HTTP_OK);
     }
 }

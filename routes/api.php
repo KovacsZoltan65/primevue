@@ -245,6 +245,7 @@ Route::delete('/persons/{id}', [PersonController::class, 'deletePersons'])->name
 Route::get('/entities', [EntityController::class, 'getEntities'])->name('api.get.entities');
 Route::get('/entities/{id}', [EntityController::class, 'getEntity'])->name('api.get.entity')->where('id', '[0-9]+');
 Route::get('/entities/name/{name}', [EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-Route::post('/entities', [EntityController::class, 'createEntities'])->name('api.post.entities');
-Route::put('/entities/{id}', [EntityController::class, 'updateEntities'])->name('api.put.entities')->where('id', '[0-9]+');
-Route::delete('/entities/{id}', [EntityController::class, 'deleteEntities'])->name('api.delete.entities')->where('id', '[0-9]+');
+Route::post('/entities', [EntityController::class, 'createEntity'])->name('api.post.entity');
+Route::put('/entities/{id}', [EntityController::class, 'updateEntity'])->name('api.put.entity')->where('id', '[0-9]+');
+Route::delete('/entities/{id}', [EntityController::class, 'deleteEntity'])->name('api.delete.entity')->where('id', '[0-9]+');
+Route::delete('/entities', [EntityController::class, 'deleteEntities'])->name('api.delete.entities');

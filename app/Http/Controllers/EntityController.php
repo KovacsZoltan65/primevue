@@ -84,30 +84,50 @@ class EntityController extends Controller
         return response()->json(['success' => $success], Response::HTTP_OK);
     }
 
+    /**
+     * Több entitást töröl a kérésből a megadott azonosítók alapján.
+     *
+     * A függvény kivonja az entitásazonosítókat a kérésből, ellenőrzi azok érvényességét,
+     * és törli a megfelelő entitásokat az adatbázisból.
+     *
+     * @param Request $request A törölni kívánt azonosítókkal rendelkező „entitások” tömböt tartalmazó HTTP-kérés.
+     * @return \Illuminate\Http\JsonResponse JSON-válasz, amely jelzi a sikeres állapotot és a törölt entitások számát.
+     */
     public function deleteEntities(Request $request)
     {
-        \Log::info('deleteEntities', $request->all());
-
+        // Gyűjtsük ki a kérésből a törlendő entitások azonosítóit.
+        // A $request->input('entities') egy tömb, amelyben az egyes elemek az
+        // entitás adatait tartalmazzák, például a név, a cég, a születési dátum,
+        // stb. A `pluck('id')` függvénnyel kivonjuk az azonosítókat ebből a
+        // tömbből, és a végeredményt egy új tömbben tároljuk.
+        // A `collect()` függvénnyel egyúttal egy új Laravel Collection objektumot
+        // hozunk létre, amely alkalmasabb a további műveletek elvégzésére.
         $ids = collect($request->input('entities'))->pluck('id')->all();
-        \Log::info('deleteEntities ids: ' . print_r($ids, true));
 
+        // Ellenőrizzük, hogy a kérésből kigyűjtött azonosítók tömbje nem üres-e
         if (empty($ids)) {
+            // Ha a tömb üres, akkor a kérés nem tartalmazott érvényes azonosítókat,
+            // ezért visszaadjuk egy 400-as hibaüzenetet.
             return response()->json([
                 'success' => false, 
                 'message' => 'No valid IDs provided'
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        \DB::enableQueryLog();
-
-        // A rekordok törlése a kigyűjtött ID-k alapján
+        // Töröljük a megadott azonosítóval rendelkező entitásokat az adatbázisból.
+        // A `whereIn` függvénnyel egy feltételes törlést végezhetünk el, amellyel
+        // csak azokat a rekordokat töröljük, amelyek azonosítója megegyezik a
+        // `$ids` tömbben szereplő azonosítókkal.
+        // A `delete` függvénnyel megkapjuk a sikeresen törölt rekordok számát.
         $deleted = Entity::whereIn('id', $ids)->delete();
 
-        $queries = \DB::getQueryLog();
-        \Log::info('$queries: ' . print_r($queries, true));
-        \DB::disableQueryLog();
-
-        // Ellenőrizzük, hogy sikerült-e bármilyen rekordot törölni
+        /**
+         * Ellenőrizzük, hogy sikerült-e bármilyen rekordot törölni
+         *
+         * A `$success` változóba beállítjuk azt, hogy sikerült-e legalább egy
+         * rekordot törölni. Ha nem, akkor a kérés hibás, mert nem található az
+         * adatbázisban a kérésben megadott azonosítóval rendelkező entitás.
+         */
         $success = $deleted > 0;
 
         return response()->json([

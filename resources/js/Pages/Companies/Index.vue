@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, reactive } from "vue";
 import { Head } from "@inertiajs/vue3";
-import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { trans } from "laravel-vue-i18n";
@@ -9,8 +8,11 @@ import { trans } from "laravel-vue-i18n";
 // Validation
 import useVuelidate from "@vuelidate/core";
 import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
-//import validationRules from "../../../Validation/ValidationRules.json";
 import validationRules from '@/Validation/ValidationRules.json';
+
+// TOAST
+import { useToast } from "primevue/usetoast";
+import Toast from 'primevue/toast';
 
 import CompanyService from "@/service/CompanyService";
 
@@ -47,60 +49,11 @@ const getBools = () => {
     ];
 };
 
-/**
- * Használja a PrimeVue toast összetevőjét.
- *
- * @type {Object}
- */
 const toast = useToast();
 
-/**
- * Reaktív hivatkozás a datatable komponensre.
- *
- * @type {Object}
- */
 const dt = ref();
 
-/**
- * Reaktív hivatkozás a városok adatainak tárolására.
- *
- * @type {Array}
- */
 const companies = ref();
-
-/**
- * Reaktív hivatkozás a város adatainak megjelenítő párbeszédpanel megnyitásához.
- *
- * @type {ref<boolean>}
- */
-const companyDialog = ref(false);
-
-/**
- * Reaktív hivatkozás a városok törléséhez használt párbeszédpanel megnyitásához.
- *
- * @type {ref<boolean>}
- */
-const deleteSelectedCompaniesDialog = ref(false);
-
-/**
- * Reaktív hivatkozás a kijelölt város(ok) törléséhez használt párbeszédpanel megnyitásához.
- *
- * @type {ref<boolean>}
- */
-const deleteCompanyDialog = ref(false);
-
-const loading = ref(true);
-
-/**
- * Reaktív hivatkozás a város adatainak tárolására.
- *
- * @type {Object}
- * @property {string} name - A város neve.
- * @property {number} country_id - Az ország azonosítója.
- * @property {number} region_id - A régió azonosítója.
- * @property {number} active - A város státusza.
- * @property {number} id - A város azonosítója.
- */
 const company = ref({
     id: null,
     name: "",
@@ -108,6 +61,17 @@ const company = ref({
     city_id: null,
     active: 1,
 });
+
+/**
+ * ===========================================
+ * DIALOGOK
+ * ===========================================
+ */
+const companyDialog = ref(false);
+const deleteSelectedCompaniesDialog = ref(false);
+const deleteCompanyDialog = ref(false);
+
+const loading = ref(true);
 
 const initialCompany = () => {
     return {...company};
@@ -233,8 +197,8 @@ function confirmDeleteSelected() {
 /**
  * Megnyitja az új város dialógusablakot.
  *
- * Ez a függvény a company változó értékét alaphelyzetbe állítja, 
- * a submitted változó értékét False-ra állítja, és a companyDialog változó 
+ * Ez a függvény a company változó értékét alaphelyzetbe állítja,
+ * a submitted változó értékét False-ra állítja, és a companyDialog változó
  * értékét igazra állítja, amely megnyitja az új város dialógusablakot.
  *
  * @return {void}
@@ -307,10 +271,8 @@ const saveCompany = async () => {
 };
 
 const createCompany = () => {
-    const newCompany = { ...company.value, id: createId() };
-    companies.values.push(newCompany);
-
-    hideDialog();
+    const newCompany = {...company.value, id:createId() };
+    companies.value.push(newCompany);
 
     toast.add({
         severity: "success",
@@ -319,16 +281,26 @@ const createCompany = () => {
         life: 3000,
     });
 
-    CompanyService.createCompany(company.value)
+    EntityService.createCompany(company.value)
         .then((response) => {
-            const index = companies.value.findIndex(comp => comp.id === newCompany.id);
+            const index = companies.value.findIndex(ent => ent.id === newCompany.id);
             companies.value.splice(index, 1, response.data);
+
+            hideDialog();
+
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Company Created",
+                life: 3000,
+            });
         })
         .catch((error) => {
-            const index = companies.values.indexOf(newCompany);
+            const index = findIndexById(newCompany.id);
             if (index !== -1) {
-                companies.values.splice(index, 1);
+                companies.value.splice(index, 1);
             }
+
             console.error("createCompany API Error:", error);
 
             toast.add({
@@ -361,8 +333,6 @@ const updateCompany = () => {
 
     CompanyService.updateCompany(company.value.id, company.value)
         .then((response) => {
-            companies.value.splice(index, 1, response.data);
-
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -370,7 +340,7 @@ const updateCompany = () => {
                 life: 3000,
             });
         })
-        .cache((error) => {
+        .catch((error) => {
             companies.value.splice(index, 1, originalCompany);
 
             console.error("updateCompany API Error:", error);
@@ -382,6 +352,7 @@ const updateCompany = () => {
                 life: 3000,
             });
         });
+
 };
 
 const deleteSelectedCompanies = () => {

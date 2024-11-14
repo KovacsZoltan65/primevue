@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\City;
 use App\Models\Country;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use App\Http\Resources\CompanyResource;
@@ -84,7 +85,7 @@ class CompanyController extends Controller
      * @param Request $request A vállalati adatokat tartalmazó HTTP kérési objektum.
      * @return \Illuminate\Http\JsonResponse A létrehozott vállalatot tartalmazó JSON-válasz.
      */
-    public function createCompany(Request $request)
+    public function createCompany(Request $request): JsonResponse
     {
         // Hozzon létre egy új céget a HTTP-kérés adatainak felhasználásával
         $company = Company::create($request->all());
@@ -96,20 +97,21 @@ class CompanyController extends Controller
     /**
      * Frissítsen egy meglévő céget.
      *
+     * A függvény frissíti a kérésben megadott azonosítóval rendelkező céget,
+     * és a HTTP válaszban a 200-as státuszkódot adja vissza, jelezve,
+     * hogy a művelet sikeres volt.
+     *
      * @param Request $request A vállalati adatokat tartalmazó HTTP kérési objektum.
-     * @param int $id A frissítendő cég azonosítója.
+     * @param int $id A frissítendő vállalat azonosítója.
      * @return \Illuminate\Http\JsonResponse A frissített vállalatot tartalmazó JSON-válasz.
      */
-    public function updateCompany(Request $request, int $id)
+    public function updateCompany(Request $request, int $id): JsonResponse
     {
-        // Keresse meg a frissítendő céget az azonosítója alapján
-        $old_company = Company::where('id', $id)->first();
+        $old_company = Company::find('id');
 
-        // Frissítse a vállalatot a HTTP-kérés adataival
-        $company = $old_company->update($request->all());
+        $success = $old_company->update($request->all());
 
-        // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
-        return response()->json($company, Response::HTTP_OK);
+        return response()->json(['success' =>$success], Response::HTTP_OK);
     }
 
     /**
@@ -118,15 +120,33 @@ class CompanyController extends Controller
      * @param int $id A törölni kívánt cég azonosítója.
      * @return \Illuminate\Http\JsonResponse A törölt vállalatot tartalmazó JSON-válasz.
      */
-    public function deleteCompany(int $id)
+    public function deleteCompany(int $id): JsonResponse
     {
-        // Keresse meg a törölni kívánt céget az azonosítója alapján
-        $old_company = Company::where('id', $id)->first();
+        $old_company = Company::find('id');
 
-        // Cég törlése
-        $old_company->delete();
+        $success = $old_company->delete();
 
-        // A törölt vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
-        return response()->json($old_company, Response::HTTP_OK);
+        return response()->json(['success' => $success], Response::HTTP_OK);
+    }
+
+    public function deleteCompanies(Request $request): JsonResponse
+    {
+        $ids = collect($request->input('companies'))->pluck('id')->all();
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No valid IDs provided'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $deleted = Company::whereIn('id', $ids)->delete();
+
+        $success = $deleted > 0;
+
+        return response()->json([
+            'success' => $success,
+            'deleted_count' => $deleted
+        ], Response::HTTP_OK);
     }
 }

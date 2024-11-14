@@ -167,7 +167,7 @@ const createEntity = () => {
     // Optimista frissítés: az új cég ideiglenes hozzáadása a listához
     const newEntity = { ...entity.value, id: createId() };
     entities.value.push(newEntity);
-console.log('newEntity', newEntity);
+
     // Azonnal megjelenítünk egy sikeres üzenetet
     toast.add({
         severity: "info",
@@ -193,7 +193,7 @@ console.log('newEntity', newEntity);
         })
         .catch((error) => {
             // Hiba esetén eltávolítjuk az ideiglenes elemet a listából
-            const index = entities.value.findIndex(ent => ent.id === newEntity.id);
+            const index = findIndexById(newEntity.id);
             if (index !== -1) {
                 entities.value.splice(index, 1);
             }
@@ -207,7 +207,7 @@ console.log('newEntity', newEntity);
                 life: 3000,
             });
         });
-        
+
 }
 
 const updateEntity = () => {
@@ -272,12 +272,12 @@ const deleteEntity = () => {
 
     // Keresse meg az entitás indexét az entitástömbben az azonosítójával
     const index = findIndexById(entity.value.id);
-    
+
     // Ellenőrizze, hogy az entitás nem található-e
     if (index === -1) {
         // Figyelmeztető üzenet naplózása, ha nem található entitás a megadott azonosítóval
         console.warn("No entity found with the given id:", entity.value.id);
-        
+
         // Korábban lépjen ki a funkcióból, mert nincs mit törölni
         return;
     }
@@ -366,7 +366,7 @@ const deleteSelectedEntities = () => {
                 detail: "Selected entities deleted",
                 life: 3000,
             });
-            
+
             // A selectedEntities tömböt is frissítjük, hogy a felhasználó
             // ne lássa a már törölt elemeket a kiválasztott elemek listájában.
             selectedEntities.value = [];
@@ -403,7 +403,7 @@ const deleteSelectedEntities = () => {
         }
     });
 */
-    
+
 
     /*
     const originalEntities = [...selectedEntities.value];

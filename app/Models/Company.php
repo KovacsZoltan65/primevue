@@ -14,7 +14,7 @@ class Company extends Model
         SoftDeletes;
 
     protected $table = 'companies';
-    protected $fillable = ['name', 'country', 'city'];
+    protected $fillable = ['name', 'country_id', 'city_id', 'directory', 'registration_number', 'tax_id', 'address', 'active'];
 
     public function scopeSearch(Builder $query, Request $request)
     {

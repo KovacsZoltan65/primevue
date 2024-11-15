@@ -17,9 +17,12 @@ class CompanyFactory extends Factory
     #[\Override]
     public function definition(): array
     {
+        $name = fake()->company();
+        $directory = strtolower($name);
+        
         return [
-            'name' => fake()->company(),
-            'directory' => fake()->word(),
+            'name' => $name,
+            'directory' => $directory,
             'registration_number' => fake()->phoneNumber(),
             'tax_id' => fake()->phoneNumber(),
             'country_id' => 92, 'city_id' =>  1,

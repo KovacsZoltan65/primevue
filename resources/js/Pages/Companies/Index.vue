@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, reactive } from "vue";
+import { computed, onMounted, ref, reactive, watch } from "vue";
 import { Head } from "@inertiajs/vue3";
 import { FilterMatchMode } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
@@ -28,6 +28,7 @@ import Select from "primevue/select";
 import Tag from "primevue/tag";
 import FileUpload from "primevue/fileupload";
 import { createId } from "@/helpers/functions";
+import { FloatLabel, Message } from "primevue";
 
 /**
  * Szerver felöl jövő adatok
@@ -57,10 +58,50 @@ const companies = ref();
 const company = ref({
     id: null,
     name: "",
+    directory: "",
     country_id: null,
     city_id: null,
+    registration_number: null,
+    tax_id: null,
+    address: null,
     active: 1,
 });
+
+const initialCompany = () => {
+    return {...company};
+};
+
+watch(
+    () => company.value.name, 
+    /**
+     * Visszahívás funkció a figyelés effektushoz.
+     * 
+     * Ez a funkció frissíti a cég directory tulajdonságát a név változásai alapján.
+     * @param {string} newValue - A cég könyvtárának új értéke.
+     */
+    (newValue) => {
+        const trimmedValue = newValue?.trim() || ""; // Győződjön meg arról, hogy az érték létezik, 
+                                                     // és le van vágva.
+        
+        if (trimmedValue !== "") {
+            company.value.directory = trimmedValue
+                .toLowerCase() // Átalakítás kisbetűsre.
+                .replace(/\s+/g, "_") // Cserélje ki a szóközöket aláhúzásjelekkel.
+                .replace(/[^a-z0-9._-]/g, "") // Távolítsa el a nem engedélyezett karaktereket.
+                .replace(/_+/g, "_") // Több aláhúzás összevonása.
+                .replace(/^\_+|\_+$/g, ""); // Távolítsa el a bevezető vagy a záró aláhúzást.
+        } else {
+            company.value.directory = "";
+        }
+    }
+);
+
+/**
+ * Reaktív hivatkozás a kijelölt cégek tárolására.
+ *
+ * @type {ref<Array>}
+ */
+const selectedCompanies = ref([]);
 
 /**
  * ===========================================
@@ -72,17 +113,6 @@ const deleteSelectedCompaniesDialog = ref(false);
 const deleteCompanyDialog = ref(false);
 
 const loading = ref(true);
-
-const initialCompany = () => {
-    return {...company};
-};
-
-/**
- * Reaktív hivatkozás a kijelölt városok tárolására.
- *
- * @type {Array}
- */
-const selectedCompanies = ref();
 
 /**
  * Reaktív hivatkozás a globális keresés szűrőinek tárolására az adattáblában.
@@ -107,33 +137,23 @@ const submitted = ref(false);
  * @type {Object}
  */
 const rules = {
-    /**
-     * A név validációs szabálya.
-     *
-     * A névnek meg kell felelnie a következ  feltételeknek:
-     * - a név nem lehet üres
-     * - a név hosszának minimum 3 karakternek kell lennie
-     * - a név hosszának maximum 255 karakternek kell lennie
-     */
     name: {
         required: helpers.withMessage(trans("validate_name"), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
         maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
     },
-    /**
-     * Az ország azonosítója validációs szabálya.
-     *
-     * Az ország azonosítójának meg kell felelnie a következ  feltételeknek:
-     * - az ország azonosítója nem lehet üres
-     */
     country_id: { required: helpers.withMessage(trans("validate_country_id"), required), },
-    /**
-     * A város azonosítója validációs szabálya.
-     *
-     * A város azonosítójának meg kell felelnie a következ  feltételeknek:
-     * - a város azonosítója nem lehet üres
-     */
     city_id: { required: helpers.withMessage(trans("validate_city_id"), required), },
+    directory: { required: helpers.withMessage(trans("validate_directory"), required), },
+    tax_id: {
+        required: helpers.withMessage(trans("validate_tax_id"), required),
+    },
+    registration_number: {
+        required: helpers.withMessage(trans("validate_registration_number"), required),
+    },
+    address: {
+        required: helpers.withMessage(trans("validate_address"), required),
+    },
 };
 
 /**
@@ -281,7 +301,7 @@ const createCompany = () => {
         life: 3000,
     });
 
-    EntityService.createCompany(company.value)
+    CompanyService.createCompany(company.value)
         .then((response) => {
             const index = companies.value.findIndex(ent => ent.id === newCompany.id);
             companies.value.splice(index, 1, response.data);
@@ -478,7 +498,8 @@ const getModalTitle = () => {
 };
 
 /**
- * Visszaadja a dialógusablak részleteit attól függően, hogy új várost hozunk létre, vagy egy meglévőt szerkesztünk.
+ * Visszaadja a dialógusablak részleteit attól függően, 
+ * hogy új várost hozunk létre, vagy egy meglévőt szerkesztünk.
  *
  * @returns {string} A dialógusablak részletei.
  */
@@ -649,6 +670,25 @@ initFilters();
                     </template>
                 </Column>
 
+                <!-- DIRECTORY -->
+                <Column
+                    field="directory"
+                    :header="$t('directory')"
+                    sortable
+                    style="min-width: 16rem"
+                >
+                    <template #body="slotProps">
+                        {{ slotProps.data.directory }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'directory'})"
+                        />
+                    </template>
+                </Column>
+
                 <!-- COUNTRY -->
                 <Column
                     field="country_id"
@@ -702,39 +742,95 @@ initFilters();
             :header="getModalTitle()"
             :modal="true"
         >
-            <div class="flex flex-col gap-6">
+            <div class="flex flex-col gap-6" style="margin-top: 17px;">
                 <!-- NAME -->
                 <div class="flex flex-col grow basis-0 gap-2">
-                    <label for="name" class="block font-bold mb-3">
-                        {{ $t("name") }}
-                    </label>
-                    <InputText
-                        id="name"
-                        v-model="company.name"
-                        autofocus
-                        fluid
-                    />
+                    <FloatLabel>
+                        <label for="name" class="block font-bold mb-3">
+                            {{ $t("name") }}
+                        </label>
+                        <InputText
+                            id="name"
+                            v-model="company.name"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message size="small" severity="secondary" variant="simple">
+                        Enter company name
+                    </Message>
                     <small class="text-red-500" v-if="v$.name.$error">
                         {{ $t(v$.name.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- DIRECTORY -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="directory" class="block font-bold mb-3">
+                            {{ $t("directory") }}
+                        </label>
+                        <InputText
+                            id="directory"
+                            v-model="company.directory"
+                            fluid disabled
+                        />
+                    </FloatLabel>
+                    <small class="text-red-500" v-if="v$.directory.$error">
+                        {{ $t(v$.directory.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- TAX ID -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="tax_id" class="block font-bold mb-3">
+                            {{ $t("tax_id") }}
+                        </label>
+                        <InputText
+                            id="tax_id"
+                            v-model="company.tax_id"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <small class="text-red-500" v-if="v$.tax_id.$error">
+                        {{ $t(v$.tax_id.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- REGISTRATION NUMBER -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="registration_number" class="block font-bold mb-3">
+                            {{ $t("registration_number") }}
+                        </label>
+                        <InputText
+                            id="registration_number"
+                            v-model="company.registration_number"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <small class="text-red-500" v-if="v$.registration_number.$error">
+                        {{ $t(v$.registration_number.$errors[0].$message) }}
                     </small>
                 </div>
 
                 <div class="flex flex-wrap gap-4">
                     <!-- COUNTRY -->
                     <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="country_id" class="block font-bold mb-3">
-                            {{ $t("country") }}
-                        </label>
-                        <Select
-                            id="country_id"
-                            v-model="company.country_id"
-                            :options="props.countries"
-                            optionLabel="name"
-                            optionValue="id"
-                            :placeholder="$t('country')"
-                            fluid
-                        />
-
+                        <FloatLabel>
+                            <label for="country_id" class="block font-bold mb-3">
+                                {{ $t("country") }}
+                            </label>
+                            <Select
+                                id="country_id"
+                                v-model="company.country_id"
+                                :options="props.countries"
+                                optionLabel="name"
+                                optionValue="id"
+                                :placeholder="$t('country')"
+                                fluid
+                            />
+                        </FloatLabel>
                         <small class="text-red-500" v-if="v$.country_id.$error">
                             {{ $t(v$.country_id.$errors[0].$message) }}
                         </small>
@@ -742,24 +838,28 @@ initFilters();
 
                     <!-- CITY -->
                     <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="city_id" class="block font-bold mb-3">
-                            {{ $t("city") }}
-                        </label>
-                        <Select
-                            id="city_id"
-                            v-model="company.city_id"
-                            :options="props.cities"
-                            optionLabel="name"
-                            optionValue="id"
-                            :placeholder="$t('city')"
-                            fluid
-                        />
-
+                        <FloatLabel>
+                            <label for="city_id" class="block font-bold mb-3">
+                                {{ $t("city") }}
+                            </label>
+                            <Select
+                                id="city_id"
+                                v-model="company.city_id"
+                                :options="props.cities"
+                                optionLabel="name"
+                                optionValue="id"
+                                :placeholder="$t('city')"
+                                fluid
+                            />
+                        </FloatLabel>
                         <small class="text-red-500" v-if="v$.city_id.$error">
                             {{ $t(v$.city_id.$errors[0].$message) }}
                         </small>
                     </div>
                 </div>
+
+                <!-- ADDRESS -->
+                
             </div>
 
             <template #footer>

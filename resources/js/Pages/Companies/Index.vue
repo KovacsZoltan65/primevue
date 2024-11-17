@@ -72,17 +72,17 @@ const initialCompany = () => {
 };
 
 watch(
-    () => company.value.name, 
+    () => company.value.name,
     /**
      * Visszahívás funkció a figyelés effektushoz.
-     * 
+     *
      * Ez a funkció frissíti a cég directory tulajdonságát a név változásai alapján.
      * @param {string} newValue - A cég könyvtárának új értéke.
      */
     (newValue) => {
-        const trimmedValue = newValue?.trim() || ""; // Győződjön meg arról, hogy az érték létezik, 
+        const trimmedValue = newValue?.trim() || ""; // Győződjön meg arról, hogy az érték létezik,
                                                      // és le van vágva.
-        
+
         if (trimmedValue !== "") {
             company.value.directory = trimmedValue
                 .toLowerCase() // Átalakítás kisbetűsre.
@@ -498,7 +498,7 @@ const getModalTitle = () => {
 };
 
 /**
- * Visszaadja a dialógusablak részleteit attól függően, 
+ * Visszaadja a dialógusablak részleteit attól függően,
  * hogy új várost hozunk létre, vagy egy meglévőt szerkesztünk.
  *
  * @returns {string} A dialógusablak részletei.
@@ -755,8 +755,12 @@ initFilters();
                             fluid
                         />
                     </FloatLabel>
-                    <Message size="small" severity="secondary" variant="simple">
-                        Enter company name
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_company_name') }}
                     </Message>
                     <small class="text-red-500" v-if="v$.name.$error">
                         {{ $t(v$.name.$errors[0].$message) }}
@@ -792,6 +796,15 @@ initFilters();
                             fluid
                         />
                     </FloatLabel>
+
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_tax_id') }}
+                    </Message>
+
                     <small class="text-red-500" v-if="v$.tax_id.$error">
                         {{ $t(v$.tax_id.$errors[0].$message) }}
                     </small>
@@ -809,6 +822,15 @@ initFilters();
                             fluid
                         />
                     </FloatLabel>
+
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_registration_number') }}
+                    </Message>
+
                     <small class="text-red-500" v-if="v$.registration_number.$error">
                         {{ $t(v$.registration_number.$errors[0].$message) }}
                     </small>
@@ -831,6 +853,15 @@ initFilters();
                                 fluid
                             />
                         </FloatLabel>
+
+                        <Message
+                            size="small"
+                            severity="secondary"
+                            variant="simple"
+                        >
+                            {{ $t('select_country') }}
+                        </Message>
+
                         <small class="text-red-500" v-if="v$.country_id.$error">
                             {{ $t(v$.country_id.$errors[0].$message) }}
                         </small>
@@ -852,6 +883,15 @@ initFilters();
                                 fluid
                             />
                         </FloatLabel>
+
+                        <Message
+                            size="small"
+                            severity="secondary"
+                            variant="simple"
+                        >
+                            {{ $t('select_city') }}
+                        </Message>
+
                         <small class="text-red-500" v-if="v$.city_id.$error">
                             {{ $t(v$.city_id.$errors[0].$message) }}
                         </small>
@@ -859,7 +899,31 @@ initFilters();
                 </div>
 
                 <!-- ADDRESS -->
-                
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="address" class="block font-bold mb-3">
+                            {{ $t("address") }}
+                        </label>
+                        <InputText
+                            id="address"
+                            v-model="company.address"
+                            fluid
+                        />
+                    </FloatLabel>
+
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_address') }}
+                    </Message>
+
+                    <small class="text-red-500" v-if="v$.address.$error">
+                        {{ $t(v$.address.$errors[0].$message) }}
+                    </small>
+                </div>
+
             </div>
 
             <template #footer>

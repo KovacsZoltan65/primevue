@@ -30,7 +30,8 @@ class DatabaseSeeder extends Seeder
             PersonCompanyEntitySeeder::class,
 
             MenuItemSeeder::class,
-            MenuItemEntitiesSeeder::class,
+            
+            CompanySettingSeeder::class,
         ]);
 
         // User::factory(10)->create();

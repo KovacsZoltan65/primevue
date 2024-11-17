@@ -76,7 +76,7 @@ class Company extends Model
      */
     public function persons()
     {
-        return $this->belongsToMany(Person::class, 'person_company');
+        return $this->belongsToMany(Person::class, 'person_company_rel');
     }
     
     /**
@@ -89,5 +89,51 @@ class Company extends Model
     public function entities()
     {
         return $this->hasMany(Entity::class, 'company_id');
+    }
+    
+    /**
+     * ===
+     * HASZNÁLAT
+     * ===
+     * 
+     * $company = Company::find(1);
+     * foreach ($company->settings as $setting) {
+     *     $value = $setting->pivot->value ?? $setting->default_value;
+     *     echo "Setting ID: {$setting->id}, Value: {$value}" . PHP_EOL;
+     * }
+     * 
+     * $company = Company::find(1);
+     * $company->settings()->updateExistingPivot(1, ['value' => 'Updated Value']);
+     */
+    
+    
+    
+    public function settings()
+    {
+        return $this->belongsToMany(
+            Setting::class,
+            'setting_company_rel',  // Pivot tábla neve
+            'companies_id',         // Külső kulcs a pivot táblában a cégekre
+            'settings_id'           // Külső kulcs a pivot táblában a beállításokra
+        )->withPivot('value');       // Pivot mezők elérhetővé tétele;
+        /*
+        return $this->hasManyThrough(
+            Setting::class,
+            CompanySettigRel::class,
+            'companies_id',
+            'id',
+            'id',
+            'settings_id'
+        )->withPivot('value');
+        */
+    }
+    
+    public function getEffectiveSettingsAttribute()
+    {
+        return $this->settins->mapWithKeys(function($setting){
+            return [
+                $setting->id => $setting->pivot->value ?? $setting->default_value,
+            ];
+        });
     }
 }

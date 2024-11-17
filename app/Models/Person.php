@@ -42,7 +42,7 @@ class Person extends Model
      */
     public function companies(): BelongsToMany
     {
-        return $this->belongsToMany(Company::class, 'person_company');
+        return $this->belongsToMany(Company::class, 'person_company_rel');
     }
     
     /**

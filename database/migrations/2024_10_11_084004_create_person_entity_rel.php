@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('person_company', function(Blueprint $table) {
+        Schema::create('person_company_rel', function(Blueprint $table) {
             $table->id()->comment('Rekord azonosító');
             
             $table->unsignedBigInteger('person_id')->comment('Személy azonosító. A kapcsolódó Persons azonosítója.');

@@ -11,6 +11,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\RegionController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SubdomainController;
 use App\Http\Controllers\SubdomainStateController;
 use Illuminate\Http\JsonResponse;
@@ -38,6 +39,36 @@ Route::get('/languages', [LanguageController::class, 'getLanguages'])->name('get
 Route::get('/menu-items', [MenuController::class, 'getSortedMenuItems'])->name('get.menu');
 
 Route::resource('menu-items', MenuController::class);
+
+/**
+ * =======================================================
+ * SETTINGS
+ * =======================================================
+ */
+
+// 3. Alapbeállítás lekérése id alapján
+// Egy konkrét alapbeállítás lekérése azonosítóval.
+Route::get('/settings/{id}', [SettingController::class, 'show']);
+
+// 4. Céges beállítás lekérése company_id és setting_id alapján
+// Egy cég adott beállításának lekérése.
+Route::get('/companies/{companyId}/settings/{settingId}', [CompanyController::class, 'showSetting']);
+
+// 5. Alapbeállítás létrehozása, frissítése, aktiválása és deaktiválása
+// Létrehozás
+Route::post('/settings', [SettingController::class, 'store']);
+// Frissítés
+Route::put('/settings/{id}', [SettingController::class, 'update']);
+// Aktiválás/Deaktiválás
+Route::patch('/settings/{id}/toggle-active', [SettingController::class, 'toggleActive']);
+
+// 6. Céges beállítás létrehozása, frissítése, aktiválása és deaktiválása
+// Létrehozás
+Route::post('/companies/{companyId}/settings', [CompanyController::class, 'storeSetting']);
+// Frissítés
+Route::put('/companies/{companyId}/settings/{settingId}', [CompanyController::class, 'updateSetting']);
+// Aktiválás/Deaktiválás
+Route::patch('/companies/{companyId}/settings/{settingId}/toggle-active', [CompanyController::class, 'toggleSettingActive']);
 
 
 /*

@@ -11,7 +11,8 @@ class CompanySettigRel extends Pivot
     protected $fillable = [
         'companies_id',
         'settings_id',
-        'value',
+        'value', 
+        'is_active',
     ];
     
     public function company()

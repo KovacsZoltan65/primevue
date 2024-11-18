@@ -37,11 +37,14 @@ class MenuItemSeeder extends Seeder
             ]
         );
         
+        // =======================================================================
         // Főmenü - System
         $system = MenuItem::create(
             [ 'label' => 'system', 'url' => null, 'default_weight' => 3, ]
         );
         
+        // =======================================================================
+        // Főmenü - Geo
         $geo = $system->children()->create(
             [ 'label' => 'geo', 'url' => null, 'default_weight' => 1, ]
         );
@@ -53,11 +56,22 @@ class MenuItemSeeder extends Seeder
                 [ 'label' => 'cities', 'url' => '/cities', 'default_weight' => 3, ],
             ]
         );
+        // =======================================================================
         
+        // Subdomain állapotok
         $system->children()->create(
             [ 'label' => 'subdomain_states', 'url' => '/subdomain_states', 'default_weight' => 2, ]
         );
-        
+
+        // Beállítások
+        $system->children()->createMany(
+            [
+                [ 'label' => 'settings', 'url' => '/settings', 'default_weight' => 3, ],
+                [ 'label' => 'companies_settings', 'url' => '/settings/companies', 'default_weight' => 4, ]
+            ]
+        );
+        // =======================================================================
+
         // Főmenü - Specimens
         $specimens = MenuItem::create(
             [ 'label' => 'specimens', 'url' => null, 'default_weight' => 4, ]

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('settings_id')->comment('Beállítás azonosítója');
             $table->unsignedBigInteger('companies_id')->comment('Cég azonosítója');
             $table->string('value')->comment('Beállítás értéke');
+            $table->boolean('is_active')->default(true)->comment('Aktív jelző');
             
             $table->foreign('settings_id')->references('id')->on('settings')->cascadeOnDelete();
             $table->foreign('companies_id')->references('id')->on('companies')->cascadeOnDelete();

@@ -14,13 +14,20 @@ class Setting extends Model
         SoftDeletes;
     
     protected  $table = 'settings';
-    protected $fillable = ['name', 'defailt_value'];
+    protected $fillable = ['name', 'defailt_value', 'is_active'];
     
     public function scopeSearch(Builder $query, Request $request)
     {
         //
     }
     
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class, 'company_setting_rel', 'settings_id', 'companies_id')
+            ->withPivot('value', 'is_active')
+            ->withTimestamps();
+    }
+
     /**
      * ===
      * HESZNÁLAT

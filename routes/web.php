@@ -11,6 +11,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegionController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SubdomainController;
 use App\Http\Controllers\SubdomainStateController;
 use Illuminate\Foundation\Application;
@@ -33,6 +34,20 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+
+    /**
+     * ====================================================
+     * BEÁLLÍTÁSOK
+     * ====================================================
+     */
+    // 1. Alapbeállítások megjelenítése
+    // Lista az összes alapbeállításról.
+    Route::get('/settings', [SettingController::class, 'defaultIndex'])->name('settings.default');
+
+    // Céges beállítások megjelenítése.
+    // Lista a cégek összes beállításáról.
+    Route::get('/settings/companies', [SettingController::class, 'companyIndex'])->name('settings.company');
+
 
     /**
      * =====================================================

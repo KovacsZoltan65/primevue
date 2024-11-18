@@ -29,10 +29,9 @@ class SettingController extends Controller
         );
     }
 
-    public function companyIndex(int $companyId)
+    public function companyIndex()
     {
         $companies = Company::all();
-        $settings = Setting::all();
         /*
         $company = Company::with(['settings' => function ($query) {
             $query->wherePivot('is_active', true);
@@ -51,8 +50,7 @@ class SettingController extends Controller
         return Inertia::render(
             'Setting/Company/Index', 
             [
-                'company' => $companies, 
-                'settings' => $settings
+                'companies' => $companies
             ]
         );
         

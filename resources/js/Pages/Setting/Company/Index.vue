@@ -6,10 +6,6 @@ const props = defineProps({
     companies: {
         type: Object,
         default: () => {},
-    },
-    settings: {
-        type: Object,
-        default: () => {},
     }
 });
 
@@ -19,9 +15,7 @@ const props = defineProps({
     <AppLayout>
         <Head :title="$t('companies_settings')" />
 
-        {{ $page.props }}
         {{ props.companies }}
-        {{ props.settings }}
 
     </AppLayout>
 </template>

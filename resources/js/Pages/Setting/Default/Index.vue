@@ -15,7 +15,6 @@ const props = defineProps({
     <AppLayout>
         <Head :title="$t('default_settings')" />
 
-        {{ $page.props }}
         {{ props.settings }}
 
     </AppLayout>

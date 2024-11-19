@@ -11,7 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PersonController extends Controller
 {
-    public function __construct() {
+    public function __construct()
+    {
         //
     }
     

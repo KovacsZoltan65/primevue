@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class CompanySettigRel extends Pivot
 {
-    protected $table = 'setting_company_rel'; // Kapcsolótábla neve
+    protected $table = 'coompany_setting_rel'; // Kapcsolótábla neve
     
     protected $fillable = [
         'companies_id',
@@ -24,6 +24,11 @@ class CompanySettigRel extends Pivot
                 $query->where('name', 'like', "%{$request->search}%");
             });
         })->active();
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', APP_ACTIVE);
     }
 
     public function company()

@@ -2,16 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\SettingResource;
 use App\Models\Company;
 use App\Models\CompanySettigRel;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Symfony\Component\HttpFoundation\Response;
 use Inertia\Inertia;
 use Inertia\Response AS InertiaResponse;
 
 class SettingController extends Controller
 {
+    public function __construct()
+    {
+        //
+    }
 
     /**
      * Jelenítse meg az oldalt az alapértelmezett beállításokhoz.
@@ -20,46 +26,51 @@ class SettingController extends Controller
      */
     public function defaultIndex(): InertiaResponse
     {
-        // Az alapértelmezett beállításokat tartalmazó oldalhoz szükséges adatokat szolgáltatja.
-        $settings = Setting::all();
-
-        return Inertia::render(
-            'Setting/Default/Index', 
-            ['settings' => $settings]
-        );
-    }
-
-    public function getDefaultSettings(Request $request)
-    {
-        $settingQuery = Setting::search($request);
+        return Inertia::render('Setting/Default/Index');
     }
 
     public function companyIndex()
     {
         $companies = Company::all();
-        /*
-        $company = Company::with(['settings' => function ($query) {
-            $query->wherePivot('is_active', true);
-        }])->findOrFail($companyId);
-        
-        #$company = Company::findOrFail($companyId);
-        $company_settings = $company->settings->map(function ($setting) {
-            return [
-                'id' => $setting->id,
-                'name' => $setting->name,
-                'value' => $setting->pivot->value ?? $setting->default_value,
-                'is_active' => $setting->pivot->is_active,
-            ];
-        });
-*/
-        return Inertia::render(
-            'Setting/Company/Index', 
-            [
-                'companies' => $companies
-            ]
-        );
+
+        return Inertia::render('Setting/Company/Index', [
+            'companies' => $companies
+        ]);
         
     }
+
+    /**
+     * Az alapértelmezett beállítások lekérése a kérelemben megadott keresési feltételek alapján.
+     *
+     * @param Request $request A keresési paramétereket tartalmazó kéréspéldány.
+     * @return \Illuminate\Http\Resources\Json\JsonResource Az alapértelmezett beállítások forrásainak gyűjteménye.
+     */
+    public function getDefaultSettings(Request $request): JsonResource
+    {
+        $settingQuery = Setting::search($request);
+        $settings = SettingResource::collection($settingQuery->get());
+
+        return $settings;
+    }
+
+    /**
+     * A cégspecifikus beállítások lekérése a kérésben megadott keresési feltételek alapján.
+     *
+     * Ez a metódus lekérdezi a vállalati beállítások kapcsolatát, és egy gyűjteményt ad vissza
+     * a keresési paramétereknek megfelelő beállítási erőforrások közül.
+     *
+     * @param Request $request A keresési paramétereket tartalmazó kéréspéldány.
+     * @return \Illuminate\Http\Resources\Json\JsonResource Vállalati beállítási erőforrások gyűjteménye.
+     */
+    public function getComapnySettings(Request $request): JsonResource
+    {
+        $settingQuery = CompanySettigRel::search($request);
+        $settings = SettingResource::collection($settingQuery->get());
+
+        return $settings;
+    }
+
+    
 
     public function getDefaultSettingById(int $id){
         $setting = Setting::where('id', $id)
@@ -77,7 +88,7 @@ class SettingController extends Controller
 
     public function getCompanySettingById(int $id){}
 
-    public function create(Request $request)
+    public function createDefaultSetting(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -102,7 +113,12 @@ class SettingController extends Controller
         return redirect()->back()->with('success', 'Setting created successfully.');
     }
 
-    public function update(Request $request, $settingId)
+    public function createCompanySetting(Request $request)
+    {
+        //
+    }
+
+    public function updateDefaultSetting(Request $request, $settingId)
     {
         $validated = $request->validate([
             'default_value' => 'nullable|string',
@@ -119,7 +135,12 @@ class SettingController extends Controller
         return redirect()->back()->with('success', 'Setting updated successfully.');
     }
 
-    public function deactivateSetting($id)
+    public function updateCompanySetting(Request $request)
+    {
+        //
+    }
+
+    public function deactivateDefaultSetting($id)
     {
         $setting = Setting::findOrFail($id);
         $setting->update(['is_active' => false]);
@@ -139,4 +160,7 @@ class SettingController extends Controller
             ->with('success', 'Setting deactivated successfully.');
     }
 
+    public function deleteDefaultSetting($settingId){}
+
+    public function deleteCompanySetting($companyId, $settingId){}
 }

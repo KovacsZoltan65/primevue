@@ -46,33 +46,41 @@ Route::resource('menu-items', MenuController::class);
  * =======================================================
  */
 
-// 3. Alapbeállítás lekérése id alapján
-// Egy konkrét alapbeállítás lekérése azonosítóval.
-Route::get('/settings/{id}', [SettingController::class, 'show']);
+/**
+ * Alap beállítások
+ */
+// Alap beállítások lekérése
+Route::get('/settings', [SettingController::class, 'getDefaultSettings']);
+// Alap beállítás lekérdezése id alapján
+Route::get('/settings/{id}', [SettingController::class, 'getDefaultSettingById']);
+// Alap beállítás lekérése name alapján
+Route::get('/settings/name/{name}', [SettingController::class, '']);
+// Alapbeállítás létrehozása
+Route::post('/settings', [SettingController::class, 'createDefaultSetting']);
+// Alapbeállítás frissítése
+Route::put('/settings', [SettingController::class, 'updateDefaultSetting']);
+// Alapbeállítás aktiválása / deaktiválása
+Route::patch('/settings/{id}/toggle-active', [SettingController::class, 'deactivateSetting']);
+// Alapbeállítás törlése
+Route::delete('/settings/{id}', [SettingController::class, 'deleteDefaultSetting']);
 
-//
-Route::get('/settings/getDefaultSettings', [SettingController::class, 'getDefaultSettings'])->name('getDefaultSettings');
-
-// 4. Céges beállítás lekérése company_id és setting_id alapján
-// Egy cég adott beállításának lekérése.
-Route::get('/companies/{companyId}/settings/{settingId}', [CompanyController::class, 'showSetting']);
-
-// 5. Alapbeállítás létrehozása, frissítése, aktiválása és deaktiválása
-// Létrehozás
-Route::post('/settings', [SettingController::class, 'store']);
-// Frissítés
-Route::put('/settings/{id}', [SettingController::class, 'update']);
-// Aktiválás/Deaktiválás
-Route::patch('/settings/{id}/toggle-active', [SettingController::class, 'toggleActive']);
-
-// 6. Céges beállítás létrehozása, frissítése, aktiválása és deaktiválása
-// Létrehozás
-Route::post('/companies/{companyId}/settings', [CompanyController::class, 'storeSetting']);
-// Frissítés
-Route::put('/companies/{companyId}/settings/{settingId}', [CompanyController::class, 'updateSetting']);
-// Aktiválás/Deaktiválás
-Route::patch('/companies/{companyId}/settings/{settingId}/toggle-active', [CompanyController::class, 'toggleSettingActive']);
-
+/**
+ * Céges beállítások
+ */
+// Céges beállítások lekérése company_id alapján
+Route::get('/companies/{companyId}/settings', [SettingController::class, 'getComapnySettings']);
+// Céges beállítás lekérdezése company_id és setting_id alapján
+Route::get('/companies/{companyId}/settings/{settingId}', [SettingController::class, 'getCompanySettingById']);
+// Céges beállítás lekérdezése company_id és name szerint
+Route::get('/companies/{companyId}/settings/name/{name}', [SettingController::class, '']);  
+// Céges beállítás létrehozása
+Route::post('/companies/{companyId}', [SettingController::class, 'createCompanySetting']);
+// Céges beállítás frissítése
+Route::put('/companies/{companyId}/settings/{settingId}', [SettingController::class, 'updateCompanySetting']);
+// Céges beállítás aktiválása / deaktiválása 
+Route::patch('/companies/{companyId}/settings/{settingId}/toggle-active', [SettingController::class, 'deactivateCompanySetting']);
+// Céges beállítás törlése
+Route::delete('/companies/{companyId}/settings/{settingId}', [SettingController::class, 'deleteCompanySetting']);
 
 /*
 Route::prefix('admin/menu')->group(function () {

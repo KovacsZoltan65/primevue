@@ -25,6 +25,11 @@ class Setting extends Model
         })->active();
     }
     
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', APP_ACTIVE);
+    }
+
     public function companies()
     {
         return $this->belongsToMany(Company::class, 'company_setting_rel', 'settings_id', 'companies_id')
@@ -48,14 +53,14 @@ class Setting extends Model
     
     public function getCompanySetting(int $companyId)
     {
-        return $this->leftJoin('setting_company_rel', function ($join) use ($companyId) {
-            $join->on('settings.id', '=', 'setting_company_rel.settings_id')
-                ->where('setting_company_rel.companies_id', '=', $companyId);
+        return $this->leftJoin('coompany_setting_rel', function ($join) use ($companyId) {
+            $join->on('settings.id', '=', 'coompany_setting_rel.settings_id')
+                ->where('coompany_setting_rel.companies_id', '=', $companyId);
             })
         ->select(
             'settings.id as setting_id',
             'settings.default_value',
-            'setting_company_rel.value as company_value'
+            'coompany_setting_rel.value as company_value'
         )
         ->get()
         ->map(function ($item) {

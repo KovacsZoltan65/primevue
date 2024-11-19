@@ -50,6 +50,9 @@ Route::resource('menu-items', MenuController::class);
 // Egy konkrét alapbeállítás lekérése azonosítóval.
 Route::get('/settings/{id}', [SettingController::class, 'show']);
 
+//
+Route::get('/settings/getDefaultSettings', [SettingController::class, 'getDefaultSettings'])->name('getDefaultSettings');
+
 // 4. Céges beállítás lekérése company_id és setting_id alapján
 // Egy cég adott beállításának lekérése.
 Route::get('/companies/{companyId}/settings/{settingId}', [CompanyController::class, 'showSetting']);

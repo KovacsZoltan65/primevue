@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 
 class CompanySettigRel extends Pivot
 {
@@ -15,6 +17,15 @@ class CompanySettigRel extends Pivot
         'is_active',
     ];
     
+    public function scopeSearch(Builder $query, Request $request)
+    {
+        return $query->when($request->search, function($query) use($request){
+            $query->where(function($query) use($request) {
+                $query->where('name', 'like', "%{$request->search}%");
+            });
+        })->active();
+    }
+
     public function company()
     {
         return $this->belongsTo(Company::class, 'companies_id');

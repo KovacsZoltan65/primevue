@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as Response2;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class RegionController extends Controller
 {
@@ -65,7 +66,7 @@ class RegionController extends Controller
      * @param  Request  $request
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
-    public function getRegions(Request $request)
+    public function getRegions(Request $request): AnonymousResourceCollection
     {
         // Lekérdezi a régiókat a keresési paraméter alapján
         $regionQuery = Region::search($request);

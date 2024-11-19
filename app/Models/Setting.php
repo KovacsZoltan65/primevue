@@ -16,9 +16,13 @@ class Setting extends Model
     protected  $table = 'settings';
     protected $fillable = ['name', 'defailt_value', 'is_active'];
     
-    public function scopeSearch(Builder $query, Request $request)
+    public function scopeSearch(Builder $query, Request $request): Builder
     {
-        //
+        return $query->when($request->search, function($query) use($request){
+            $query->where(function($query) use($request) {
+                $query->where('name', 'like', "%{$request->search}%");
+            });
+        })->active();
     }
     
     public function companies()
@@ -30,7 +34,7 @@ class Setting extends Model
 
     /**
      * ===
-     * HESZNÁLAT
+     * HASZNÁLAT
      * ===
      * 
      * $company_id = 1;

@@ -29,6 +29,11 @@ class SettingController extends Controller
         );
     }
 
+    public function getDefaultSettings(Request $request)
+    {
+        $settingQuery = Setting::search($request);
+    }
+
     public function companyIndex()
     {
         $companies = Company::all();

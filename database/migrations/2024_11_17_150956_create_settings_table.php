@@ -16,7 +16,7 @@ return new class extends Migration
             
             $table->string('name')->comment('Beállítás neve');
             $table->string('default_value')->nullable()->comment('Beállítás alap értéke');
-            $table->boolean('is_active')->default(true)->comment('Aktív jelző');
+            $table->boolean('active')->default(true)->comment('Aktív jelző');
             
             $table->timestamps();
             $table->softDeletes();

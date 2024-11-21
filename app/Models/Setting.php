@@ -14,7 +14,7 @@ class Setting extends Model
         SoftDeletes;
     
     protected  $table = 'settings';
-    protected $fillable = ['name', 'defailt_value', 'is_active'];
+    protected $fillable = ['name', 'defailt_value', 'active'];
     
     public function scopeSearch(Builder $query, Request $request): Builder
     {
@@ -27,13 +27,13 @@ class Setting extends Model
     
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', APP_ACTIVE);
+        return $query->where('active', APP_ACTIVE);
     }
 
     public function companies()
     {
         return $this->belongsToMany(Company::class, 'company_setting_rel', 'settings_id', 'companies_id')
-            ->withPivot('value', 'is_active')
+            ->withPivot('value', 'active')
             ->withTimestamps();
     }
 

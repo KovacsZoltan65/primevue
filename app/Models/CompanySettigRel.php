@@ -14,7 +14,7 @@ class CompanySettigRel extends Pivot
         'companies_id',
         'settings_id',
         'value', 
-        'is_active',
+        'active',
     ];
     
     public function scopeSearch(Builder $query, Request $request)
@@ -28,7 +28,7 @@ class CompanySettigRel extends Pivot
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', APP_ACTIVE);
+        return $query->where('active', APP_ACTIVE);
     }
 
     public function company()

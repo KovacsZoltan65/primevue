@@ -28,9 +28,9 @@ class CompanySettingSeeder extends Seeder
         $companies = Company::all();
         
         // Beállítások létrehozása
-        $setting1 = Setting::create(['name' => 'Settings 1', 'default_value' => 'Default Value 1', 'is_active' => true]);
-        $setting2 = Setting::create(['name' => 'Settings 2', 'default_value' => 'Default Value 2', 'is_active' => false]);
-        $setting3 = Setting::create(['name' => 'Settings 3', 'default_value' => 'Default Value 3', 'is_active' => true]);
+        $setting1 = Setting::create(['name' => 'Settings 1', 'default_value' => 'Default Value 1', 'active' => true]);
+        $setting2 = Setting::create(['name' => 'Settings 2', 'default_value' => 'Default Value 2', 'active' => false]);
+        $setting3 = Setting::create(['name' => 'Settings 3', 'default_value' => 'Default Value 3', 'active' => true]);
         
         // Kapcsolatok létrehozása
         foreach($companies as $company)
@@ -40,8 +40,8 @@ class CompanySettingSeeder extends Seeder
             if( $rand == 0 ) {
                 $company->settings()
                     ->attach([
-                        $setting1->id => ['value' => 'Custom Value A1', 'is_active' => true],
-                        $setting3->id => ['value' => 'Custom Value A3', 'is_active' => false],
+                        $setting1->id => ['value' => 'Custom Value A1', 'active' => true],
+                        $setting3->id => ['value' => 'Custom Value A3', 'active' => false],
                     ]);
             }else{
                 $company->settings()->attach([

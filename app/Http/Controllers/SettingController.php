@@ -81,7 +81,7 @@ class SettingController extends Controller
                 'id' => $setting->id,
                 'name' => $setting->name,
                 'default_value' => $setting->default_value,
-                'is_active' => $setting->is_active,
+                'active' => $setting->active,
             ], 
             Response::HTTP_OK);
     }
@@ -100,7 +100,7 @@ class SettingController extends Controller
         $setting = Setting::create([
             'name' => $validated['name'],
             'default_value' => $validated['default_value'],
-            'is_active' => true,
+            'active' => true,
         ]);
     
         if (!empty($validated['companies'])) {
@@ -122,13 +122,13 @@ class SettingController extends Controller
     {
         $validated = $request->validate([
             'default_value' => 'nullable|string',
-            'is_active' => 'boolean',
+            'active' => 'boolean',
         ]);
 
         $setting = Setting::findOrFail($settingId);
         $setting->update([
             'default_value' => $validated['default_value'],
-            'is_active' => $validated['is_active'],
+            'active' => $validated['active'],
         ]);
 
         activity()->log("Setting updated: {$setting->name}");
@@ -143,7 +143,7 @@ class SettingController extends Controller
     public function deactivateDefaultSetting($id)
     {
         $setting = Setting::findOrFail($id);
-        $setting->update(['is_active' => false]);
+        $setting->update(['active' => false]);
 
         activity()->log("Setting globally deactivated: {$setting->name}");
         return redirect()->route('settings.index')->with('success', 'Setting deactivated successfully.');
@@ -153,7 +153,7 @@ class SettingController extends Controller
     {
         $companySetting = CompanySettigRel::where('companies_id', $companyId)
             ->where('settings_id', $settingId)->firstOrFail();
-        $companySetting->update(['is_active' => false]);
+        $companySetting->update(['active' => false]);
 
         activity()->log("Company-specific setting deactivated: Company ID {$companyId}, Setting ID {$settingId}");
         return redirect()->route('company.settings.index', $companyId)

@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class CompanySettigRel extends Pivot
 {
-    protected $table = 'coompany_setting_rel'; // Kapcsolótábla neve
+    protected $table = 'company_setting_rel'; // Kapcsolótábla neve
     
     protected $fillable = [
         'companies_id',

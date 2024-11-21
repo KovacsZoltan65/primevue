@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('coompany_setting_rel', function (Blueprint $table) {
+        Schema::create('company_setting_rel', function (Blueprint $table) {
             $table->id();
             
             $table->unsignedBigInteger('settings_id')->comment('Beállítás azonosítója');
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('coompany_setting_rel');
+        Schema::dropIfExists('company_setting_rel');
     }
 };

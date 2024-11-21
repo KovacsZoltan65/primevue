@@ -53,14 +53,14 @@ class Setting extends Model
     
     public function getCompanySetting(int $companyId)
     {
-        return $this->leftJoin('coompany_setting_rel', function ($join) use ($companyId) {
-            $join->on('settings.id', '=', 'coompany_setting_rel.settings_id')
-                ->where('coompany_setting_rel.companies_id', '=', $companyId);
+        return $this->leftJoin('company_setting_rel', function ($join) use ($companyId) {
+            $join->on('settings.id', '=', 'company_setting_rel.settings_id')
+                ->where('company_setting_rel.companies_id', '=', $companyId);
             })
         ->select(
             'settings.id as setting_id',
             'settings.default_value',
-            'coompany_setting_rel.value as company_value'
+            'company_setting_rel.value as company_value'
         )
         ->get()
         ->map(function ($item) {

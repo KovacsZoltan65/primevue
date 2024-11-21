@@ -112,7 +112,7 @@ class Company extends Model
     {
         return $this->belongsToMany(
             Setting::class,
-            'coompany_setting_rel',  // Pivot tábla neve
+            'company_setting_rel',  // Pivot tábla neve
             'companies_id',         // Külső kulcs a pivot táblában a cégekre
             'settings_id'           // Külső kulcs a pivot táblában a beállításokra
         )->withPivot('value');       // Pivot mezők elérhetővé tétele;

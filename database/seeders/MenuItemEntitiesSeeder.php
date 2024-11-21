@@ -15,7 +15,7 @@ class MenuItemEntitiesSeeder extends Seeder
     {
         $specimens = MenuItem::where('label', '=', 'specimens')->first();
 
-        $$specimens->children()->createMany([
+        $specimens->children()->createMany([
             [ 'label' => 'entities', 'url' => '/entities', 'default_weight' => 3, ],
         ]);
     }

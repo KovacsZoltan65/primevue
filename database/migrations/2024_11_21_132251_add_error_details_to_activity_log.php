@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
         Schema::connection(config('activitylog.database_connection'))
             ->table(config('activitylog.table_name'), function (Blueprint $table) {
 
@@ -20,6 +21,7 @@ return new class extends Migration
             $table->uuid('unique_error_id')->nullable()->after('user_agent')->index(); // Egyedi hibaazonosító
 
         });
+        */
     }
 
     /**
@@ -27,6 +29,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        /*
         Schema::connection(config('activitylog.database_connection'))
             ->table(config('activitylog.table_name'), function (Blueprint $table) {
 
@@ -34,7 +37,8 @@ return new class extends Migration
             $table->dropColumn('url');
             $table->dropColumn('user_agent');
             $table->dropColumn('unique_error_id');
-            
+
         });
+        */
     }
 };

@@ -29,7 +29,15 @@ Route::get('/user', function (Request $request) {
  * ERROR HANDLING
  * =======================================================
  */
-Route::post('/client-errors', [ClientErrorController::class, 'store']);
+Route::post('/client-errors', [ClientErrorController::class, 'logClientError']);
+
+Route::prefix('error-logs')
+    ->name('error-logs.')
+    ->group(function() {
+        Route::get('/', [ClientErrorController::class, 'index'])->name('index');
+        Route::get('/{id}', [ClientErrorController::class, 'show'])->name('show')->where('id', '[0-9]+');
+        Route::delete('/{id}', [ClientErrorController::class, 'destroy'])->name('destroy')->where('id', '[0-9]+');
+    });
 
 /**
  * =======================================================

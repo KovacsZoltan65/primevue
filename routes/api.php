@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\PermissionController;
 use App\Http\Controllers\Auth\RoleController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\ClientErrorController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
@@ -22,6 +23,13 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 //Route::get('/items', function(){ \Log::info('API/GET'); });
+
+/**
+ * =======================================================
+ * ERROR HANDLING
+ * =======================================================
+ */
+Route::post('/client-errors', [ClientErrorController::class, 'store']);
 
 /**
  * =======================================================

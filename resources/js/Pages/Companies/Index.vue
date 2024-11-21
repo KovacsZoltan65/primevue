@@ -13,6 +13,7 @@ import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
 import validationRules from '@/Validation/ValidationRules.json';
 
 import CompanyService from "@/service/CompanyService";
+//import ErrorService from "@/service/ErrorService";
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -242,8 +243,8 @@ const fetchItems = () => {
             companies.value = response.data.data;
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
             console.error("getCompanies API Error:", error);
+
         }).finally(() => {
             loading.value = false;
         });
@@ -520,6 +521,10 @@ const clearFilter = () => {
 
 initFilters();
 
+const throwError = () => {
+    throw new Error('Test error');
+};
+
 </script>
 
 <template>
@@ -529,6 +534,14 @@ initFilters();
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
+                    <Button
+                        label="ERROR"
+                        icon="pi pi-plus"
+                        severity="secondary"
+                        class="mr-2"
+                        @click="throwError"
+                    />
+
                     <Button
                         :label="$t('new')"
                         icon="pi pi-plus"

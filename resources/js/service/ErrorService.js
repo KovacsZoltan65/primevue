@@ -11,8 +11,11 @@ class ErrorService extends BaseService {
         const payload = {
             message: error.message,
             stack: error.stack,
-            component: error.componentName || "Unknown",
+            component: additionalData.componentName || "Unknown",
+            category: additionalData.category || "unknown_error",
+            data: additionalData.data || null,
             info: error.info || "No additional info",
+            additionalInfo: additionalData.additionalInfo || null, // Külön mezőként kerül mentésre
             time: new Date().toISOString(),
             route: window.location.pathname,
             url: window.location.href,

@@ -1,7 +1,6 @@
 <script setup>
-import { computed, onMounted, ref, reactive } from "vue";
+import { computed, onMounted, ref, reactive, watch } from "vue";
 import { Head } from "@inertiajs/vue3";
-import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { trans } from "laravel-vue-i18n";
@@ -9,11 +8,13 @@ import { trans } from "laravel-vue-i18n";
 // Validation
 import useVuelidate from "@vuelidate/core";
 import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
-//import validationRules from "../../../Validation/ValidationRules.json";
 import validationRules from '@/Validation/ValidationRules.json';
 
+// TOAST
+import { useToast } from "primevue/usetoast";
+import Toast from 'primevue/toast';
+
 import CompanyService from "@/service/CompanyService";
-//import ErrorService from "@/service/ErrorService";
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -26,25 +27,16 @@ import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
 import FileUpload from "primevue/fileupload";
+import { createId } from "@/helpers/functions";
+import { FloatLabel, Message } from "primevue";
+import ErrorService from "@/service/ErrorService";
 
 /**
  * Szerver felöl jövő adatok
  */
 const props = defineProps({
-    /**
-     * Országok adatai.
-     */
-    countries: {
-        type: Object,
-        default: () => {},
-    },
-    /**
-     * Régiók adatai.
-     */
-    cities: {
-        type: Object,
-        default: () => {},
-    },
+    countries: { type: Object, default: () => {}, },
+    cities: { type: Object, default: () => {}, },
 });
 
 /**
@@ -54,97 +46,74 @@ const props = defineProps({
  */
 const getBools = () => {
     return [
-        {
-            /**
-             * Az inaktív állapot címkéje.
-             */
-            label: trans("inactive"),
-            /**
-             * Az inaktív állapot értéke.
-             */
-            value: 0,
-        },
-        {
-            /**
-             * Az aktív állapot címkéje.
-             */
-            label: trans("active"),
-            /**
-             * Az aktív állapot értéke.
-             */
-            value: 1,
-        },
+        {label: trans("inactive"),value: 0,},
+        {label: trans("active"),value: 1,},
     ];
 };
 
-/**
- * Használja a PrimeVue toast összetevőjét.
- *
- * @type {Object}
- */
 const toast = useToast();
 
-/**
- * Reaktív hivatkozás a datatable komponensre.
- *
- * @type {Object}
- */
 const dt = ref();
 
-/**
- * Reaktív hivatkozás a városok adatainak tárolására.
- *
- * @type {Array}
- */
 const companies = ref();
-
-/**
- * Reaktív hivatkozás a város adatainak megjelenítő párbeszédpanel megnyitásához.
- *
- * @type {ref<boolean>}
- */
-const companyDialog = ref(false);
-
-/**
- * Reaktív hivatkozás a városok törléséhez használt párbeszédpanel megnyitásához.
- *
- * @type {ref<boolean>}
- */
-const deleteSelectedCompaniesDialog = ref(false);
-
-/**
- * Reaktív hivatkozás a kijelölt város(ok) törléséhez használt párbeszédpanel megnyitásához.
- *
- * @type {ref<boolean>}
- */
-const deleteCompanyDialog = ref(false);
-
-const loading = ref(true);
-
-/**
- * Reaktív hivatkozás a város adatainak tárolására.
- *
- * @type {Object}
- * @property {string} name - A város neve.
- * @property {number} country_id - Az ország azonosítója.
- * @property {number} region_id - A régió azonosítója.
- * @property {number} active - A város státusza.
- * @property {number} id - A város azonosítója.
- */
 const company = ref({
     id: null,
     name: "",
+    directory: "",
     country_id: null,
     city_id: null,
+    registration_number: null,
+    tax_id: null,
+    address: null,
     active: 1,
 });
 
+const initialCompany = () => {
+    return {...company};
+};
+
+watch(
+    () => company.value.name,
+    /**
+     * Visszahívás funkció a figyelés effektushoz.
+     *
+     * Ez a funkció frissíti a cég directory tulajdonságát a név változásai alapján.
+     * @param {string} newValue - A cég könyvtárának új értéke.
+     */
+    (newValue) => {
+        const trimmedValue = newValue?.trim() || ""; // Győződjön meg arról, hogy az érték létezik,
+                                                     // és le van vágva.
+
+        if (trimmedValue !== "") {
+            company.value.directory = trimmedValue
+                .toLowerCase() // Átalakítás kisbetűsre.
+                .replace(/\s+/g, "_") // Cserélje ki a szóközöket aláhúzásjelekkel.
+                .replace(/[^a-z0-9._-]/g, "") // Távolítsa el a nem engedélyezett karaktereket.
+                .replace(/_+/g, "_") // Több aláhúzás összevonása.
+                .replace(/^\_+|\_+$/g, ""); // Távolítsa el a bevezető vagy a záró aláhúzást.
+        } else {
+            company.value.directory = "";
+        }
+    }
+);
+
 /**
- * Reaktív hivatkozás a kijelölt városok tárolására.
+ * Reaktív hivatkozás a kijelölt cégek tárolására.
  *
- * @type {Array}
+ * @type {ref<Array>}
  */
-const selectedCompanies = ref();
+const selectedCompanies = ref([]);
+
+/**
+ * ===========================================
+ * DIALOGOK
+ * ===========================================
+ */
+const companyDialog = ref(false);
+const deleteSelectedCompaniesDialog = ref(false);
+const deleteCompanyDialog = ref(false);
+
+const loading = ref(true);
 
 /**
  * Reaktív hivatkozás a globális keresés szűrőinek tárolására az adattáblában.
@@ -169,51 +138,22 @@ const submitted = ref(false);
  * @type {Object}
  */
 const rules = {
-    /**
-     * A név validációs szabálya.
-     *
-     * A névnek meg kell felelnie a következ  feltételeknek:
-     * - a név nem lehet üres
-     * - a név hosszának minimum 3 karakternek kell lennie
-     * - a név hosszának maximum 255 karakternek kell lennie
-     */
     name: {
-        /**
-         * A név nem lehet üres.
-         */
         required: helpers.withMessage(trans("validate_name"), required),
-        /**
-         * A név hosszának minimum 3 karakternek kell lennie.
-         */
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
-        /**
-         * A név hosszának maximum 255 karakternek kell lennie.
-         */
         maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
     },
-    /**
-     * Az ország azonosítója validációs szabálya.
-     *
-     * Az ország azonosítójának meg kell felelnie a következ  feltételeknek:
-     * - az ország azonosítója nem lehet üres
-     */
-    country_id: {
-        /**
-         * Az ország azonosítója nem lehet üres.
-         */
-        required: helpers.withMessage(trans("validate_country_id"), required),
+    country_id: { required: helpers.withMessage(trans("validate_country_id"), required), },
+    city_id: { required: helpers.withMessage(trans("validate_city_id"), required), },
+    directory: { required: helpers.withMessage(trans("validate_directory"), required), },
+    tax_id: {
+        required: helpers.withMessage(trans("validate_tax_id"), required),
     },
-    /**
-     * A város azonosítója validációs szabálya.
-     *
-     * A város azonosítójának meg kell felelnie a következ  feltételeknek:
-     * - a város azonosítója nem lehet üres
-     */
-    city_id: {
-        /**
-         * A város azonosítója nem lehet üres.
-         */
-        required: helpers.withMessage(trans("validate_city_id"), required),
+    registration_number: {
+        required: helpers.withMessage(trans("validate_registration_number"), required),
+    },
+    address: {
+        required: helpers.withMessage(trans("validate_address"), required),
     },
 };
 
@@ -243,8 +183,8 @@ const fetchItems = () => {
             companies.value = response.data.data;
         })
         .catch((error) => {
+            // Jelenítse meg a hibaüzenetet a konzolon
             console.error("getCompanies API Error:", error);
-
         }).finally(() => {
             loading.value = false;
         });
@@ -272,16 +212,15 @@ onMounted(() => {
  * @return {void}
  */
 function confirmDeleteSelected() {
-    // Állítsa a deleteCompaniessDialog változó értékét igazra,
-    // amely megnyitja a megerősítő párbeszédablakot a kiválasztott termékek törléséhez.
     deleteSelectedCompaniesDialog.value = true;
 }
 
 /**
- * Nyitja meg az új város dialógusablakot.
+ * Megnyitja az új város dialógusablakot.
  *
- * Ez a függvény a company változó értékét alaphelyzetbe állítja, a submitted változó értékét False-ra állítja,
- * és a companyDialog változó értékét igazra állítja, amely megnyitja az új város dialógusablakot.
+ * Ez a függvény a company változó értékét alaphelyzetbe állítja,
+ * a submitted változó értékét False-ra állítja, és a companyDialog változó
+ * értékét igazra állítja, amely megnyitja az új város dialógusablakot.
  *
  * @return {void}
  */
@@ -292,27 +231,6 @@ function openNew() {
 }
 
 /**
- * Az új város objektum alapértelmezett értékei.
- *
- * A companyDialog változó értékét igazra állítva, ez az objektum lesz a dialógusablakban
- * megjelenő új város formban.
- *
- * @type {Object}
- * @property {string} name - A város neve.
- * @property {number} country_id - Az ország azonosítója.
- * @property {number} region_id - A régió azonosítója.
- * @property {number} active - A város aktív-e? (1 igen, 0 nem).
- * @property {number} id - A város azonosítója.
- */
-const initialCompany = {
-    name: "",
-    country_id: null,
-    region_id: null,
-    active: 1,
-    id: null,
-};
-
-/**
  * Bezárja a dialógusablakot.
  *
  * Ez a függvény a dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
@@ -320,6 +238,8 @@ const initialCompany = {
  */
 const hideDialog = () => {
     companyDialog.value = false;
+    deleteCompanyDialog.value = false;
+    deleteSelectedCompaniesDialog.value = false;
     submitted.value = false;
 
     // Visszaállítja a validációs objektumot az alapértelmezett állapotába.
@@ -336,10 +256,8 @@ const hideDialog = () => {
  * @return {void}
  */
 const editCompany = (data) => {
-    // Másolja a kiválasztott város adatait a company változóba.
     company.value = { ...data };
 
-    // Nyissa meg a dialógusablakot a város szerkesztéséhez.
     companyDialog.value = true;
 };
 
@@ -353,10 +271,8 @@ const editCompany = (data) => {
  * @return {void}
  */
 const confirmDeleteCompany = (data) => {
-    // Másolja a kiválasztott város adatait a company változóba.
     company.value = { ...data };
 
-    // Nyissa meg a dialógusablakot a város törléséhez.
     deleteCompanyDialog.value = true;
 };
 
@@ -375,21 +291,20 @@ const saveCompany = async () => {
     }
 };
 
-/**
- * Hozzon létre új várost az API-nak küldött POST-kéréssel.
- *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor létrehoz egy új várost az API-ban.
- * A választ megjeleníti a konzolon.
- *
- * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
- */
 const createCompany = () => {
+    const newCompany = {...company.value, id:createId() };
+    companies.value.push(newCompany);
+
+    toast.add({
+        severity: "success",
+        summary: "Creating...",
+        detail: "Company creation in progress",
+        life: 3000,
+    });
+
     CompanyService.createCompany(company.value)
         .then((response) => {
             //console.log('response', response);
-            companies.values.push(response.data);
-
             hideDialog();
 
             toast.add({
@@ -398,36 +313,55 @@ const createCompany = () => {
                 detail: "Company Created",
                 life: 3000,
             });
+            
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("createCompany API Error:", error);
+            // Ha a vállalat létrehozása sikertelen volt, 
+            // akkor töröljük a lokálisan létrehozott vállalatot a listából.
+            const index = findIndexById(newCompany.id);
+            if (index !== -1) {
+                companies.value.splice(index, 1);
+            }
+
+            const message = trans('error_company_create');
+            //console.error("createCompany API Error:", error);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: message,
+            });
+
+            ErrorService.logClientError(error, {
+                componentName: "CreateCompanyDialog",
+                additionalInfo: "Failed to create a company in the backend",
+                category: "Error",
+                data: company.value,
+            });
         });
 };
 
-/**
- * Frissít egy várost az API-nak küldött PUT-kéréssel.
- *
- * A metódus ellenörzi a város adatait a validációs szabályok alapján,
- * és ha a validáció sikerült, akkor frissíti a várost az API-ban.
- * A választ megjeleníti a konzolon.
- *
- * @param {number} id - A frissítendő város azonosítója.
- * @param {object} data - A város új adatai.
- * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
- */
 const updateCompany = () => {
+    const index = findIndexById(company.value.id);
+    if (index === -1) {
+        console.error(`Company with id ${country.value.id} not found`);
+        return;
+    }
+
+    const originalCompany = { ...companies.value[index] };
+
+    companies.value.splice(index, 1, { ...company.value });
+    hideDialog();
+
+    toast.add({
+        severity: "info",
+        summary: "Updating...",
+        detail: "Company update in progress",
+        life: 2000,
+    });
+
     CompanyService.updateCompany(company.value.id, company.value)
-        .then(() => {
-            // Megkeresi a város indexét a városok tömbjében az azonosítója alapján
-            const index = findIndexById(company.value.id);
-            // A város adatait frissíti a városok tömbjében
-            companies.value.splice(index, 1, company.value);
-
-            // Bezárja a dialógus ablakot
-            hideDialog();
-
-            // Siker-értesítést jelenít meg
+        .then((response) => {
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -436,37 +370,136 @@ const updateCompany = () => {
             });
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("updateCompany API Error:", error);
+            companies.value.splice(index, 1, originalCompany);
+
+            //console.error("updateCompany API Error:", error);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to update company",
+            });
+
+            ErrorService.logClientError(error, {
+                componentName: "UpdateCompanyDialog",
+                additionalInfo: "Failed to update a company in the backend",
+                category: "Error",
+                data: company.value,
+            });
+        });
+
+};
+
+const deleteSelectedCompanies = () => {
+    // Eredeti állapot mentése az összes kiválasztott céghez, hogy visszaállíthassuk hiba esetén
+    const originalCompanies = [...companies.value];
+
+    // Optimista törlés: azonnal eltávolítjuk az összes kijelölt céget
+    selectedCompanies.value.forEach(selectedCompany => {
+        const index = companies.value.findIndex(company => company.id === selectedCompany.id);
+        if (index !== -1) {
+            companies.value.splice(index, 1);
+        }
+    });
+
+    // Törlési értesítés optimista frissítés után
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Deleting selected companies...",
+        life: 2000,
+    });
+
+    CompanyService.deleteCompanies(selectedCompanies.value.map(company => company.id))
+        .then((response) => {
+            // Sikeres törlés esetén értesítés
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Selected companies deleted",
+                life: 3000,
+            });
+            // Törölt elemek eltávolítása a selectedCompanies-ből
+            selectedCompanies.value = [];
+        })
+        .error((error) => {
+            // Hiba esetén visszaállítjuk az eredeti állapotot
+            companies.value = originalCompanies;
+
+            //console.error("deleteSelectedCompanies API Error:", error);
+
+            // Hibaüzenet megjelenítése a felhasználói felületen
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete selected companies",
+                life: 3000,
+            });
+
+            ErrorService.logClientError(error, {
+                componentName: "DeleteCompaniesDialog",
+                additionalInfo: "Failed to delete a companies in the backend",
+                category: "Error",
+                data: companies.value
+            });
         });
 };
 
-/**
- * Megkeresi egy város indexét a városok tömbjében az azonosítója alapján.
- *
- * @param {number} id - A keresendő város azonosítója.
- * @returns {number} A város indexe a városok tömbjében, vagy -1, ha nem található.
- */
+const deleteCompany = () => {
+    const index = findIndexById(company.value.id);
+    if (index === -1) {
+        console.warn("No company found with the given id:", company.value.id);
+        return;
+    }
+
+    // Eredeti cégadat mentése, hogy visszaállíthassuk, ha a törlés sikertelen
+    const originalCompany = { ...companies.value[index] };
+
+    // Optimista törlés: azonnal eltávolítjuk a céget a listából
+    companies.value.splice(index, 1);
+
+    // Törlési értesítés optimista frissítés után
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Company deletion in progress",
+        life: 2000,
+    });
+
+    CompanyService.deleteCompany(id)
+        .then((response) => {
+            // Sikeres törlés esetén értesítés
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Company Deleted",
+                life: 3000,
+            });
+        })
+        .error((error) => {
+            // Hiba esetén visszaállítjuk a céget az eredeti helyére
+            companies.value.splice(index, 0, originalCompany);
+
+            // Hibaüzenet megjelenítése a felhasználói felületen
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete company",
+            });
+
+            ErrorService.logClientError(error, {
+                componentName: "DeleteCompanyDialog",
+                additionalInfo: "Failed to delete a company in the backend",
+            });
+        });
+};
+
 const findIndexById = (id) => {
     return companies.value.findIndex((company) => company.id === id);
 };
 
-const deleteCompany = () => {
-    CompanyService.deleteCompany(company.value.id)
-        .then((response) => {
-            //
-        })
-        .catch((error) => {
-            console.error("deleteCompany API Error:", error);
-        });
-};
-
 const exportCSV = () => {
     dt.value.exportCSV();
-};
-
-const deleteSelectedCompanies = () => {
-    console.log(selectedCompanies.value);
 };
 
 const getCountryName = (id) => {
@@ -477,22 +510,12 @@ const getCityName = (id) => {
     return props.cities.find((city) => city.id === id).name;
 };
 
-/**
- * Visszaadja a dialógusablak címét attól függően, hogy új várost hozunk létre, vagy egy meglévőt szerkesztünk.
- *
- * @returns {string} A dialógusablak címe.
- */
 const getModalTitle = () => {
     return company.value.id
         ? trans("companies_edit_title")
         : trans("companies_new_title");
 };
 
-/**
- * Visszaadja a dialógusablak részleteit attól függően, hogy új várost hozunk létre, vagy egy meglévőt szerkesztünk.
- *
- * @returns {string} A dialógusablak részletei.
- */
 const getModalDetails = () => {
     return company.value.id
         ? trans("companies_edit_details")
@@ -531,9 +554,12 @@ const throwError = () => {
     <AppLayout>
         <Head :title="$t('companies')" />
 
+        <Toast />
+
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
+                    <!-- ERROR -->
                     <Button
                         label="ERROR"
                         icon="pi pi-plus"
@@ -542,16 +568,18 @@ const throwError = () => {
                         @click="throwError"
                     />
 
+                    <!-- New Button -->
                     <Button
-                        :label="$t('new')"
+                        :label="$t('add_new')"
                         icon="pi pi-plus"
                         severity="secondary"
                         class="mr-2"
                         @click="openNew"
                     />
 
+                    <!-- Delete Selected Button -->
                     <Button
-                        :label="$t('delete')"
+                        :label="$t('delete_selected')"
                         icon="pi pi-trash"
                         severity="secondary"
                         class="mr-2"
@@ -563,14 +591,14 @@ const throwError = () => {
                 </template>
 
                 <template #end>
-                    <FileUpload 
-                        mode="basic" 
-                        accept="image/*" 
-                        :maxFileSize="1000000" 
-                        label="Import" 
-                        customUpload auto 
-                        chooseLabel="Import" 
-                        class="mr-2" 
+                    <FileUpload
+                        mode="basic"
+                        accept="image/*"
+                        :maxFileSize="1000000"
+                        label="Import"
+                        customUpload auto
+                        chooseLabel="Import"
+                        class="mr-2"
                         :chooseButtonProps="{ severity: 'secondary' }"
                         @upload="onUpload"
                     />
@@ -614,7 +642,7 @@ const throwError = () => {
                         <div class="font-semibold text-xl mb-1">
                             {{ $t("companies_title") }}
                         </div>
-                        
+
                         <!-- KERESÉS -->
                         <IconField>
                             <InputIcon>
@@ -633,7 +661,7 @@ const throwError = () => {
                         type="button"
                         icon="pi pi-refresh"
                         class="p-button-text"
-                        @click="fetchItems"
+                        @click="fetchItems()"
                     />
                 </template>
 
@@ -667,6 +695,25 @@ const throwError = () => {
                             v-model="filterModel.value"
                             type="text"
                             :placeholder="$t('search_by', {data: 'name'})"
+                        />
+                    </template>
+                </Column>
+
+                <!-- DIRECTORY -->
+                <Column
+                    field="directory"
+                    :header="$t('directory')"
+                    sortable
+                    style="min-width: 16rem"
+                >
+                    <template #body="slotProps">
+                        {{ slotProps.data.directory }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            :placeholder="$t('search_by', {data: 'directory'})"
                         />
                     </template>
                 </Column>
@@ -724,38 +771,125 @@ const throwError = () => {
             :header="getModalTitle()"
             :modal="true"
         >
-            <div class="flex flex-col gap-6">
+            <div class="flex flex-col gap-6" style="margin-top: 17px;">
                 <!-- NAME -->
                 <div class="flex flex-col grow basis-0 gap-2">
-                    <label for="name" class="block font-bold mb-3">
-                        {{ $t("name") }}
-                    </label>
-                    <InputText
-                        id="name"
-                        v-model="company.name"
-                        autofocus
-                        fluid
-                    />
+                    <FloatLabel>
+                        <label for="name" class="block font-bold mb-3">
+                            {{ $t("name") }}
+                        </label>
+                        <InputText
+                            id="name"
+                            v-model="company.name"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_company_name') }}
+                    </Message>
                     <small class="text-red-500" v-if="v$.name.$error">
                         {{ $t(v$.name.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- DIRECTORY -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="directory" class="block font-bold mb-3">
+                            {{ $t("directory") }}
+                        </label>
+                        <InputText
+                            id="directory"
+                            v-model="company.directory"
+                            fluid disabled
+                        />
+                    </FloatLabel>
+                    <small class="text-red-500" v-if="v$.directory.$error">
+                        {{ $t(v$.directory.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- TAX ID -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="tax_id" class="block font-bold mb-3">
+                            {{ $t("tax_id") }}
+                        </label>
+                        <InputText
+                            id="tax_id"
+                            v-model="company.tax_id"
+                            fluid
+                        />
+                    </FloatLabel>
+
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_tax_id') }}
+                    </Message>
+
+                    <small class="text-red-500" v-if="v$.tax_id.$error">
+                        {{ $t(v$.tax_id.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- REGISTRATION NUMBER -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="registration_number" class="block font-bold mb-3">
+                            {{ $t("registration_number") }}
+                        </label>
+                        <InputText
+                            id="registration_number"
+                            v-model="company.registration_number"
+                            fluid
+                        />
+                    </FloatLabel>
+
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_registration_number') }}
+                    </Message>
+
+                    <small class="text-red-500" v-if="v$.registration_number.$error">
+                        {{ $t(v$.registration_number.$errors[0].$message) }}
                     </small>
                 </div>
 
                 <div class="flex flex-wrap gap-4">
                     <!-- COUNTRY -->
                     <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="country_id" class="block font-bold mb-3">
-                            {{ $t("country") }}
-                        </label>
-                        <Select
-                            id="country_id"
-                            v-model="company.country_id"
-                            :options="props.countries"
-                            optionLabel="name"
-                            optionValue="id"
-                            :placeholder="$t('country')"
-                            fluid
-                        />
+                        <FloatLabel>
+                            <label for="country_id" class="block font-bold mb-3">
+                                {{ $t("country") }}
+                            </label>
+                            <Select
+                                id="country_id"
+                                v-model="company.country_id"
+                                :options="props.countries"
+                                optionLabel="name"
+                                optionValue="id"
+                                :placeholder="$t('country')"
+                                fluid
+                            />
+                        </FloatLabel>
+
+                        <Message
+                            size="small"
+                            severity="secondary"
+                            variant="simple"
+                        >
+                            {{ $t('select_country') }}
+                        </Message>
 
                         <small class="text-red-500" v-if="v$.country_id.$error">
                             {{ $t(v$.country_id.$errors[0].$message) }}
@@ -764,24 +898,61 @@ const throwError = () => {
 
                     <!-- CITY -->
                     <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="city_id" class="block font-bold mb-3">
-                            {{ $t("city") }}
-                        </label>
-                        <Select
-                            id="city_id"
-                            v-model="company.city_id"
-                            :options="props.cities"
-                            optionLabel="name"
-                            optionValue="id"
-                            :placeholder="$t('city')"
-                            fluid
-                        />
+                        <FloatLabel>
+                            <label for="city_id" class="block font-bold mb-3">
+                                {{ $t("city") }}
+                            </label>
+                            <Select
+                                id="city_id"
+                                v-model="company.city_id"
+                                :options="props.cities"
+                                optionLabel="name"
+                                optionValue="id"
+                                :placeholder="$t('city')"
+                                fluid
+                            />
+                        </FloatLabel>
+
+                        <Message
+                            size="small"
+                            severity="secondary"
+                            variant="simple"
+                        >
+                            {{ $t('select_city') }}
+                        </Message>
 
                         <small class="text-red-500" v-if="v$.city_id.$error">
                             {{ $t(v$.city_id.$errors[0].$message) }}
                         </small>
                     </div>
                 </div>
+
+                <!-- ADDRESS -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="address" class="block font-bold mb-3">
+                            {{ $t("address") }}
+                        </label>
+                        <InputText
+                            id="address"
+                            v-model="company.address"
+                            fluid
+                        />
+                    </FloatLabel>
+
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_address') }}
+                    </Message>
+
+                    <small class="text-red-500" v-if="v$.address.$error">
+                        {{ $t(v$.address.$errors[0].$message) }}
+                    </small>
+                </div>
+
             </div>
 
             <template #footer>

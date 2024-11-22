@@ -95,7 +95,7 @@ class CompanyController extends Controller
     {
         // Hozzon létre egy új céget a HTTP-kérés adatainak felhasználásával
         $company = Company::create($request->all());
-
+\Log::info('$company: ' . print_r($company, true));
         // A létrehozott vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
         return response()->json($company, Response::HTTP_OK);
     }

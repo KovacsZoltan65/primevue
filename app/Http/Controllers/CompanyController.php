@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use App\Http\Resources\CompanyResource;
 use App\Models\Company;
-//use Illuminate\Http\Response;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -76,6 +75,16 @@ class CompanyController extends Controller
         return $companies;
     }
 
+    public function getCompany(int $id)
+    {
+        //
+    }
+    
+    public function getCompanyByName(string $name)
+    {
+        //
+    }
+    
     /**
      * Hozzon létre egy új céget.
      *

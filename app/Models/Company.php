@@ -5,16 +5,28 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
+use Override;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Company extends Model
 {
     use HasFactory,
-        SoftDeletes;
+        SoftDeletes,
+        LogsActivity;
     
     protected $table = 'companies';
     protected $fillable = ['name', 'country', 'city'];
+
+    protected static $recordEvents = [
+        'created',
+        'updated',
+        'deleted',
+    ];
+
 
     public function scopeSearch(Builder $query, Request $request)
     {
@@ -37,7 +49,7 @@ class Company extends Model
     /**
      * Get the country that owns the Company
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function country()
     {
@@ -52,7 +64,7 @@ class Company extends Model
     /**
      * Get the city that owns the Company
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function city()
     {
@@ -89,5 +101,12 @@ class Company extends Model
     public function entities()
     {
         return $this->hasMany(Entity::class, 'company_id');
+    }
+
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logAll();
     }
 }

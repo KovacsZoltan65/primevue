@@ -1,4 +1,5 @@
 import BaseService from "./BaseService";
+import { v4 as uuidv4 } from "uuid";
 
 class ErrorService extends BaseService {
     constructor() {
@@ -16,6 +17,7 @@ class ErrorService extends BaseService {
             route: window.location.pathname,
             url: window.location.href,
             userAgent: navigator.userAgent,
+            uniqueErrorId: uuidv4(), // Egyedi azonosító generálása kliens oldalon
             ...additionalData,
         };
 

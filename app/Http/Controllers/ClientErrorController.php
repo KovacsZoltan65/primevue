@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Spatie\Activitylog\Models\Activity;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Response as InertiaResponse;
+use Spatie\Activitylog\Models\Activity;
+use Symfony\Component\HttpFoundation\Response;
 
 class ClientErrorController extends Controller
 {
@@ -20,10 +21,29 @@ class ClientErrorController extends Controller
      * 3. Hiba törlése:
      *      DELETE /error-logs/123
      * ==========================================
-     * @param Request $request
-     * @return type
      */
 
+    public function logClientError(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'message' => 'required|string',
+            'stack' => 'nullable|string',
+            'component' => 'nullable|string',
+            'info' => 'nullable|string',
+            'time' => 'nullable|date',
+            'route' => 'nullable|string',
+            'url' => 'nullable|string',
+            'userAgent' => 'nullable|string',
+            'uniqueErrorId' => 'nullable|string',
+        ]);
+        
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties($validated)
+            ->log('Client-side error reported.');
+
+        return response()->json(['success' => true, 'message' => 'Error logged.'], Response::HTTP_OK);
+    }
 
     /**
      * Sorolja fel az ügyfélhibákat opcionális dátumszűréssel és oldalszámozással.
@@ -117,53 +137,5 @@ class ClientErrorController extends Controller
         $log->delete(); // Ezt "soft delete"-ként is lehetne implementálni.
 
         return redirect()->route('error-logs.index')->with('success', 'Log entry deleted.');
-    }
-
-    /**
-     * Kezeli az ügyféloldali hibajelentést.
-     *
-     * Ez a függvény naplózza a hibajelentést az activity_log táblába.
-     * A hibajelentés JSON-objektumként kerül elküldésre a következő tulajdonságokkal:
-     * - info: A hibával kapcsolatos további információkat tartalmazó karakterlánc.
-     * - verem: A JavaScript hiba verem nyomkövetését tartalmazó karakterlánc.
-     * - komponens: Egy karakterlánc, amely tartalmazza annak az összetevőnek a nevét, ahol a hiba történt.
-     * - route: Az aktuális útvonalat tartalmazó karakterlánc.
-     * - url: Az aktuális URL-t tartalmazó karakterlánc.
-     * - userAgent: A felhasználói ügynököt tartalmazó karakterlánc.
-     *
-     * A függvény JSON-választ ad vissza 201-es állapotkóddal, jelezve, hogy a hiba sikeresen naplózásra került.
-     * A válasz egy üzenetet tartalmaz a hibanapló azonosítójával.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function logClientError(Request $request): JsonResponse
-    {
-        // Lekérjük a hibát a requestből.
-        // A hiba egy JSON objektum, amelyet a kliens oldalon
-        // a hiba bekövetkeztekor elküldtek.
-        $data = $request->all();
-
-        /**
-         * A hibát a activity_log táblába rögzítjük.
-         * A hiba tulajdonságait a $data változóban megadott
-         * tulajdonságokkal fogjuk rögzíteni.
-         */
-        activity()
-            ->withProperties([
-                'info' => $data['info'] ?? 'N/A',
-                'stack' => $data['stack'] ?? 'N/A',
-                'component' => $data['component'] ?? 'N/A',
-                'route' => $data['route'] ?? 'N/A',
-                'url' => $data['url'] ?? 'N/A',
-                'user_agent' => $data['userAgent'] ?? 'N/A',
-                'unique_error_id' => Str::uuid()->toString(),
-            ])
-            ->log('Client-side error reported.');
-
-            // Visszatérési érték: JSON objektum, amely tartalmazza az üzenetet.
-            // A 201-es státuszkóddal jelöljük, hogy a hiba sikeresen rögzítésre került.
-            // A kliens oldalon ezzel a válasszal tudjuk jelezni, hogy a hiba rögzítésre került.
-            return response()->json(['message' => 'Error logged successfully.', ], 201);
     }
 }

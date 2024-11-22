@@ -24,6 +24,8 @@ Route::get('/user', function (Request $request) {
 
 //Route::get('/items', function(){ \Log::info('API/GET'); });
 
+Route::middleware(['web', 'auth'])->group(function () {
+
 /**
  * =======================================================
  * ERROR HANDLING
@@ -264,3 +266,5 @@ Route::get('/entities/name/{name}', [EntityController::class, 'getEntityByName']
 Route::post('/entities', [EntityController::class, 'createEntities'])->name('api.post.entities');
 Route::put('/entities/{id}', [EntityController::class, 'updateEntities'])->name('api.put.entities')->where('id', '[0-9]+');
 Route::delete('/entities/{id}', [EntityController::class, 'deleteEntities'])->name('api.delete.entities')->where('id', '[0-9]+');
+
+});

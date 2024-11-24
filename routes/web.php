@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\PermissionController;
 use App\Http\Controllers\Auth\RoleController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
@@ -34,6 +35,14 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
 
+    /**
+     * =====================================================
+     * ERROR
+     * =====================================================
+     * 
+     */
+    Route::get('/error_log', [ErrorController::class, 'index'])->name('error_log');
+    
     /**
      * =====================================================
      * CÉGEK

@@ -65,13 +65,33 @@ class CompanyController extends Controller
      */
     public function getCompanies(Request $request): AnonymousResourceCollection
     {
-        // Szerezd meg a cégek listáját
-        $companyQuery = Company::search($request);
-
-        // JSON-válaszként adja vissza a cégek listáját
-        $companies = CompanyResource::collection($companyQuery->get());
-        //$companies = CompanyResource::collection(Company::all());
-
+        $companies = new AnonymousResourceCollection([], []);
+        
+        try {
+            
+            // Valami kód, ami hibát dobhat
+            //throw new \Exception("Database connection failed!");
+            
+            
+            // Szerezd meg a cégek listáját
+            $companyQuery = Company::search($request);
+            
+            // JSON-válaszként adja vissza a cégek listáját
+            $companies = CompanyResource::collection($companyQuery->get());
+            
+        } catch (\Exception $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getCompanies error',
+                'route' => request()->path(),
+            ]);
+            
+            ErrorController::logServerError($ex, [
+                'context' => 'getCompanies error',
+                'route' => request()->path(),
+            ]);
+            
+        }
+        
         return $companies;
     }
 
@@ -95,7 +115,7 @@ class CompanyController extends Controller
     {
         // Hozzon létre egy új céget a HTTP-kérés adatainak felhasználásával
         $company = Company::create($request->all());
-\Log::info('$company: ' . print_r($company, true));
+//\Log::info('$company: ' . print_r($company, true));
         // A létrehozott vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
         return response()->json($company, Response::HTTP_OK);
     }

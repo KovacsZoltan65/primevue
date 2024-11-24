@@ -1,91 +1,41 @@
 <script setup>
-import { ref, reactive, onMounted } from "vue";
-import ErrorService from "@/service/ErrorService";
-import { Paginator } from "primevue";
+import AppLayout from '@/Layouts/AppLayout.vue';
+import { Head } from '@inertiajs/vue3';
+import { onMounted } from 'vue';
 
-const logs = ref([]);
-const pagination = reactive({
-    currentPage: 1,
-    perPage: 10,
-    totalRecords: 0,
-    totalPages: 0,
+const props = defineProps({
+    errors: {
+        type: Object,
+        required: true,
+    },
 });
 
-const fetchLogs = async () => {
-    ErrorService.getLogs(pagination.currentPage, pagination.perPage)
-        .then((response) => {
-            logs.value = response.data.logs;
-            pagination.totalRecords = response.data.total;
-            pagination.totalPages = response.data.last_page;
-        })
-        .catch((error) => {
-            console.error("Hibalista lekérdezés hiba:", error);
-        })
-        .finally(() => {
-            //
-        });
-};
-
-const onPageChange = (event) => {
-    pagination.currentPage = event.page + 1; // PrimeVue 0-indexed
-    fetchLogs();
-};
-
-const routeTemplate = (rowData) => {
-    return rowData.properties.route || "-";
-};
-
-const actionTemplate = (rowData) => {
-    return `
-        <button
-            class="p-button p-component p-button-sm"
-            @click="viewLog(rowData.id)"
-        >
-            Részletek
-        </button>
-  `;
-};
-
-const viewLog = (id) => {
-    // Irányítsa a részletek megtekintésére
-    window.location.href = `/error-logs/${id}`;
-};
-
-onMounted(fetchLogs);
+onMounted(() => {
+    //
+})
 
 </script>
+
 <template>
-    <div>
-        <h1 class="text-2xl font-bold mb-4">Hibák listája</h1>
+    <AppLayout>
+        <Head title="Error Logs" />
 
-        <DataTable
-            :paginator="true"
-            :value="logs.data"
-            :rows="pagination.perPage"
-            responsiveLayout="scroll"
-            @page="onPageChange"
-        >
-            <Column field="created_at" header="Időpont"></Column>
-            <Column field="description" header="Leírás"></Column>
-            <Column
-                field="properties.route"
-                header="Útvonal"
-                :body="routeTemplate"
-            />
-            <Column
-                header="Műveletek"
-                :body="actionTemplate"
-                style="text-align: center"
-            />
-        </DataTable>
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Occurrences</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="error in props.errors.data" :key="error.id">
+                    <td>{{ error.properties }}</td>
+                    <td>{{ error.occurrence_count }}</td>
+                    <td>{{ error.created_at }}</td>
+                </tr>
+            </tbody>
+        </table>
 
-        <Paginator
-            v-if="pagination.totalPages > 1"
-            :totalRecords="pagination.totalRecords"
-            :rows="pagination.perPage"
-            :first="pagination.currentPage * pagination.perPage - pagination.perPage"
-            @page="onPageChange"
-        />
-
-    </div>
-  </template>
+    </AppLayout>
+</template>

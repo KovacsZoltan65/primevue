@@ -4,7 +4,7 @@ use App\Http\Controllers\Auth\PermissionController;
 use App\Http\Controllers\Auth\RoleController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
-use App\Http\Controllers\ClientErrorController;
+use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
@@ -31,14 +31,17 @@ Route::middleware(['web', 'auth'])->group(function () {
      * ERROR HANDLING
      * =======================================================
      */
-    Route::post('/client-errors', [ClientErrorController::class, 'logClientError']);
+    Route::post('/client-errors', [ErrorController::class, 'logClientError']);
+    
+    Route::get('/server-errors/by_id/{errorId}', [ErrorController::class, 'getErrorById']);
+    Route::get('/server-errors/by_unique_id/{uniqueErrorId}', [ErrorController::class, 'getErrorByUniqueId']);
 
     Route::prefix('error-logs')
         ->name('error-logs.')
         ->group(function() {
-            Route::get('/', [ClientErrorController::class, 'index'])->name('index');
-            Route::get('/{id}', [ClientErrorController::class, 'show'])->name('show')->where('id', '[0-9]+');
-            Route::delete('/{id}', [ClientErrorController::class, 'destroy'])->name('destroy')->where('id', '[0-9]+');
+            Route::get('/', [ErrorController::class, 'index'])->name('index');
+            Route::get('/{id}', [ErrorController::class, 'show'])->name('show')->where('id', '[0-9]+');
+            Route::delete('/{id}', [ErrorController::class, 'destroy'])->name('destroy')->where('id', '[0-9]+');
         });
 
     /**

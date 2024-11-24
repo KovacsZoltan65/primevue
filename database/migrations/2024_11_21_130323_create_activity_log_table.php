@@ -15,6 +15,7 @@ class CreateActivityLogTable extends Migration
             $table->nullableMorphs('subject', 'subject');
             $table->nullableMorphs('causer', 'causer');
             $table->json('properties')->nullable();
+            $table->unsignedInteger('occurrence_count')->default(1);
             $table->timestamps();
             $table->index('log_name');
         });
@@ -22,6 +23,7 @@ class CreateActivityLogTable extends Migration
 
     public function down()
     {
-        Schema::connection(config('activitylog.database_connection'))->dropIfExists(config('activitylog.table_name'));
+        Schema::connection(config('activitylog.database_connection'))
+            ->dropIfExists(config('activitylog.table_name'));
     }
 }

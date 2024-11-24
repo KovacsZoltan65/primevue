@@ -13,6 +13,7 @@ class ErrorService extends BaseService {
             stack: error.stack,
             component: additionalData.componentName || "Unknown",
             category: additionalData.category || "unknown_error",
+            priority: additionalData.priority || "low",
             data: additionalData.data || null,
             info: error.info || "No additional info",
             additionalInfo: additionalData.additionalInfo || null, // Külön mezőként kerül mentésre

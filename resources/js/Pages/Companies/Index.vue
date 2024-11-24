@@ -185,6 +185,15 @@ const fetchItems = () => {
         .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon
             console.error("getCompanies API Error:", error);
+
+            ErrorService.logClientError(error, {
+                componentName: "Fetch Companies",
+                additionalInfo: "Failed to retrieve the company",
+                category: "Error",
+                priority: "high",
+                data: null,
+            });
+
         }).finally(() => {
             loading.value = false;
         });
@@ -313,10 +322,10 @@ const createCompany = () => {
                 detail: "Company Created",
                 life: 3000,
             });
-            
+
         })
         .catch((error) => {
-            // Ha a vállalat létrehozása sikertelen volt, 
+            // Ha a vállalat létrehozása sikertelen volt,
             // akkor töröljük a lokálisan létrehozott vállalatot a listából.
             const index = findIndexById(newCompany.id);
             if (index !== -1) {
@@ -336,6 +345,7 @@ const createCompany = () => {
                 componentName: "CreateCompanyDialog",
                 additionalInfo: "Failed to create a company in the backend",
                 category: "Error",
+                priority: "high",
                 data: company.value,
             });
         });
@@ -384,6 +394,7 @@ const updateCompany = () => {
                 componentName: "UpdateCompanyDialog",
                 additionalInfo: "Failed to update a company in the backend",
                 category: "Error",
+                priority: "medium",
                 data: company.value,
             });
         });
@@ -440,6 +451,7 @@ const deleteSelectedCompanies = () => {
                 componentName: "DeleteCompaniesDialog",
                 additionalInfo: "Failed to delete a companies in the backend",
                 category: "Error",
+                priority: "low",
                 data: companies.value
             });
         });
@@ -487,9 +499,15 @@ const deleteCompany = () => {
                 detail: "Failed to delete company",
             });
 
+            // A hiba naplózása a szerver oldalon
+            // Ez hasznos lesz a hibakereséshez és az esetleges észleléshez
+            // lehetséges problémák az API-val
             ErrorService.logClientError(error, {
                 componentName: "DeleteCompanyDialog",
                 additionalInfo: "Failed to delete a company in the backend",
+                category: "Error",
+                priority: "low",
+                data: company.value,
             });
         });
 };

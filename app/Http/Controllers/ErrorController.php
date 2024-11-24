@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
-class ClientErrorController extends Controller
+class ErrorController extends Controller
 {
     /**
      * ==========================================
@@ -22,6 +24,55 @@ class ClientErrorController extends Controller
      *      DELETE /error-logs/123
      * ==========================================
      */
+
+    public static function logServerError(Throwable $error, array $additionalData = []): JsonResponse
+    {
+        // Hiba alapinformációinak kinyerése
+        $errorData = [
+            'message' => $error->getMessage(),
+            'stack' => $error->getTraceAsString(),
+            'file' => $error->getFile(),
+            'line' => $error->getLine(),
+            'time' => now()->toISOString(),
+            'uniqueErrorId' => $additionalData['uniqueErrorId'] ?? Str::uuid()->toString(),
+        ];
+
+        // Extra adatok hozzáadása (ha van)
+        $errorData = array_merge($errorData, $additionalData);
+
+        $errorId = md5($errorData['message'] . $errorData['file'] . $errorData['line']);
+        $existingError = Activity::where('properties->errorId', $errorId)->first();
+
+        $return_array = [];
+        
+        if( $existingError )
+        {
+            // Ha létezik, növeljük az előfordulások számát
+            $existingError->increment('occurrence_count');
+            //$existingError->updated_at = now();
+            //$existingError->save();
+            
+            $return_array = ['success' => true, 'message' => 'Error occurrence updated.'];
+        }
+        else
+        {
+            $errorData = array_merge($errorData, ['errorId' => $errorId]);
+            $batch_uuid = Str::uuid()->toString();
+            
+            // Új hiba létrehozása
+            activity()
+                ->tap(function ($activity) use($batch_uuid) {
+                    $activity->batch_uuid = $batch_uuid;
+                })
+                ->causedBy(auth()->user())
+                ->withProperties( $errorData )
+                ->log('Server-side error reported.');
+            
+            $return_array = ['success' => true, 'message' => 'Error logged.'];
+        }
+
+        return response()->json($return_array, Response::HTTP_OK);
+    }
 
     public function logClientError(Request $request): JsonResponse
     {
@@ -36,29 +87,46 @@ class ClientErrorController extends Controller
             'userAgent' => 'nullable|string',
             'uniqueErrorId' => 'nullable|string',
         ]);
-        
-        activity()
-            ->causedBy(auth()->user())
-            ->withProperties($validated)
-            ->log('Client-side error reported.');
 
-        return response()->json(['success' => true, 'message' => 'Error logged.'], Response::HTTP_OK);
+        $return_array = [];
+
+        $errorId = md5($validated['message'] . $validated['component'] . $validated['route']);
+        $existingError = Activity::where('properties->errorId', $errorId)->first();
+
+        if( $existingError ) {
+            $existingError->increment('occurrence_count');
+            $return_array = ['success' => true, 'message' => 'Error occurrence updated.'];
+        } else {
+            $validated = array_merge($validated, ['errorId' => $errorId]);
+            
+            $batch_uuid = Str::uuid()->toString();
+            
+            activity()
+                ->tap(function($activity) use($batch_uuid) {
+                    $activity->batch_uuid = $batch_uuid;
+                })
+                ->causedBy(auth()->user())
+                ->withProperties( $validated )
+                ->log('Client-side error reported.');
+
+            $return_array = ['success' => true, 'message' => 'Error logged.'];
+        }
+
+        return response()->json($return_array, Response::HTTP_OK);
     }
 
-    /**
-     * Sorolja fel az ügyfélhibákat opcionális dátumszűréssel és oldalszámozással.
-     *
-     * Ez a módszer hibanaplókat kér le az activity_log táblából, szűrve
-     * egy opcionális dátumtartomány, amelyet a „date_from” és „date_to” lekérdezések határoznak meg
-     * paraméterek. Az eredmények lapozva vannak, az oldalméretet a
-     * a 'per_page' lekérdezési paraméter.
-     *
-     * @param Request $request A HTTP kérés objektum, amely tartalmazhat
-     *                         'oldalonként', 'date_from' és 'date_to' lekérdezés
-     *                         A lapozás és a szűrés paraméterei.
-     * @return \Inertia\Response Az oldalszámozott hibanaplókat tartalmazó tehetetlenségi válasz.
-     */
-     public function index(Request $request): InertiaResponse
+    public function index() {
+
+        $errors = Activity::select('id', 'description', 'properties', 'occurrence_count', 'created_at')
+            ->orderBy('occurrence_count', 'desc')
+            ->paginate(20);
+
+        return Inertia::render('ErrorLogs/Index', [
+            'errors' => $errors,
+        ]);
+    }
+
+    public function index_01(Request $request): InertiaResponse
     {
         // Alapértelmezett szűrési paraméterek
         $perPage = $request->get('per_page', 10); // Oldalméret
@@ -87,7 +155,7 @@ class ClientErrorController extends Controller
         // Az oldalméretet a $perPage változóban megadott érték határozza meg.
         $logs = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-        return inertia('ErrorLogs/Index', [
+        return inertia('ErrorLogs/Index_01', [
             'logs' => $logs,
         ]);
     }
@@ -137,5 +205,65 @@ class ClientErrorController extends Controller
         $log->delete(); // Ezt "soft delete"-ként is lehetne implementálni.
 
         return redirect()->route('error-logs.index')->with('success', 'Log entry deleted.');
+    }
+    
+    public function getErrorById(string $errorId): JsonResponse
+    {
+        $success = true;
+        $message = '';
+        $data = [];
+        $response = Response::HTTP_OK;
+        
+        $error = Activity::where('properties->errorId', $errorId)->first();
+        
+        if( !$error ) {
+            $success = false;
+            $message = __('error_not_found');
+            $response = Response::HTTP_NOT_FOUND;
+        } else {
+            $data = [
+                'message' => $error->description,
+                'properties' => $error->properties,
+                'occurrence_count' => $error->occurrence_count,
+                'created_at' => $error->created_at,
+                'updated_at' => $error->updated_at,
+            ];
+        }
+        
+        return response()->json([
+            'success' => $success,
+            'message' => $message,
+            'data' => $data,
+        ], $response);
+    }
+    
+    public function getErrorByUniqueId(string $uniqueErrorId): JsonResponse
+    {
+        $success = true;
+        $message = '';
+        $data = [];
+        $response = Response::HTTP_OK;
+        
+        $error = Activity::where('properties->uniqueErrorId', $uniqueErrorId)->first();
+        
+        if( !$error ) {
+            $success = false;
+            $message = __('error_not_found');
+            $response = Response::HTTP_NOT_FOUND;
+        } else {
+            $data = [
+                'message' => $error->description,
+                'properties' => $error->properties,
+                'occurrence_count' => $error->occurrence_count,
+                'created_at' => $error->created_at,
+                'updated_at' => $error->updated_at,
+            ];
+        }
+        
+        return response()->json([
+            'success' => $success,
+            'message' => $message,
+            'data' => $data,
+        ], $response);
     }
 }

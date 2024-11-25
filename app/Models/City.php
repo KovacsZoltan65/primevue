@@ -30,20 +30,40 @@ class City extends Model
         'longitude' => 'float'
     ];
     
-    //protected static $logAttributes = ['region_id', 'country_id', 'latitude', 'longitude', 'name'];
+    protected static $logAttributes = ['region_id', 'country_id', 'latitude', 'longitude', 'name'];
     
     public function scopeSearch(Builder $query, Request $request)
     {
-        // If search parameter is present, filter results by name or email containing the search term
-        return $query->when($request->search, function ($query) use ($request) {
-            $query->where(function ($query) use ($request) {
+        /**
+         * Módosítsa a lekérdezést a keresési paraméter alapján.
+         *
+         * Ha a keresési paraméter nem üres, akkor a lekérdezés tartalmazza
+         * a feltételt, hogy a város neve tartalmazza a keresési paramétert.
+         *
+         * @param Builder $query A lekérdezéskészítő példány.
+         * @param Request $request A keresési paramétert tartalmazó HTTP kérés objektum.
+         * @return Builder A módosított lekérdezéskészítő példány.
+         */
+        return $query->when($request->search, function (Builder $query) use ($request) {
+            return $query->where(function (Builder $query) use ($request) {
                 $query->where('name', 'like', "%{$request->search}%");
             });
         });
     }
 
     /**
-     * Get the region that owns the City
+     * Határozza meg a lekérdezést, hogy csak az aktív városokat tartalmazza.
+     *
+     * @param Builder $query A lekérdezéskészítő példány.
+     * @return Builder A módosított lekérdezéskészítő példány.
+     */
+    public function scopeActive(Builder $query)
+    {
+        return $query->where('active', 1);
+    }
+
+    /**
+     * Szerezd meg a várost birtokló régiót
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -53,7 +73,7 @@ class City extends Model
     }
 
     /**
-     * Get the country that owns the City
+     * Szerezd meg azt az országot, amelyik a város tulajdonosa
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */

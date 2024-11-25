@@ -32,6 +32,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      * =======================================================
      */
     Route::post('/client-errors', [ErrorController::class, 'logClientError']);
+    Route::post('/client_validation_errors', [ErrorController::class, 'logClientValidationError']);
     
     Route::get('/server-errors/by_id/{errorId}', [ErrorController::class, 'getErrorById']);
     Route::get('/server-errors/by_unique_id/{uniqueErrorId}', [ErrorController::class, 'getErrorByUniqueId']);
@@ -85,7 +86,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/companies/name/{name}', [CompanyController::class, 'getCompanyByName'])->name('api.get.company_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
     Route::post('/companies', [CompanyController::class, 'createCompany'])->name('api.post.companies');
     Route::put('/companies/{id}', [CompanyController::class, 'updateCompany'])->name('api.put.companies')->where('id', '[0-9]+');
-    Route::delete('/companies/{id}', [CompanyController::class, 'deleteCompany'])->name('api.delete.companies')->where('id', '[0-9]+');
+    Route::delete('/companies/{id}', [CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
+    Route::delete('/companies', [CompanyController::class, 'deleteCompanies'])->name('api.delete.companies');
 
     /**
      * Hozzon létre új céget az API-n keresztül.

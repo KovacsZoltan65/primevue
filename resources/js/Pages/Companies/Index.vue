@@ -28,8 +28,9 @@ import Select from "primevue/select";
 import Tag from "primevue/tag";
 import FileUpload from "primevue/fileupload";
 import { createId } from "@/helpers/functions";
-import { FloatLabel, Message } from "primevue";
+import FloatLabel from "primevue/floatlabel";
 import ErrorService from "@/service/ErrorService";
+import Message from "primevue/message";
 
 /**
  * Szerver felöl jövő adatok
@@ -296,14 +297,34 @@ const saveCompany = async () => {
             createCompany();
         }
     } else {
-        alert("FAIL");
+        const data = {
+            componentName: "saveCompany",
+            additionalInfo: "Client-side validation failed during company update",
+            category: "Validation Error",
+            priority: "low",
+            validationErrors: v$.value.$errors.map((error) => ({
+                field: error.$property,
+                message: trans(error.$message),
+            })),
+        };
+        ErrorService.logValidationError(new Error('Client-side validation error'), data);
+
+        // Hibaüzenet megjelenítése a felhasználónak
+        toast.add({
+            severity: "error",
+            summary: "Validation Error",
+            detail: "Please fix the highlighted errors before submitting.",
+        });
     }
 };
 
 const createCompany = () => {
+    
+    // Lokálisan hozzunk létre egy ideiglenes azonosítót az új céghez
     const newCompany = {...company.value, id:createId() };
     companies.value.push(newCompany);
 
+    // Optimista visszajelzés a felhasználónak
     toast.add({
         severity: "success",
         summary: "Creating...",
@@ -311,9 +332,14 @@ const createCompany = () => {
         life: 3000,
     });
 
+    // Szerver kérés
     CompanyService.createCompany(company.value)
         .then((response) => {
-            //console.log('response', response);
+            // Lokális adat frissítése a szerver válasza alapján
+            const index = findIndexById(newCompany.id);
+            if (index !== -1) {
+                companies.value.splice(index, 1, response.data);
+            }
             hideDialog();
 
             toast.add({
@@ -325,44 +351,95 @@ const createCompany = () => {
 
         })
         .catch((error) => {
-            // Ha a vállalat létrehozása sikertelen volt,
-            // akkor töröljük a lokálisan létrehozott vállalatot a listából.
-            const index = findIndexById(newCompany.id);
-            if (index !== -1) {
-                companies.value.splice(index, 1);
+            if( error.response && error.response.status === 422){
+                const validationErrors = error.response.data.details;
+
+                toast.add({
+                    severity: "warn",
+                    summary: "Validation Error",
+                    detail: "Please check your inputs",
+                    life: 4000,
+                });
+
+                // Validációs hibák logolása
+                ErrorService.logClientError(error, {
+                    componentName: "CreateCompanyDialog",
+                    additionalInfo: "Validation errors occurred during company creation",
+                    category: "Validation Error",
+                    priority: "medium",
+                    validationErrors: validationErrors,
+                });
+            }else{
+                
+                // Hibás esetben a lokális adat törlése
+                const index = findIndexById(newCompany.id);
+                if (index !== -1) {
+                    companies.value.splice(index, 1);
+                }
+
+                const message = trans('error_company_create');
+                //console.error("createCompany API Error:", error);
+
+                // Toast hibaüzenet
+                toast.add({
+                    severity: "error",
+                    summary: "Error",
+                    detail: message,
+                });
+
+                // Hiba naplózása
+                ErrorService.logClientError(error, {
+                    componentName: "CreateCompanyDialog",
+                    additionalInfo: "Failed to create a company in the backend",
+                    category: "Error",
+                    priority: "high",
+                    data: company.value,
+                });
+
             }
-
-            const message = trans('error_company_create');
-            //console.error("createCompany API Error:", error);
-
-            toast.add({
-                severity: "error",
-                summary: "Error",
-                detail: message,
-            });
-
-            ErrorService.logClientError(error, {
-                componentName: "CreateCompanyDialog",
-                additionalInfo: "Failed to create a company in the backend",
-                category: "Error",
-                priority: "high",
-                data: company.value,
-            });
+            
         });
 };
 
 const updateCompany = () => {
+    /*
+    if( v$.value.$invalid ) {
+        ErrorService.logClientError(new Error('Client-side validation error'), {
+            componentName: "updateCompany",
+            additionalInfo: "Client-side validation failed during company update",
+            category: "Validation Error",
+            priority: "low",
+            validationErrors: v$.value.$errors.map((error) => ({
+                field: error.$property,
+                message: error.$message,
+            })),
+        });
+
+        // Hibaüzenet megjelenítése a felhasználónak
+        toast.add({
+            severity: "warn",
+            summary: "Validation Error",
+            detail: "Please fix the highlighted errors before submitting.",
+            life: 4000,
+        });
+
+        return; // Megállítjuk a műveletet, amíg a hibák nem kerülnek kijavításra
+    }
+    */
     const index = findIndexById(company.value.id);
     if (index === -1) {
         console.error(`Company with id ${country.value.id} not found`);
         return;
     }
 
+    // Eredeti adat mentése az optimista frissítéshez
     const originalCompany = { ...companies.value[index] };
 
+    // Lokális frissítés az optimista visszacsatoláshoz
     companies.value.splice(index, 1, { ...company.value });
     hideDialog();
 
+    // "Frissítés folyamatban" visszajelzés
     toast.add({
         severity: "info",
         summary: "Updating...",
@@ -370,8 +447,12 @@ const updateCompany = () => {
         life: 2000,
     });
 
+    // Hívás a szerver felé
     CompanyService.updateCompany(company.value.id, company.value)
         .then((response) => {
+            // Sikeres válasz kezelése
+            companies.value.splice(index, 1, response.data); // Frissített adat a válaszból
+
             toast.add({
                 severity: "success",
                 summary: "Successful",
@@ -380,9 +461,8 @@ const updateCompany = () => {
             });
         })
         .catch((error) => {
+            // Sikertelen frissítés esetén az eredeti adat visszaállítása
             companies.value.splice(index, 1, originalCompany);
-
-            //console.error("updateCompany API Error:", error);
 
             toast.add({
                 severity: "error",
@@ -390,6 +470,7 @@ const updateCompany = () => {
                 detail: "Failed to update company",
             });
 
+            // Hiba naplózása a szerver felé
             ErrorService.logClientError(error, {
                 componentName: "UpdateCompanyDialog",
                 additionalInfo: "Failed to update a company in the backend",
@@ -398,7 +479,6 @@ const updateCompany = () => {
                 data: company.value,
             });
         });
-
 };
 
 const deleteSelectedCompanies = () => {
@@ -437,13 +517,13 @@ const deleteSelectedCompanies = () => {
             // Hiba esetén visszaállítjuk az eredeti állapotot
             companies.value = originalCompanies;
 
-            //console.error("deleteSelectedCompanies API Error:", error);
+            const errorMessage = error.response?.data?.error || "Failed to delete selected companies";
 
             // Hibaüzenet megjelenítése a felhasználói felületen
             toast.add({
                 severity: "error",
                 summary: "Error",
-                detail: "Failed to delete selected companies",
+                detail: errorMessage,
                 life: 3000,
             });
 
@@ -506,7 +586,7 @@ const deleteCompany = () => {
                 componentName: "DeleteCompanyDialog",
                 additionalInfo: "Failed to delete a company in the backend",
                 category: "Error",
-                priority: "low",
+                priority: "medium",
                 data: company.value,
             });
         });

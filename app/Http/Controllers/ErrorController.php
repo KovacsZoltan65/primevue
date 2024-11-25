@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Spatie\Activitylog\Models\Activity;
@@ -49,8 +50,6 @@ class ErrorController extends Controller
         {
             // Ha létezik, növeljük az előfordulások számát
             $existingError->increment('occurrence_count');
-            //$existingError->updated_at = now();
-            //$existingError->save();
             
             $return_array = ['success' => true, 'message' => 'Error occurrence updated.'];
         }
@@ -115,8 +114,52 @@ class ErrorController extends Controller
         return response()->json($return_array, Response::HTTP_OK);
     }
 
-    public function index() {
+    public function logClientValidationError(Request $request)
+    {
+        $data = [
+            'componentName' => $request->input('componentName', 'UnknownComponent'),
+            'priority' => $request->input('priority', 'medium'),
+            'additionalInfo' => $request->input('additionalInfo', ''),
+            'validationErrors' => $request->input('validationErrors', []),
+        ];
 
+        // Validációs hibák azonosítója (összesített kulcs a hibák alapján)
+        $errorId = md5(json_encode($data['validationErrors']) . $data['componentName']);
+        $existingError = Activity::where('properties->errorId', $errorId)->first();
+
+        if ($existingError) {
+            $existingError->increment('occurrence_count');
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Error occurrence updated.',
+                'errorId' => $errorId,
+            ], Response::HTTP_OK);
+        } 
+
+        $data = array_merge($data, [
+            'errorId' => $errorId,
+            'timestamp' => now()->toDateTimeString(),
+        ]);
+        $batch_uuid = Str::uuid()->toString();
+
+        activity()
+            ->tap(function ($activity) use ($batch_uuid) {
+                $activity->batch_uuid = $batch_uuid;
+            })
+            ->causedBy(auth()->user())
+            ->withProperties($data)
+            ->log('Validation error reported.');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Validation error logged.',
+            'errorId' => $errorId,
+        ], Response::HTTP_OK);
+    }
+
+    public function index()
+    {
         $errors = Activity::select('id', 'description', 'properties', 'occurrence_count', 'created_at')
             ->orderBy('occurrence_count', 'desc')
             ->paginate(20);
@@ -125,7 +168,8 @@ class ErrorController extends Controller
             'errors' => $errors,
         ]);
     }
-
+    
+    /*
     public function index_01(Request $request): InertiaResponse
     {
         // Alapértelmezett szűrési paraméterek
@@ -159,6 +203,7 @@ class ErrorController extends Controller
             'logs' => $logs,
         ]);
     }
+    */
 
     /**
      * Egy adott hiba megtekintése

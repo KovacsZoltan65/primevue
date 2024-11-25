@@ -2,16 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CompanyResource;
 use App\Models\City;
+use App\Models\Company;
 use App\Models\Country;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse as JsonResponse2;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use App\Http\Resources\CompanyResource;
-use App\Models\Company;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * A CompanyController osztálya a cégek listázásához, létrehozásához, módosításához és
+ * törléséhez szükséges metódusokat tartalmazza.
+ *
+ * @package App\Http\Controllers
+ */
 class CompanyController extends Controller
 {
     /**
@@ -20,20 +33,21 @@ class CompanyController extends Controller
      * @param Request $request
      * @return \Inertia\Response
      */
-    public function index(Request $request)
+    public function index(Request $request): InertiaResponse
     {
-        // Készítsen lekérdezést, amely a keresési paraméterek alapján keres cégeket.
-        //$companyQuery = Company::search($request);
-
-        // Szerezze le a vállalatokat a lekérdezésből, és alakítsa őket AnonymousResourceCollection-vé.
-        //$companies = CompanyResource::collection($companyQuery->get());
-
-        $cities = City::where('active', 1)->orderBy('name')->select('id', 'name')->get()->toArray();
-        $countries = Country::where('active', 1)->orderBy('name')->select('id', 'name')->get()->toArray();
+        // A City modelben a városok listáját adjuk vissza, azokkal a mezőkkel, amelyek
+        // az Inertia oldalakon használtak.
+        $cities = City::select('id', 'name')
+            ->orderBy('name')
+            ->active()
+            ->get()->toArray();
+        $countries = Country::select('id', 'name')
+            ->orderBy('name')
+            ->active()
+            ->get()->toArray();
 
         // Adjon vissza egy Inertia választ a vállalatok és a keresési paraméterek megadásával.
         return Inertia::render("Companies/Index", [
-            //'companies' => $companies,
             'countries' => $countries,
             'cities' => $cities,
             'search' => request('search')
@@ -65,7 +79,7 @@ class CompanyController extends Controller
      */
     public function getCompanies(Request $request): AnonymousResourceCollection
     {
-        $companies = new AnonymousResourceCollection([], []);
+        $companies = new AnonymousResourceCollection([], CompanyResource::class);
         
         try {
             
@@ -79,12 +93,7 @@ class CompanyController extends Controller
             // JSON-válaszként adja vissza a cégek listáját
             $companies = CompanyResource::collection($companyQuery->get());
             
-        } catch (\Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompanies error',
-                'route' => request()->path(),
-            ]);
-            
+        } catch (Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getCompanies error',
                 'route' => request()->path(),
@@ -95,29 +104,104 @@ class CompanyController extends Controller
         return $companies;
     }
 
-    public function getCompany(int $id)
+    /**
+     * Szerezd meg egy cég adatait az azonosítója alapján.
+     *
+     * @param int $id A lekérni kívánt cég azonosítója.
+     * @return JsonResponse A cég adatait tartalmazó JSON-válasz.
+     */
+    public function getCompany(int $id): JsonResponse
     {
-        //
+        $company = null;
+        $response = Response::HTTP_OK;
+
+        try {
+            $company = Company::find($id);
+        } catch(  Exception $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getCompany error',
+                'route' => request()->path(),
+            ]);
+
+            $response = Response::HTTP_NOT_FOUND;
+        }
+
+        return response()->json($company, $response);
     }
     
+    /**
+     * Szerezd meg egy cég adatait a neve alapján.
+     *
+     * @param string $name A lekérni kívánt cég neve.
+     * @return JsonResponse A cég adatait tartalmazó JSON-válasz.
+     */
     public function getCompanyByName(string $name)
     {
-        //
+        $company = Company::where('name', '=', $name)
+            ->get();
+
+        return response()->json($company, Response::HTTP_OK);
     }
     
     /**
      * Hozzon létre egy új céget.
      *
      * @param Request $request A vállalati adatokat tartalmazó HTTP kérési objektum.
-     * @return \Illuminate\Http\JsonResponse A létrehozott vállalatot tartalmazó JSON-válasz.
+     * @return JsonResponse2 A létrehozott vállalatot tartalmazó JSON-válasz.
      */
-    public function createCompany(Request $request)
+    public function createCompany(Request $request): JsonResponse
     {
-        // Hozzon létre egy új céget a HTTP-kérés adatainak felhasználásával
-        $company = Company::create($request->all());
-//\Log::info('$company: ' . print_r($company, true));
-        // A létrehozott vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
-        return response()->json($company, Response::HTTP_OK);
+        try {
+            // Validáció
+            $validated = $request->validate([
+                'name' => 'required|string|min:3|max:255',
+                'email' => 'requred|email|unique:companies,email',
+            ]);
+             
+            // Hozzon létre egy új céget a HTTP-kérés adatainak felhasználásával
+            $company = Company::create($request->all());
+
+            // Sikeres válasz
+            return response()->json([
+                'success' => true,
+                'message' => 'Company created successfully',
+                'data' > $company
+            ], Response::HTTP_CREATED);
+        } catch(ValidationException $ex ) {
+            // Validációs hiba logolása
+            ErrorController::logValidationError($ex, [
+                'context' => 'createCompany validation error',
+                'route' => $request->path(),
+                'data' => $request->all(),
+            ]);
+
+            // Visszajelzés a kliensnek
+            return response()->json([
+                'error' => 'Validation error occurred',
+                'details' => $ex->errors(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch( QueryException $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'createCompany database error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'Database error occurred while creating the company',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        } catch( Exception $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'createCompany general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -125,35 +209,136 @@ class CompanyController extends Controller
      *
      * @param Request $request A vállalati adatokat tartalmazó HTTP kérési objektum.
      * @param int $id A frissítendő cég azonosítója.
-     * @return \Illuminate\Http\JsonResponse A frissített vállalatot tartalmazó JSON-válasz.
+     * @return JsonResponse2 A frissített vállalatot tartalmazó JSON-válasz.
      */
-    public function updateCompany(Request $request, int $id)
+    public function updateCompany(Request $request, int $id): JsonResponse
     {
-        // Keresse meg a frissítendő céget az azonosítója alapján
-        $old_company = Company::where('id', $id)->first();
+        try {
+            // Keresse meg a frissítendő céget az azonosítója alapján
+            $company = Company::findOrFail($id);
 
-        // Frissítse a vállalatot a HTTP-kérés adataival
-        $company = $old_company->update($request->all());
+            // Frissítse a vállalatot a HTTP-kérés adataival
+            $company->update($request->all());
 
-        // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
-        return response()->json($company, Response::HTTP_OK);
+            // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
+            return response()->json($company, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            // Ha a cég nem található
+            ErrorController::logServerError($ex, [
+                'context' => 'updateCompany not found error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'The specified company was not found',
+            ], Response::HTTP_NOT_FOUND);
+        } catch( QueryException $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'updateCompany database error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'Database error occurred while updating the company',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch( Exception $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'updateCompany general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
      * Töröljön egy meglévő céget.
      *
      * @param int $id A törölni kívánt cég azonosítója.
-     * @return \Illuminate\Http\JsonResponse A törölt vállalatot tartalmazó JSON-válasz.
+     * @return JsonResponse2 A törölt vállalatot tartalmazó JSON-válasz.
      */
-    public function deleteCompany(int $id)
+    public function deleteCompany(int $id): JsonResponse
     {
-        // Keresse meg a törölni kívánt céget az azonosítója alapján
-        $old_company = Company::where('id', $id)->first();
+        try {
+            // Keresse meg a törölni kívánt céget az azonosítója alapján
+            $company = Company::findOrFail($id);
 
-        // Cég törlése
-        $old_company->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Company deleted successfully.',
+                'data' => $company,
+            ], Response::HTTP_OK);
+        } catch(QueryException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteCompany database error',
+                'route' => request()->path(),
+            ]);
+        
+            return response()->json([
+                'error' => 'Database error occurred while deleting the company.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteCompany general error',
+                'route' => request()->path(),
+            ]);
+        
+            return response()->json([
+                'error' => 'An unexpected error occurred.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public function deleteCompanies(Request $request): JsonResponse
+    {
+        try {
+            // Az azonosítók tömbjének validálása
+            $validated = $request->validate([
+                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
+                'ids.*' => 'integer|exists:companies,id', // Az id-k egész számok és létező cégek legyenek
+            ]);
+            
+            // Az azonosítók kigyűjtése
+            $ids = $validated['ids'];
+            
+            // A cégek törlése
+            $deletedCount = Company::whereIn('id', $ids)->delete();
+            
+            // Válasz visszaküldése
+            return response()->json([
+                'success' => true,
+                'message' => 'Selected companies deleted successfully.',
+                'deleted_count' => $deletedCount,
+            ], Response::HTTP_OK);
+            
+        } catch(QueryException $ex) {
+            // Adatbázis hiba logolása és visszajelzés
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteCompanies database error',
+                'route' => request()->path(),
+            ]);
 
-        // A törölt vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
-        return response()->json($old_company, Response::HTTP_OK);
+            return response()->json([
+                'error' => 'Database error occurred while deleting the selected companies.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            // Általános hiba logolása és visszajelzés
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteCompanies general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'An unexpected error occurred.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

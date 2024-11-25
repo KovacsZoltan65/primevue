@@ -60,6 +60,19 @@ class CompanyService extends BaseService {
     }
 
     /**
+     * Töröljön egy vagy több céget az azonosítóik alapján az API-ból.
+     * Elküldi a törlési kérést a szervernek a DELETE-kérésben,
+     * és az API válaszát visszaadja.
+     * @param {number[]} ids - A törölni kívánt cégek azonosítói.
+     * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
+     */
+    deleteCompanies(ids) {
+        const query = ids.map(id => `ids[]=${id}`).join('&');
+        return this.delete(`/companies?${query}`);
+        //return this.delete(`/companies`);
+    }
+
+    /**
      * Töröljön egy céget az azonosítója alapján az API-ból.
      * Elküldi a törlési kérést a szervernek a DELETE-kérésben,
      * és az API válaszát visszaadja.

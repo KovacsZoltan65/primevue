@@ -7,7 +7,7 @@ class ErrorService extends BaseService {
     }
 
     logClientError(error, additionalData = {}) {
-
+        
         const payload = {
             message: error.message,
             stack: error.stack,
@@ -26,6 +26,21 @@ class ErrorService extends BaseService {
         };
 
         return this.post("/client-errors", payload);
+        
+    }
+
+    logValidationError(error, additionalData = {}) {
+        const payload = {
+            component: additionalData.componentName || "Unknown",
+            additionalInfo: additionalData.additionalInfo || null, // Külön mezőként kerül mentésre
+            category: additionalData.category || "Validation Error",
+            priority: additionalData.priority || "low",
+            validationErrors: Array.isArray(additionalData.validationErrors)
+            ? additionalData.validationErrors
+            : [],
+            //validationErrors: additionalData.validationErrors || [],
+        };
+        return this.post("/client_validation_errors", payload);
     }
 }
 

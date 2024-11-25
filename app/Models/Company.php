@@ -46,6 +46,11 @@ class Company extends Model
         });
     }
 
+    public function scopeActive(Builder $query, Request $request)
+    {
+        return $query->where('active', 1);
+    }
+    
     /**
      * Get the country that owns the Company
      *

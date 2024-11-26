@@ -114,7 +114,7 @@ class ErrorController extends Controller
         return response()->json($return_array, Response::HTTP_OK);
     }
 
-    public function logClientValidationError(Request $request)
+    public static function logClientValidationError(Request $request): JsonResponse
     {
         $data = [
             'componentName' => $request->input('componentName', 'UnknownComponent'),

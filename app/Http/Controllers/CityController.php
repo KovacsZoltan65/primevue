@@ -8,10 +8,14 @@ use App\Http\Resources\CityResource;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Region;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse as JsonResponse2;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class CityController extends Controller
@@ -52,9 +56,9 @@ class CityController extends Controller
      * tartalmazza a feltételt, hogy a város neve tartalmazza a keresési
      * paramétert.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  Builder  $query
      * @param  string  $search
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function applySearch(Builder $query, string $search)
     {
@@ -70,7 +74,7 @@ class CityController extends Controller
      * amelyek megfelelnek a keresési feltételeknek.
      *
      * @param  Request  $request
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     * @return AnonymousResourceCollection
      */
     public function getCities(Request $request): AnonymousResourceCollection
     {
@@ -89,7 +93,7 @@ class CityController extends Controller
      * Szerezzen várost azonosítóval.
      *
      * @param int $id A város id.
-     * @return \Illuminate\Http\JsonResponse A város adatai JSON formátumban.
+     * @return JsonResponse2 A város adatai JSON formátumban.
      */
     public function getCity(int $id)
     {
@@ -104,7 +108,7 @@ class CityController extends Controller
      * Szerezzen várost a név alapján.
      *
      * @param string $name A város neve.
-     * @return \Illuminate\Http\JsonResponse A keresett város adatait tartalmazó JSON-válasz.
+     * @return JsonResponse2 A keresett város adatait tartalmazó JSON-válasz.
      */
     public function getCityByName(string $name)
     {
@@ -121,15 +125,40 @@ class CityController extends Controller
      * A létrehozott város adatait tartalmazó JSON-válasz kerül visszaadásra.
      *
      * @param  Request  $request  A HTTP kérés objektum, amely tartalmazza a város új adatait.
-     * @return \Illuminate\Http\JsonResponse  A létrehozott város adatait tartalmazó JSON-válasz.
+     * @return JsonResponse2  A létrehozott város adatait tartalmazó JSON-válasz.
      */
-    public function createCity(StoreCityRequest $request)
+    public function createCity(StoreCityRequest $request): JsonResponse
     {
-        // Hozzon létre új várost az adatbázisban
-        $city = City::create($request->all());
-
-        // A létrehozott város adatait tartalmazó JSON-válasz visszaadása
-        return response()->json($city, Response::HTTP_OK);
+        try{
+            // Hozzon létre új várost az adatbázisban
+            $city = City::create($request->all());
+            
+            return response()->json([
+                'success' => APP_TRUE,
+                'message' => 'CITY CREATED',
+                'data' => $city,
+            ], Response::HTTP_CREATED);
+        }catch(QueryException $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'CREATE_CITY_DATABASE_ERROR',
+                'route' => request()->path(),
+            ]);
+            
+            return response()->json([
+                'error' => 'CREATE_CITY_DATABASE_ERROR',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }catch(Exception $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'CREATE_CITY_GENERAL_ERROR',
+                'route' => request()->path(),
+            ]);
+            
+            return response()->json([
+                'error' => 'UNEXPECTED_ERROR_OCCURRED',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -139,18 +168,54 @@ class CityController extends Controller
      *
      * @param  Request  $request  A HTTP kérés objektum, amely tartalmazza a város új adatait.
      * @param  int  $id  A frissítendő város azonosítója.
-     * @return \Illuminate\Http\JsonResponse  A frissített város adatait tartalmazó JSON-válasz.
+     * @return JsonResponse2  A frissített város adatait tartalmazó JSON-válasz.
      */
     public function updateCity(UpdateCityRequest $request, int $id)
     {
-        // Szerezze be a várost az adatbázisból
-        $old_city = City::where('id', $id)->first();
-
-        // Frissítse a város adatait a HTTP kérésben szereplő adatokkal
-        $success = $old_city->update($request->all());
-
-        // A frissített város adatait tartalmazó JSON-válasz visszaadása
-        return response()->json(['success' => $success], Response::HTTP_OK);
+        try {
+            // Keresse meg a frissítendő céget az azonosítója alapján
+            $city = City::findOrFail($id);
+            
+            // Frissítse a vállalatot a HTTP-kérés adataival
+            $city->update($request->all());
+            
+            // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
+            return response()->json($city, Response::HTTP_OK);
+            
+        } catch( ModelNotFoundException $ex ) {
+            //
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_UPDATE_CITY', // updateCity not found error
+                'route' => request()->path(),
+            ]);
+            
+            return response()->json([
+                'error' => 'CITY_NOT_FOUND',  // The specified city was not found
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_);
+        } catch( QueryException $ex ) {
+            //
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_CITY', // updateCity database error
+                'route' => request()->path(),
+            ]);
+            
+            return response()->json([
+                'error' => 'DB_ERROR_CITY', // Database error occurred while updating the city
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_);
+        } catch( Exception $ex ) {
+            //
+            ErrorController::logServerError($ex, [
+                'context' => 'GENERAL_ERROR_UPDATE_CITY', // updateCity general error
+                'route' => request()->path(),
+            ]);
+            
+            return response()->json([
+                'error' => '',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_);
+        }
     }
 
     /**
@@ -159,10 +224,47 @@ class CityController extends Controller
      * A törölt város adatait tartalmazó JSON-válasz kerül visszaadásra.
      *
      * @param int $id A törölni kívánt város azonosítója.
-     * @return \Illuminate\Http\JsonResponse A törölt város adatait tartalmazó JSON-válasz.
+     * @return JsonResponse2 A törölt város adatait tartalmazó JSON-válasz.
      */
     public function deleteCity(int $id)
     {
+        try {
+            // Keresse meg a törölni kívánt céget az azonosítója alapján
+            $city = City::findOrFail($id);
+            
+            //
+            $city->delete();
+            
+            return request()->json([
+                'success' => APP_TRUE,
+                'message' => 'DELETE_CITY_SUCCESSFULLY', // City deleted successfully
+                'data' => $city,
+            ], Request::HTTP_OK);
+        } catch( QueryException $ex ) {
+            //
+            ErrorController::logServerError($ex, [
+                'context' => '',
+                'route' => request()->path(),
+            ]);
+            //
+            return response()->json([
+                'error' => '',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch( Exception $ex ) {
+            //
+            ErrorController::logServerError($ex, [
+                'context' => '',
+                'route' => request()->path(),
+            ]);
+            
+            //
+            return response()->json([
+                'error' => '',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        /*
         // Szerezze be a várost az adatbázisból
         $city = City::where('id', $id)->first();
 
@@ -171,5 +273,10 @@ class CityController extends Controller
 
         // A törölt város adatait tartalmazó JSON-válasz visszaadása
         return response()->json(['success' => $success], Response::HTTP_OK);
+        */
+    }
+    
+    public function deleteCities(Request $request) {
+        //
     }
 }

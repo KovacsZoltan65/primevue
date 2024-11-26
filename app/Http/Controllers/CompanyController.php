@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCompanyRequest;
+use App\Http\Requests\UpdateCompanyRequest;
 use App\Http\Resources\CompanyResource;
 use App\Models\City;
 use App\Models\Company;
@@ -13,7 +15,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse as JsonResponse2;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -149,45 +150,26 @@ class CompanyController extends Controller
      * @param Request $request A vállalati adatokat tartalmazó HTTP kérési objektum.
      * @return JsonResponse2 A létrehozott vállalatot tartalmazó JSON-válasz.
      */
-    public function createCompany(Request $request): JsonResponse
+    public function createCompany(StoreCompanyRequest $request): JsonResponse
     {
         try {
-            // Validáció
-            $validated = $request->validate([
-                'name' => 'required|string|min:3|max:255',
-                'email' => 'requred|email|unique:companies,email',
-            ]);
-             
             // Hozzon létre egy új céget a HTTP-kérés adatainak felhasználásával
             $company = Company::create($request->all());
 
             // Sikeres válasz
             return response()->json([
                 'success' => true,
-                'message' => 'Company created successfully',
+                'message' => __('command_company_created', ['id' => $request->id]),
                 'data' > $company
             ], Response::HTTP_CREATED);
-        } catch(ValidationException $ex ) {
-            // Validációs hiba logolása
-            ErrorController::logValidationError($ex, [
-                'context' => 'createCompany validation error',
-                'route' => $request->path(),
-                'data' => $request->all(),
-            ]);
-
-            // Visszajelzés a kliensnek
-            return response()->json([
-                'error' => 'Validation error occurred',
-                'details' => $ex->errors(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
-                'context' => 'createCompany database error',
+                'context' => 'CREATE_COMPANY_DATABASE_ERROR',
                 'route' => request()->path(),
             ]);
 
             return response()->json([
-                'error' => 'Database error occurred while creating the company',
+                'error' => 'CREATE_COMPANY_DATABASE_ERROR',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
 
@@ -211,7 +193,7 @@ class CompanyController extends Controller
      * @param int $id A frissítendő cég azonosítója.
      * @return JsonResponse2 A frissített vállalatot tartalmazó JSON-válasz.
      */
-    public function updateCompany(Request $request, int $id): JsonResponse
+    public function updateCompany(UpdateCompanyRequest $request, int $id): JsonResponse
     {
         try {
             // Keresse meg a frissítendő céget az azonosítója alapján
@@ -222,24 +204,25 @@ class CompanyController extends Controller
 
             // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
             return response()->json($company, Response::HTTP_OK);
-        } catch(ModelNotFoundException $ex) {
+        } catch( ModelNotFoundException $ex ) {
             // Ha a cég nem található
             ErrorController::logServerError($ex, [
-                'context' => 'updateCompany not found error',
+                'context' => 'DB_ERROR_UPDATE_COMPANY', // updateCompany not found error
                 'route' => request()->path(),
             ]);
 
             return response()->json([
-                'error' => 'The specified company was not found',
+                'error' => 'COMPANY_NOT_FOUND', // The specified company was not found
+                'details' => $ex->getMessage(),
             ], Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
-                'context' => 'updateCompany database error',
+                'context' => 'DB_ERROR_COMPANY', // updateCompany database error
                 'route' => request()->path(),
             ]);
 
             return response()->json([
-                'error' => 'Database error occurred while updating the company',
+                'error' => 'DB_ERROR_COMPANY', // Database error occurred while updating the company
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( Exception $ex ) {
@@ -272,7 +255,7 @@ class CompanyController extends Controller
                 'message' => 'Company deleted successfully.',
                 'data' => $company,
             ], Response::HTTP_OK);
-        } catch(QueryException $ex) {
+        } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompany database error',
                 'route' => request()->path(),
@@ -282,7 +265,7 @@ class CompanyController extends Controller
                 'error' => 'Database error occurred while deleting the company.',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch(Exception $ex) {
+        } catch( Exception $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompany general error',
                 'route' => request()->path(),

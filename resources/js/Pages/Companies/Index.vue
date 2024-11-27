@@ -297,16 +297,20 @@ const saveCompany = async () => {
             createCompany();
         }
     } else {
+        // Validációs hibák összegyűjtése
+        const validationErrors = v$.value.$errors.map((error) => ({
+                field: error.$property,
+                message: trans(error.$message),
+            }));
+        // Adatok előkészítése logoláshoz
         const data = {
             componentName: "saveCompany",
             additionalInfo: "Client-side validation failed during company update",
             category: "Validation Error",
             priority: "low",
-            validationErrors: v$.value.$errors.map((error) => ({
-                field: error.$property,
-                message: trans(error.$message),
-            })),
+            validationErrors: validationErrors,
         };
+        // Validációs hibák logolása
         ErrorService.logValidationError(new Error('Client-side validation error'), data);
 
         // Hibaüzenet megjelenítése a felhasználónak

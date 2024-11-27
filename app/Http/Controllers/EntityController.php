@@ -56,25 +56,148 @@ class EntityController extends Controller
 
     public function createEntity(StoreEntityRequest $request)
     {
-        $entity = Entity::create($request->all());
+        try{
+            $entity = Entity::create($request->all());
+            
+            // Sikeres válasz
+            return response()->json([
+                'success' => true,
+                'message' => __('command_entity_created', ['id' => $request->id]),
+                'data' > $entity
+            ], Response::HTTP_CREATED);
+        }catch( QueryException $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'CREATE_ENTITY_DATABASE_ERROR',
+                'route' => request()->path(),
+            ]);
 
-        return response()->json($entity, Response::HTTP_OK);
+            return response()->json([
+                'error' => 'CREATE_ENTITY_DATABASE_ERROR',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }catch( Exception $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'createEntity general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     public function updateEntity(UpdateEntityRequest $request, int $id)
     {
-        $old_entity = Entity::find($id);
+        try{
+            // Keresse meg a frissítendő céget az azonosítója alapján
+            $entity = Entity::findOrFail($id);
+            // Frissítse a vállalatot a HTTP-kérés adataival
+            $entity->update($request->all());
+            // Frissítjük a modelt
+            $entity->refresh();
+            
+            return reqponse()->json([
+                'success' => APP_TRUE,
+                'message' => 'ENTITY_UPDATED_SUCCESSFULLY',
+                'data' => $entity,
+            ], Response::HTTP_OK);
+        }catch( ModelNotFoundException $ex ){
+            // Ha a cég nem található
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_UPDATE_ENTITY', // updateEntity not found error
+                'route' => request()->path(),
+            ]);
 
-        $success = $old_entity->update($request->all());
+            return response()->json([
+                'error' => 'COUNTRY_NOT_FOUND', // The specified entity was not found
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+        }catch( QueryException $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_ENTITY', // updateEntity database error
+                'route' => request()->path(),
+            ]);
+            
+            return response()->json([
+                'error' => 'DB_ERROR_ENTITY', // Database error occurred while updating the entity
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }catch( Exception $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'updateEntity general error',
+                'route' => request()->path(),
+            ]);
 
-        return response()->json(['success' => $success], Response::HTTP_OK);
+            return response()->json([
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     public function deleteEntity(int $id)
     {
+        try{
+            // Keresse meg a törölni kívánt céget az azonosítója alapján
+            $entity = Entity::findOrFail($id);
+            
+            //
+            $entity->delete();
+            
+            return request()->json([
+                'success' => APP_TRUE,
+                'message' => 'DELETE_ENTITY_SUCCESSFULLY', // City deleted successfully
+                'data' => $entity,
+            ], Request::HTTP_OK);
+        } catch( ModelNotFoundException $ex ) {
+            // Ha a cég nem található
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_UPDATE_ENTITY', // updateEntity not found error
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'ENTITY_NOT_FOUND', // The specified entity was not found
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+        }catch( QueryException $ex ){
+            //
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteEntity database error',
+                'route' => request()->path(),
+            ]);
+            //
+            return response()->json([
+                'error' => 'Database error occurred while deleting the entity.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }catch( Exception $ex ){
+            //
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteEntity general error',
+                'route' => request()->path(),
+            ]);
+            
+            //
+            return response()->json([
+                'error' => 'An unexpected error occurred.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        
+        
+        
+        
         $entity = Entity::find($id);
         $success = $entity->delete();
 
         return response()->json(['success' => $success], Response::HTTP_OK);
+    }
+    
+    public function deleteEntities()
+    {
+        //
     }
 }

@@ -38,7 +38,6 @@ class ErrorService extends BaseService {
             validationErrors: Array.isArray(additionalData.validationErrors)
             ? additionalData.validationErrors
             : [],
-            //validationErrors: additionalData.validationErrors || [],
         };
         return this.post("/client_validation_errors", payload);
     }

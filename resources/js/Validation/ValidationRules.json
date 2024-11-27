@@ -2,6 +2,9 @@
     "minStringLength": 3,
     "maxStringLength": 255,
 
+    "minCodeLength": 1,
+    "maxCodeLength": 3,
+
     "DecLength": 10,
     "DecDigits": 2,
 

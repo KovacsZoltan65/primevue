@@ -201,9 +201,15 @@ class CompanyController extends Controller
 
             // Frissítse a vállalatot a HTTP-kérés adataival
             $company->update($request->all());
+            // Frissítjük a modelt
+            $company->update();
 
             // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
-            return response()->json($company, Response::HTTP_OK);
+            return response()->json([
+                'success' => APP_TRUE,
+                'message' => 'COMPANY_UPDATED_SUCCESSFULLY',
+                'data' => $company,
+            ], Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
             // Ha a cég nem található
             ErrorController::logServerError($ex, [
@@ -299,8 +305,16 @@ class CompanyController extends Controller
                 'message' => 'Selected companies deleted successfully.',
                 'deleted_count' => $deletedCount,
             ], Response::HTTP_OK);
-            
-        } catch(QueryException $ex) {
+        } catch( ValidationException $ex ){
+            // Validációs hiba logolása
+            ErrorController::logClientValidationError($request);
+
+            // Kliens válasz
+            return response()->json([
+                'error' => 'Validation error occurred',
+                'details' => $ex->errors(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch( QueryException $ex ) {
             // Adatbázis hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompanies database error',
@@ -311,7 +325,7 @@ class CompanyController extends Controller
                 'error' => 'Database error occurred while deleting the selected companies.',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch(Exception $ex) {
+        } catch( Exception $ex ) {
             // Általános hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompanies general error',

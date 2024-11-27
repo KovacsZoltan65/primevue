@@ -109,13 +109,38 @@ class CountryController extends Controller
      * @param  Request  $request  A HTTP kérés objektum, amely tartalmazza a város új adatait.
      * @return \Illuminate\Http\JsonResponse  A létrehozott ország adatait tartalmazó JSON-válasz.
      */
-    public function createCountry(Request $request)
+    public function createCountry(StoreCountryRequest $request)
     {
-        // Hozzon létre új országot az adatbázisban
-        $country = Country::create($request->all());
+        try{
+            $country = Country::create($request->all());
+            
+            // Sikeres válasz
+            return response()->json([
+                'success' => true,
+                'message' => __('command_country_created', ['id' => $request->id]),
+                'data' > $country
+            ], Response::HTTP_CREATED);
+        }catch( QueryException $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'CREATE_COUNTRY_DATABASE_ERROR',
+                'route' => request()->path(),
+            ]);
 
-        // A létrehozott ország adatait tartalmazó JSON-válasz visszaadása
-        return response()->json($country, Response::HTTP_OK);
+            return response()->json([
+                'error' => 'CREATE_COUNTRY_DATABASE_ERROR',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }catch( Exception $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'createCountry general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -127,8 +152,56 @@ class CountryController extends Controller
      * @param  int  $id  A frissítendő ország azonosítója.
      * @return \Illuminate\Http\JsonResponse  A frissített ország adatait tartalmazó JSON-válasz.
      */
-    public function updateCountry(Request $request, int $id)
+    public function updateCountry(UpdateCountryRequest $request, int $id)
     {
+        try{
+            // Keresse meg a frissítendő céget az azonosítója alapján
+            $country = Country::findOrFail($id);
+            
+            // Frissítse a vállalatot a HTTP-kérés adataival
+            $country->update($request->all());
+            // Frissítjük a modelt
+            $country->refresh();
+            
+            return reqponse()->json([
+                'success' => APP_TRUE,
+                'message' => 'COUNTRY_UPDATED_SUCCESSFULLY',
+                'data' => $country,
+            ], Response::HTTP_OK);
+        }catch( ModelNotFoundException $ex ){
+            // Ha a cég nem található
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_UPDATE_COMPANY', // updateCountry not found error
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'COUNTRY_NOT_FOUND', // The specified country was not found
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+        }catch( QueryException $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_COUNTRY', // updateCountry database error
+                'route' => request()->path(),
+            ]);
+            
+            return response()->json([
+                'error' => 'DB_ERROR_COUNTRY', // Database error occurred while updating the country
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }catch( Exception $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'updateCountry general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        
+        /*
         // Szerezze be a frissítendő országot az adatbázisból
         $old_country = Country::where('id', $id)->first();
 
@@ -137,6 +210,7 @@ class CountryController extends Controller
 
         // A frissített város adatait tartalmazó JSON-válasz visszaadása
         return response()->json(['success' => $success], Response::HTTP_OK);
+        */
     }
 
     /**
@@ -148,7 +222,44 @@ class CountryController extends Controller
      * @return \Illuminate\Http\JsonResponse  A törölt ország adatait tartalmazó JSON-válasz.
      */
     public function deleteCountry(int $id)
-    {
+    {    
+        try{
+            // Keresse meg a törölni kívánt céget az azonosítója alapján
+            $country = Country::findOrFail($id);
+
+            $country->delete();
+            
+            request()->json([
+                'success' => APP_TRUE,
+                'message' => 'DELETE_COUNTRY_SUCCESSFULLY',
+                'date' => $country,
+            ], Request::HTTP_OK);
+        }catch( QueryException $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteCountry database error',
+                'route' => request()->path(),
+            ]);
+            //
+            return response()->json([
+                'error' => 'Database error occurred while deleting the country.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }catch( Exception $ex ){
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteCountry general error',
+                'route' => request()->path(),
+            ]);
+            
+            //
+            return response()->json([
+                'error' => 'An unexpected error occurred.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        
+        
+        
+        /*
         // Szerezze be a törölni kívánt országot az adatbázisból
         $country = Country::where('id', $id)->first();
 
@@ -157,5 +268,57 @@ class CountryController extends Controller
 
         // A törölt ország adatait tartalmazó JSON-válasz visszaadása
         return response()->json(['success' => $success], Response::HTTP_OK);
+        */
+    }
+    
+    public function deleteCountries(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
+                'ids.*' => 'integer|exists:companies,id', // Az id-k egész számok és létező cégek legyenek
+            ]);
+            // Az azonosítók kigyűjtése
+            $ids = $validated['ids'];
+            // A cégek törlése
+            $deletedCount = Country::whereIn('id', $ids)->delete();
+            // Válasz visszaküldése
+            return response()->json([
+                'success' => APP_TRUE,
+                'message' => 'Selected countries deleted successfully.',
+                'deleted_count' => $deletedCount,
+            ], Response::HTTP_OK);
+        } catch( ValidationException $ex ) {
+            // Validációs hiba logolása
+            ErrorController::logClientValidationError($request);
+
+            // Kliens válasz
+            return response()->json([
+                'error' => 'Validation error occurred',
+                'details' => $ex->errors(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch( QueryException $ex ) {
+            // Adatbázis hiba logolása és visszajelzés
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteCountries database error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'Database error occurred while deleting the selected countries.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch( Exception $ex ) {
+            // Általános hiba logolása és visszajelzés
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteCountries general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'An unexpected error occurred.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

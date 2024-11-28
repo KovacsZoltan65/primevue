@@ -49,41 +49,75 @@ class CountryController extends Controller
             $query->where('name', 'LIKE', "%{$search}%");
         });
     }
-    /**
-     * Visszaadja az országok listáját a keresési paraméter alapján.
-     *
-     * Ez a módszer a keresési lekérdezést az adatbázis-lekérdezésre alkalmazza.
-     * Ha a keresési lekérdezés nem üres, akkor egy where záradékot ad a lekérdezéshez
-     * azzal a feltétellel, hogy az országnévnek tartalmaznia kell a keresési lekérdezést.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
-     */
+    
     public function getCountries(Request $request)
     {
-        // Szerezze be a lekérdezést az országok neve szerinti kereséséhez
-        $countryQuery = Country::search($request);
+        try {
+            $countryQuery = Country::search($request);
+            $countries = CountryResource::collection($countryQuery->get());
+            return response()->json($countries, Response::HTTP_OK);
+        } catch(QueryException $ex) {
+            // Adatbázis hiba naplózása
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_COUNTRIES',
+                'route' => $request->path(),
+            ]);
 
-        // Alakítsa át a lekérdezés eredményét erőforrásgyűjteménybe
-        $countries = CountryResource::collection($countryQuery->get());
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Database error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch(Exception $ex) {
+            // Általános hiba naplózása
+            ErrorController::logServerError($ex, [
+                'context' => 'getCountries general error',
+                'route' => $request->path(),
+            ]);
 
-        // Az erőforrásgyűjtemény visszaadása
-        return $countries;
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
-    /**
-     * Visszaadja a megadott azonosítóval rendelkező országot.
-     *
-     * @param int $id Az ország azonosítója.
-     * @return \Illuminate\Http\JsonResponse A keresett ország adatait tartalmazó JSON-válasz.
-     */
-    public function getCountry(int $id)
+    public function getCountry(GetCountryRequest $request): JsonResponse
     {
-        // Szerezze be az országot a megadott azonosító alapján
-        $country = Country::find($id);
+        try {
+            $country = Country::findOrFail($request->id);
+            
+            return response()->json($country, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getCountry error',
+                'route' => request()->path(),
+            ]);
 
-        // A keresett ország adatait tartalmazó JSON-válasz visszaadása
-        return response()->json($country, Response::HTTP_OK);
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Country not found'
+            ], Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_COUNTRY',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Database error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch(Exception $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getCountry general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

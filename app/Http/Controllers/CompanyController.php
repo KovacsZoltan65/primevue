@@ -13,7 +13,6 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse as JsonResponse2;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\ValidationException;
@@ -74,12 +73,6 @@ class CompanyController extends Controller
         });
     }
 
-    /**
-     * Szerezd meg a cégek listáját.
-     *
-     * @param Request $request A keresési paramétert tartalmazó HTTP kérelem objektum.
-     * @return AnonymousResourceCollection A vállalatok listáját tartalmazó JSON-válasz.
-     */
     public function getCompanies(Request $request): JsonResponse
     {
         try {
@@ -155,7 +148,7 @@ class CompanyController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getCompanyByName(string $name): JsonResponse
     {
         try {
@@ -198,7 +191,7 @@ class CompanyController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR); // HTTP állapotkód belső szerverhiba miatt
         }
     }
-    
+
     /**
      * Hozzon létre egy új céget az API-ban.
      * Elküldi a cég adatait a szervernek a POST-kérésben,
@@ -334,7 +327,7 @@ class CompanyController extends Controller
                 'context' => 'deleteCompany database error',
                 'route' => request()->path(),
             ]);
-        
+
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'Database error occurred while deleting the company.',
@@ -345,7 +338,7 @@ class CompanyController extends Controller
                 'context' => 'deleteCompany general error',
                 'route' => request()->path(),
             ]);
-        
+
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'An unexpected error occurred.',
@@ -353,7 +346,7 @@ class CompanyController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Több cég törlése egy kérelemben.
      *
@@ -368,13 +361,13 @@ class CompanyController extends Controller
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
                 'ids.*' => 'integer|exists:companies,id', // Az id-k egész számok és létező cégek legyenek
             ]);
-            
+
             // Az azonosítók kigyűjtése
             $ids = $validated['ids'];
-            
+
             // A cégek törlése
             $deletedCount = Company::whereIn('id', $ids)->delete();
-            
+
             // Válasz visszaküldése
             return response()->json([
                 'success' => true,

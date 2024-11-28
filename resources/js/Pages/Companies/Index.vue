@@ -181,7 +181,7 @@ const fetchItems = () => {
     CompanyService.getCompanies()
         .then((response) => {
             // A városok listája a companies változóban lesz elmentve
-            companies.value = response.data.data;
+            companies.value = response.data;
         })
         .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon

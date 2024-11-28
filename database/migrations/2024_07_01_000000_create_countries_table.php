@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('countries', function (Blueprint $table) {
             $table->id()->comment('Rekord azonosító');
-            $table->string('name', 255)->unique('name')->comment('Név');
+            $table->string('name', 255)->index()->unique('name')->comment('Név');
             $table->string('code', 10)->index()->comment('Kód');
             
             //$table->integer('active')->default(1)->index()->comment('Aktív');

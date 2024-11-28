@@ -15,7 +15,7 @@ return new class extends Migration
     {   
         Schema::create('companies', function (Blueprint $table) {
             $table->id()->comment('Rekord azonosító');
-            $table->string('name', 255)->collation('utf8mb3_general_ci')->comment('Cégnév');
+            $table->string('name', 255)->index()->collation('utf8mb3_general_ci')->comment('Cégnév');
             $table->string('directory', 255)->collation('utf8mb3_general_ci')->comment('Könyvtár');
 
             $table->string('registration_number', 255)->collation('utf8mb3_general_ci')->comment('Regisztrációs szám');

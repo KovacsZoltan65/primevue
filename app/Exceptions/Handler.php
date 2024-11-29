@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Request;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -21,8 +22,10 @@ class Handler extends ExceptionHandler
         return parent::render($request, $exception);
     }
 
-    protected function logValidationError(ValidationException $exception, $request)
+    protected function logValidationError(ValidationException $exception, Request $request)
     {
+        \App\Http\Controllers\ErrorController::logServerValidationError($exception, $request);
+        /*
         $errors = $exception->errors();
         $data = [
             'componentName' => $request->route()->getName() ?? 'UnknownRoute',
@@ -41,5 +44,6 @@ class Handler extends ExceptionHandler
                 ->withProperties(array_merge($data, ['errorId' => $errorId]))
                 ->log('Server-side validation error.');
         }
+        */
     }
 }

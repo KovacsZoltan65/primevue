@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GetRegionRequest;
+use App\Http\Requests\StoreRegionRequest;
 use App\Http\Resources\RegionResource;
 use App\Models\Country;
 use App\Models\Region;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Inertia\Response as Response2;
+use Inertia\Response as InertiaResponse;
+use Nette\Schema\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
+use Exception;
 
 class RegionController extends Controller
 {
@@ -22,9 +28,9 @@ class RegionController extends Controller
      * amelyek megfelelnek a keresési feltételeknek.
      *
      * @param  Request  $request
-     * @return Response2
+     * @return InertiaResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): InertiaResponse
     {
         $countries = Country::where('active', 1)->orderBy('name')->get()->toArray();
         
@@ -46,7 +52,7 @@ class RegionController extends Controller
      * @param  string  $search
      * @return Builder
      */
-    public function applySearch(Builder $query, string $search)
+    public function applySearch(Builder $query, string $search): Builder
     {
         return $query->when($search, function($query, string $search) {
             // A lekérdezéshez hozzáadja a keresési feltételt
@@ -54,27 +60,120 @@ class RegionController extends Controller
         });
     }
     
-    /**
-     * Keresse meg a régiókat a keresési paraméter alapján.
-     *
-     * Ez a módszer a régiók lekérdezését módosítja a keresési paraméter
-     * alapján. Ha a keresési paraméter nem üres, akkor a lekérdezés
-     * tartalmazza a feltételt, hogy a régió neve tartalmazza a keresési
-     * paramétert.
-     *
-     * @param  Request  $request
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
-     */
-    public function getRegions(Request $request)
+    public function getRegions(Request $request): JsonResponse
     {
-        // Lekérdezi a régiókat a keresési paraméter alapján
-        $regionQuery = Region::search($request);
-        
-        // Alakítsa át a régiókat erőforrásgyűjteménybe
-        $regions = RegionResource::collection($regionQuery->get());
-        
-        // Az erőforrásgyűjtemény visszaadása
-        return $regions;
+        try {
+            $regionQuery = Region::search($request);
+            $regions = RegionResource::collection($regionQuery->get());
+            
+            return response()->json($regions, Response::HTTP_OK);
+        } catch(QueryException $ex) {
+            // Adatbázis hiba naplózása
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_REGIONS',
+                'route' => $request->path(),
+            ]);
+
+            return response()->json([
+                'error' => 'Database error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch(Exception $ex) {
+            // Általános hiba naplózása
+            ErrorController::logServerError($ex, [
+                'context' => 'getRegions general error',
+                'route' => $request->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public function getRegion(GetRegionRequest $request): JsonResponse
+    {
+        try {
+            $region = Region::findOrFail($request->id);
+
+            return response()->json($region, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getRegion error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Region not found',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_REGION',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Database error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch(Exception $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getRegion general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public function getRegionByName(Request $request)
+    {
+        try {
+            // Cég lekérdezése név alapján
+            $region = Region::where('name', '=', $request->name)->first();
+            
+            if (!$region) {
+                // Ha a régió nem található, 404-es hibát adunk vissza
+                return response()->json([
+                    'success' => APP_FALSE,
+                    'error' => 'Region not found'
+                ], Response::HTTP_NOT_FOUND);
+            }
+            
+            return response()->json($region, Response::HTTP_OK);
+        } catch(QueryException $ex) {
+            // Adatbázis hiba naplózása
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_REGION_BY_NAME',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Database error',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch(Exception $ex) {
+            // Általános hiba naplózása
+            ErrorController::logServerError($ex, [
+                'context' => 'getRegionByName general error',
+                'route' => request()->path(),
+            ]);
+
+            // JSON-választ küld vissza, jelezve, hogy váratlan hiba történt
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
     
     /**
@@ -85,13 +184,40 @@ class RegionController extends Controller
      * @param  Request  $request  A HTTP kérés objektum, amely tartalmazza a régió új adatait.
      * @return JsonResponse  A létrehozott régió adatait tartalmazó JSON-válasz.
      */
-    public function createRegion(Request $request)
+    public function createRegion(StoreRegionRequest $request): JsonResponse
     {
-        // Hozzon létre új régiót az adatbázisban
-        $region = Region::create($request->all());
-        
-        // A létrehozott régió adatait tartalmazó JSON-válasz visszaadása
-        return response()->json($region, Response::HTTP_OK);
+        try {
+            $region = Region::create($request->all());
+            
+            // Sikeres válasz
+            return response()->json([
+                'success' => APP_TRUE,
+                'message' => __('command_region_created', ['id' => $request->id]),
+                'data' => $region
+            ], Response::HTTP_CREATED);
+        } catch(QueryException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'CREATE_REGION_DATABASE_ERROR',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'CREATE_COUNTRY_DATABASE_ERROR',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'createRegion general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
     
     /**
@@ -103,16 +229,55 @@ class RegionController extends Controller
      * @param  int  $id  A frissítendő régió azonosítója.
      * @return JsonResponse  A frissített régió adatait tartalmazó JSON-válasz.
      */
-    public function updateRegion(Request $request, int $id)
+    public function updateRegion(Request $request, int $id): JsonResponse
     {
-        // Szerezze be a régiót az adatbázisból
-        $old_region = Region::find($id);
-        
-        // Frissítse a régió adatait a HTTP kérésben szereplő adatokkal
-        $success = $old_region->update($request->all());
-        
-        // A frissített régió adatait tartalmazó JSON-válasz visszaadása
-        return response()->json(['success' => $success], Response::HTTP_OK);
+        try{
+            $region = Region::findOrFail($id);
+            // Frissítse a vállalatot a HTTP-kérés adataival
+            $region->update($request->all());
+            // Frissítjük a modelt
+            $region->refresh();
+            
+            return response()->json([
+                'success' => APP_TRUE,
+                'message' => 'REGION_UPDATED_SUCCESSFULLY',
+                'data' => $region,
+            ], Response::HTTP_OK);
+        }catch(ModelNotFoundException $ex){
+            // Ha a cég nem található
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_UPDATE_REGION', // updateRegion not found error
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'COUNTRY_NOT_FOUND', // The specified region was not found
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+        }catch(QueryException $ex){
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_REGION', // updateRegion database error
+                'route' => request()->path(),
+            ]);
+            
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'DB_ERROR_REGION', // Database error occurred while updating the region
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }catch(Exception $ex){
+            ErrorController::logServerError($ex, [
+                'context' => 'updateRegion general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
     
     /**
@@ -123,15 +288,111 @@ class RegionController extends Controller
      * @param  int  $id  A törölni kívánt régió azonosítója.
      * @return JsonResponse  A törölt régió adatait tartalmazó JSON-válasz.
      */
-    public function deleteRegion(int $id)
+    public function deleteRegion(StoreRegionRequest $id): JsonResponse
     {
-        // Szerezze be a régiót az adatbázisból
-        $old_region = Region::find($id);
-        
-        // Törölje a régiót az adatbázisból
-        $success = $old_region->delete();
-        
-        // A törölt régió adatait tartalmazó JSON-válasz visszaadása
-        return response()->json(['success' => $success], Response::HTTP_OK);
+        try {
+            $region = Region::findOrFail($id);
+            $region->delete();
+            
+            return response()->json([
+                'success' => APP_TRUE,
+                'message' => 'DELETE_REGION_SUCCESSFULLY',
+                'data' => $region,
+            ], Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            // Ha a cég nem található
+            ErrorController::logServerError($ex, [
+                'context' => 'ERROR_DELETE_REGION', // deleteRegion not found error
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'REGION_NOT_FOUND', // The specified region was not found
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteRegion database error',
+                'route' => request()->path(),
+            ]);
+            //
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Database error occurred while deleting the region.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteRegion general error',
+                'route' => request()->path(),
+            ]);
+            
+            //
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public function deleteRegions(Request $request): JsonResponse
+    {
+        try {
+            // Az azonosítók tömbjének validálása
+            $validated = $request->validate([
+                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
+                'ids.*' => 'integer|exists:regions,id', // Az id-k egész számok és létező cégek legyenek
+            ]);
+            
+            // Az azonosítók kigyűjtése
+            $ids = $validated['ids'];
+            
+            // A cégek törlése
+            $deletedCount = Region::whereIn('id', $ids)->delete();
+            
+            // Válasz visszaküldése
+            return response()->json([
+                'success' => true,
+                'message' => 'Selected regions deleted successfully.',
+                'deleted_count' => $deletedCount,
+            ], Response::HTTP_OK);
+        } catch(ValidationException $ex) {
+            // Validációs hiba logolása
+            //ErrorController::logClientValidationError($request);
+            ErrorController::logServerValidationError($ex, $request);
+
+            // Kliens válasz
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Validation error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(QueryException $ex) {
+            // Adatbázis hiba logolása és visszajelzés
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteRegions database error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Database error occurred while deleting the selected regions.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            // Általános hiba logolása és visszajelzés
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteRegions general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

@@ -50,7 +50,9 @@ class EntityController extends Controller
                 'route' => $request->path(),
             ]);
 
-            return response()->json(['error' => 'Database error'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json([
+                'error' => 'Database error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             // Általános hiba naplózása
             ErrorController::logServerError($ex, [
@@ -58,7 +60,11 @@ class EntityController extends Controller
                 'route' => $request->path(),
             ]);
 
-            return response()->json(['error' => 'An unexpected error occurred'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -74,7 +80,11 @@ class EntityController extends Controller
                 'route' => request()->path(),
             ]);
 
-            return response()->json(['error' => 'Entity not found'], Response::HTTP_NOT_FOUND);
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Entity not found',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'DB_ERROR_ENTITY',
@@ -88,7 +98,11 @@ class EntityController extends Controller
                 'route' => request()->path(),
             ]);
 
-            return response()->json(['error' => 'An unexpected error occurred'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -110,7 +124,11 @@ class EntityController extends Controller
                 'route' => request()->path(),
             ]);
 
-            return response()->json(['error' => 'Database error'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Database error',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch( Exception $ex ) {
             // Általános hiba naplózása
             ErrorController::logServerError($ex, [
@@ -118,7 +136,11 @@ class EntityController extends Controller
                 'route' => request()->path(),
             ]);
 
-            return response()->json(['error' => 'An unexpected error occurred'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -131,7 +153,7 @@ class EntityController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => __('command_entity_created', ['id' => $request->id]),
-                'data' > $entity
+                'data' => $entity
             ], Response::HTTP_CREATED);
         }catch( QueryException $ex ){
             ErrorController::logServerError($ex, [
@@ -140,6 +162,7 @@ class EntityController extends Controller
             ]);
 
             return response()->json([
+                'success' => APP_FALSE,
                 'error' => 'CREATE_ENTITY_DATABASE_ERROR',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -150,6 +173,7 @@ class EntityController extends Controller
             ]);
 
             return response()->json([
+                'success' => APP_FALSE,
                 'error' => 'An unexpected error occurred',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -174,22 +198,24 @@ class EntityController extends Controller
         }catch( ModelNotFoundException $ex ){
             // Ha a cég nem található
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_UPDATE_ENTITY', // updateEntity not found error
+                'context' => 'DB_ERROR_UPDATE_ENTITY', // updateEntity nem található hiba
                 'route' => request()->path(),
             ]);
 
             return response()->json([
-                'error' => 'COUNTRY_NOT_FOUND', // The specified entity was not found
+                'success' => APP_FALSE,
+                'error' => 'ENTITY_NOT_FOUND', // A megadott entitás nem található
                 'details' => $ex->getMessage(),
             ], Response::HTTP_NOT_FOUND);
         }catch( QueryException $ex ){
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_ENTITY', // updateEntity database error
+                'context' => 'DB_ERROR_ENTITY', // updateEntity adatbázishiba
                 'route' => request()->path(),
             ]);
             
             return response()->json([
-                'error' => 'DB_ERROR_ENTITY', // Database error occurred while updating the entity
+                'success' => APP_FALSE,
+                'error' => 'DB_ERROR_ENTITY', // Adatbázishiba történt az entitás frissítése közben
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }catch( Exception $ex ){
@@ -199,6 +225,7 @@ class EntityController extends Controller
             ]);
 
             return response()->json([
+                'success' => APP_FALSE,
                 'error' => 'An unexpected error occurred',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -215,7 +242,7 @@ class EntityController extends Controller
             
             return request()->json([
                 'success' => APP_TRUE,
-                'message' => 'DELETE_ENTITY_SUCCESSFULLY', // City deleted successfully
+                'message' => 'DELETE_ENTITY_SUCCESSFULLY', // A város sikeresen törölve
                 'data' => $entity,
             ], Request::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
@@ -224,7 +251,11 @@ class EntityController extends Controller
                 'route' => request()->path(),
             ]);
 
-            return response()->json(['error' => 'Company not found'], Response::HTTP_NOT_FOUND);
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Company not found',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'DB_ERROR_COMPANY',
@@ -238,7 +269,11 @@ class EntityController extends Controller
                 'route' => request()->path(),
             ]);
 
-            return response()->json(['error' => 'An unexpected error occurred'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
@@ -248,7 +283,7 @@ class EntityController extends Controller
             // Az azonosítók tömbjének validálása
             $validated = $request->validate([
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
-                'ids.*' => 'integer|exists:companies,id', // Az id-k egész számok és létező cégek legyenek
+                'ids.*' => 'integer|exists:entities,id', // Az id-k egész számok és létező cégek legyenek
             ]);
             
             // Az azonosítók kigyűjtése
@@ -265,7 +300,8 @@ class EntityController extends Controller
             ], Response::HTTP_OK);
         } catch( ValidationException $ex ) {
             // Validációs hiba logolása
-            ErrorController::logClientValidationError($request);
+            //ErrorController::logClientValidationError($request);
+            ErrorController::logServerValidationError($ex, $request);
 
             // Kliens válasz
             return response()->json([

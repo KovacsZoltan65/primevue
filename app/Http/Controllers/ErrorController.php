@@ -168,15 +168,19 @@ class ErrorController extends Controller
             'validationErrors' => $errors,
         ];
         $errorId = md5(json_encode($errors) . $data['componentName']);
-        $existingError = \Spatie\Activitylog\Models\Activity::where('properties->errorId', $errorId)->first();
+        $existingError = Activity::where('properties->errorId', $errorId)->first();
         
         if($existingError) {
             $existingError->increment('occurrence_count');
+            
+            return response()->json(['success' => true, 'message' => 'Error occurrence updated']);
         } else {
             activity()
                 ->causedBy(auth()->user() ?? null)
                 ->withProperties(array_merge($data, ['errorId' => $errorId]))
                 ->log('Server-side validation error.');
+            
+            return response()->json(['success' => true, 'message' => 'Error logged']);
         }
     }
     
@@ -190,42 +194,6 @@ class ErrorController extends Controller
             'errors' => $errors,
         ]);
     }
-    
-    /*
-    public function index_01(Request $request): InertiaResponse
-    {
-        // Alapértelmezett szűrési paraméterek
-        $perPage = $request->get('per_page', 10); // Oldalméret
-        $dateFrom = $request->get('date_from'); // Szűrés kezdő dátum
-        $dateTo = $request->get('date_to'); // Szűrés végső dátum
-
-        // Alapkérdés az activity_log táblára
-        $query = Activity::query()->where('log_name', 'error'); // Csak hibák
-
-        // Dátumtartomány szűrés: ha a date_from paraméter meg van adva, akkor
-        // az activity_log táblában a created_at oszlopban azonosított
-        // dátumtartományon belül fogja keresni az elemeket.
-        if ($dateFrom) {
-            $query->whereDate('created_at', '>=', $dateFrom);
-        }
-
-        // Dátumtartomány szűrés: ha a date_to paraméter is meg van adva, akkor
-        // az activity_log táblában a created_at oszlopban azonosított
-        // dátumtartományon belül fogja keresni az elemeket.
-        if ($dateTo) {
-            $query->whereDate('created_at', '<=', $dateTo);
-        }
-
-        // Lekérjük a hibákat az activity_log táblából a fenti szűrési paraméterekkel.
-        // A ->paginate() metódussal oldalszámozott lista lesz generálva.
-        // Az oldalméretet a $perPage változóban megadott érték határozza meg.
-        $logs = $query->orderBy('created_at', 'desc')->paginate($perPage);
-
-        return inertia('ErrorLogs/Index_01', [
-            'logs' => $logs,
-        ]);
-    }
-    */
 
     /**
      * Egy adott hiba megtekintése

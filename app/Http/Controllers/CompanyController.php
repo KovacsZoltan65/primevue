@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-//use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -301,7 +300,8 @@ class CompanyController extends Controller
     public function deleteCompany(GetCompanyRequest $request): JsonResponse
     {
         try {
-            $company = Company::findOrFail($request->id)->delete();
+            $company = Company::findOrFail($request->id);
+            $company->delete();
 
             return response()->json([
                 'success' => APP_TRUE,

@@ -253,6 +253,7 @@ class SubdomainController extends Controller
     {
         try {
             $subdomain = Subdomain::findOrFail($request->id);
+            $subdomain->delete();
             
             return response()->json([
                 'success' => APP_TRUE,

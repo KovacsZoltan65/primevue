@@ -240,7 +240,8 @@ class PersonController extends Controller
     public function deletePerson(GetPersonRequest $request): JsonResponse
     {
         try{
-            $person = Person::findOrFail($request->id)->delete();
+            $person = Person::findOrFail($request->id);
+            $person->delete();
             
             return response()->json([
                 'success' => APP_TRUE,

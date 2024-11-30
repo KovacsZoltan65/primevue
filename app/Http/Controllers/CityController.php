@@ -284,7 +284,6 @@ class CityController extends Controller
             // Keresse meg a törölni kívánt céget az azonosítója alapján
             $city = City::findOrFail($id);
             
-            //
             $city->delete();
             
             return request()->json([

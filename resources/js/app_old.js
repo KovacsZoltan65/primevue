@@ -14,7 +14,6 @@ import PrimeVue from "primevue/config";
 //import { localeEN } from "../../lang/primevue-en.js";
 import { localeHU } from "../../lang/primevue-hu.js";
 
-import ErrorService from "@/service/ErrorService";
 import ConfirmationService from "primevue/confirmationservice";
 import ToastService from "primevue/toastservice";
 import StyleClass from "primevue/styleclass";
@@ -29,7 +28,7 @@ createInertiaApp({
             import.meta.glob("./Pages/**/*.vue"),
         ),
     setup({ el, App, props, plugin }) {
-        const vueApp = createApp({ render: () => h(App, props) })
+        return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(i18nVue, {
                 resolve: async (lang) => import(`../../lang/${lang}.json`),
@@ -46,27 +45,8 @@ createInertiaApp({
             })
             .use(ToastService)
             .use(ConfirmationService)
-            .directive("styleclass", StyleClass);
-
-            // Globális hibakezelő beállítása
-            vueApp.config.errorHandler = (error, vm, info) => {
-                console.error("Globális hiba:", error);
-
-                const errorData = {
-                    message: error.message || "Ismeretlen hiba",
-                    stack: error.stack || null,
-                    component: vm?.$options?.name || "UnknownComponent",
-                    info,
-                    time: new Date().toISOString(),
-                };
-
-                // Hiba továbbítása az ErrorService-nek
-                ErrorService.logClientError(errorData).catch((logError) => {
-                    console.error("Hiba továbbítása nem sikerült:", logError);
-                });
-            };
-
-            return vueApp.mount(el);
+            .directive("styleclass", StyleClass)
+            .mount(el);
     },
     progress: {
         color: "#4B5563",

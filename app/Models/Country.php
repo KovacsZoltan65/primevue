@@ -42,6 +42,11 @@ class Country extends Model
             })->where('active', APP_ACTIVE);
         }
         
+        public function scopeActive(Builder $query)
+        {
+            return $query->where('active', 1);
+        }
+    
 	/**
 	 * A kapcsolódó városok listája.
 	 *

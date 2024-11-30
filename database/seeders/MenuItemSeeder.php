@@ -7,6 +7,7 @@ namespace Database\Seeders;
 
 use App\Models\MenuItem;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class MenuItemSeeder extends Seeder
 {
@@ -15,6 +16,12 @@ class MenuItemSeeder extends Seeder
      */
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
+
+        MenuItem::truncate();
+
+        Schema::enableForeignKeyConstraints();
+        
         // Főmenü - Home
         $home = MenuItem::create(
             [ 'label' => 'home', 'url' => '/home', 'default_weight' => 1, ]
@@ -34,6 +41,7 @@ class MenuItemSeeder extends Seeder
                 [ 'label' => 'users', 'url' => '/users', 'default_weight' => 1, ],
                 [ 'label' => 'roles', 'url' => '/roles', 'default_weight' => 2, ],
                 [ 'label' => 'permissions', 'url' => '/permissions', 'default_weight' => 3, ],
+                [ 'label' => 'error_log', 'url' => '/error_log', 'default_weight' => 4, ]
             ]
         );
         

@@ -23,8 +23,8 @@ return new class extends Migration
     {
         Schema::create('regions', function (Blueprint $table) {
             $table->id()->comment('Rekord azonosító. Egyedi azonosító a rekordhoz.');
-            $table->string('name', 255)->comment('Név. A régió neve.');
-            $table->string('code', 10)->comment('Kód. A régió kódja.');
+            $table->string('name', 255)->index()->comment('Név. A régió neve.');
+            $table->string('code', 10)->index()->comment('Kód. A régió kódja.');
 
             $table->unsignedBigInteger('country_id')->comment('Ország azonosító. A kapcsolódó ország azonosítója.');
 

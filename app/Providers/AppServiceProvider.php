@@ -23,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
     {
         define('APP_ACTIVE', 1);
         define('APP_INACTIVE', 0);
+        
+        define('APP_TRUE', true);
+        define('APP_FALSE', false);
 
         $available_locales = config('app.available_locales', ['English' => 'en','Hungarian' => 'hu',]);
         $supported_locales = config('app.supported_locales', ['en', 'hu']);

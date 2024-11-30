@@ -168,7 +168,7 @@
     "command_company_random_created": ":count vállalat/vállalatok véletlenszerű adatokkal sikeresen létrehozva.",
     "command_company_validate": "Az érvényesítés sikertelen: :error",
     "command_company_created": "A cég sikeresen létrejött a megadott adatokkal: ID :id",
-    "command_company_updated": "",
+    "command_company_updated": "A cég sikeresen módosult a megadott adatokkal.",
     "command_company_not_found_with_id": "Nem található cég a megadott azonosító(k)kal.",
     "command_company_": ""
 }

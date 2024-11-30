@@ -2,8 +2,13 @@
     "minStringLength": 3,
     "maxStringLength": 255,
 
+    "minCodeLength": 1,
+    "maxCodeLength": 3,
+
     "DecLength": 10,
     "DecDigits": 2,
+
+    "array_min_length": 1,
 
     "password_min_length": 8,
     "password_min_number": 2,

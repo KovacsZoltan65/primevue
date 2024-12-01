@@ -4,10 +4,11 @@ use App\Http\Controllers\Auth\PermissionController;
 use App\Http\Controllers\Auth\RoleController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
-use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
+use App\Http\Controllers\EntityRelController;
+use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PersonController;
@@ -54,13 +55,38 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     /**
      * =======================================================
+     * HIERARCHIA
+     * =======================================================
+     */
+    // Szülö hozzáadása
+    Route::post('/entity-hierarchy/{childId}/add-parent', [EntityRelController::class, 'addParent']);
+    // Gyermek hozzáadása
+    Route::post('/entity-hierarchy/{parentId}/add-child', [EntityRelController::class, 'addChild']);
+    // Hierarchia lekérdezése
+    Route::get('/entity-hierarchy/{entityId}/hierarchy', [EntityRelController::class, 'getHierarchy']);
+    // Gyermek eltávolítása
+    Route::delete('/entity-hierarchy/{parentId}/remove-child', [EntityRelController::class, 'removeChild']);
+    // Nagyfőnök lekérése
+    Route::get('/entity-hierarchy/big-bosses', [EntityRelController::class, 'getBigBosses']);
+    // Hierarchia épségének ellenőrzése
+    Route::get('/entity-hierarchy/validate', [EntityRelController::class, 'validateHierarchy']);
+    // Izolált entitások keresése
+    Route::get('/entity-hierarchy/isolated-entities', [EntityRelController::class, 'checkIsolatedEntities']);
+    // Egy vezető beosztottjainak áthelyezése egy másik vezető alá
+    Route::post('/entity-hierarchy/{fromManagerId}/transfer-subordinates', [EntityRelController::class, 'transferSubordinates']);
+    // Két vezető beosztottjainak kicserélése
+    Route::post('/entity-hierarchy/swap-subordinates', [EntityRelController::class, 'swapSubordinates']);
+    // Dolgozói szint megállapítása
+    Route::get('/employee/{id}/role', [EntityRelController::class, 'getEmployeeRole']);
+    
+    /**
+     * =======================================================
      * MENÜ
      * =======================================================
      */
     Route::get('/menu-items', [MenuController::class, 'getSortedMenuItems'])->name('get.menu');
 
     Route::resource('menu-items', MenuController::class);
-
 
     /*
     Route::prefix('admin/menu')->group(function () {

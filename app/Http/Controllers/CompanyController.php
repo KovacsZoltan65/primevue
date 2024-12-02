@@ -351,7 +351,7 @@ class CompanyController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'updateCompany general error',
+                'context' => 'restoreCompany general error',
                 'route' => request()->path(),
             ]);
 
@@ -422,20 +422,20 @@ class CompanyController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function deleteCompanies(Request $request): JsonResponse
+    public function deleteRoles(Request $request): JsonResponse
     {
         try {
             // Az azonosítók tömbjének validálása
             $validated = $request->validate([
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
-                'ids.*' => 'integer|exists:companies,id', // Az id-k egész számok és létező cégek legyenek
+                'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
             ]);
 
             // Az azonosítók kigyűjtése
             $ids = $validated['ids'];
 
             // A cégek törlése
-            $deletedCount = Company::whereIn('id', $ids)->delete();
+            $deletedCount = Role::whereIn('id', $ids)->delete();
 
             // Válasz visszaküldése
             return response()->json([

@@ -38,6 +38,8 @@ import Message from "primevue/message";
 const props = defineProps({
     countries: { type: Object, default: () => {}, },
     cities: { type: Object, default: () => {}, },
+    search: { type: Object, default: () => {}, },
+    can: { type: Object, default: () => {}, },
 });
 
 /**
@@ -177,6 +179,8 @@ const v$ = useVuelidate(rules, company);
  */
 const fetchItems = () => {
     loading.value = true;
+
+    console.log(props);
 
     CompanyService.getCompanies()
         .then((response) => {
@@ -406,30 +410,6 @@ const createCompany = () => {
 };
 
 const updateCompany = () => {
-    /*
-    if( v$.value.$invalid ) {
-        ErrorService.logClientError(new Error('Client-side validation error'), {
-            componentName: "updateCompany",
-            additionalInfo: "Client-side validation failed during company update",
-            category: "Validation Error",
-            priority: "low",
-            validationErrors: v$.value.$errors.map((error) => ({
-                field: error.$property,
-                message: error.$message,
-            })),
-        });
-
-        // Hibaüzenet megjelenítése a felhasználónak
-        toast.add({
-            severity: "warn",
-            summary: "Validation Error",
-            detail: "Please fix the highlighted errors before submitting.",
-            life: 4000,
-        });
-
-        return; // Megállítjuk a műveletet, amíg a hibák nem kerülnek kijavításra
-    }
-    */
     const index = findIndexById(company.value.id);
     if (index === -1) {
         console.error(`Company with id ${country.value.id} not found`);
@@ -677,6 +657,7 @@ const throwError = () => {
                         severity="secondary"
                         class="mr-2"
                         @click="openNew"
+                        :disabled="!props.can.create"
                     />
 
                     <!-- Delete Selected Button -->
@@ -848,6 +829,7 @@ const throwError = () => {
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
                         <Button
+                            :disabled="!props.can.edit"
                             icon="pi pi-pencil"
                             outlined
                             rounded
@@ -860,6 +842,7 @@ const throwError = () => {
                             rounded
                             severity="danger"
                             @click="confirmDeleteCompany(slotProps.data)"
+                            :disabled="!props.can.delete"
                         />
                     </template>
                 </Column>

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Entity;
+use App\Models\EntityRel;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
@@ -377,7 +379,7 @@ class EntityRelController extends Controller
     {
         try {
             // Lekérjük az összes kapcsolódó relációt egyszerre
-            $relations = EntityRelation::whereIn('child_id', $employeeIds)
+            $relations = EntityRel::whereIn('child_id', $employeeIds)
                 ->orWhereIn('parent_id', $employeeIds)
                 ->get();
 
@@ -403,7 +405,7 @@ class EntityRelController extends Controller
             return response()->json([
                 'roles' => $roles,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error determining employees roles', [
                 'error' => $e->getMessage(),
                 'employee_ids' => $employeeIds,
@@ -433,10 +435,10 @@ class EntityRelController extends Controller
             $employee = Entity::findOrFail($employeeId);
 
             // Ellenőrizzük, hogy van-e felettese (parent_id)
-            $hasParent = EntityRelation::where('child_id', $employeeId)->exists();
+            $hasParent = EntityRel::where('child_id', $employeeId)->exists();
 
             // Ellenőrizzük, hogy van-e beosztottja (child_id)
-            $hasChildren = EntityRelation::where('parent_id', $employeeId)->exists();
+            $hasChildren = EntityRel::where('parent_id', $employeeId)->exists();
 
             // Meghatározzuk a szerepkört
             if (!$hasParent && $hasChildren) {
@@ -459,7 +461,7 @@ class EntityRelController extends Controller
             return response()->json([
                 'error' => 'Employee not found',
             ], 404);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error determining employee role', [
                 'error' => $e->getMessage(),
                 'employee_id' => $employeeId,
@@ -577,10 +579,10 @@ class EntityRelController extends Controller
             $allEntities = Entity::pluck('id')->toArray();
 
             // Entitások, amelyek szülőként jelennek meg
-            $parents = EntityRelation::pluck('parent_id')->toArray();
+            $parents = EntityRel::pluck('parent_id')->toArray();
 
             // Entitások, amelyek gyermekként jelennek meg
-            $children = EntityRelation::pluck('child_id')->toArray();
+            $children = EntityRel::pluck('child_id')->toArray();
 
             // Azok az entitások, amelyek sem szülőként, sem gyermekként nem szerepelnek
             $orphans = array_diff($allEntities, $parents, $children);
@@ -640,7 +642,7 @@ class EntityRelController extends Controller
     public function checkHierarchyLevels()
     {
         try {
-            $invalidRelations = EntityRelation::with(['parent', 'child'])
+            $invalidRelations = EntityRel::with(['parent', 'child'])
                 ->get()
                 ->filter(function ($relation) {
                     return abs($relation->parent->level - $relation->child->level) > 1;
@@ -699,7 +701,7 @@ class EntityRelController extends Controller
      */
     public function validateUniqueRelationship($parentId, $childId)
     {
-        $exists = EntityRelation::where('parent_id', $parentId)
+        $exists = EntityRel::where('parent_id', $parentId)
             ->where('child_id', $childId)
             ->exists();
 

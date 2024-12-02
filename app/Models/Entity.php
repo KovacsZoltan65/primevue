@@ -53,11 +53,21 @@ class Entity extends Model
 
     public function parents(): BelongsToMany
     {
-        return $this->belongsToMany(Entity::class, 'entity_relationships', 'child_id', 'parent_id');
+        return $this->belongsToMany(
+            Entity::class, 
+            'entity_rel', 
+            'child_id', 
+            'parent_id'
+        );
     }
 
     public function children(): BelongsToMany
-{
-    return $this->belongsToMany(Entity::class, 'entity_relationships', 'parent_id', 'child_id');
-}
+    {
+        return $this->belongsToMany(
+            Entity::class, 
+            'entity_rel', 
+            'parent_id', 
+            'child_id'
+        );
+    }
 }

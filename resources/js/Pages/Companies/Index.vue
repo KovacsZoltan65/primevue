@@ -72,7 +72,6 @@ const company = ref({
 });
 
 const initialCompany = () => {
-    console.log('initialCompany');
     return {...company};
 };
 
@@ -228,7 +227,7 @@ onMounted(() => {
  */
 function confirmDeleteSelected() {
     deleteSelectedCompaniesDialog.value = true;
-}
+};
 
 /**
  * Megnyitja az új város dialógusablakot.
@@ -240,13 +239,11 @@ function confirmDeleteSelected() {
  * @return {void}
  */
 function openNew() {
-    console.log('openNew');
-    //company.value = { ...initialCompany };
     company.value = initialCompany();
 
     submitted.value = false;
     companyDialog.value = true;
-}
+};
 
 /**
  * Bezárja a dialógusablakot.

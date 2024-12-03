@@ -101,10 +101,8 @@ const fetchItems = () => {
         });
 }
 
-const initialRole = {
-    id: null,
-    name: "",
-    guard_name: "web"
+const initialRole = () => {
+    return {...role};
 };
 
 onMounted(() => {
@@ -371,10 +369,11 @@ const deleteRole = () => {
 };
 
 function openNew() {
-    role.value = {...initialRole};
+    role.value = initialRole();
+
     submitted.value = false;
     roleDialog.value = true;
-}
+};
 
 const hideDialog = () => {
     roleDialog.value = false;

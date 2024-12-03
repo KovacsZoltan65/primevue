@@ -18,4 +18,39 @@ class PermissionController extends Controller
     {
         //
     }
+    
+    public function getPermission(): JsonResponse
+    {
+        //
+    }
+    
+    public function getPermissionByName(string $name): JsonResponse
+    {
+        //
+    }
+    
+    public function createPermission(): JsonResponse
+    {
+        //
+    }
+    
+    public function updatePermission(): JsonResponse
+    {
+        //
+    }
+    
+    public function deletePermission(): JsonResponse
+    {
+        //
+    }
+    
+    public function deletePermissions(): JsonResponse
+    {
+        //
+    }
+    
+    public function restorePermission(): JsonResponse
+    {
+        //
+    }
 }

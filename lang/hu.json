@@ -116,6 +116,8 @@
     "subdomain_states": "Subdomain állapotok",
     "subdomain_state_title": "Subdomain állapotok kezelése",
 
+    "validation_error": "Érvényesítési hiba",
+    "validation_client_side_error": "Az ügyféloldali ellenőrzés sikertelen volt a szerepkör frissítése során",
     "validate_required": "Ez a mező kötelező.",
     "validate_field_required": "A(z) :field megadása kötelező.",
     "validate_name": "A név megadása kötelező",

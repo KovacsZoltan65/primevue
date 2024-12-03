@@ -180,7 +180,7 @@ const v$ = useVuelidate(rules, company);
 const fetchItems = () => {
     loading.value = true;
 
-    console.log(props);
+    //console.log(props);
 
     CompanyService.getCompanies()
         .then((response) => {
@@ -698,7 +698,7 @@ const throwError = () => {
                 ref="dt"
                 v-model:selection="selectedCompanies"
                 v-model:filters="filters"
-                :filters="filters" filterDisplay="menu"
+                filterDisplay="menu"
                 :value="companies"
                 dataKey="id"
                 :paginator="true" :rows="10" sortMode="multiple"

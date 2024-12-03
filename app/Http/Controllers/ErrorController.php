@@ -117,7 +117,7 @@ class ErrorController extends Controller
     public static function logClientValidationError(Request $request): JsonResponse
     {
         $data = [
-            'componentName' => $request->input('componentName', 'UnknownComponent'),
+            'componentName' => $request->input('component', 'UnknownComponent'),
             'priority' => $request->input('priority', 'medium'),
             'additionalInfo' => $request->input('additionalInfo', ''),
             'validationErrors' => $request->input('validationErrors', []),
@@ -149,7 +149,7 @@ class ErrorController extends Controller
             })
             ->causedBy(auth()->user())
             ->withProperties($data)
-            ->log('Validation error reported.');
+            ->log('Client-side Validation error reported.');
 
         return response()->json([
             'success' => true,

@@ -150,4 +150,24 @@ class UserController extends Controller
         // A törlés eredményét tartalmazó JSON-válasz visszaadása
         return response()->json($old_user, Response::HTTP_OK);
     }
+    
+    public function assignRoleToUser(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate([
+            'role' => 'required|string|exists:role,name'
+        ]);
+        
+        $user->assignRole($validated['role']);
+        
+        return response()->json(['user' => $user], Response::HTTP_OK);
+    }
+    
+    public function assignPermissionToUser(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate([
+            'role' => 'required|string|exists:permissions,name'
+        ]);
+        
+        //$user->assignP
+    }
 }

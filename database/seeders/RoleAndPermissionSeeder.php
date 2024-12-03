@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
@@ -24,24 +25,25 @@ class RoleAndPermissionSeeder extends Seeder
         DB::table('model_has_roles')->truncate();
         Schema::enableForeignKeyConstraints();
         
-        $companies_list = 'companies list';
-        $companies_create = 'companies create';
-        $companies_edit = 'companies edit';
-        $companies_delete = 'companies delete';
+        $classes = ['companies', 'roles'];
         
-        // Jogosultságok létrehozása
-        Permission::create(['name' => $companies_list]);
-        Permission::create(['name' => $companies_create]);
-        Permission::create(['name' => $companies_edit]);
-        Permission::create(['name' => $companies_delete]);
+        $permissions = [
+            'list', 'create', 'edit', 'delete',
+        ];
         
-        // Szerepkörök létrehozása és jogosultságok hozzárendelése
         $admin = Role::create(['name' => 'admin']);
-        $admin->givePermissionTo([
-            $companies_list, 
-            $companies_create, 
-            $companies_edit, 
-            $companies_delete
-        ]);
+        
+        foreach($classes as $class)
+        {
+            foreach($permissions as $permission)
+            {
+                Permission::create(['name' => "{$class} {$permission}"]);
+                $admin->givePermissionTo(["{$class} {$permission}"]);
+            }
+        }
+        
+        // Admin szerepköró hozzárendelés
+        $user = User::find(1);
+        $user->assignRole('admin');
     }
 }

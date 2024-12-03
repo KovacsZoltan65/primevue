@@ -116,6 +116,10 @@
 
     "subdomain_states": "Subdomain States",
 
+    "validation_error": "Validation Error",
+    "validation_client_side_error": "Client-side validation failed during role update",
+    "validation_": "",
+
     "validate_required": "This field is required.",
     "validate_field_required": "Specifying :field is required.",
     "validate_name": "Name is required",

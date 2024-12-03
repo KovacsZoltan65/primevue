@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use App\Http\Controllers\ErrorController;
 use App\Http\Requests\GetRoleRequest;
 use App\Http\Requests\StoreRoleRequest;
@@ -18,11 +18,24 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use App\Traits\Functions;
 
 class RoleController extends Controller
 {
+    use Functions;
+
+    public function __construct() {
+        $this->middleware('can:roles list', ['only' => ['index', 'applySearch', 'listRolesAndPermissions', 'getRoles', 'getRole', 'getRoleByName']]);
+        $this->middleware('can:roles create', ['only' => ['createRole']]);
+        $this->middleware('can:roles edit', ['only' => ['updateRole', 'updateRolePermissions']]);
+        $this->middleware('can:roles delete', ['only' => ['deleteRole', 'deleteRoles']]);
+        $this->middleware('can:roles restore', ['only' => ['restoreRole']]);
+    }
+    
     public function index(Request $request): InertiaResponse
     {
+        $roles = $this->getUserRoles('roles');
+        
         $users = User::orderBy('name')->get()->toArray();
         $permissions = Permission::orderBy('name')->get()->toArray();
 
@@ -30,6 +43,7 @@ class RoleController extends Controller
             'users' => $users,
             'permissions' => $permissions,
             'search' => request('search'),
+            'can' => $roles,
         ]);
     }
 
@@ -41,6 +55,55 @@ class RoleController extends Controller
         });
     }
 
+    public function listRolesAndPermissions(): JsonResponse
+    {
+        try {
+            $roles = Role::with('permissions')->get();
+            $permissions = Permission::all();
+
+            return response()->json([
+                'roles' => $roles,
+                'premissions' => $permissions,
+            ], Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            $modelName = $ex->getModel(); // A kiváltó modell neve
+            $ids = $ex->getIds();         // Az érintett ID vagy ID-k tömbje
+            
+            ErrorController::logServerError($ex, [
+                'context' => 'MODEL_NOT_FOUND',
+                'model' => $modelName,
+                'ids' => $ids,
+                'route' => request()->path(),
+            ]);
+            
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => "The requested resource ({$modelName}) was not found.",
+            ], Response::HTTP_NOT_FOUND);
+            
+        } catch(QueryException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_ROLE_AND_PERMISSIONS',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Database error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch(Exception $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'listRolesAndPermissions general error',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'An unexpected error occurred'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
     public function getRoles(Request $request): JsonResponse
     {
         try {
@@ -48,7 +111,7 @@ class RoleController extends Controller
 
             $roles = RoleResource::collection($roleQuery->get());
 
-            return response()->json([$roles, Response::HTTP_OK]);
+            return response()->json($roles, Response::HTTP_OK);
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
@@ -158,16 +221,34 @@ class RoleController extends Controller
         }
     }
 
-    public function createRole(StoreRoleRequest $request)
+    public function createRoles(Request $request): JsonResponse
     {
         try {
-            $role = Role::create($request->all());
+            \Log::info($request->all());
+            $validated = $request->validate([
+                'name' => 'required'
+            ]);
+            \Log::info($validated);
+            //$role = Role::create($request->all());
+            $role = Role::create($validated);
+
+            if( isset($request->permissions) ){
+                $role->syncPermissions($request->permissions);
+            }
 
             return response()->json([
                 'success' => APP_TRUE,
                 'message' => __('command_role_created', ['id' => $request->id]),
                 'data' => $role
             ], Response::HTTP_CREATED);
+        } catch(ValidationException $ex) {
+            ErrorController::logServerValidationError($ex, $request);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'Validation error occurred',
+                'details' => $ex->errors(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(QueryException $ex) {
             // Naplózza a cég létrehozása során észlelt adatbázis-hibát
             ErrorController::logServerError($ex, [
@@ -196,7 +277,7 @@ class RoleController extends Controller
         }
     }
 
-    public function updateRole(Request $request, int $id)
+    public function updateRole(Request $request, int $id): JsonResponse
     {
         try {
             $role = Role::findOrFail($id);
@@ -252,6 +333,17 @@ class RoleController extends Controller
         */
     }
 
+    public function updateRolePermissions(Request $request, Role $role): JsonResponse
+    {
+        $validated = $request->validate([
+            'permissions' => 'array'
+        ]);
+        
+        $role->syncPermissions($validated['permissions']);
+        
+        return response()->json(['role' => $role], Response::HTTP_OK);
+    }
+    
     public function deleteRole(GetRoleRequest $request): JsonResponse
     {
         try {

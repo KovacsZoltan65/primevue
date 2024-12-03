@@ -26,13 +26,21 @@ class StoreRoleRequest extends BaseRequest
                 'required','string',
                 "mix:{$this->validationRules['minStringLength']}",
                 "max:{$this->validationRules['maxStringLength']}",
-                Rule::unique('rules', 'name'),
+                Rule::unique('roles', 'name'),
             ],
-            'guard_name' => [
-                'required','string',
-                "mix:{$this->validationRules['minStringLength']}",
-                "max:{$this->validationRules['maxStringLength']}",
-                Rule::unique('rules', 'guard_name'),
+            'permissions' => ['array'],
+        ];
+    }
+    
+    public function messages()
+    {
+        return [
+            'name' => [
+                'required' => __('validate_required'),
+                'string' => __('validate_string'),
+                'min' => __('validate_min.numeric'),
+                'max' => __('validate_max.numeric'),
+                'unique' => __('validate_unique'),
             ],
         ];
     }

@@ -26,7 +26,8 @@ class StoreCompanyRequest extends BaseRequest
             'name' => [
                 'request','string',
                 "min:{$this->validationRules['minStringLength']}",
-                "max:{$this->validationRules['maxStringLength']}"
+                "max:{$this->validationRules['maxStringLength']}",
+                Rule::unique('companies', 'name')
             ],
             'email' => [
                 'required', 'string',

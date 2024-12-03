@@ -61,7 +61,7 @@ const dt = ref();
 const companies = ref();
 const company = ref({
     id: null,
-    name: "",
+    name: "aaa",
     directory: "",
     country_id: null,
     city_id: null,
@@ -72,6 +72,7 @@ const company = ref({
 });
 
 const initialCompany = () => {
+    console.log('initialCompany');
     return {...company};
 };
 
@@ -239,7 +240,10 @@ function confirmDeleteSelected() {
  * @return {void}
  */
 function openNew() {
-    company.value = { ...initialCompany };
+    console.log('openNew');
+    //company.value = { ...initialCompany };
+    company.value = initialCompany();
+
     submitted.value = false;
     companyDialog.value = true;
 }
@@ -271,7 +275,6 @@ const hideDialog = () => {
  */
 const editCompany = (data) => {
     company.value = { ...data };
-
     companyDialog.value = true;
 };
 
@@ -327,7 +330,7 @@ const saveCompany = async () => {
 };
 
 const createCompany = () => {
-    
+
     // Lokálisan hozzunk létre egy ideiglenes azonosítót az új céghez
     const newCompany = {...company.value, id:createId() };
     companies.value.push(newCompany);
@@ -378,7 +381,7 @@ const createCompany = () => {
                     validationErrors: validationErrors,
                 });
             }else{
-                
+
                 // Hibás esetben a lokális adat törlése
                 const index = findIndexById(newCompany.id);
                 if (index !== -1) {
@@ -405,7 +408,7 @@ const createCompany = () => {
                 });
 
             }
-            
+
         });
 };
 

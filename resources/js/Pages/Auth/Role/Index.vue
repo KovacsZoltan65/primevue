@@ -101,10 +101,11 @@ const fetchItems = () => {
         });
 }
 
-const initialRole = () => {
-    console.log(role);
-    return {...role};
-}
+const initialRole = {
+    id: null,
+    name: "",
+    guard_name: "web"
+};
 
 onMounted(() => {
     fetchItems();
@@ -370,12 +371,7 @@ const deleteRole = () => {
 };
 
 function openNew() {
-    
-    //role.value = { ...role };
-    role = initialRole();
-
-    console.log('openNew', role.value.guard_name);
-
+    role.value = {...initialRole};
     submitted.value = false;
     roleDialog.value = true;
 }
@@ -442,7 +438,7 @@ const confirmDeleteRole = (data) => {
 <template>
     <AppLayout :title="$t('roles')">
         <Head :title="$t('roles')" />
-        
+
         <Toast />
 
         <div class="card">
@@ -630,7 +626,7 @@ const confirmDeleteRole = (data) => {
                     {{ $t(v$.guard_name.$errors[0].$message) }}
                 </small>
             </div>
-            
+
             <template #footer>
                 <Button
                     :label="$t('cancel')"

@@ -38,6 +38,8 @@ import Message from "primevue/message";
 const props = defineProps({
     countries: { type: Object, default: () => {}, },
     cities: { type: Object, default: () => {}, },
+    search: { type: Object, default: () => {}, },
+    can: { type: Object, default: () => {}, },
 });
 
 /**
@@ -175,10 +177,12 @@ const v$ = useVuelidate(rules, company);
  *
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
  */
-const fetchItems = () => {
+const fetchItems = async () => {
     loading.value = true;
 
-    CompanyService.getCompanies()
+    //console.log(props);
+
+    await CompanyService.getCompanies()
         .then((response) => {
             // A városok listája a companies változóban lesz elmentve
             companies.value = response.data;
@@ -223,7 +227,7 @@ onMounted(() => {
  */
 function confirmDeleteSelected() {
     deleteSelectedCompaniesDialog.value = true;
-}
+};
 
 /**
  * Megnyitja az új város dialógusablakot.
@@ -235,10 +239,11 @@ function confirmDeleteSelected() {
  * @return {void}
  */
 function openNew() {
-    company.value = { ...initialCompany };
+    company.value = initialCompany();
+
     submitted.value = false;
     companyDialog.value = true;
-}
+};
 
 /**
  * Bezárja a dialógusablakot.
@@ -267,7 +272,6 @@ const hideDialog = () => {
  */
 const editCompany = (data) => {
     company.value = { ...data };
-
     companyDialog.value = true;
 };
 
@@ -322,8 +326,8 @@ const saveCompany = async () => {
     }
 };
 
-const createCompany = () => {
-    
+const createCompany = async () => {
+
     // Lokálisan hozzunk létre egy ideiglenes azonosítót az új céghez
     const newCompany = {...company.value, id:createId() };
     companies.value.push(newCompany);
@@ -337,7 +341,7 @@ const createCompany = () => {
     });
 
     // Szerver kérés
-    CompanyService.createCompany(company.value)
+    await CompanyService.createCompany(company.value)
         .then((response) => {
             // Lokális adat frissítése a szerver válasza alapján
             const index = findIndexById(newCompany.id);
@@ -374,21 +378,18 @@ const createCompany = () => {
                     validationErrors: validationErrors,
                 });
             }else{
-                
+
                 // Hibás esetben a lokális adat törlése
                 const index = findIndexById(newCompany.id);
                 if (index !== -1) {
                     companies.value.splice(index, 1);
                 }
 
-                const message = trans('error_company_create');
-                //console.error("createCompany API Error:", error);
-
                 // Toast hibaüzenet
                 toast.add({
                     severity: "error",
                     summary: "Error",
-                    detail: message,
+                    detail: trans('error_company_create'),
                 });
 
                 // Hiba naplózása
@@ -401,35 +402,11 @@ const createCompany = () => {
                 });
 
             }
-            
+
         });
 };
 
 const updateCompany = () => {
-    /*
-    if( v$.value.$invalid ) {
-        ErrorService.logClientError(new Error('Client-side validation error'), {
-            componentName: "updateCompany",
-            additionalInfo: "Client-side validation failed during company update",
-            category: "Validation Error",
-            priority: "low",
-            validationErrors: v$.value.$errors.map((error) => ({
-                field: error.$property,
-                message: error.$message,
-            })),
-        });
-
-        // Hibaüzenet megjelenítése a felhasználónak
-        toast.add({
-            severity: "warn",
-            summary: "Validation Error",
-            detail: "Please fix the highlighted errors before submitting.",
-            life: 4000,
-        });
-
-        return; // Megállítjuk a műveletet, amíg a hibák nem kerülnek kijavításra
-    }
-    */
     const index = findIndexById(company.value.id);
     if (index === -1) {
         console.error(`Company with id ${country.value.id} not found`);
@@ -677,6 +654,7 @@ const throwError = () => {
                         severity="secondary"
                         class="mr-2"
                         @click="openNew"
+                        :disabled="!props.can.create"
                     />
 
                     <!-- Delete Selected Button -->
@@ -717,7 +695,7 @@ const throwError = () => {
                 ref="dt"
                 v-model:selection="selectedCompanies"
                 v-model:filters="filters"
-                :filters="filters" filterDisplay="menu"
+                filterDisplay="menu"
                 :value="companies"
                 dataKey="id"
                 :paginator="true" :rows="10" sortMode="multiple"
@@ -848,6 +826,7 @@ const throwError = () => {
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
                         <Button
+                            :disabled="!props.can.edit"
                             icon="pi pi-pencil"
                             outlined
                             rounded
@@ -860,6 +839,7 @@ const throwError = () => {
                             rounded
                             severity="danger"
                             @click="confirmDeleteCompany(slotProps.data)"
+                            :disabled="!props.can.delete"
                         />
                     </template>
                 </Column>

@@ -6,15 +6,29 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Override;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Role extends Model
 {
-    use HasFactory;
+    use HasFactory,
+        LogsActivity;
     
     protected $table = 'roles';
     
     protected $fillable = [
-        'name'
+        'name', 'guard_name'
+    ];
+    
+    protected static $logAttributes = [
+        'name', 'guard_name'
+    ];
+    
+    protected static $recordEvents = [
+        'created',
+        'updated',
+        'deleted',
     ];
     
     public function scopeSearch(Builder $query, Request $request)
@@ -24,5 +38,12 @@ class Role extends Model
                 $query->where('name', 'like', "%{$request->search}%");
             });
         });
+    }
+    
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logAll();
     }
 }

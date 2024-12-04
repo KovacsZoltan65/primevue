@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Validation\Rule;
 
-class UpdateSubdomainStateRequest extends BaseRequest
+class StoreRoleRequest extends BaseRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,10 +24,11 @@ class UpdateSubdomainStateRequest extends BaseRequest
         return [
             'name' => [
                 'required','string',
-                "min:{$this->validationRules['minStringLength']}",
+                "mix:{$this->validationRules['minStringLength']}",
                 "max:{$this->validationRules['maxStringLength']}",
-                Rule::unique('subdomain_states', 'name')->ignore($this->id),
-            ]
+                Rule::unique('roles', 'name'),
+            ],
+            'permissions' => ['array'],
         ];
     }
     
@@ -43,5 +44,4 @@ class UpdateSubdomainStateRequest extends BaseRequest
             ],
         ];
     }
-    
 }

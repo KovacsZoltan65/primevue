@@ -9,11 +9,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Override;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Person extends Model
 {
     use HasFactory,
-        SoftDeletes;
+        SoftDeletes,
+        LogsActivity;
     
     protected $table = 'persons';
     protected $fillable = ['name', 'email', 'password', 'language', 'birthdate', 'active'];
@@ -24,6 +28,18 @@ class Person extends Model
         'language' => 'hu', 
         'birthdate' => '', 
         'active' => 1
+    ];
+    
+    protected static $logAttributes = [
+        'name', 'email', 
+        'password', 'language', 
+        'birthdate', 'active'
+    ];
+    
+    protected static $recordEvents = [
+        'created',
+        'updated',
+        'deleted',
     ];
     
     public function scopeSearch(Builder $query, Request $request)
@@ -53,5 +69,12 @@ class Person extends Model
     public function entities(): HasManyThrough
     {
         return $this->hasManyThrough(Entity::class, Company::class, 'person_company', 'company_id', 'id', 'id');
+    }
+    
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logAll();
     }
 }

@@ -5,13 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class City extends Model
 {
     use HasFactory,
-        SoftDeletes;
+        SoftDeletes,
+        LogsActivity;
     
     protected $table = 'cities';
     
@@ -65,7 +69,7 @@ class City extends Model
     /**
      * Szerezd meg a várost birtokló régiót
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function region()
     {
@@ -75,10 +79,17 @@ class City extends Model
     /**
      * Szerezd meg azt az országot, amelyik a város tulajdonosa
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function country()
     {
         return $this->belongsTo(Country::class, 'country_id');
+    }
+    
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logAll();
     }
 }

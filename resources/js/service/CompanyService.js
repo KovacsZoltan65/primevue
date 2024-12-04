@@ -69,7 +69,6 @@ class CompanyService extends BaseService {
     deleteCompanies(ids) {
         const query = ids.map(id => `ids[]=${id}`).join('&');
         return this.delete(`/companies?${query}`);
-        //return this.delete(`/companies`);
     }
 
     /**

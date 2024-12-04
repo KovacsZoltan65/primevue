@@ -9,6 +9,7 @@ use App\Http\Resources\CompanyResource;
 use App\Models\City;
 use App\Models\Company;
 use App\Models\Country;
+use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -20,6 +21,9 @@ use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Routing\Controller;
+
 /**
  * A CompanyController osztálya a cégek listázásához, létrehozásához, módosításához és
  * törléséhez szükséges metódusokat tartalmazza.
@@ -28,6 +32,16 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class CompanyController extends Controller
 {
+    use AuthorizesRequests,
+        Functions;
+    
+    public function __construct() {
+        $this->middleware('can:companies list', ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
+        $this->middleware('can:companies create', ['only' => ['createCompany']]);
+        $this->middleware('can:companies edit', ['only' => ['updateCompany']]);
+        $this->middleware('can:companies delete', ['only' => ['deleteCompany', 'deleteCompanies']]);
+        $this->middleware('can:companies restore', ['only' => ['restoreCompany']]);
+    }
     /**
      * Jelenítse meg a cégek listáját.
      *
@@ -36,22 +50,33 @@ class CompanyController extends Controller
      */
     public function index(Request $request): InertiaResponse
     {
+        $roles = $this->getUserRoles('companies');
+        /*
+        $user = \App\Models\User::find(1); // Például az első felhasználó
+        dd(
+            'user', $user,
+            'hasRole admin', $user->hasRole('admin'),
+            'has permission companies create', auth()->user()->hasPermissionTo('companies create')
+        );
+        */
+        // Vagy közvetlen jogosultság hozzárendelés:
+        //$user->givePermissionTo('edit companies');
+        
         // A City modelben a városok listáját adjuk vissza, azokkal a mezőkkel, amelyek
         // az Inertia oldalakon használtak.
         $cities = City::select('id', 'name')
             ->orderBy('name')
-            ->active()
-            ->get()->toArray();
+            ->active()->get()->toArray();
         $countries = Country::select('id', 'name')
             ->orderBy('name')
-            ->active()
-            ->get()->toArray();
+            ->active()->get()->toArray();
 
         // Adjon vissza egy Inertia választ a vállalatok és a keresési paraméterek megadásával.
         return Inertia::render("Companies/Index", [
             'countries' => $countries,
             'cities' => $cities,
-            'search' => request('search')
+            'search' => request('search'),
+            'can' => $roles,
         ]);
     }
 
@@ -291,6 +316,53 @@ class CompanyController extends Controller
         }
     }
 
+    public function restoreCompany(GetCompanyRequest $request): JsonResponse
+    {
+        try {
+            $company = Company::withTrashed()->findOrFail($request->id);
+            $company->restore();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Company restored successfully',
+                'data' => $company, // Az aktuális adatokat is visszaadjuk
+            ], Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_RESTORE_COMPANY', // updateCompany not found error
+                'route' => request()->path(),
+            ]);
+
+            // Ha a rekord nem található
+            return response()->json([
+                'success' => false,
+                'message' => 'Company not found in trashed records',
+            ], Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_COMPANY', // updateCompany database error
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'DB_ERROR_COMPANY', // Database error occurred while updating the company
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'restoreCompany general error',
+                'route' => request()->path(),
+            ]);
+
+            // Általános hibakezelés
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while restoring the company',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
     /**
      * Töröl egy céget az azonosítója alapján.
      *
@@ -350,20 +422,20 @@ class CompanyController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function deleteCompanies(Request $request): JsonResponse
+    public function deleteRoles(Request $request): JsonResponse
     {
         try {
             // Az azonosítók tömbjének validálása
             $validated = $request->validate([
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
-                'ids.*' => 'integer|exists:companies,id', // Az id-k egész számok és létező cégek legyenek
+                'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
             ]);
 
             // Az azonosítók kigyűjtése
             $ids = $validated['ids'];
 
             // A cégek törlése
-            $deletedCount = Company::whereIn('id', $ids)->delete();
+            $deletedCount = Role::whereIn('id', $ids)->delete();
 
             // Válasz visszaküldése
             return response()->json([

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-//use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreCompanyRequest extends BaseRequest
@@ -24,9 +23,10 @@ class StoreCompanyRequest extends BaseRequest
     {
         return [
             'name' => [
-                'request','string',
+                'required','string',
                 "min:{$this->validationRules['minStringLength']}",
-                "max:{$this->validationRules['maxStringLength']}"
+                "max:{$this->validationRules['maxStringLength']}",
+                Rule::unique('companies', 'name')
             ],
             'email' => [
                 'required', 'string',

@@ -31,6 +31,8 @@ class DatabaseSeeder extends Seeder
 
             MenuItemSeeder::class,
             MenuItemEntitiesSeeder::class,
+            
+            RoleAndPermissionSeeder::class,
         ]);
 
         // User::factory(10)->create();

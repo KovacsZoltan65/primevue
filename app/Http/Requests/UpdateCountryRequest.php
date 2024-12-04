@@ -23,13 +23,13 @@ class UpdateCountryRequest extends FormRequest
     {
         return [
             'name' => [
-                'request','string',
+                'required','string',
                 "min:{$this->validationRules['minStringLength']}",
                 "max:{$this->validationRules['maxStringLength']}",
                 Rule::unique('countries', 'name')->ignore($this->id),
             ],
             'code' => [
-                'request','string',
+                'required','string',
                 "min:{$this->validationRules['maxCodeLength']}",
                 "max:{$this->validationRules['maxCodeLength']}",
                 Rule::unique('countries', 'code')->ignore($this->id),

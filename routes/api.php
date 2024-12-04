@@ -250,7 +250,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/subdomain_states/{id}', [SubdomainStateController::class, 'getSubdomainState'])->name('api.get.subdomain_state')->where('id', '[0-9]+');
     Route::get('/subdomain_states/name/{name}', [SubdomainStateController::class, 'getSubdomainStateByName'])->name('api.get.subdomain_state_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
     Route::post('/subdomain_states', [SubdomainStateController::class, 'createSubdomainStates'])->name('api.post.subdomain_states');
-    Route::put('/subdomain_states/{id}', [SubdomainStateController::class, 'updateSubdomainStates'])->name('api.put.subdomain_states')->where('id', '[0-9]+');
+    Route::put('/subdomain_states/{id}', [SubdomainStateController::class, 'updateSubdomainState'])->name('api.put.subdomain_states')->where('id', '[0-9]+');
     Route::delete('/subdomain_states/{id}', [SubdomainStateController::class, 'deleteSubdomainStates'])->name('api.delete.subdomain_states')->where('id', '[0-9]+');
 
     /**

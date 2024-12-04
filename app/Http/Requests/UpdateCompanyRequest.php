@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateCompanyRequest extends FormRequest
+class UpdateCompanyRequest extends BaseRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,7 +25,8 @@ class UpdateCompanyRequest extends FormRequest
             'name' => [
                 'request','string',
                 "min:{$this->validationRules['minStringLength']}",
-                "max:{$this->validationRules['maxStringLength']}"
+                "max:{$this->validationRules['maxStringLength']}",
+                Rule::unique('companies', 'name')->ignore($this->id),
             ],
             'email' => [
                 'required', 'string',

@@ -177,12 +177,12 @@ const v$ = useVuelidate(rules, company);
  *
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
  */
-const fetchItems = () => {
+const fetchItems = async () => {
     loading.value = true;
 
     //console.log(props);
 
-    CompanyService.getCompanies()
+    await CompanyService.getCompanies()
         .then((response) => {
             // A városok listája a companies változóban lesz elmentve
             companies.value = response.data;
@@ -326,7 +326,7 @@ const saveCompany = async () => {
     }
 };
 
-const createCompany = () => {
+const createCompany = async () => {
 
     // Lokálisan hozzunk létre egy ideiglenes azonosítót az új céghez
     const newCompany = {...company.value, id:createId() };
@@ -341,7 +341,7 @@ const createCompany = () => {
     });
 
     // Szerver kérés
-    CompanyService.createCompany(company.value)
+    await CompanyService.createCompany(company.value)
         .then((response) => {
             // Lokális adat frissítése a szerver válasza alapján
             const index = findIndexById(newCompany.id);
@@ -385,14 +385,11 @@ const createCompany = () => {
                     companies.value.splice(index, 1);
                 }
 
-                const message = trans('error_company_create');
-                //console.error("createCompany API Error:", error);
-
                 // Toast hibaüzenet
                 toast.add({
                     severity: "error",
                     summary: "Error",
-                    detail: message,
+                    detail: trans('error_company_create'),
                 });
 
                 // Hiba naplózása

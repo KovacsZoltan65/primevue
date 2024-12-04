@@ -36,11 +36,11 @@ class CompanyController extends Controller
         Functions;
     
     public function __construct() {
-        $this->middleware('can:companies list', ['only' => ['index', 'applySearch']]);
+        $this->middleware('can:companies list', ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
         $this->middleware('can:companies create', ['only' => ['createCompany']]);
         $this->middleware('can:companies edit', ['only' => ['updateCompany']]);
         $this->middleware('can:companies delete', ['only' => ['deleteCompany', 'deleteCompanies']]);
-        $this->middleware('can:companies restore', ['only' => ['restore']]);
+        $this->middleware('can:companies restore', ['only' => ['restoreCompany']]);
     }
     /**
      * Jelenítse meg a cégek listáját.
@@ -480,16 +480,4 @@ class CompanyController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
-    /*
-    private function getUserRoles()
-    {
-        $permissions = ['list', 'create', 'edit', 'delete', 'restore'];
-        $userRoles = [];
-        foreach ($permissions as $permission) {
-            $userRoles[$permission] = \Auth::user()->can("companies {$permission}");
-        }
-        return $userRoles;
-    }
-    */
 }

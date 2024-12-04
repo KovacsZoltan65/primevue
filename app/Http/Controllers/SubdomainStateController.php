@@ -18,20 +18,31 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use function request;
-use function response;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Routing\Controller;
+use App\Traits\Functions;
 
 class SubdomainStateController extends Controller
 {
+    use AuthorizesRequests,
+        Functions;
+    
     public function __construct()
     {
-        //
+        $this->middleware('can:subdomainstate list', ['only' => ['index', 'applySearch', 'getSubdomainStates', 'getSubdomainState', 'getSubdomainStateByName']]);
+        $this->middleware('can:subdomainstate create', ['only' => ['createSubdomainState']]);
+        $this->middleware('can:subdomainstate edit', ['only' => ['updateSubdomainStates']]);
+        $this->middleware('can:subdomainstate delete', ['only' => ['deleteSubdomainState', 'deleteSubdomainStates']]);
+        $this->middleware('can:subdomainstate restore', ['only' => ['restoreSubdomainState']]);
     }
 
     public function index(Request $request): InertiaResponse
     {
+        $roles = $this->getUserRoles('subdomainstate');
+        
         return Inertia::render('SubdomainState/Index', [
             'search' => $request->get('search'),
+            'can' => $roles,
         ]);
     }
 
@@ -46,7 +57,7 @@ class SubdomainStateController extends Controller
     {
         try {
             // A cégek listájának lekérése a request paraméterei alapján
-            $subdomainStateQuery = Company::search($request);
+            $subdomainStateQuery = SubdomainState::search($request);
 
             // JSON válaszként adja vissza a cégeket
             $subdomainStates = SubdomainStateResource::collection($subdomainStateQuery->get());
@@ -198,6 +209,12 @@ class SubdomainStateController extends Controller
         }
     }
 
+    /**
+     * 
+     * @param UpdateSubdomainStateRequest $request
+     * @param int $id
+     * @return JsonResponse
+     */
     public function updateSubdomainState(UpdateSubdomainStateRequest $request, int $id): JsonResponse
     {
         try {
@@ -351,5 +368,10 @@ class SubdomainStateController extends Controller
                 'details' => $ex->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+    
+    public function restoreSubdomainState(GetSubdomainStateRequest $request): JsonResponse
+    {
+        //
     }
 }

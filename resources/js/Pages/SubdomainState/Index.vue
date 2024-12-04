@@ -24,6 +24,8 @@ import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
 import SubdomainService from "@/service/SubdomainService";
+import ErrorService from "@/service/ErrorService";
+import { Toast } from "primevue";
 
 const loading = ref(true);
 
@@ -31,20 +33,8 @@ const loading = ref(true);
  * Szerver felöl jövő adatok
  */
 const props = defineProps({
-    /**
-     * Országok adatai.
-     */
-    //subdomains: {
-    //    type: Object,
-    //    default: () => {},
-    //},
-    /**
-     * Régiók adatai.
-     */
-    //regions: {
-    //    type: Object,
-    //    default: () => {},
-    //},
+    search: { type: Object, default: () => {}, },
+    can: { type: Object, default: () => {}, },
 });
 
 /**
@@ -180,17 +170,25 @@ const v$ = useVuelidate(rules, state);
  *
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
-const fetchItems = () => {
+const fetchItems = async () => {
     loading.value = true;
 
-    StateService.getSubdomainStates()
+    await StateService.getSubdomainStates()
         .then((response) => {
             // A városok listája a subdomains változóban lesz elmentve
-            states.value = response.data.data;
+            states.value = response.data;
         })
         .catch((error) => {
             // Jelenítse meg a hibaüzenetet a konzolon
             console.error("getSubdomainStates API Error:", error);
+
+            ErrorService.logClientError(error, {
+                componentName: "Fetch Subdomain States",
+                additionalInfo: "Failed to retrieve the subdomain states",
+                category: "Error",
+                priority: "high",
+                data: null,
+            });
         }).finally(() => {
             loading.value = false;
         });
@@ -247,7 +245,7 @@ function confirmDeleteSelected() {
  * @return {void}
  */
 function openNew() {
-    state.value = { ...initialState };
+    state.value = initialState();
     submitted.value = false;
     stateDialog.value = true;
 }
@@ -263,10 +261,8 @@ function openNew() {
  * @property {number} active - Az állapot aktív-e? (1 igen, 0 nem).
  * @property {number} id - Az állapot azonosítója.
  */
-const initialState = {
-    id: null,
-    name: "",
-    active: 1,
+const initialState = () => {
+    return {...state};
 };
 
 /**
@@ -318,6 +314,7 @@ const confirmDeleteState = (data) => {
 };
 
 const saveState = async () => {
+
     const result = await v$.value.$validate();
     if (result) {
         submitted.value = true;
@@ -328,7 +325,23 @@ const saveState = async () => {
             createState();
         }
     } else {
-        alert("FAIL");
+        const validationErrors = v$.value.$errors.map((error) => ({
+            field: error.$property,
+            message: trans(error.$message),
+        }));
+        const data = {
+            componentName: "saveState",
+            additionalInfo: "Client-side validation failed during state update",
+            category: "Validation Error",
+            priority: "low",
+            validationErrors: validationErrors,
+        };
+        ErrorService.logValidationError(new Error('Client-side validation error'), data);
+        toast.add({
+            severity: "error",
+            summary: "Validation Error",
+            detail: "Please fix the highlighted errors before submitting.",
+        });
     }
 };
 
@@ -341,24 +354,67 @@ const saveState = async () => {
  *
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
-const createState = () => {
-    StateService.createSubdomainState(state.value)
-        .then((response) => {
-            //console.log('response', response);
-            states.values.push(response.data);
+const createState = async () => {
+    const newState = {...state.value, id:createId() };
+    companies.value.push(newState);
 
+    toast.add({
+        severity: "success",
+        summary: "Creating...",
+        detail: "State creation in progress",
+        life: 3000,
+    });
+
+    await StateService.createSubdomainState(state.value)
+        .then((response) => {
+            const index = findIndexById(newState.id);
+            if (index !== -1) {
+                states.value.splice(index, 1, response.data);
+            }
             hideDialog();
 
             toast.add({
                 severity: "success",
                 summary: "Successful",
-                detail: "SubdomainState Created",
+                detail: "Subdomain State Created",
                 life: 3000,
             });
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("createSubdomainState API Error:", error);
+            if( error.response && error.response.status === 422) {
+                const validationErrors = error.response.data.details;
+                toast.add({
+                    severity: "warn",
+                    summary: "Validation Error",
+                    detail: "Please check your inputs",
+                    life: 4000,
+                });
+                ErrorService.logClientError(error, {
+                    componentName: "createSubdomainState",
+                    additionalInfo: "Validation errors occurred during subdomain state creation",
+                    category: "Validation Error",
+                    priority: "medium",
+                    validationErrors: validationErrors,
+                });
+            } else {
+                const index = findIndexById(newState.id);
+                if (index !== -1) {
+                    states.value.splice(index, 1);
+                }
+                toast.add({
+                    severity: "error",
+                    summary: "Error",
+                    detail: trans('error_subdomain_state_create'),
+                });
+
+                ErrorService.logClientError(error, {
+                    componentName: "CreateSubdomainStateDialog",
+                    additionalInfo: "Failed to create a subdomain state in the backend",
+                    category: "Error",
+                    priority: "high",
+                    data: state.value,
+                });
+            }
         });
 };
 
@@ -374,27 +430,46 @@ const createState = () => {
  * @return {Promise} Ígéret, amely a válaszban szereplő adatokkal megoldódik.
  */
 const updateState = () => {
-    StateService.updateSubdomain(state.value.id, state.value)
-        .then(() => {
-            // Megkeresi az állapot indexét a városok tömbjében az azonosítója alapján
-            const index = findIndexById(state.value.id);
-            // A város adatait frissíti a városok tömbjében
-            states.value.splice(index, 1, state.value);
+    const index = findIndexById(state.value.id);
+    if (index === -1) {
+        console.error(`State with id ${state.value.id} not found`);
+        return;
+    }
+    const originalState = { ...states.value[index] };
+    states.value.splice(index, 1, { ...state.value });
+    hideDialog();
+    toast.add({
+        severity: "info",
+        summary: "Updating...",
+        detail: "State update in progress",
+        life: 2000,
+    });
 
-            // Bezárja a dialógus ablakot
-            hideDialog();
-
-            // Siker-értesítést jelenít meg
+    StateService.updateSubdomainState(state.value.id, state.value)
+        .then((response) => {
+            states.value.splice(index, 1, response.data);
             toast.add({
                 severity: "success",
                 summary: "Successful",
-                detail: "SubdomainState Updated",
+                detail: "State Updated",
                 life: 3000,
             });
         })
         .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("updateSubdomainState API Error:", error);
+            console.log(error);
+            states.value.splice(index, 1, originalState);
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to update state",
+            });
+            ErrorService.logClientError(error, {
+                componentName: "updateState",
+                additionalInfo: "Failed to update a state in the backend",
+                category: "Error",
+                priority: "medium",
+                data: state.value,
+            });
         });
 };
 
@@ -474,6 +549,8 @@ const getActiveValue = (subdomain) =>
 <template>
     <AppLayout>
         <Head :title="$t('subdomain_states')" />
+
+        <Toast />
 
         <div class="card">
             <Toolbar class="md-6">

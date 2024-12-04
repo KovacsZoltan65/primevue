@@ -25,10 +25,12 @@ class RoleAndPermissionSeeder extends Seeder
         DB::table('model_has_roles')->truncate();
         Schema::enableForeignKeyConstraints();
         
-        $classes = ['companies', 'roles'];
+        $classes = [
+            'companies', 'roles', 'subdomainstate'
+        ];
         
         $permissions = [
-            'list', 'create', 'edit', 'delete',
+            'list', 'create', 'edit', 'delete', 'restore'
         ];
         
         $admin = Role::create(['name' => 'admin']);

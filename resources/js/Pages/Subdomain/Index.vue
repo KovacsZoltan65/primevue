@@ -299,14 +299,23 @@ initFilters();
 const fetchItems = async () => {
     loading.value = true;
 
-    try {
-        const response = await SubdomainService.getSubdomains();
-        subdomains.value = response.data.data;
-    }catch(error) {
-        console.error("getSubdomains API Error:", error);
-    } finally {
-        loading.value = false;
-    }
+    await SubdomainService.getSubdomains()
+        .then((response) => {
+            subdomains.value = response.data;
+        })
+        .catch((error) => {
+            console.error("getSubdomains API Error:", error);
+
+            ErrorService.logClientError(error, {
+                componentName: "Fetch Subdomain",
+                additionalInfo: "Failed to retrieve the subdomain",
+                category: "Error",
+                priority: "high",
+                data: null,
+            });
+        }).finally(() => {
+            loading.value = false;
+        });
 };
 
 /**

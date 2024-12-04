@@ -24,13 +24,13 @@ class StoreCountryRequest extends FormRequest
     {
         return [
             'name' => [
-                'request','string',
+                'required','string',
                 "min:{$this->validationRules['minStringLength']}",
                 "max:{$this->validationRules['maxStringLength']}",
                 Rule::unique('countries', 'name'),
             ],
             'code' => [
-                'request','string',
+                'required','string',
                 "min:{$this->validationRules['maxCodeLength']}",
                 "max:{$this->validationRules['maxCodeLength']}",
                 Rule::unique('countries', 'code'),

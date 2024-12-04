@@ -26,7 +26,7 @@ class RoleAndPermissionSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
         
         $classes = [
-            'companies', 'roles', 'subdomainstate'
+            'companies', 'roles', 'permissions', 'subdomainstate'
         ];
         
         $permissions = [

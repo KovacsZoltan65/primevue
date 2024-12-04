@@ -44,8 +44,8 @@ const props = defineProps({
  */
 const getBools = () => {
     return [
-        { label: trans("inactive"), value: 0, },
-        { label: trans("active"), value: 1, },
+        { label: trans("inactive"), value: '0', },
+        { label: trans("active"), value: '1', },
     ];
 };
 

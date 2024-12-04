@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
+use Override;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Class Region
@@ -25,9 +28,8 @@ use Illuminate\Http\Request;
  */
 class Region extends Model
 {
-    use HasFactory
-        //, LogsActivity
-    ;
+    use HasFactory, 
+        LogsActivity;
 
     protected $table = 'regions';
 
@@ -41,6 +43,16 @@ class Region extends Model
         'country_id'
     ];
 
+    protected static $recordEvents = [
+        'created',
+        'updated',
+        'deleted',
+    ];
+    
+    protected static $logAttributes = [
+        'name', 'code', 'country_id', 'active'
+    ];
+    
     /**
      * A régiók listázásához keresési feltételek
      *
@@ -75,5 +87,12 @@ class Region extends Model
     public function cities(): HasMany
     {
         return $this->hasMany(City::class, 'region_id');
+    }
+    
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logAll();
     }
 }

@@ -7,7 +7,7 @@ use Illuminate\Routing\Controller;
 use App\Http\Controllers\ErrorController;
 use App\Http\Requests\GetRoleRequest;
 use App\Http\Requests\StoreRoleRequest;
-use App\Http\Resources\RoleResource;
+use App\Http\Resources\Auth\RoleResource;
 use App\Models\Auth\Permission;
 use App\Models\Auth\Role;
 use App\Models\User;
@@ -223,16 +223,10 @@ class RoleController extends Controller
         }
     }
 
-    public function createRoles(Request $request): JsonResponse
+    public function createRole(StoreRoleRequest $request): JsonResponse
     {
         try {
-            \Log::info($request->all());
-            $validated = $request->validate([
-                'name' => 'required'
-            ]);
-            \Log::info($validated);
-            //$role = Role::create($request->all());
-            $role = Role::create($validated);
+            $role = Role::create($request->all());
 
             if( isset($request->permissions) ){
                 $role->syncPermissions($request->permissions);
@@ -458,11 +452,7 @@ class RoleController extends Controller
             $role = Role::withTrashed()->findOrFail($request->id);
             $role->restore();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Role restored successfully',
-                'data' => $role, // Az aktuális adatokat is visszaadjuk
-            ], Response::HTTP_OK);
+            return response()->json($role, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'DB_ERROR_RESTORE_ROLE', // updateCompany not found error

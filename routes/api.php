@@ -213,7 +213,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/roles', [RoleController::class, 'getRoles'])->name('api.get.roles');
     Route::get('/roles/{id}', [RoleController::class, 'getRole'])->name('api.get.role')->where('id', '[0-9]+');
     Route::get('/roles/name/{name}', [RoleController::class, 'getRolesByName'])->name('api.get.role_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post('/roles', [RoleController::class, 'createRoles'])->name('api.post.roles');
+    Route::post('/roles', [RoleController::class, 'createRole'])->name('api.post.roles');
     Route::put('/roles/{id}', [RoleController::class, 'updateRoles'])->name('api.put.roles')->where('id', '[0-9]+');
     Route::delete('/roles/{id}', [RoleController::class, 'deleteRoles'])->name('api.delete.roles')->where('id', '[0-9]+');
 

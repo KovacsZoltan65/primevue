@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Override;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  *
@@ -22,14 +25,23 @@ use Carbon\Carbon;
 class SubdomainState extends Model
 {
     use HasFactory,
-        SoftDeletes;
+        SoftDeletes,
+        LogsActivity;
 
     protected $table = 'subdomain_states';
 
     protected $fillable = ['name', 'active'];
 
-    protected $casts = [
-        'active' => 'integer',
+    //protected $casts = [
+    //    'active' => 'integer',
+    //];
+    
+    protected static $logAttributes = ['name','active'];
+    
+    protected static $recordEvents = [
+        'created',
+        'updated',
+        'deleted',
     ];
     
     /**
@@ -56,5 +68,12 @@ class SubdomainState extends Model
     public function subdomains(): HasMany
     {
         return $this->hasMany(Subdomain::class, 'state_id');
+    }
+    
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logAll();
     }
 }

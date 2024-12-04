@@ -209,24 +209,22 @@ class SubdomainStateController extends Controller
         }
     }
 
-    /**
-     * 
-     * @param UpdateSubdomainStateRequest $request
-     * @param int $id
-     * @return JsonResponse
-     */
     public function updateSubdomainState(UpdateSubdomainStateRequest $request, int $id): JsonResponse
     {
         try {
             $subdomainState = SubdomainState::findOrFail($id);
             $subdomainState->update($request->all());
             $subdomainState->refresh();
-
+            
+            return response()->json($subdomainState, Response::HTTP_OK);
+            
+            /*
             return response()->json([
                 'success' => APP_TRUE,
                 'message' => 'SUBDOMAIN_STATE_UPDATED_SUCCESSFULLY',
                 'data' => $subdomainState,
             ], Response::HTTP_OK);
+            */
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'DB_ERROR_UPDATE_SUBDOMAIN_STATE',
@@ -293,7 +291,7 @@ class SubdomainStateController extends Controller
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error occurred while deleting the company.',
+                'error' => 'Database error occurred while deleting the subdomain state.',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
@@ -316,7 +314,7 @@ class SubdomainStateController extends Controller
             // Az azonosítók tömbjének validálása
             $validated = $request->validate([
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
-                'ids.*' => 'integer|exists:companies,id', // Az id-k egész számok és létező cégek legyenek
+                'ids.*' => 'integer|exists:subdomain_states,id', // Az id-k egész számok és létező cégek legyenek
             ]);
 
             // Az azonosítók kigyűjtése
@@ -372,6 +370,45 @@ class SubdomainStateController extends Controller
     
     public function restoreSubdomainState(GetSubdomainStateRequest $request): JsonResponse
     {
-        //
+        try {
+            $state = SubdomainState::withTrashed()->findOrFail($request->id);
+            $state->restore();
+            
+            return response()->json($state, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_RESTORE_SUBDOMAIN_STATE', // updateCompany not found error
+                'route' => request()->path(),
+            ]);
+
+            // Ha a rekord nem található
+            return response()->json([
+                'success' => false,
+                'message' => 'Role not found in trashed records',
+            ], Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_SUBDOMAIN_STATE',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'DB_ERROR_SUBDOMAIN_STATE',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'restoreSubdomainState general error',
+                'route' => request()->path(),
+            ]);
+
+            // Általános hibakezelés
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while restoring the role',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

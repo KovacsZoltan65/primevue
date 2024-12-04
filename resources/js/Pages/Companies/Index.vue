@@ -61,7 +61,7 @@ const dt = ref();
 const companies = ref();
 const company = ref({
     id: null,
-    name: "aaa",
+    name: "",
     directory: "",
     country_id: null,
     city_id: null,

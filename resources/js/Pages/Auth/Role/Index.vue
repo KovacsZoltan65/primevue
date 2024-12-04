@@ -503,7 +503,37 @@ const confirmDeleteRole = (data) => {
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
             >
-                <template #header></template>
+            <template #header>
+                    <div
+                        class="flex flex-wrap gap-2 items-center justify-between"
+                    >
+                        <!-- SZŰRÉS TÖRLÉSE -->
+                        <Button
+                            type="button"
+                            icon="pi pi-filter-slash"
+                            :label="$t('clear')"
+                            outlined
+                            @click="clearFilter()"
+                        />
+
+                        <!-- FELIRAT -->
+                        <div class="font-semibold text-xl mb-1">
+                            {{ $t("roles_title") }}
+                        </div>
+
+                        <!-- KERESÉS -->
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText
+                                v-model="filters['global'].value"
+                                :placeholder="$t('search')"
+                            />
+                        </IconField>
+                    </div>
+                </template>
+
                 <template #paginatorstart>
                     <Button
                         type="button"

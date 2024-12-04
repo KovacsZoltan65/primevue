@@ -13,34 +13,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
+use Override;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
-/**
- * Class Subdomain
- *
- * @property int $id
- * @property string $subdomain
- * @property string $url
- * @property string $name
- * @property string $db_host
- * @property int $db_port
- * @property string $db_name
- * @property string $db_user
- * @property string $db_password
- * @property bool $notification
- * @property int $state_id
- * @property int $is_mirror
- * @property int $sso
- * @property int $access_control_system
- * @property Carbon $last_export
- * @property Carbon $created_at
- * @property Carbon $updated_at
- *
- * @package App\Models
- */
 class Subdomain extends Model
 {
     use HasFactory,
-        SoftDeletes;
+        SoftDeletes,
+        LogsActivity;
 
     protected $table = 'subdomains';
 
@@ -80,13 +61,17 @@ class Subdomain extends Model
     ];
     */
     
-    /**
-     * Scope a query to only include subdomains with a name matching the search term.
-     *
-     * @param Builder $query The query builder instance.
-     * @param Request $request The current HTTP request object containing search parameters.
-     * @return Builder The modified query builder instance.
-     */
+    protected static $logAttributes = [
+        'name', 'db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'notification',
+        'state_id', 'is_mirror', 'sso', 'acs_id','active'
+    ];
+    
+    protected static $recordEvents = [
+        'created',
+        'updated',
+        'deleted',
+    ];
+    
     public function scopeSearch(Builder $query, Request $request): Builder
     {
         return $query->when($request->search, function ($query) use ($request) {
@@ -116,5 +101,12 @@ class Subdomain extends Model
     public function subdomainState(): BelongsTo
     {
         return $this->belongsTo(SubdomainState::class, 'state_id');
+    }
+    
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logAll();
     }
 }

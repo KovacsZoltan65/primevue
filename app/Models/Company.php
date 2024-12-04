@@ -19,14 +19,25 @@ class Company extends Model
         LogsActivity;
     
     protected $table = 'companies';
-    protected $fillable = ['name', 'country_id', 'city_id', 'directory', 'registration_number', 'tax_id', 'address', 'active'];
+    protected $fillable = [
+        'name', 'country_id', 
+        'city_id', 'directory', 'registration_number', 
+        'tax_id', 'address', 'active'
+    ];
 
+    protected static $logAttributes = [
+        'name', 'directory', 
+        'registration_number', 'tax_id', 
+        'country_id', 'city_id', 
+        'address', 'active'
+    ];
+    
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
+        'restored',
     ];
-
 
     public function scopeSearch(Builder $query, Request $request)
     {

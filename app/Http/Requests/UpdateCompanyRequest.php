@@ -23,7 +23,7 @@ class UpdateCompanyRequest extends BaseRequest
     {
         return [
             'name' => [
-                'request','string',
+                'required','string',
                 "min:{$this->validationRules['minStringLength']}",
                 "max:{$this->validationRules['maxStringLength']}",
                 Rule::unique('companies', 'name')->ignore($this->id),

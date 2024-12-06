@@ -56,6 +56,9 @@ ADATLEKÉRÉS ...
 \Log::info( print_r(\DB::getQueryLog(), true)); // Show results of log
 \DB::disableQueryLog();
 
+php artisan config:clear
+php artisan cache:clear
+VAGY
 php artisan optimize:clear
 
 // ---------------------------------------
@@ -66,7 +69,11 @@ php artisan telescope:install
 php artisan migrate
 http://your-app-url/telescope
 
-
+// ---------------------------------------
+// REDIS
+// ---------------------------------------
+Cache::store('redis')->put('test_key', 'test_value', 60);
+Cache::store('redis')->get('test_key'); // "test_value" várható eredmény
 
 php artisan make:controller RegionController --resource
 php artisan make:controller CountryController --resource

@@ -14,15 +14,16 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Routing\Controller;
 
 /**
  * A CompanyController osztálya a cégek listázásához, létrehozásához, módosításához és
@@ -34,6 +35,8 @@ class CompanyController extends Controller
 {
     use AuthorizesRequests,
         Functions;
+    
+    protected string $tag = 'companies';
     
     public function __construct() {
         $this->middleware('can:companies list', ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
@@ -97,15 +100,28 @@ class CompanyController extends Controller
         });
     }
 
-    public function getCompanies(Request $request): JsonResponse
+    public function getCompanies(Request $request, \App\Providers\CacheServiceProvider $cacheService): JsonResponse
     {
         try {
-            // A cégek listájának lekérése a request paraméterei alapján
-            $companyQuery = Company::search($request);
-
-            // JSON válaszként adja vissza a cégeket
-            $companies = CompanyResource::collection($companyQuery->get());
-
+            
+            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
+            
+            if( Cache::supportsTags() ) {
+                $companies = Cache::tags(['companies'])->remember($cacheKey, 3600, function () use($request) {
+                    // A cégek listájának lekérése a request paraméterei alapján
+                    $companyQuery = Company::search($request);
+                    return CompanyResource::collection($companyQuery->get());
+                });
+            }
+            else {
+                $companies = Cache::remember($cacheKey, 3600, function() use($request) {
+                    $companyQuery = Company::search($request);
+                    return CompanyResource::collection($companyQuery->get());
+                });
+                
+                $companies = $cacheService->re
+            }
+            
             return response()->json($companies, Response::HTTP_OK);
 
         } catch (QueryException $ex) {
@@ -223,11 +239,17 @@ class CompanyController extends Controller
         try {
             // Hozzon létre egy új céget a HTTP-kérés adatainak felhasználásával
             $company = Company::create($request->all());
-
+            
+            if( Cache::supportsTags() ) {
+                Cache::tags([$this->tag])->flush();
+            } else {
+                Cache::flush();
+            }
+            
             // Sikeres válasz
             return response()->json([
                 'success' => APP_TRUE,
-                'message' => __('command_company_created', ['id' => $request->id]),
+                'message' => __('command_company_created', ['id' => $company->id]),
                 'data' => $company
             ], Response::HTTP_CREATED);
         } catch( QueryException $ex ) {
@@ -273,6 +295,12 @@ class CompanyController extends Controller
             // Frissítjük a modelt
             $company->refresh();
 
+            if( Cache::supportsTags() ) {
+                Cache::tags([$this->tag])->flush();
+            } else {
+                Cache::flush();
+            }
+            
             // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
             return response()->json([
                 'success' => APP_TRUE,

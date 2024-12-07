@@ -11,16 +11,23 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use function response;
+use App\Services\CacheService;
 
 class SubdomainController extends Controller
 {
+    protected string $tag = 'companies';
+    
     public function __construct() {
-        //
+        $this->middleware('can:subdomains list', ['only' => ['index', 'applySearch', 'getSubdomains', 'getSubdomain', 'getSubdomainByName']]);
+        $this->middleware('can:subdomains create', ['only' => ['createSubdomain']]);
+        $this->middleware('can:subdomains edit', ['only' => ['updateSubdomain']]);
+        $this->middleware('can:subdomains delete', ['only' => ['deleteSubdomain', 'deleteSubdomains']]);
+        $this->middleware('can:subdomains restore', ['only' => ['restoreSubdomain']]);
     }
     
     public function index(Request $request): InertiaResponse
@@ -37,11 +44,14 @@ class SubdomainController extends Controller
         });
     }
     
-    public function getSubdomains(Request $request): JsonResponse
+    public function getSubdomains(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $subdomainQuery = Subdomain::search($request);
-            $subdomains = SubdomainResource::collection($subdomainQuery->get());
+            $cacheKey = "subdomain_" . md5(json_encode($request->all()));
+            $subdomains = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                $subdomainQuery = Subdomain::search($request);
+                return SubdomainResource::collection($subdomainQuery->get());
+            });
             
             return response()->json($subdomains, Response::HTTP_OK);
         } catch(QueryException $ex) {
@@ -69,10 +79,14 @@ class SubdomainController extends Controller
         }
     }
     
-    public function getSubdomain(GetSubdomainRequest $request): JsonResponse
+    public function getSubdomain(GetSubdomainRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $subdomain = Subdomain::findOrFail($request->id);
+            $cacheKey = "subdomain_{$request->id}";
+
+            $subdomain = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                return Subdomain::findOrFail($request->id);
+            });
             
             return response()->json($subdomain, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -111,11 +125,15 @@ class SubdomainController extends Controller
         }
     }
     
-    public function getSubdomainByName(string $name): JsonResponse
+    public function getSubdomainByName(string $name, CacheService $cacheService): JsonResponse
     {
         try {
-            $subdomain = Subdomain::where('name', '=', $name)->first();
-            
+            $cacheKey = "subdomain_name_" . md5($name);
+
+            $subdomain = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+                return Subdomain::where('name', '=', $name)->first();
+            });
+
             if (!$subdomain) {
                 // Ha a cég nem található, 404-es hibát adunk vissza
                 return response()->json([
@@ -124,7 +142,7 @@ class SubdomainController extends Controller
                 ], Response::HTTP_NOT_FOUND);
             }
 
-            return response()->json($company, Response::HTTP_OK);
+            return response()->json($subdomain, Response::HTTP_OK);
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
@@ -153,17 +171,14 @@ class SubdomainController extends Controller
         }
     }
     
-    public function createSubdomain(StoreSubdomainRequest $request): JsonResponse
+    public function createSubdomain(StoreSubdomainRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             $subdomain = Subdomain::create($request->all());
+            $cacheService->forgetAll($this->tag);
             
-            // Sikeres válasz
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => __('command_subdomain_created', ['id' => $request->id]),
-                'data' => $company
-            ], Response::HTTP_CREATED);
+            return response()->json($subdomain, Response::HTTP_CREATED);
+            
         } catch(QueryException $ex) {
             // Naplózza a cég létrehozása során észlelt adatbázis-hibát
             ErrorController::logServerError($ex, [
@@ -195,7 +210,7 @@ class SubdomainController extends Controller
         }
     }
     
-    public function updateSubdomain(UpdateCityRequest $request, int $id)
+    public function updateSubdomain(UpdateCityRequest $request, int $id, CacheService $cacheService)
     {
         try {
             // Keresse meg a frissítendő céget az azonosítója alapján
@@ -206,12 +221,15 @@ class SubdomainController extends Controller
             // Frissítjük a modelt
             $subdomain->refresh();
 
+            $cacheService->forgetAll($this->tag);
+            
             // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
             return response()->json([
                 'success' => APP_TRUE,
                 'message' => 'SUBDOMAIN_UPDATED_SUCCESSFULLY',
-                'data' => $company,
+                'data' => $subdomain,
             ], Response::HTTP_OK);
+            
         } catch(ModelNotFoundException $ex) {
             // Ha a cég nem található
             ErrorController::logServerError($ex, [
@@ -249,11 +267,13 @@ class SubdomainController extends Controller
         }
     }
     
-    public function deleteSubdomain(GetSubdomainRequest $request): JsonResponse
+    public function deleteSubdomain(GetSubdomainRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             $subdomain = Subdomain::findOrFail($request->id);
             $subdomain->delete();
+            
+            $cacheService->forgetAll($this->tag);
             
             return response()->json([
                 'success' => APP_TRUE,
@@ -304,7 +324,7 @@ class SubdomainController extends Controller
         */
     }
     
-    public function deleteSubdomains(Request $request): JsonResponse
+    public function deleteSubdomains(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
             // Az azonosítók tömbjének validálása
@@ -319,6 +339,8 @@ class SubdomainController extends Controller
             // A cégek törlése
             $deletedCount = Subdomain::whereIn('id', $ids)->delete();
 
+            $cacheService->forgetAll($this->tag);
+            
             // Válasz visszaküldése
             return response()->json([
                 'success' => true,
@@ -358,6 +380,52 @@ class SubdomainController extends Controller
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'An unexpected error occurred.',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public function restoreSubdomain(GetSubdomainRequest $request, CacheService $cacheService): JsonResponse
+    {
+        try {
+            $state = SubdomainState::withTrashed()->findOrFail($request->id);
+            $state->restore();
+            
+            $cacheService->forgetAll($this->tag);
+            
+            return response()->json($state, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_RESTORE_SUBDOMAIN_STATE', // updateCompany not found error
+                'route' => request()->path(),
+            ]);
+
+            // Ha a rekord nem található
+            return response()->json([
+                'success' => false,
+                'message' => 'Role not found in trashed records',
+            ], Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'DB_ERROR_SUBDOMAIN_STATE',
+                'route' => request()->path(),
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'DB_ERROR_SUBDOMAIN_STATE',
+                'details' => $ex->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            ErrorController::logServerError($ex, [
+                'context' => 'restoreSubdomainState general error',
+                'route' => request()->path(),
+            ]);
+
+            // Általános hibakezelés
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while restoring the role',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }

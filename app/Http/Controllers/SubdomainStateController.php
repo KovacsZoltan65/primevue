@@ -27,6 +27,8 @@ class SubdomainStateController extends Controller
     use AuthorizesRequests,
         Functions;
     
+    protected string $tag = 'subdomainstate';
+    
     public function __construct()
     {
         $this->middleware('can:subdomainstate list', ['only' => ['index', 'applySearch', 'getSubdomainStates', 'getSubdomainState', 'getSubdomainStateByName']]);
@@ -53,15 +55,16 @@ class SubdomainStateController extends Controller
         });
     }
 
-    public function getSubdomainStates(Request $request): JsonResponse
+    public function getSubdomainStates(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
-            // A cégek listájának lekérése a request paraméterei alapján
-            $subdomainStateQuery = SubdomainState::search($request);
+            $cacheKey = "state_" . md5(json_encode($request->all()));
 
-            // JSON válaszként adja vissza a cégeket
-            $subdomainStates = SubdomainStateResource::collection($subdomainStateQuery->get());
-
+            $subdomainStates = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                $subdomainStateQuery = SubdomainState::search($request);
+                return CompanyResource::collection($subdomainStateQuery->get());
+            });
+            
             return response()->json($subdomainStates, Response::HTTP_OK);
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
@@ -88,11 +91,15 @@ class SubdomainStateController extends Controller
         }
     }
 
-    public function getSubdomainState(GetSubdomainStateRequest $request): JsonResponse
+    public function getSubdomainState(GetSubdomainStateRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $subdomainState = SubdomainState::findOrFail($request->id);
-
+            $cacheKey = "state_" . md5(json_encode($request->all()));
+            
+            $subdomainState = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                return Subdomain::findOrFail($request->id);
+            });
+            
             return response()->json($subdomainState, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
@@ -130,7 +137,12 @@ class SubdomainStateController extends Controller
     public function getSubdomainStateByName(string $name): JsonResponse
     {
         try {
-            $subdomainState = SubdomainState::where('name', '=', $name)->first();
+            $cacheKey = "state_" . md5(json_encode($request->all()));
+            
+            $subdomainState = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+                return SubdomainState::where('name', '=', $name)->first();
+            });
+            
             if(!$subdomainState)
             {
                 return response()->json([
@@ -168,16 +180,13 @@ class SubdomainStateController extends Controller
         }
     }
 
-    public function createSubdomainState(StoreSubdomainStateRequest $request): JsonResponse
+    public function createSubdomainState(StoreSubdomainStateRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             $subdomainState = SubdomainState::create($request->all());
-
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => __('command_subdomain_state_created', ['id' => $request->id]),
-                'data' => $subdomainState
-            ], Response::HTTP_CREATED);
+            $cacheService->forgetAll($this->tag);
+            
+            return response()->json($subdomainState, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
             // Naplózza a cég létrehozása során észlelt adatbázis-hibát
             ErrorController::logServerError($ex, [
@@ -209,12 +218,14 @@ class SubdomainStateController extends Controller
         }
     }
 
-    public function updateSubdomainState(UpdateSubdomainStateRequest $request, int $id): JsonResponse
+    public function updateSubdomainState(UpdateSubdomainStateRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try {
             $subdomainState = SubdomainState::findOrFail($id);
             $subdomainState->update($request->all());
             $subdomainState->refresh();
+            
+            $cacheService->forgetAll($this->tag);
             
             return response()->json($subdomainState, Response::HTTP_OK);
             
@@ -261,12 +272,14 @@ class SubdomainStateController extends Controller
         }
     }
 
-    public function deleteSubdomainState(GetSubdomainStateRequest $request): JsonResponse
+    public function deleteSubdomainState(GetSubdomainStateRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             $subdomainState = SubdomainState::findOrFail($request->id);
             $subdomainState->delete();
 
+            $cacheService->forgetAll($this->tag);
+            
             return response()->json([
                 'success' => APP_TRUE,
                 'message' => 'Subdomain State deleted successfully.',
@@ -308,7 +321,7 @@ class SubdomainStateController extends Controller
         }
     }
 
-    public function deleteSubdomainStates(Request $request): JsonResponse
+    public function deleteSubdomainStates(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
             // Az azonosítók tömbjének validálása
@@ -323,6 +336,8 @@ class SubdomainStateController extends Controller
             // A cégek törlése
             $deletedCount = SubdomainState::whereIn('id', $ids)->delete();
 
+            $cacheService->forgetAll($this->tag);
+            
             // Válasz visszaküldése
             return response()->json([
                 'success' => true,
@@ -368,11 +383,13 @@ class SubdomainStateController extends Controller
         }
     }
     
-    public function restoreSubdomainState(GetSubdomainStateRequest $request): JsonResponse
+    public function restoreSubdomainState(GetSubdomainStateRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             $state = SubdomainState::withTrashed()->findOrFail($request->id);
             $state->restore();
+            
+            $cacheService->forgetAll($this->tag);
             
             return response()->json($state, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

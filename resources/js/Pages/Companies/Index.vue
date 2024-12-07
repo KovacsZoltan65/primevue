@@ -72,7 +72,7 @@ const company = ref({
 });
 
 const initialCompany = () => {
-    return {...company};
+    return {...company.value};
 };
 
 watch(
@@ -286,12 +286,12 @@ const editCompany = (data) => {
  */
 const confirmDeleteCompany = (data) => {
     company.value = { ...data };
-
     deleteCompanyDialog.value = true;
 };
 
 const saveCompany = async () => {
     const result = await v$.value.$validate();
+
     if (result) {
         submitted.value = true;
 
@@ -326,12 +326,12 @@ const saveCompany = async () => {
     }
 };
 
-const createCompany = async () => {
+const createCompany = () => {
 
     // Lokálisan hozzunk létre egy ideiglenes azonosítót az új céghez
-    const newCompany = {...company.value, id:createId() };
-    companies.value.push(newCompany);
+    const newCompany = {...company.value, id: createId() };
 
+    companies.value.push(newCompany);
     // Optimista visszajelzés a felhasználónak
     toast.add({
         severity: "success",
@@ -340,9 +340,12 @@ const createCompany = async () => {
         life: 3000,
     });
 
+//console.log(' createCompany company.value', company.value);
+
     // Szerver kérés
-    await CompanyService.createCompany(company.value)
+    CompanyService.createCompany(company.value)
         .then((response) => {
+
             // Lokális adat frissítése a szerver válasza alapján
             const index = findIndexById(newCompany.id);
             if (index !== -1) {
@@ -359,6 +362,7 @@ const createCompany = async () => {
 
         })
         .catch((error) => {
+
             if( error.response && error.response.status === 422){
                 const validationErrors = error.response.data.details;
 
@@ -432,7 +436,7 @@ const updateCompany = () => {
     CompanyService.updateCompany(company.value.id, company.value)
         .then((response) => {
             // Sikeres válasz kezelése
-            companies.value.splice(index, 1, response.data); // Frissített adat a válaszból
+            companies.value.splice(index, 1, response.data.data); // Frissített adat a válaszból
 
             toast.add({
                 severity: "success",

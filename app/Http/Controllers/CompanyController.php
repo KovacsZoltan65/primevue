@@ -9,6 +9,7 @@ use App\Http\Resources\CompanyResource;
 use App\Models\City;
 use App\Models\Company;
 use App\Models\Country;
+use App\Services\CacheService;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,9 +36,9 @@ class CompanyController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    
+
     protected string $tag = 'companies';
-    
+
     public function __construct() {
         $this->middleware('can:companies list', ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
         $this->middleware('can:companies create', ['only' => ['createCompany']]);
@@ -64,7 +65,7 @@ class CompanyController extends Controller
         */
         // Vagy közvetlen jogosultság hozzárendelés:
         //$user->givePermissionTo('edit companies');
-        
+
         // A City modelben a városok listáját adjuk vissza, azokkal a mezőkkel, amelyek
         // az Inertia oldalakon használtak.
         $cities = City::select('id', 'name')
@@ -100,32 +101,19 @@ class CompanyController extends Controller
         });
     }
 
-    public function getCompanies(Request $request, \App\Providers\CacheServiceProvider $cacheService): JsonResponse
+    public function getCompanies(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
-            
-            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
-            
-            if( Cache::supportsTags() ) {
-                $companies = Cache::tags(['companies'])->remember($cacheKey, 3600, function () use($request) {
-                    // A cégek listájának lekérése a request paraméterei alapján
-                    $companyQuery = Company::search($request);
-                    return CompanyResource::collection($companyQuery->get());
-                });
-            }
-            else {
-                $companies = Cache::remember($cacheKey, 3600, function() use($request) {
-                    $companyQuery = Company::search($request);
-                    return CompanyResource::collection($companyQuery->get());
-                });
-                
-                $companies = $cacheService->re
-            }
-            
+            $cacheKey = "company_" . md5(json_encode($request->all()));
+
+            $companies = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                $companyQuery = Company::search($request);
+                return CompanyResource::collection($companyQuery->get());
+            });
+
             return response()->json($companies, Response::HTTP_OK);
 
         } catch (QueryException $ex) {
-            // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
                 'context' => 'DB_ERROR_COMPANIES',
                 'route' => $request->path(),
@@ -137,7 +125,6 @@ class CompanyController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         } catch (Exception $ex) {
-            // Általános hiba naplózása
             ErrorController::logServerError($ex, [
                 'context' => 'getCompanies general error',
                 'route' => $request->path(),
@@ -150,12 +137,18 @@ class CompanyController extends Controller
         }
     }
 
-    public function getCompany(GetCompanyRequest $request): JsonResponse
+    public function getCompany(GetCompanyRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $company = Company::findOrFail($request->id);
+            
+            $cacheKey = "company_{$request->id}";
 
+            $company = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                return Company::findOrFail($request->id);
+            });
+            
             return response()->json($company, Response::HTTP_OK);
+            
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getCompany error',
@@ -189,11 +182,14 @@ class CompanyController extends Controller
         }
     }
 
-    public function getCompanyByName(string $name): JsonResponse
+    public function getCompanyByName(string $name, CacheService $cacheService): JsonResponse
     {
         try {
-            // Cég lekérdezése név alapján
-            $company = Company::where('name', '=', $name)->first();
+            $cacheKey = "company_name_" . md5($name);
+
+            $company = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+                return Company::where('name', '=', $name)->first();
+            });
 
             if (!$company) {
                 // Ha a cég nem található, 404-es hibát adunk vissza
@@ -234,48 +230,57 @@ class CompanyController extends Controller
         }
     }
 
-    public function createCompany(StoreCompanyRequest $request): JsonResponse
+    public function createCompany(StoreCompanyRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
-            // Hozzon létre egy új céget a HTTP-kérés adatainak felhasználásával
+            /*
+            $validated = $request->validate([
+                'name' => 'required',
+                'directory' => 'required',
+                'registration_number' => 'required',
+                'tax_id' => 'required',
+                'country_id' => 'required',
+                'city_id' => 'required',
+                'address' => 'required',
+            ]);
+            
             $company = Company::create($request->all());
-            
-            if( Cache::supportsTags() ) {
-                Cache::tags([$this->tag])->flush();
-            } else {
-                Cache::flush();
-            }
-            
+            $cacheService->forgetAll($this->tag);
+
             // Sikeres válasz
+            return response()->json($company, Response::HTTP_OK);
+            */
+            
+            $company = Company::create($request->all());
+            $cacheService->forgetAll($this->tag);
+            
+            return response()->json($company, Response::HTTP_CREATED);
+            /*
             return response()->json([
                 'success' => APP_TRUE,
                 'message' => __('command_company_created', ['id' => $company->id]),
                 'data' => $company
             ], Response::HTTP_CREATED);
+            */
+            
         } catch( QueryException $ex ) {
-            // Naplózza a cég létrehozása során észlelt adatbázis-hibát
             ErrorController::logServerError($ex, [
-                'context' => 'CREATE_COMPANY_DATABASE_ERROR', // A hiba háttere
-                'route' => request()->path(), // Útvonal, ahol a hiba történt
+                'context' => 'CREATE_COMPANY_DATABASE_ERROR',
+                'route' => request()->path(),
             ]);
 
-            // Adatbázis hiba esetén a hiba részletes leírását is visszaküldi a kliensnek.
-            // Ebben az esetben a HTTP-kód 422 lesz.
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => __('command_company_create_database_error'), // A hiba részletes leírása
-                'details' => $ex->getMessage(), // A hiba részletes leírása
+                'error' => __('command_company_create_database_error'),
+                'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
 
         } catch( Exception $ex ) {
-            // A cég létrehozása során fellépő általános hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'createCompany general error', // Adja meg a hiba kontextusát
-                'route' => request()->path(), // Adja meg az útvonalat, ahol a hiba történt
+                'context' => 'createCompany general error',
+                'route' => request()->path(),
             ]);
 
-            // Ha egyéb hiba történt, akkor a szerveroldali hiba részletes leírását
-            // is visszaküldi a kliensnek.
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'An unexpected error occurred',
@@ -284,23 +289,20 @@ class CompanyController extends Controller
         }
     }
 
-    public function updateCompany(UpdateCompanyRequest $request, int $id): JsonResponse
+    public function updateCompany(UpdateCompanyRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try {
+            
             // Keresse meg a frissítendő céget az azonosítója alapján
             $company = Company::findOrFail($id);
-
+            
             // Frissítse a vállalatot a HTTP-kérés adataival
             $company->update($request->all());
             // Frissítjük a modelt
             $company->refresh();
 
-            if( Cache::supportsTags() ) {
-                Cache::tags([$this->tag])->flush();
-            } else {
-                Cache::flush();
-            }
-            
+            $cacheService->forgetAll($this->tag);
+
             // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
             return response()->json([
                 'success' => APP_TRUE,
@@ -344,11 +346,13 @@ class CompanyController extends Controller
         }
     }
 
-    public function restoreCompany(GetCompanyRequest $request): JsonResponse
+    public function restoreCompany(GetCompanyRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             $company = Company::withTrashed()->findOrFail($request->id);
             $company->restore();
+            
+            $cacheService->forgetAll($this->tag);
 
             return response()->json([
                 'success' => true,
@@ -391,18 +395,15 @@ class CompanyController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    /**
-     * Töröl egy céget az azonosítója alapján.
-     *
-     * @param GetCompanyRequest $request
-     * @return JsonResponse
-     */
-    public function deleteCompany(GetCompanyRequest $request): JsonResponse
+    
+    public function deleteCompany(GetCompanyRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             $company = Company::findOrFail($request->id);
             $company->delete();
 
+            $cacheService->forgetAll($this->tag);
+            
             return response()->json([
                 'success' => APP_TRUE,
                 'message' => 'Company deleted successfully.',
@@ -444,13 +445,7 @@ class CompanyController extends Controller
         }
     }
 
-    /**
-     * Több cég törlése egy kérelemben.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function deleteRoles(Request $request): JsonResponse
+    public function deleteRoles(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
             // Az azonosítók tömbjének validálása
@@ -465,6 +460,8 @@ class CompanyController extends Controller
             // A cégek törlése
             $deletedCount = Role::whereIn('id', $ids)->delete();
 
+            $cacheService->forgetAll($this->tag);
+            
             // Válasz visszaküldése
             return response()->json([
                 'success' => true,

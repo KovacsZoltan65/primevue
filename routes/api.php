@@ -84,7 +84,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/companies', [CompanyController::class, 'getCompanies'])->name('api.get.companies');
     Route::get('/companies/{id}', [CompanyController::class, 'getCompany'])->name('api.get.company')->where('id', '[0-9]+');
     Route::get('/companies/name/{name}', [CompanyController::class, 'getCompanyByName'])->name('api.get.company_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post('/companies', [CompanyController::class, 'createCompany'])->name('api.post.companies');
+    Route::post( '/companies', [CompanyController::class, 'createCompany'] )->name('api.post.companies');
     Route::put('/companies/{id}', [CompanyController::class, 'updateCompany'])->name('api.put.companies')->where('id', '[0-9]+');
     Route::delete('/companies/{id}', [CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
     Route::delete('/companies', [CompanyController::class, 'deleteCompanies'])->name('api.delete.companies');

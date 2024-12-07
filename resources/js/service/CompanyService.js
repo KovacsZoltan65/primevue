@@ -1,4 +1,5 @@
 import BaseService from "./BaseService";
+import { toRaw } from 'vue';
 
 class CompanyService extends BaseService {
     /**
@@ -44,6 +45,12 @@ class CompanyService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     createCompany(data) {
+        // Ez hibát dobhat, ha ciklikus a data
+        //console.log('data', data);
+        //console.log('Data before sending:', JSON.stringify(data, null, 2));
+        //const rawData = toRaw(data); // Ciklusmentes, sima JS objektumot készít
+        //console.log('Raw Data:', rawData);
+
         return this.post(`/companies`, data);
     }
 

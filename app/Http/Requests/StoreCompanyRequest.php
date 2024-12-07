@@ -28,13 +28,15 @@ class StoreCompanyRequest extends BaseRequest
                 "max:{$this->validationRules['maxStringLength']}",
                 Rule::unique('companies', 'name')
             ],
-            'email' => [
-                'required', 'string',
-                Rule::unique('companies', 'email')
-            ]
+            'directory' => ['required'],
+            'registration_number' => ['required'],
+            'tax_id' => ['required'],
+            'country_id' => ['required'],
+            'city_id' => ['required'],
+            'address' => ['required'],
         ];
     }
-
+    /*
     public function messages()
     {
         return [
@@ -44,11 +46,8 @@ class StoreCompanyRequest extends BaseRequest
                 'min' => __('validate_min.numeric'),
                 'max' => __('validate_max.numeric'),
                 'unique' => __('validate_unique'),
-            ],
-            'email' => [
-                'required' => __('validate_required'),
-                'email' => __('validate_email'),
-            ]
+            ],            
         ];
     }
+    */
 }

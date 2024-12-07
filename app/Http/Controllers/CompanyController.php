@@ -233,35 +233,10 @@ class CompanyController extends Controller
     public function createCompany(StoreCompanyRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
-            /*
-            $validated = $request->validate([
-                'name' => 'required',
-                'directory' => 'required',
-                'registration_number' => 'required',
-                'tax_id' => 'required',
-                'country_id' => 'required',
-                'city_id' => 'required',
-                'address' => 'required',
-            ]);
-            
-            $company = Company::create($request->all());
-            $cacheService->forgetAll($this->tag);
-
-            // Sikeres válasz
-            return response()->json($company, Response::HTTP_OK);
-            */
-            
             $company = Company::create($request->all());
             $cacheService->forgetAll($this->tag);
             
             return response()->json($company, Response::HTTP_CREATED);
-            /*
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => __('command_company_created', ['id' => $company->id]),
-                'data' => $company
-            ], Response::HTTP_CREATED);
-            */
             
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
@@ -445,7 +420,7 @@ class CompanyController extends Controller
         }
     }
 
-    public function deleteRoles(Request $request, CacheService $cacheService): JsonResponse
+    public function deleteCompanies(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
             // Az azonosítók tömbjének validálása

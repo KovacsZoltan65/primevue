@@ -326,7 +326,7 @@ const saveCompany = async () => {
     }
 };
 
-const createCompany = () => {
+const createCompany = async () => {
 
     // Lokálisan hozzunk létre egy ideiglenes azonosítót az új céghez
     const newCompany = {...company.value, id: createId() };
@@ -340,10 +340,8 @@ const createCompany = () => {
         life: 3000,
     });
 
-//console.log(' createCompany company.value', company.value);
-
     // Szerver kérés
-    CompanyService.createCompany(company.value)
+    await CompanyService.createCompany(company.value)
         .then((response) => {
 
             // Lokális adat frissítése a szerver válasza alapján
@@ -410,7 +408,7 @@ const createCompany = () => {
         });
 };
 
-const updateCompany = () => {
+const updateCompany = async () => {
     const index = findIndexById(company.value.id);
     if (index === -1) {
         console.error(`Company with id ${country.value.id} not found`);
@@ -433,7 +431,7 @@ const updateCompany = () => {
     });
 
     // Hívás a szerver felé
-    CompanyService.updateCompany(company.value.id, company.value)
+    await CompanyService.updateCompany(company.value.id, company.value)
         .then((response) => {
             // Sikeres válasz kezelése
             companies.value.splice(index, 1, response.data.data); // Frissített adat a válaszból
@@ -466,7 +464,7 @@ const updateCompany = () => {
         });
 };
 
-const deleteSelectedCompanies = () => {
+const deleteSelectedCompanies = async () => {
     // Eredeti állapot mentése az összes kiválasztott céghez, hogy visszaállíthassuk hiba esetén
     const originalCompanies = [...companies.value];
 
@@ -486,7 +484,7 @@ const deleteSelectedCompanies = () => {
         life: 2000,
     });
 
-    CompanyService.deleteCompanies(selectedCompanies.value.map(company => company.id))
+    await CompanyService.deleteCompanies(selectedCompanies.value.map(company => company.id))
         .then((response) => {
             // Sikeres törlés esetén értesítés
             toast.add({
@@ -522,7 +520,7 @@ const deleteSelectedCompanies = () => {
         });
 };
 
-const deleteCompany = () => {
+const deleteCompany = async () => {
     const index = findIndexById(company.value.id);
     if (index === -1) {
         console.warn("No company found with the given id:", company.value.id);
@@ -543,7 +541,7 @@ const deleteCompany = () => {
         life: 2000,
     });
 
-    CompanyService.deleteCompany(id)
+    await CompanyService.deleteCompany(id)
         .then((response) => {
             // Sikeres törlés esetén értesítés
             toast.add({

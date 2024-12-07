@@ -105,6 +105,10 @@ const subdomain = ref({
     last_export: null,
 });
 
+const initialSubdomain = () => {
+    return {...subdomain.value};
+};
+
 /**
  * Reaktív hivatkozás a subdomain dialógus ablak állapotára.
  *
@@ -352,52 +356,11 @@ function confirmDeleteSelected() {
  * @return {void}
  */
 function openNew() {
-    subdomain.value = { ...initialSubdomain };
+    subdomain.value = initialSubdomain();
+
     submitted.value = false;
     subdomainDialog.value = true;
 }
-
-/**
- * Az új aldomain objektum alapértelmezett értékei.
- *
- * Ez az objektum az új aldomain dialógusablakban szerepl  mez k alapértelmezett értékeit tartalmazza.
- *
- * @type {Object}
- * @property {number} id - Az aldomain azonosítója.
- * @property {string} subdomain - Az aldomain neve.
- * @property {string} url - Az aldomain URL-je.
- * @property {string} name - Az aldomain neve.
- * @property {string} db_host - Az adatbázis hostja.
- * @property {number} db_port - Az adatbázis portja.
- * @property {string} db_name - Az adatbázis neve.
- * @property {string} db_user - Az adatbázis felhasználója.
- * @property {string} db_password - Az adatbázis jelszava.
- * @property {number} notification - Az értesítés állapota.
- * @property {number} state_id - Az aldomain állapotának azonosítója.
- * @property {number} is_mirror - Az aldomain tükör-e?
- * @property {number} sso - Az aldomain SSO-e?
- * @property {number} acs_id - Az aldomain ACS azonosítója.
- * @property {number} active - Az aldomain aktív-e?
- * @property {Date} last_export - Az utolsó export dátuma.
- */
-const initialSubdomain = {
-    id: null,
-    subdomain: "",
-    url: "",
-    name: "",
-    db_host: "",
-    db_port: 3306,
-    db_name: "",
-    db_user: "",
-    db_password: "",
-    notification: 1,
-    state_id: 1,
-    is_mirror: 0,
-    sso: 0,
-    acs_id: 0,
-    active: 1,
-    last_export: null,
-};
 
 /**
  * Bezárja a dialógusablakot.
@@ -452,55 +415,163 @@ const confirmDeleteSubdomain = (data) => {
  */
 const saveSubdomain = async () => {
     const result = await v$.value.$validate();
-    if (result) {
+
+    if( result ) {
         submitted.value = true;
 
-        if (subdomain.value.id) {
-            // Ha a subdomainnak van ID-ja, akkor frissíti a subdomainot.
+        if( subdomain.value.id ) {
             updateSubdomain();
         } else {
-            // Ha a subdomainnak nincs ID-ja, akkor létrehozza az új subdomainot.
             createSubdomain();
         }
     } else {
-        // Ha a validáció sikertelen, akkor figyelmeztetést jelenít meg.
-        alert("FAIL");
+        const validationErrors = v$.value.$errors.map((error) => ({
+            field: error.$property,
+            message: trans(error.$message),
+        }));
+
+        const data = {
+            componentName: "saveSubdomain",
+            additionalInfo: "Client-side validation failed during subdomain update",
+            category: "Validation Error",
+            priority: "low",
+            validationErrors: validationErrors,
+        };
+
+        ErrorService.logValidationError(new Error('Client-side validation error'), data);
+
+        toast.add({
+            severity: "error",
+            summary: "Validation Error",
+            detail: "Please fix the highlighted errors before submitting.",
+        });
     }
 };
 
-/**
- * Létrehozza az új aldomaint.
- *
- * A metódus meghívja a SubdomainService.createSubdomain() függvényt,
- * amely létrehozza az új aldomaint az API-ban.
- *
- * @return {Promise<void>} A metódusban visszaadott ígéret.
- */
 const createSubdomain = async () => {
-    try {
-        // Létrehozza az új aldomaint az API-ban
-        const response = await SubdomainService.createSubdomain(subdomain.value);
 
-        // Felveszi az új aldomaint a lista végére
-        subdomains.value.push(response.data);
+    const newSubdomain = {...subdomain.value, id: createId() };
 
-        // Bezárja a dialógusablakot
-        hideDialog();
+    subdomains.value.push(newSubdomain);
 
-        // Jelenít meg egy sikeres értesítést
-        toast.add({
-            severity: "success",
-            summary: "Successful",
-            detail: "Subdomain Created",
-            life: 3000,
+    toast.add({
+        severity: "success",
+        summary: "Creating...",
+        detail: "Subdomain creation in progress",
+        life: 3000,
+    });
+
+    await SubdomainService.createSubdomain(newSubdomain)
+        .then((response) => {
+            const index = findIndexById(newSubdomain.id);
+            if (index !== -1) {
+                subdomains.value.splice(index, 1, response.data);
+            }
+            hideDialog();
+
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Subdomain Created",
+                life: 3000,
+            });
+        })
+        .catch((error) => {
+            if( error.response && error.response.status === 422){
+                const validationErrors = error.response.data.details;
+
+                toast.add({
+                    severity: "warn",
+                    summary: "Validation Error",
+                    detail: "Please check your inputs",
+                    life: 4000,
+                });
+
+                // Validációs hibák logolása
+                ErrorService.logClientError(error, {
+                    componentName: "CreateSubdomainDialog",
+                    additionalInfo: "Validation errors occurred during subdomain creation",
+                    category: "Validation Error",
+                    priority: "medium",
+                    validationErrors: validationErrors,
+                });
+            }else{
+
+                // Hibás esetben a lokális adat törlése
+                const index = findIndexById(newSubdomain.id);
+                if (index !== -1) {
+                    subdomains.value.splice(index, 1);
+                }
+
+                // Toast hibaüzenet
+                toast.add({
+                    severity: "error",
+                    summary: "Error",
+                    detail: trans('error_subdomain_create'),
+                });
+
+                // Hiba naplózása
+                ErrorService.logClientError(error, {
+                    componentName: "CreateSubdomainDialog",
+                    additionalInfo: "Failed to create a subdomain in the backend",
+                    category: "Error",
+                    priority: "high",
+                    data: subdomain.value,
+                });
+
+            }
         });
-    } catch (error) {
-        // Jelenít meg egy hibaüzenetet a konzolon
-        console.error("createSubdomain API Error:", error);
-    }
 };
 
 const updateSubdomain = async () => {
+
+    const index = findIndexById(subdomain.value.id);
+    if (index === -1) {
+        console.error(`Subdomain with id ${subdomain.value.id} not found`);
+        return;
+    }
+
+    const originalSubdomain = { ...subdomains.value[index] };
+    subdomains.value.splice(index, 1, { ...subdomain.value });
+    hideDialog();
+
+    toast.add({
+        severity: "info",
+        summary: "Updating...",
+        detail: "Subdomain update in progress",
+        life: 2000,
+    });
+
+    await SubdomainService.updateSubdomain(subdomain.value.id, subdomain.value)
+        .then((response) => {
+            subdomains.value.splice(index, 1, response.data.data);
+
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Subdomain Updated",
+                life: 3000,
+            });
+        })
+        .catch((error) => {
+            subdomains.value.splice(index, 1, originalSubdomain);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to update subdomain",
+            });
+
+            ErrorService.logClientError(error, {
+                componentName: "UpdateSubdomainDialog",
+                additionalInfo: "Failed to update a subdomain in the backend",
+                category: "Error",
+                priority: "medium",
+                data: subdomain.value,
+            });
+        });
+
+    /*
     const index = findIndexById(subdomain.value.id);
     try {
         const response = await SubdomainService.updateSubdomain(subdomain.value.id, subdomain.value);
@@ -515,6 +586,7 @@ const updateSubdomain = async () => {
     } catch (error) {
         console.error("updateSubdomain API Error:", error);
     }
+    */
 };
 
 /**
@@ -633,14 +705,14 @@ const onUpload = () => {
                 </template>
 
                 <template #end>
-                    <FileUpload 
-                        mode="basic" 
-                        accept="image/*" 
-                        :maxFileSize="1000000" 
-                        label="Import" 
-                        customUpload auto 
-                        chooseLabel="Import" 
-                        class="mr-2" 
+                    <FileUpload
+                        mode="basic"
+                        accept="image/*"
+                        :maxFileSize="1000000"
+                        label="Import"
+                        customUpload auto
+                        chooseLabel="Import"
+                        class="mr-2"
                         :chooseButtonProps="{ severity: 'secondary' }"
                         @upload="onUpload"
                     />
@@ -760,7 +832,7 @@ const onUpload = () => {
                 </Column>
 
                 <!-- url -->
-                <Column 
+                <Column
                     field="url"
                     :header="$t('url')"
                     style="min-width: 16rem"

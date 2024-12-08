@@ -7,19 +7,30 @@ use App\Http\Requests\StoreRegionRequest;
 use App\Http\Resources\RegionResource;
 use App\Models\Country;
 use App\Models\Region;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Nette\Schema\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
-use Exception;
 
 class RegionController extends Controller
 {
+    protected string $tag = 'regions';
+    
+    public function __construct() {
+        $this->middleware('can:regions list', ['only' => ['index', 'applySearch', 'getRegions', 'getSRegion', 'getRegionByName']]);
+        $this->middleware('can:regions create', ['only' => ['createRegion']]);
+        $this->middleware('can:regions edit', ['only' => ['updateRegion']]);
+        $this->middleware('can:regions delete', ['only' => ['deleteRegion', 'deleteRegions']]);
+        $this->middleware('can:regions restore', ['only' => ['restoreRegion']]);
+    }
+    
     /**
      * Jelenítse meg az erőforrás listáját.
      *

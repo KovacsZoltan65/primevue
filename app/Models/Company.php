@@ -36,10 +36,9 @@ class Company extends Model
         'created',
         'updated',
         'deleted',
-        'restored',
     ];
 
-    public function scopeSearch(Builder $query, Request $request)
+    public function scopeSearch(Builder $query, Request $request): Builder
     {
         // If search parameter is present, filter results by name or email containing the search term
         return $query->when($request->search, function ($query) use ($request) {
@@ -57,7 +56,7 @@ class Company extends Model
         });
     }
 
-    public function scopeActive(Builder $query, Request $request)
+    public function scopeActive(Builder $query, Request $request): Builder
     {
         return $query->where('active', 1);
     }

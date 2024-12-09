@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\ApplicationSettingController;
 use App\Http\Controllers\Auth\PermissionController;
 use App\Http\Controllers\Auth\RoleController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\CompanySettingController;
 use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
@@ -88,6 +90,23 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::put('/companies/{id}', [CompanyController::class, 'updateCompany'])->name('api.put.companies')->where('id', '[0-9]+');
     Route::delete('/companies/{id}', [CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
     Route::delete('/companies', [CompanyController::class, 'deleteCompanies'])->name('api.delete.companies');
+
+    /**
+     * =====================================================
+     * SETTINGS
+     * =====================================================
+     */
+    Route::get('/application_settings', [ApplicationSettingController::class, 'getSettings']);
+    Route::get('/application_settings/{id}', [ApplicationSettingController::class, 'getSetting']);
+    Route::get('/application_settings/key/{key}', [ApplicationSettingController::class, 'getSettingByKey']);
+    Route::post('/application_settings', [ApplicationSettingController::class, 'createSetting']);
+    Route::put('/application_settings/{id}', [ApplicationSettingController::class, 'updateSetting']);
+    
+    Route::get('/company_settings', [CompanySettingController::class, 'getSettings']);
+    Route::get('/company_settings/{id}', [CompanySettingController::class, 'getSetting']);
+    Route::get('/company_settings/key/{key}', [CompanySettingController::class, 'getSettingByKey']);
+    Route::post('/company_settings', [CompanySettingController::class, 'createSetting']);
+    Route::put('/company_settings/{id}', [CompanySettingController::class, 'updateSetting']);
 
     /**
      * Hozzon létre új céget az API-n keresztül.

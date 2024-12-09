@@ -1,13 +1,15 @@
 <?php
 
+use App\Http\Controllers\ApplicationSettingController;
 use App\Http\Controllers\Auth\PermissionController;
 use App\Http\Controllers\Auth\RoleController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
-use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CompanySettingController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
+use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ProfileController;
@@ -34,6 +36,14 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+
+    /**
+     * =====================================================
+     * SETTINGS
+     * =====================================================
+     */
+    Route::get('/application_settings', [ApplicationSettingController::class, 'index'])->name('application_setting');
+    Route::get('/company_settings', [CompanySettingController::class, 'index'])->name('company_setting');
 
     /**
      * =====================================================

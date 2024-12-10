@@ -78,6 +78,7 @@ const initialSetting = () => {
 
 const selectedSettings = ref([]);
 const settingDialog = ref(false);
+const settingsDialog = ref(false);
 const deleteSelectedSettingsDialog = ref(false);
 const deleteSettingDialog = ref(false);
 
@@ -179,6 +180,13 @@ const getStatusValue = (status) => {
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
+
+                    <!-- Settings -->
+                    <Button
+                        icon="pi pi-cog"
+                        severity="secondary"
+                        class="mr-2"
+                    />
 
                     <!-- New Button -->
                     <Button
@@ -282,7 +290,7 @@ const getStatusValue = (status) => {
                     :sortable="state.columns.is_active.is_sortable"
                 >
                     <template #body="slotProps">
-                        <Tag 
+                        <Tag
                             :value="getStatusValue(slotProps.data.is_active)"
                             :severity="getStatusSeverity(slotProps.data.is_active)"
                         />
@@ -314,6 +322,26 @@ const getStatusValue = (status) => {
             </DataTable>
 
         </div>
+
+        <!-- SETTINGS -->
+        <Dialog
+            v-model:visible="settingsDialog"
+            :style="{ width: '550px' }"
+            :header="SETTINGS"
+            :modal="true"
+        >
+            <div class="flex flex-col gap-6" style="margin-top: 17px;">
+                <div
+                    v-for="(sonfig, column) in state.columns" :key="column"
+                    class="d-flex align-items-center"
+                >
+                    <input v-model="config.is_visible"
+                        :id="column" class="me-3" type="checkbox" />
+                    <label :for="column">{{ $t(config.label) }}</label>
+                </div>
+
+            </div>
+        </Dialog>
 
     </AppLayout>
 </template>

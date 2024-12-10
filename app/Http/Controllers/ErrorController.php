@@ -36,6 +36,8 @@ class ErrorController extends Controller
             'line' => $error->getLine(),
             'time' => now()->toISOString(),
             'uniqueErrorId' => $additionalData['uniqueErrorId'] ?? Str::uuid()->toString(),
+            'type' => $additionalData['type'] ?? 'GeneralError',
+            'severity' => $additionalData['severity'] ?? 'error',
         ];
 
         // Extra adatok hozzáadása (ha van)
@@ -45,19 +47,19 @@ class ErrorController extends Controller
         $existingError = Activity::where('properties->errorId', $errorId)->first();
 
         $return_array = [];
-        
+
         if( $existingError )
         {
             // Ha létezik, növeljük az előfordulások számát
             $existingError->increment('occurrence_count');
-            
+
             $return_array = ['success' => true, 'message' => 'Error occurrence updated.'];
         }
         else
         {
             $errorData = array_merge($errorData, ['errorId' => $errorId]);
             $batch_uuid = Str::uuid()->toString();
-            
+
             // Új hiba létrehozása
             activity()
                 ->tap(function ($activity) use($batch_uuid) {
@@ -66,7 +68,7 @@ class ErrorController extends Controller
                 ->causedBy(auth()->user())
                 ->withProperties( $errorData )
                 ->log('Server-side error reported.');
-            
+
             $return_array = ['success' => true, 'message' => 'Error logged.'];
         }
 
@@ -97,9 +99,9 @@ class ErrorController extends Controller
             $return_array = ['success' => true, 'message' => 'Error occurrence updated.'];
         } else {
             $validated = array_merge($validated, ['errorId' => $errorId]);
-            
+
             $batch_uuid = Str::uuid()->toString();
-            
+
             activity()
                 ->tap(function($activity) use($batch_uuid) {
                     $activity->batch_uuid = $batch_uuid;
@@ -129,13 +131,13 @@ class ErrorController extends Controller
 
         if ($existingError) {
             $existingError->increment('occurrence_count');
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Error occurrence updated.',
                 'errorId' => $errorId,
             ], Response::HTTP_OK);
-        } 
+        }
 
         $data = array_merge($data, [
             'errorId' => $errorId,
@@ -169,21 +171,21 @@ class ErrorController extends Controller
         ];
         $errorId = md5(json_encode($errors) . $data['componentName']);
         $existingError = Activity::where('properties->errorId', $errorId)->first();
-        
+
         if($existingError) {
             $existingError->increment('occurrence_count');
-            
+
             return response()->json(['success' => true, 'message' => 'Error occurrence updated']);
         } else {
             activity()
                 ->causedBy(auth()->user() ?? null)
                 ->withProperties(array_merge($data, ['errorId' => $errorId]))
                 ->log('Server-side validation error.');
-            
+
             return response()->json(['success' => true, 'message' => 'Error logged']);
         }
     }
-    
+
     public function index()
     {
         $errors = Activity::select('id', 'description', 'properties', 'occurrence_count', 'created_at')
@@ -241,16 +243,16 @@ class ErrorController extends Controller
 
         return redirect()->route('error-logs.index')->with('success', 'Log entry deleted.');
     }
-    
+
     public function getErrorById(string $errorId): JsonResponse
     {
         $success = true;
         $message = '';
         $data = [];
         $response = Response::HTTP_OK;
-        
+
         $error = Activity::where('properties->errorId', $errorId)->first();
-        
+
         if( !$error ) {
             $success = false;
             $message = __('error_not_found');
@@ -264,23 +266,23 @@ class ErrorController extends Controller
                 'updated_at' => $error->updated_at,
             ];
         }
-        
+
         return response()->json([
             'success' => $success,
             'message' => $message,
             'data' => $data,
         ], $response);
     }
-    
+
     public function getErrorByUniqueId(string $uniqueErrorId): JsonResponse
     {
         $success = true;
         $message = '';
         $data = [];
         $response = Response::HTTP_OK;
-        
+
         $error = Activity::where('properties->uniqueErrorId', $uniqueErrorId)->first();
-        
+
         if( !$error ) {
             $success = false;
             $message = __('error_not_found');
@@ -294,7 +296,7 @@ class ErrorController extends Controller
                 'updated_at' => $error->updated_at,
             ];
         }
-        
+
         return response()->json([
             'success' => $success,
             'message' => $message,

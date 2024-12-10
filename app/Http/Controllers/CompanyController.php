@@ -88,6 +88,8 @@ class CompanyController extends Controller
             ErrorController::logServerError($ex, [
                 'context' => 'DB_ERROR_COMPANIES',
                 'route' => $request->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
@@ -100,6 +102,8 @@ class CompanyController extends Controller
             ErrorController::logServerError($ex, [
                 'context' => 'getCompanies general error',
                 'route' => $request->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([

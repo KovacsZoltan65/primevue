@@ -178,7 +178,7 @@ class CompanyController extends Controller
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error'
+                'error' => 'getCompany query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
@@ -333,7 +333,6 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'updateCompany query error',
-                'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( Exception $ex ) {
             ErrorController::logServerError($ex, [

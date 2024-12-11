@@ -69,75 +69,102 @@ class PersonController extends Controller
             // Általános hiba naplózása
             ErrorController::logServerError($ex, [
                 'context' => 'getPersons general error',
+                'params' => ['request' => $request->all()],
                 'route' => $request->path(),
-                
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
+                'error' => 'getPersons general error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
-    public function getPerson(GetPersonRequest $request): JsonResponse
+    public function getPerson(GetPersonRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $person = Person::findOrFail($request->id);
+            $cacheKey = "{$this->tag}_" . md5($request->id);
+            
+            $person = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                return Person::findOrFail($request->id);
+            });
             
             return response()->json($person, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'getPerson error',
+                'context' => 'getPerson model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Person not found'
+                'error' => 'getPerson model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANY',
+                'context' => 'getPerson query error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error'
+                'error' => 'getPerson query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getPerson general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
+                'error' => 'getPerson general error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
-    public function getPersonByName(string $name): JsonResponse
+    public function getPersonByName(string $name, CacheService $cacheService): JsonResponse
     {
         try {
-            $person = Person::where('name', $name)->first();
+            $cacheKey = "{$this->tag}_" . md5($name);
             
-            if(!$person) {
-                // Ha a cég nem található, 404-es hibát adunk vissza
-                return response()->json([
-                    'success' => APP_FALSE,
-                    'error' => 'Person not found'
-                ], Response::HTTP_NOT_FOUND);
-            }
+            $person = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+                return Person::where('name', '=', $name)->firstOrFail();
+            });
             
             return response()->json($person, Response::HTTP_OK);
+        } catch ( ModelNotFoundException $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getPersonByName model not found error',
+                'params' => ['name' => $name],
+                'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'getPersonByName model not found error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANY_BY_NAME',
+                'context' => 'getPersonByName query error',
+                'params' => ['name' => $name],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
@@ -153,50 +180,45 @@ class PersonController extends Controller
 
             // JSON-választ küld vissza, jelezve, hogy váratlan hiba történt
             return response()->json([
-                'success' => APP_FALSE, // A művelet nem volt sikeres
-                'error' => 'An unexpected error occurred' // Hibaüzenet a visszatéréshez
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); // HTTP állapotkód belső szerverhiba miatt
+                'success' => APP_FALSE,
+                'error' => 'getPersonByName general error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
-    public function createPerson(StorePersonRequest $request): JsonResponse
+    public function createPerson(StorePersonRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             $person = Person::create($request->all());
             
-            // Sikeres válasz
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => __('command_person_created', ['id' => $request->id]),
-                'data' => $person
-            ], Response::HTTP_CREATED);
+            $cacheService->forgetAll($this->tag);
+            
+            return response()->json($person, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
-            // Naplózza a cég létrehozása során észlelt adatbázis-hibát
             ErrorController::logServerError($ex, [
-                'context' => 'CREATE_PERSON_DATABASE_ERROR', // A hiba háttere
-                'route' => request()->path(), // Útvonal, ahol a hiba történt
+                'context' => 'createPerson query error',
+                'params' => ['request' => $request->all()],
+                'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
-            // Adatbázis hiba esetén a hiba részletes leírását is visszaküldi a kliensnek.
-            // Ebben az esetben a HTTP-kód 422 lesz.
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => __('command_person_create_database_error'), // A hiba részletes leírása
-                'details' => $ex->getMessage(), // A hiba részletes leírása
+                'error' => 'createPerson query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            // A cég létrehozása során fellépő általános hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'createPerson general error', // Adja meg a hiba kontextusát
-                'route' => request()->path(), // Adja meg az útvonalat, ahol a hiba történt
+                'context' => 'createPerson general error',
+                'params' => ['request' => $request->all()],
+                'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
-            // Ha egyéb hiba történt, akkor a szerveroldali hiba részletes leírását
-            // is visszaküldi a kliensnek.
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'createPerson general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -206,95 +228,100 @@ class PersonController extends Controller
         try{
             $person = Person::findOrFail($id);
             
-            $success = $person->update($request->all());
+            $person->update($request->all());
             $person->refresh();
             
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => 'PERSON_UPDATED_SUCCESSFULLY',
-                'data' => $person,
-            ], Response::HTTP_OK);
+            return response()->json($person, Response::HTTP_OK);
             
         } catch(ModelNotFoundException $ex) {
-            // Ha a cég nem található
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_UPDATE_PERSON', // updateEntity nem található hiba
+                'context' => 'updatePerson model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'PERSON_NOT_FOUND', // A megadott entitás nem található
-                'details' => $ex->getMessage(),
+                'error' => 'updatePerson model not found error',
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_PERSON', // updatePerson adatbázishiba
+                'context' => 'updatePerson query error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
             
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'DB_ERROR_PERSON', // Adatbázishiba történt a személy frissítése közben
-                'details' => $ex->getMessage(),
+                'error' => 'updatePerson query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'updatePerson general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'updatePerson general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
-    public function deletePerson(GetPersonRequest $request): JsonResponse
+    public function deletePerson(GetPersonRequest $request, CacheService $cacheService): JsonResponse
     {
         try{
             $person = Person::findOrFail($request->id);
             $person->delete();
             
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => 'Person deleted successfully.',
-                'data' => $person,
-            ], Response::HTTP_OK);
+            $cacheService->forgetAll($this->tag);
+            
+            return response()->json($person, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'deletePerson error',
+                'context' => 'deletePerson model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Person not found',
-                'details' => $ex->getMessage(),
+                'error' => 'deletePerson model not found error',
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'deletePerson database error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error occurred while deleting the person.',
-                'details' => $ex->getMessage(),
+                'error' => 'deletePerson database error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'deletePerson general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred.',
-                'details' => $ex->getMessage(),
+                'error' => 'deletePerson general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -314,47 +341,42 @@ class PersonController extends Controller
             // A cégek törlése
             $deletedCount = Person::whereIn('id', $ids)->delete();
             
-            // Válasz visszaküldése
-            return response()->json([
-                'success' => true,
-                'message' => 'Selected persons deleted successfully.',
-                'deleted_count' => $deletedCount,
-            ], Response::HTTP_OK);
-            
+            return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ValidationException $ex) {
-            // Validációs hiba logolása
-            //ErrorController::logClientValidationError($request);
             ErrorController::logServerValidationError($ex, $request);
 
             // Kliens válasz
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Validation error occurred',
-                'details' => $ex->errors(),
+                'error' => 'deletePersons validation error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(QueryException $ex) {
             // Adatbázis hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deletePersons database error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error occurred while deleting the selected persons.',
-                'details' => $ex->getMessage(),
+                'error' => 'deletePersons database error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             // Általános hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deletePersons general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred.',
-                'details' => $ex->getMessage(),
+                'error' => 'deletePersons general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

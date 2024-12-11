@@ -86,7 +86,7 @@ class CompanyController extends Controller
         } catch (QueryException $ex) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANIES',
+                'context' => 'getCompanies query error',
                 'route' => $request->path(),
                 'type' => 'QueryException',
                 'severity' => 'error',
@@ -121,8 +121,10 @@ class CompanyController extends Controller
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'getCompany error',
+                'context' => 'getCompany model not found error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
@@ -131,8 +133,10 @@ class CompanyController extends Controller
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANY',
+                'context' => 'getCompany query error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
@@ -143,6 +147,8 @@ class CompanyController extends Controller
             ErrorController::logServerError($ex, [
                 'context' => 'getCompany general error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
@@ -156,23 +162,28 @@ class CompanyController extends Controller
     {
         try {
             // Cég lekérdezése név alapján
-            $company = Company::where('name', '=', $name)->first();
-
-            if (!$company) {
-                // Ha a cég nem található, 404-es hibát adunk vissza
-                return response()->json([
-                    'success' => APP_FALSE,
-                    'error' => 'Company not found'
-                ], Response::HTTP_NOT_FOUND);
-            }
+            $company = Company::where('name', '=', $name)->firstOrFail();
 
             return response()->json($company, Response::HTTP_OK);
-
+        } catch ( ModelNotFoundException $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getCompanyByName model not found error',
+                'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
+            ]);
+            
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => "Company by name: {$name} not found"
+            ], Response::HTTP_NOT_FOUND);
         } catch (QueryException $ex) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANY_BY_NAME',
+                'context' => 'getCompanyByName query error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
@@ -186,6 +197,8 @@ class CompanyController extends Controller
             ErrorController::logServerError($ex, [
                 'context' => 'getCompanyByName general error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             // JSON-választ küld vissza, jelezve, hogy váratlan hiba történt
@@ -212,8 +225,10 @@ class CompanyController extends Controller
         } catch( QueryException $ex ) {
             // Naplózza a cég létrehozása során észlelt adatbázis-hibát
             ErrorController::logServerError($ex, [
-                'context' => 'CREATE_COMPANY_DATABASE_ERROR', // A hiba háttere
-                'route' => request()->path(), // Útvonal, ahol a hiba történt
+                'context' => 'createCompany query error',
+                'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             // Adatbázis hiba esetén a hiba részletes leírását is visszaküldi a kliensnek.
@@ -227,8 +242,10 @@ class CompanyController extends Controller
         } catch( Exception $ex ) {
             // A cég létrehozása során fellépő általános hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'createCompany general error', // Adja meg a hiba kontextusát
-                'route' => request()->path(), // Adja meg az útvonalat, ahol a hiba történt
+                'context' => 'createCompany general error',
+                'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             // Ha egyéb hiba történt, akkor a szerveroldali hiba részletes leírását

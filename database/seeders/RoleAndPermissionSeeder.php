@@ -26,7 +26,7 @@ class RoleAndPermissionSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
         
         $classes = [
-            'companies', 'roles', 'permissions', 'subdomainstate'
+            'companies', 'roles', 'permissions', 'subdomainstate',
         ];
         
         $permissions = [
@@ -34,6 +34,23 @@ class RoleAndPermissionSeeder extends Seeder
         ];
         
         $admin = Role::create(['name' => 'admin']);
+        
+        foreach($classes as $class)
+        {
+            foreach($permissions as $permission)
+            {
+                Permission::create(['name' => "{$class} {$permission}"]);
+                $admin->givePermissionTo(["{$class} {$permission}"]);
+            }
+        }
+        
+        $classes = [
+            'application_settings', 'company_settings',
+        ];
+        
+        $permissions = [
+            'list', 'create', 'edit', 'delete'
+        ];
         
         foreach($classes as $class)
         {

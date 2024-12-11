@@ -11,7 +11,7 @@ class CacheServiceProvider extends ServiceProvider
     {
         $this->app->singleton(CacheService::class, function ($app) {
             // Példa: 'companies' címkével inicializáljuk a CacheService-t
-            return new CacheService('companies');
+            return new CacheService();
         });
     }
 

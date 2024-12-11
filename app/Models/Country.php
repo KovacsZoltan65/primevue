@@ -47,7 +47,7 @@ class Country extends Model
         'deleted',
     ];
     
-    public function scopeSearch(Builder $query, Request $request)
+    public function scopeSearch(Builder $query, Request $request): Builder
     {
         return $query->when($request->search, function ($query) use ($request) {
             $query->where(function ($query) use ($request) {
@@ -56,7 +56,7 @@ class Country extends Model
         })->where('active', APP_ACTIVE);
     }
 
-    public function scopeActive(Builder $query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('active', 1);
     }

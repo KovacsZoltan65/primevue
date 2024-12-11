@@ -222,8 +222,7 @@ class CompanyController extends Controller
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error',
-                'details' => $ex->getMessage(),
+                'error' => 'getCompanyByName query error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         } catch (Exception $ex) {
@@ -238,8 +237,7 @@ class CompanyController extends Controller
             // JSON-választ küld vissza, jelezve, hogy váratlan hiba történt
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'getCompanyByName general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -262,8 +260,7 @@ class CompanyController extends Controller
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => __('command_company_create_database_error'),
-                'details' => $ex->getMessage(),
+                'error' => 'createCompany query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
 
         } catch( Exception $ex ) {
@@ -276,8 +273,7 @@ class CompanyController extends Controller
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'createCompany general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -297,44 +293,44 @@ class CompanyController extends Controller
             $cacheService->forgetAll($this->tag);
 
             // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => 'COMPANY_UPDATED_SUCCESSFULLY',
-                'data' => $company,
-            ], Response::HTTP_OK);
+            return response()->json($company, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
             // Ha a cég nem található
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_UPDATE_COMPANY', // updateCompany not found error
+                'context' => 'updateCompany model not found error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'COMPANY_NOT_FOUND', // The specified company was not found
-                'details' => $ex->getMessage(),
+                'error' => 'updateCompany model not found error',
             ], Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANY', // updateCompany database error
+                'context' => 'updateCompany query error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'DB_ERROR_COMPANY', // Database error occurred while updating the company
+                'error' => 'updateCompany query error',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( Exception $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'updateCompany general error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'updateCompany general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -347,44 +343,44 @@ class CompanyController extends Controller
             
             $cacheService->forgetAll($this->tag);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Company restored successfully',
-                'data' => $company, // Az aktuális adatokat is visszaadjuk
-            ], Response::HTTP_OK);
+            return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_RESTORE_COMPANY', // updateCompany not found error
+                'context' => 'restoreCompany model not found exception',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             // Ha a rekord nem található
             return response()->json([
-                'success' => false,
-                'message' => 'Company not found in trashed records',
+                'success' => APP_FALSE,
+                'message' => 'restoreCompany model not found exception',
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANY', // updateCompany database error
+                'context' => 'restoreCompany query error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'DB_ERROR_COMPANY', // Database error occurred while updating the company
-                'details' => $ex->getMessage(),
+                'error' => 'restoreCompany query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'restoreCompany general error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             // Általános hibakezelés
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while restoring the company',
-                'details' => $ex->getMessage(),
+                'message' => 'restoreCompany general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -397,43 +393,42 @@ class CompanyController extends Controller
 
             $cacheService->forgetAll($this->tag);
             
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => 'Company deleted successfully.',
-                'data' => $company,
-            ], Response::HTTP_OK);
+            return response()->json($company, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
-                'context' => 'deleteCompany error',
+                'context' => 'deleteCompany model not found error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Company not found',
-                'details' => $ex->getMessage(),
+                'error' => 'deleteCompany model not found error',
             ], Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompany database error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error occurred while deleting the company.',
-                'details' => $ex->getMessage(),
+                'error' => 'deleteCompany database error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( Exception $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompany general error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred.',
-                'details' => $ex->getMessage(),
+                'error' => 'deleteCompany general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -456,45 +451,41 @@ class CompanyController extends Controller
             $cacheService->forgetAll($this->tag);
             
             // Válasz visszaküldése
-            return response()->json([
-                'success' => true,
-                'message' => 'Selected companies deleted successfully.',
-                'deleted_count' => $deletedCount,
-            ], Response::HTTP_OK);
+            return response()->json($deletedCount, Response::HTTP_OK);
         } catch( ValidationException $ex ){
             // Validációs hiba logolása
-            //ErrorController::logClientValidationError($request);
             ErrorController::logServerValidationError($ex, $request);
 
             // Kliens válasz
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Validation error occurred',
-                'details' => $ex->errors(),
+                'error' => 'deleteCompanies validation error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( QueryException $ex ) {
             // Adatbázis hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompanies database error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error occurred while deleting the selected companies.',
-                'details' => $ex->getMessage(),
+                'error' => 'deleteCompanies database error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( Exception $ex ) {
             // Általános hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompanies general error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred.',
-                'details' => $ex->getMessage(),
+                'error' => 'deleteCompanies general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

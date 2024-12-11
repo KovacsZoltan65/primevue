@@ -145,15 +145,15 @@ class CompanyController extends Controller
     public function getCompany(GetCompanyRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
-            
+
             $cacheKey = "{$this->tag}_" . md5($request->id);
 
             $company = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 return Company::findOrFail($request->id);
             });
-            
+
             return response()->json($company, Response::HTTP_OK);
-            
+
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getCompany model not found error',
@@ -214,7 +214,7 @@ class CompanyController extends Controller
                 'type' => 'ModelNotFoundException',
                 'severity' => 'error',
             ]);
-            
+
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => "getCompanyByName model not found error"
@@ -256,11 +256,11 @@ class CompanyController extends Controller
     {
         try {
             $company = Company::create($request->all());
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             return response()->json($company, Response::HTTP_CREATED);
-            
+
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'createCompany query error',
@@ -294,18 +294,19 @@ class CompanyController extends Controller
     public function updateCompany(UpdateCompanyRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try {
-            
-            // Keresse meg a frissítendő céget az azonosítója alapján
-            $company = Company::findOrFail($id);
-            
-            // Frissítse a vállalatot a HTTP-kérés adataival
-            $company->update($request->all());
-            // Frissítjük a modelt
-            $company->refresh();
 
-            $cacheService->forgetAll($this->tag);
+            \DB::transaction(function() use($request, $cacheService) {
+                // Keresse meg a frissítendő céget az azonosítója alapján
+                $company = Company::findOrFail($request->id)->lockForUpdate();
 
-            // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
+                // Frissítse a vállalatot a HTTP-kérés adataival
+                $company->update($request->all());
+                // Frissítjük a modelt
+                $company->refresh();
+
+                $cacheService->forgetAll($this->tag);
+            });
+
             return response()->json($company, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
             // Ha a cég nem található
@@ -355,7 +356,7 @@ class CompanyController extends Controller
         try {
             $company = Company::withTrashed()->findOrFail($request->id);
             $company->restore();
-            
+
             $cacheService->forgetAll($this->tag);
 
             return response()->json($company, Response::HTTP_OK);
@@ -402,7 +403,7 @@ class CompanyController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deleteCompany(GetCompanyRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
@@ -410,7 +411,7 @@ class CompanyController extends Controller
             $company->delete();
 
             $cacheService->forgetAll($this->tag);
-            
+
             return response()->json($company, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
@@ -470,7 +471,7 @@ class CompanyController extends Controller
             $deletedCount = Role::whereIn('id', $ids)->delete();
 
             $cacheService->forgetAll($this->tag);
-            
+
             // Válasz visszaküldése
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch( ValidationException $ex ){

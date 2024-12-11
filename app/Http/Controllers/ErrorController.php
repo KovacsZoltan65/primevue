@@ -36,6 +36,8 @@ class ErrorController extends Controller
             'line' => $error->getLine(),
             'time' => now()->toISOString(),
             'uniqueErrorId' => $additionalData['uniqueErrorId'] ?? Str::uuid()->toString(),
+            'type' => $additionalData['type'] ?? 'GeneralError',
+            'severity' => $additionalData['severity'] ?? 'error',
         ];
 
         // Extra adatok hozzáadása (ha van)

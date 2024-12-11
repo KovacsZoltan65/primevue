@@ -15,13 +15,16 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
-use Nette\Schema\ValidationException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use App\Services\CacheService;
 
 class CityController extends Controller
 {
+    protected string $tag = 'cities';
+    
     public function __construct()
     {
         //$this->middleware('can:city list', ['only' => ['index', '']]);
@@ -69,34 +72,41 @@ class CityController extends Controller
         });
     }
 
-    public function getCities(Request $request): JsonResponse
+    public function getCities(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $cityQuery = City::search($request);
-            $cities = CityResource::collection($cityQuery->get());
+            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
+            $cities = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                $cityQuery = City::search($request);
+                return CityResource::collection($cityQuery->get());
+            });
             
             return response()->json($cities, Response::HTTP_OK);
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANIES',
+                'context' => 'getCities query error',
                 'route' => $request->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error'
+                'error' => 'getCities query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             // Általános hiba naplózása
             ErrorController::logServerError($ex, [
                 'context' => 'getCities general error',
                 'route' => $request->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
+                'error' => 'getCities general error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -105,38 +115,105 @@ class CityController extends Controller
      * Szerezzen várost azonosítóval.
      *
      * @param int $id A város id.
-     * @return JsonResponse2 A város adatai JSON formátumban.
+     * @return JsonResponse A város adatai JSON formátumban.
      */
-    public function getCity(GetCityRequest $request)
+    public function getCity(GetCityRequest $request, CacheService $cacheService)
     {
         try {
-            $city = City::findOrFail($request->id);
+            $cacheKey = "{$this->tag}_{$request->id}";
             
-            return response()->json($city, Request::HTTP_OK);
+            $city = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                return City::findOrFail($request->id);
+            });
+            
+            return response()->json($city, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'getCity error',
+                'context' => 'getCity model not folund error',
+                'param' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'City not found'
+                'error' => 'getCity model not folund error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_CITY',
+                'context' => 'getCity query error',
+                'param' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error'
+                'error' => 'getCity query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getCity general error',
+                'param' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'getCity general error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getCityByName(string $name, CacheService $cacheService): JsonResponse
+    {
+        try {
+            $cacheKey = "{$this->tag}_{$name}";
+            
+            $city = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+                return City::where('name', '=', $name)->firstOrFail();
+            });
+            
+            return response()->json($city, Response::HTTP_OK);
+        } catch ( ModelNotFoundException $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getCompanyByName model not found error',
+                'params' => ['name' => $name],
+                'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
+            ]);
+            
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => "getCityByName model not found error"
+            ], Response::HTTP_NOT_FOUND);
+        } catch( QueryException $ex ) {
+            // Adatbázis hiba naplózása
+            ErrorController::logServerError($ex, [
+                'context' => 'getCityByName query exception',
+                'params' => ['name' => $name],
+                'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'getCityByName query exception'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch( Exception $ex ) {
+            // Általános hiba naplózása
+            ErrorController::logServerError($ex, [
+                'context' => 'getCityByName general error',
+                'params' => ['name' => $name],
+                'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
@@ -146,79 +223,44 @@ class CityController extends Controller
         }
     }
 
-    public function getCityByName(string $name): JsonResponse
-    {
-        try {
-            $city = Company::where('name', '=', $name)->first();
-            if ( !$city ) {
-                return response()->json([
-                    'success' => APP_FALSE,
-                    'error' => 'City not found'
-                ], Response::HTTP_NOT_FOUND);
-            }
-            
-            return response()->json($city, Response::HTTP_OK);
-        } catch( QueryException $ex ) {
-            // Adatbázis hiba naplózása
-            ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_CITY_BY_NAME',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'Database error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        } catch( Exception $ex ) {
-            // Általános hiba naplózása
-            ErrorController::logServerError($ex, [
-                'context' => 'getCityByName general error',
-                'route' => request()->path(),
-            ]);
-
-            // JSON-választ küld vissza, jelezve, hogy váratlan hiba történt
-            return response()->json([
-                'success' => APP_FALSE, // A művelet nem volt sikeres
-                'error' => 'An unexpected error occurred' // Hibaüzenet a visszatéréshez
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); // HTTP állapotkód belső szerverhiba miatt
-        }
-    }
-
-    public function createCity(StoreCityRequest $request): JsonResponse
+    public function createCity(StoreCityRequest $request, CacheService $cacheService): JsonResponse
     {
         try{
-            // Hozzon létre új várost az adatbázisban
             $city = City::create($request->all());
             
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => 'CITY CREATED',
-                'data' => $city,
-            ], Response::HTTP_CREATED);
+            $cacheService->forgetAll($this->tag);
+            
+            return response()->json($city, Response::HTTP_CREATED);
         }catch(QueryException $ex ){
             ErrorController::logServerError($ex, [
-                'context' => 'CREATE_CITY_DATABASE_ERROR',
+                'context' => 'createCity exception error',
+                'params' => ['request' => $request],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
             
             return response()->json([
-                'error' => 'CREATE_CITY_DATABASE_ERROR',
-                'details' => $ex->getMessage(),
+                'success' => APP_FALSE,
+                'error' => 'createCity exception error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }catch(Exception $ex ){
             ErrorController::logServerError($ex, [
-                'context' => 'CREATE_CITY_GENERAL_ERROR',
+                'context' => 'createCity general error',
+                'params' => ['request' => $request],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
             
             return response()->json([
-                'error' => 'UNEXPECTED_ERROR_OCCURRED',
-                'details' => $ex->getMessage(),
+                'success' => APP_FALSE,
+                'error' => 'createCity general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function updateCity(UpdateCityRequest $request, int $id)
+    public function updateCity(UpdateCityRequest $request, int $id, CacheService $cacheService)
     {
         try {
             // Keresse meg a frissítendő céget az azonosítója alapján
@@ -226,46 +268,51 @@ class CityController extends Controller
             
             // Frissítse a vállalatot a HTTP-kérés adataival
             $city->update($request->all());
-            $city->update();
+            $city->refresh();
+            
+            $cacheService->forgetAll($this->tag);
             
             // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => 'CITY_UPDATED_SUCCESSFULLY',
-                'data' => $city
-            ], Response::HTTP_OK);
+            return response()->json($city, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
-            //
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_UPDATE_CITY', // updateCity not found error
+                'context' => 'DB_ERROR_UPDATE_CITY',
+                'params' => ['id' => $id, 'request' => $request],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
             
             return response()->json([
-                'error' => 'CITY_NOT_FOUND',  // The specified city was not found
-                'details' => $ex->getMessage(),
+                'success' => APP_FALSE,
+                'error' => 'CITY_NOT_FOUND',
             ], Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
             //
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_CITY', // updateCity database error
+                'context' => 'updateCity query error',
+                'params' => ['id' => $id, 'request' => $request],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
             
             return response()->json([
-                'error' => 'DB_ERROR_CITY', // Database error occurred while updating the city
+                'error' => 'updateCity query error',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( Exception $ex ) {
             //
             ErrorController::logServerError($ex, [
-                'context' => 'GENERAL_ERROR_UPDATE_CITY', // updateCity general error
+                'context' => 'updateCity general error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
             
             return response()->json([
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'success' => APP_FALSE,
+                'error' => 'updateCity general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -276,54 +323,57 @@ class CityController extends Controller
      * A törölt város adatait tartalmazó JSON-válasz kerül visszaadásra.
      *
      * @param int $id A törölni kívánt város azonosítója.
-     * @return JsonResponse2 A törölt város adatait tartalmazó JSON-válasz.
+     * @return JsonResponse A törölt város adatait tartalmazó JSON-válasz.
      */
-    public function deleteCity(GetCityRequest $request)
+    public function deleteCity(GetCityRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             // Keresse meg a törölni kívánt céget az azonosítója alapján
-            $city = City::findOrFail($id);
+            $city = City::findOrFail($request->id);
             
             $city->delete();
             
-            return request()->json([
-                'success' => APP_TRUE,
-                'message' => 'DELETE_CITY_SUCCESSFULLY', // City deleted successfully
-                'data' => $city,
-            ], Request::HTTP_OK);
+            $cacheService->forgetAll($this->tag);
+            
+            return request()->json($city, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
-            // Ha a cég nem található
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_UPDATE_CITY', // updateEntity not found error
+                'context' => 'deleteCity model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
-                'error' => 'COUNTRY_NOT_FOUND', // The specified entity was not found
-                'details' => $ex->getMessage(),
+                'success' => APP_FALSE,
+                'error' => 'COUNTRY_NOT_FOUND',
             ], Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
-            //
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCity database error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
-            ]);
-            //
-            return response()->json([
-                'error' => 'Database error occurred while deleting the city.',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch( Exception $ex ) {
-            //
-            ErrorController::logServerError($ex, [
-                'context' => 'deleteCity general error',
-                'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
             
-            //
             return response()->json([
-                'error' => 'An unexpected error occurred.',
-                'details' => $ex->getMessage(),
+                'success' => APP_FALSE,
+                'error' => 'deleteCity database error',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch( Exception $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'deleteCity general error',
+                'params' => ['request' => $request->all()],
+                'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
+            ]);
+            
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'deleteCity database error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -341,41 +391,43 @@ class CityController extends Controller
             // A cégek törlése
             $deletedCount = City::whereIn('id', $ids)->delete();
             // Válasz visszaküldése
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => 'Selected cities deleted successfully.',
-                'deleted_count' => $deletedCount,
-            ], Response::HTTP_OK);
+            return response()->json($deletedCount, Response::HTTP_OK);
         }catch( ValidationException $ex ){
             // Validációs hiba logolása
-            ErrorController::logClientValidationError($request);
+            ErrorController::logServerValidationError($ex, $request);
 
             // Kliens válasz
             return response()->json([
-                'error' => 'Validation error occurred',
-                'details' => $ex->errors(),
+                'success' => APP_FALSE,
+                'error' => 'deleteCities validation error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }catch( QueryException $ex ){
             // Adatbázis hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCities database error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
-                'error' => 'Database error occurred while deleting the selected cities.',
-                'details' => $ex->getMessage(),
+                'success' => APP_FALSE,
+                'error' => 'deleteCities database error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }catch( Exception $ex ){
             // Általános hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCities general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
-                'error' => 'An unexpected error occurred.',
-                'details' => $ex->getMessage(),
+                'success' => APP_FALSE,
+                'error' => 'deleteCities general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

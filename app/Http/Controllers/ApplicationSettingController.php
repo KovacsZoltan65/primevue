@@ -26,7 +26,8 @@ class ApplicationSettingController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    protected string $tag = 'application_settings';
+    
+    protected string $tag = 'app_settings';
 
     public function __construct() {
         $this->middleware('can:application_settings list', ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicatopnSetting', 'getApplicatopnSettingByName']]);
@@ -52,7 +53,7 @@ class ApplicationSettingController extends Controller
     
     public function getSettings(Request $request, CacheService $cacheService): JsonResponse {
         try {
-            $cacheKey = "application_settings_" . md5(json_encode($request->all()));
+            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
 
             $settings = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $settingsQuery = ApplicationSetting::search($request);
@@ -62,18 +63,24 @@ class ApplicationSettingController extends Controller
             return response()->json($settings, Response::HTTP_OK);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_APPLICATION_SETTINGS',
+                'context' => 'getApplicationSettings query error',
+                'params' => ['request' => $request->all()],
                 'route' => $request->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error'
+                'error' => 'getSettings query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        } catch(Exception $ex) {
+        } catch( Exception $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'getApplicationSettings general error',
+                'params' => ['request' => $request->all()],
                 'route' => $request->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
@@ -93,35 +100,44 @@ class ApplicationSettingController extends Controller
             
             return response()->json($setting, Response::HTTP_OK);
             
-        } catch(ModelNotFoundException $ex) {
+        } catch( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
-                'context' => 'getApplicationSetting error',
+                'context' => 'getApplicationSetting model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Application Setting not found'
+                'error' => 'getApplicationSetting model not found error'
             ], Response::HTTP_NOT_FOUND);
-        } catch(QueryException $ex) {
+        } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_APPLICATION_SETTING',
+                'context' => 'getApplicationSetting query exception',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error'
+                'error' => 'getApplicationSetting query exception'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getApplicationSetting general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
+                'error' => 'getApplicationSetting general error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -131,33 +147,44 @@ class ApplicationSettingController extends Controller
             $cacheKey = "application_key_" . md5($key);
 
             $setting = $cacheService->remember($this->tag, $cacheKey, function () use ($key) {
-                return ApplicationSetting::where('key', '=', $key)->first();
+                return ApplicationSetting::where('key', '=', $key)->firstOrFail();
             });
 
-            if(!$setting) {
-                return response()->json([
-                    'success' => APP_FALSE,
-                    'error' => 'Application Setting not found'
-                ], Response::HTTP_NOT_FOUND);
-            }
-
             return response()->json($setting, Response::HTTP_OK);
-
+        } catch ( ModelNotFoundException $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getApplicationSettingByKey model not found error',
+                'params' => ['key' => $key],
+                'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
+            ]);
+            
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'getApplicationSettingByKey model not found error'
+            ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_SETTING_BY_KEY',
+                'context' => 'getApplicationSettingByKey query exception',
+                'params' => ['key' => $key],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error',
+                'error' => 'getApplicationByKey query exception',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getSettingByKey general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             // JSON-választ küld vissza, jelezve, hogy váratlan hiba történt
@@ -178,24 +205,28 @@ class ApplicationSettingController extends Controller
         }catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'CREATE_APPLICATION_SETING_DATABASE_ERROR',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => __('command_application__setting_create_database_error'),
-                'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'createApplicationSetting general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -212,36 +243,43 @@ class ApplicationSettingController extends Controller
 
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_UPDATE_APPLICATION_SETTING',
+                'context' => 'updateSetting model not found error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'APPLICATION_SETTING_NOT_FOUND',
-                'details' => $ex->getMessage(),
+                'error' => 'updateSetting model not found error',
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_APPLICATION_SETTING',
+                'context' => 'updateSetting query error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'DB_ERROR_APPLICATION_SETTING',
+                'error' => 'updateSetting query error',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'updateApplicationSetting general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'updateApplicationSetting general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

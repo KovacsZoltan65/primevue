@@ -52,7 +52,7 @@ class CompanySettingController extends Controller
     
     public function getSettings(Request $request, CacheService $cacheService): JsonResponse {
         try {
-            $cacheKey = "company_settings_" . md5(json_encode($request->all()));
+            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
 
             $settings = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $settingsQuery = CompanySetting::search($request);
@@ -62,30 +62,36 @@ class CompanySettingController extends Controller
             return response()->json($settings, Response::HTTP_OK);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANY_SETTINGS',
+                'context' => 'getCompanySettings query exception error',
+                'params' => ['request' => $request->all()],
                 'route' => $request->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error'
+                'error' => 'getCompanySettings query exception error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'getApplicationSettings general error',
+                'context' => 'getCompanySettings general error',
+                'params' => ['request' => $request->all()],
                 'route' => $request->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
+                'error' => 'getCompanySettings general error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
     public function getSetting(GetCompanySettingRequest $request, CacheService $cacheService) {
         try {
-            $cacheKey = "company_setting_{$request->id}";
+            $cacheKey = "{$this->tag}_" . md5($request->id);
             
             $setting = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 return CompanySetting::findOrFail($request->id);
@@ -95,28 +101,37 @@ class CompanySettingController extends Controller
             
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'getCompanySetting error',
+                'context' => 'getCompanySetting model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Company Setting not found'
+                'error' => 'getCompanySetting model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANY_SETTING',
+                'context' => 'getCompanySetting query error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error'
+                'error' => 'getCompanySetting query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getApplicationSetting general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
@@ -126,45 +141,53 @@ class CompanySettingController extends Controller
         }
     }
     
-    public function getSettingByKey(string $key, CacheService $cacheService): JsonResponse {
+    public function getSettingByKey(string $key, CacheService $cacheService): JsonResponse
+    {
         try {
-            $cacheKey = "company_key_" . md5($key);
+            $cacheKey = "{$this->tag}_" . md5($key);
 
             $setting = $cacheService->remember($this->tag, $cacheKey, function () use ($key) {
-                return CompanySetting::where('key', '=', $key)->first();
+                return CompanySetting::where('key', '=', $key)->firstOrFail();
             });
 
-            if(!$setting) {
-                return response()->json([
-                    'success' => APP_FALSE,
-                    'error' => 'Company Setting not found'
-                ], Response::HTTP_NOT_FOUND);
-            }
-
             return response()->json($setting, Response::HTTP_OK);
-
+        } catch ( ModelNotFoundException $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getCompanySettingByKey model not found error',
+                'params' => ['key' => $key],
+                'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
+            ]);
+            
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => "getCompanySettingByKey model not found error"
+            ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_SETTING_BY_KEY',
+                'context' => 'getCompanySettingByKey query error',
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error',
-                'details' => $ex->getMessage(),
+                'error' => 'getCompanySettingByKey query error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'getSettingByKey general error',
+                'context' => 'getCompanySettingByKey general error',
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             // JSON-választ küld vissza, jelezve, hogy váratlan hiba történt
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -172,30 +195,35 @@ class CompanySettingController extends Controller
     public function createSetting(StoreCompanysettingRequest $request, CacheService $cacheService): JsonResponse{
         try{
             $setting = CompanySetting::create($request->all());
+            
             $cacheService->forgetAll($this->tag);
 
             return response()->json($setting, Response::HTTP_CREATED);
         }catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'CREATE_COMPANY_SETING_DATABASE_ERROR',
+                'context' => 'createCompanySetting query error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => __('command_company__setting_create_database_error'),
-                'details' => $ex->getMessage(),
+                'error' => 'createCompanySetting query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'createCompanySetting general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'createCompanySetting general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -212,36 +240,42 @@ class CompanySettingController extends Controller
 
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_UPDATE_COMPANY_SETTING',
+                'context' => 'updateCompanySetting model not found error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'COMPANY_SETTING_NOT_FOUND',
-                'details' => $ex->getMessage(),
+                'error' => 'updateCompanySetting model not found error',
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANY_SETTING',
+                'context' => 'updateCompanySetting query error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'DB_ERROR_COMPANY_SETTING',
-                'details' => $ex->getMessage(),
+                'error' => 'updateCompanySetting query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'updateCompanySetting general error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'updateCompanySetting general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

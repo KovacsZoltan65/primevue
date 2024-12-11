@@ -7,18 +7,21 @@ use App\Http\Requests\StoreCountryRequest;
 use App\Http\Requests\UpdateCountryRequest;
 use App\Http\Resources\CountryResource;
 use App\Models\Country;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Services\CacheService;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
-use Nette\Schema\ValidationException;
-use Symfony\Component\HttpFoundation\JsonResponse as JsonResponse2;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class CountryController extends Controller
 {
+    protected string $tag = 'countries';
+    
     /**
      * Jelenítse meg az erőforrás listáját.
      */
@@ -54,74 +57,95 @@ class CountryController extends Controller
         });
     }
     
-    public function getCountries(Request $request)
+    public function getCountries(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $countryQuery = Country::search($request);
-            $countries = CountryResource::collection($countryQuery->get());
+            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
+            
+            $countries = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                $countryQuery = Country::search($request);
+                return CountryResource::collection($countryQuery->get());
+            });
+
             return response()->json($countries, Response::HTTP_OK);
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COUNTRIES',
+                'context' => 'getCountries query error',
+                'params' => ['request' => $request->all()],
                 'route' => $request->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error',
-                'details' => $ex->getMessage(),
+                'error' => 'getCountries query error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             // Általános hiba naplózása
             ErrorController::logServerError($ex, [
                 'context' => 'getCountries general error',
                 'route' => $request->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
+                'error' => 'getCountries general error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function getCountry(GetCountryRequest $request): JsonResponse2
+    public function getCountry(GetCountryRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $country = Country::findOrFail($request->id);
+            $cacheKey = "{$this->tag}_" . md5($request->id);
+            
+            $country = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                return Country::findOrFail($request->id);
+            });
             
             return response()->json($country, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'getCountry error',
+                'context' => 'getCountry model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Country not found',
-                'details' => $ex->getMessage(),
+                'error' => 'getCountry model not found error',
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COUNTRY',
+                'context' => 'getCountry query error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error'
+                'error' => 'getCountry query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getCountry general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
+                'error' => 'getCountry general error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -132,19 +156,37 @@ class CountryController extends Controller
      * @param string $name Az ország neve.
      * @return JsonResponse A keresett ország adatait tartalmazó JSON-válasz.
      */
-    public function getCountryByName(string $name): JsonResponse2
+    public function getCountryByName(string $name, CacheService $cacheService): JsonResponse
     {
         try {
-            // Szerezze be az országot a megadott név alapján
-            $country = Country::where('name', $name)->first();
-            if( !$country ) {
-                return response()->json(['error' => 'Country not found'], Response::HTTP_NOT_FOUND);
-            }
+            $cacheKey = "{$this->tag}_" . md5($name);
+            
+            $country = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+                return Country::where('name', '=', $name)->firstOrFail();
+            });
+            
+            return response()->json($country, Response::HTTP_OK);
+        } catch ( ModelNotFoundException $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getCountryByName model not found error',
+                'params' => ['name' => $name],
+                'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
+            ]);
+            
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => "getCountryByName model not found error"
+            ], Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_ENTITY_BY_NAME',
+                'context' => 'getCountryByName query error',
+                'params' => ['name' => $name],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
@@ -156,13 +198,15 @@ class CountryController extends Controller
             // Általános hiba naplózása
             ErrorController::logServerError($ex, [
                 'context' => 'getCountryByName general error',
+                'params' => ['name' => $name],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'getCountryByName general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -175,27 +219,26 @@ class CountryController extends Controller
      * @param  Request  $request  A HTTP kérés objektum, amely tartalmazza a város új adatait.
      * @return JsonResponse  A létrehozott ország adatait tartalmazó JSON-válasz.
      */
-    public function createCountry(StoreCountryRequest $request): JsonResponse2
+    public function createCountry(StoreCountryRequest $request, CacheService $cacheService): JsonResponse
     {
         try{
             $country = Country::create($request->all());
             
+            $cacheService->forgetAll($this->tag);
+            
             // Sikeres válasz
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => __('command_country_created', ['id' => $request->id]),
-                'data' => $country
-            ], Response::HTTP_CREATED);
+            return response()->json($country, Response::HTTP_CREATED);
         }catch( QueryException $ex ){
             ErrorController::logServerError($ex, [
-                'context' => 'CREATE_COUNTRY_DATABASE_ERROR',
+                'context' => 'createCountry query error',
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'CREATE_COUNTRY_DATABASE_ERROR',
-                'details' => $ex->getMessage(),
+                'error' => 'createCountry query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }catch( Exception $ex ){
             ErrorController::logServerError($ex, [
@@ -205,13 +248,12 @@ class CountryController extends Controller
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'createCountry general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function updateCountry(UpdateCountryRequest $request, int $id): JsonResponse2
+    public function updateCountry(UpdateCountryRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try{
             // Keresse meg a frissítendő céget az azonosítója alapján
@@ -222,57 +264,53 @@ class CountryController extends Controller
             // Frissítjük a modelt
             $country->refresh();
             
-            return reqponse()->json([
-                'success' => APP_TRUE,
-                'message' => 'COUNTRY_UPDATED_SUCCESSFULLY',
-                'data' => $country,
-            ], Response::HTTP_OK);
+            $cacheService->forgetAll($this->tag);
+            
+            return response()->json($country, Response::HTTP_OK);
         }catch( ModelNotFoundException $ex ){
             // Ha a cég nem található
             ErrorController::logServerError($ex, [
-                'context' => 'ERROR_UPDATE_COMPANY', // updateCountry not found error
+                'context' => 'updateCountry model not found error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'COUNTRY_NOT_FOUND', // The specified country was not found
-                'details' => $ex->getMessage(),
+                'error' => 'updateCountry model not found error',
             ], Response::HTTP_NOT_FOUND);
         }catch( QueryException $ex ){
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COUNTRY', // updateCountry database error
+                'context' => 'updateCountry query error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
             
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'DB_ERROR_COUNTRY', // Database error occurred while updating the country
-                'details' => $ex->getMessage(),
+                'error' => 'updateCountry query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }catch( Exception $ex ){
             ErrorController::logServerError($ex, [
                 'context' => 'updateCountry general error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'updateCountry general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    /**
-     * Töröljön egy országot az adatbázisból.
-     *
-     * A törölt ország adatait tartalmazó JSON-válasz kerül visszaadásra.
-     *
-     * @param  int  $id  A törölni kívánt ország azonosítója.
-     * @return JsonResponse  A törölt ország adatait tartalmazó JSON-válasz.
-     */
-    public function deleteCountry(GetCountryRequest $request)
+    public function deleteCountry(GetCountryRequest $request, CacheService $cacheService): JsonResponse
     {    
         try{
             // Keresse meg a törölni kívánt céget az azonosítója alapján
@@ -280,50 +318,54 @@ class CountryController extends Controller
 
             $country->delete();
             
-            request()->json([
-                'success' => APP_TRUE,
-                'message' => 'DELETE_COUNTRY_SUCCESSFULLY',
-                'data' => $country,
-            ], Request::HTTP_OK);
+            $cacheService->forgetAll($this->tag);
+            
+            return response()->json($country, Response::HTTP_OK);
         }catch( ModelNotFoundException $ex ){
             // Ha a cég nem található
             ErrorController::logServerError($ex, [
-                'context' => 'ERROR_DELETE_COMPANY', // updateCountry not found error
+                'context' => 'deleteCountry model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'COUNTRY_NOT_FOUND', // The specified country was not found
-                'details' => $ex->getMessage(),
+                'error' => 'deleteCountry model not found error',
             ], Response::HTTP_NOT_FOUND);
         }catch( QueryException $ex ){
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCountry database error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
             //
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error occurred while deleting the country.',
-                'details' => $ex->getMessage(),
+                'error' => 'deleteCountry database error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }catch( Exception $ex ){
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCountry general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
             
             //
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred.',
-                'details' => $ex->getMessage(),
+                'error' => 'deleteCountry general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
-    public function deleteCountries(Request $request)
+    public function deleteCountries(Request $request): JsonResponse
     {
         try {
             $validated = $request->validate([
@@ -347,32 +389,36 @@ class CountryController extends Controller
 
             // Kliens válasz
             return response()->json([
-                'error' => 'Validation error occurred',
-                'details' => $ex->errors(),
+                'success' => APP_TRUE,
+                'error' => 'deleteCountries validation error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( QueryException $ex ) {
             // Adatbázis hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
-                'context' => 'deleteCountries database error',
+                'context' => 'deleteCountries query error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error occurred while deleting the selected countries.',
-                'details' => $ex->getMessage(),
+                'error' => 'deleteCountries query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( Exception $ex ) {
             // Általános hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCountries general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred.',
-                'details' => $ex->getMessage(),
+                'error' => 'deleteCountries general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

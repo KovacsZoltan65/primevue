@@ -7,6 +7,7 @@ use App\Http\Requests\StorePersonRequest;
 use App\Http\Requests\UpdatePersonRequest;
 use App\Http\Resources\PersonResource;
 use App\Models\Person;
+use App\Traits\Functions;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -14,9 +15,15 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PersonController extends Controller
 {
+    use AuthorizesRequests,
+        Functions;
+
+    protected string $tag = 'persons';
+    
     public function __construct() {
         //
     }
@@ -33,29 +40,37 @@ class PersonController extends Controller
         });
     }
     
-    public function getPersons(Request $request): JsonResponse
+    public function getPersons(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $personQuery = Person::Search($request);
-            $person = PersonResource::collection($personQuery->get());
+            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
+            
+            $persons = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                $personQuery = Person::Search($request);
+                return PersonResource::collection($personQuery->get());
+            });
             
             return response()->json($person, Response::HTTP_OK);
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_PERSONS',
+                'context' => 'getPersons query exception',
+                'params' => ['request' => $request->all()],
                 'route' => $request->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error'
+                'error' => 'getPersons query exception'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             // Általános hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'getCompanies general error',
+                'context' => 'getPersons general error',
                 'route' => $request->path(),
+                
             ]);
 
             return response()->json([

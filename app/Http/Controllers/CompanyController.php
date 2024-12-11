@@ -18,7 +18,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -104,7 +103,7 @@ class CompanyController extends Controller
     public function getCompanies(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $cacheKey = "company_" . md5(json_encode($request->all()));
+            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
 
             $companies = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $companyQuery = Company::search($request);
@@ -116,6 +115,7 @@ class CompanyController extends Controller
         } catch (QueryException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getCompanies query error',
+                'params' => ['request' => $request->all()],
                 'route' => $request->path(),
                 'type' => 'QueryException',
                 'severity' => 'error',
@@ -123,12 +123,13 @@ class CompanyController extends Controller
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error'
+                'error' => 'getCompanies query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
         } catch (Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getCompanies general error',
+                'params' => ['request' => $request->all()],
                 'route' => $request->path(),
                 'type' => 'Exception',
                 'severity' => 'error',
@@ -136,7 +137,7 @@ class CompanyController extends Controller
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
+                'error' => 'getCompanies general error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -145,7 +146,7 @@ class CompanyController extends Controller
     {
         try {
             
-            $cacheKey = "company_{$request->id}";
+            $cacheKey = "{$this->tag}_" . md5($request->id);
 
             $company = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 return Company::findOrFail($request->id);
@@ -156,20 +157,22 @@ class CompanyController extends Controller
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getCompany model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'ModelNotFoundException',
                 'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Company not found'
+                'error' => 'getCompany model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getCompany query error',
+                'params' => ['id' => $request->id],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'QueryException',
                 'severity' => 'error',
             ]);
 
@@ -180,6 +183,7 @@ class CompanyController extends Controller
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getCompany general error',
+                'params' => ['id' => $request->id],
                 'route' => request()->path(),
                 'type' => 'Exception',
                 'severity' => 'error',
@@ -187,7 +191,7 @@ class CompanyController extends Controller
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
+                'error' => 'getCompany general error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -195,28 +199,33 @@ class CompanyController extends Controller
     public function getCompanyByName(string $name, CacheService $cacheService): JsonResponse
     {
         try {
-            // Cég lekérdezése név alapján
-            $company = Company::where('name', '=', $name)->firstOrFail();
+            $cacheKey = "{$this->tag}_" . md5($name);
+
+            $company = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+                return Company::where('name', '=', $name)->firstOrFail();
+            });
 
             return response()->json($company, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'getCompanyByName model not found error',
+                'params' => ['name' => $name],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'ModelNotFoundException',
                 'severity' => 'error',
             ]);
             
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => "Company by name: {$name} not found"
+                'error' => "getCompanyByName model not found error"
             ], Response::HTTP_NOT_FOUND);
         } catch (QueryException $ex) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
                 'context' => 'getCompanyByName query error',
+                'params' => ['name' => $name],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'QueryException',
                 'severity' => 'error',
             ]);
 
@@ -229,6 +238,7 @@ class CompanyController extends Controller
             // Általános hiba naplózása
             ErrorController::logServerError($ex, [
                 'context' => 'getCompanyByName general error',
+                'params' => ['name' => $name],
                 'route' => request()->path(),
                 'type' => 'Exception',
                 'severity' => 'error',
@@ -246,6 +256,7 @@ class CompanyController extends Controller
     {
         try {
             $company = Company::create($request->all());
+            
             $cacheService->forgetAll($this->tag);
             
             return response()->json($company, Response::HTTP_CREATED);
@@ -253,8 +264,9 @@ class CompanyController extends Controller
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'createCompany query error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'QueryException',
                 'severity' => 'error',
             ]);
 
@@ -266,6 +278,7 @@ class CompanyController extends Controller
         } catch( Exception $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'createCompany general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
                 'type' => 'Exception',
                 'severity' => 'error',
@@ -298,8 +311,9 @@ class CompanyController extends Controller
             // Ha a cég nem található
             ErrorController::logServerError($ex, [
                 'context' => 'updateCompany model not found error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'ModelNotFoundException',
                 'severity' => 'error',
             ]);
 
@@ -310,8 +324,9 @@ class CompanyController extends Controller
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'updateCompany query error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'QueryException',
                 'severity' => 'error',
             ]);
 
@@ -323,6 +338,7 @@ class CompanyController extends Controller
         } catch( Exception $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'updateCompany general error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
                 'type' => 'Exception',
                 'severity' => 'error',
@@ -347,8 +363,9 @@ class CompanyController extends Controller
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'restoreCompany model not found exception',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'ModelNotFoundException',
                 'severity' => 'error',
             ]);
 
@@ -360,8 +377,9 @@ class CompanyController extends Controller
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'restoreCompany query error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'QueryException',
                 'severity' => 'error',
             ]);
 
@@ -372,6 +390,7 @@ class CompanyController extends Controller
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'restoreCompany general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
                 'type' => 'Exception',
                 'severity' => 'error',
@@ -397,8 +416,9 @@ class CompanyController extends Controller
         } catch( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompany model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'ModelNotFoundException',
                 'severity' => 'error',
             ]);
 
@@ -409,8 +429,9 @@ class CompanyController extends Controller
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompany database error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'QueryException',
                 'severity' => 'error',
             ]);
 
@@ -421,6 +442,7 @@ class CompanyController extends Controller
         } catch( Exception $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompany general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
                 'type' => 'Exception',
                 'severity' => 'error',
@@ -465,8 +487,9 @@ class CompanyController extends Controller
             // Adatbázis hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompanies database error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
-                'type' => 'Exception',
+                'type' => 'QueryException',
                 'severity' => 'error',
             ]);
 
@@ -478,6 +501,7 @@ class CompanyController extends Controller
             // Általános hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deleteCompanies general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
                 'type' => 'Exception',
                 'severity' => 'error',

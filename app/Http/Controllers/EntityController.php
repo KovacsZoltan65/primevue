@@ -16,9 +16,22 @@ use Inertia\Response as InertiaResponse;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use App\Services\CacheService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Traits\Functions;
 
 class EntityController extends Controller
 {
+    use AuthorizesRequests,
+        Functions;
+    
+    protected string $tag = 'companies';
+    
+    public function __construct()
+    {
+        //
+    }
+    
     public function index(Request $request): InertiaResponse
     {
         Inertia::render('Entity/Index',[
@@ -35,152 +48,181 @@ class EntityController extends Controller
         });
     }
 
-    public function getEntities(Request $request): JsonResponse
+    public function getEntities(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $entityQuery = Entity::Search($request);
-            $entities = EntityResource::collection($entityQuery->get());
+            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
+            
+            $entities = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                $entityQuery = Entity::Search($request);
+                return EntityResource::collection($entityQuery->get());
+            });
             
             return response()->json($entities, Response::HTTP_OK);
-            
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_ENTITIES',
+                'context' => 'getEntities query error',
+                'params' => ['request' => $request->all()],
                 'route' => $request->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
-                'error' => 'Database error'
+                'success' => APP_FALSE,
+                'error' => 'getEntities query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
             // Általános hiba naplózása
             ErrorController::logServerError($ex, [
                 'context' => 'getEntities general error',
+                'params' => ['request' => $request->all()],
                 'route' => $request->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'getEntities general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function getEntity(GetEntityRequest $request): JsonResponse
+    public function getEntity(GetEntityRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $entity = Entity::findOrFail($id);
+            $cacheKey = "{$this->tag}_" . md5($request->id);
+            
+            $entity = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                return Entity::findOrFail($request->id);
+            });
             
             return response()->json($entity, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
-                'context' => 'getEntity error',
+                'context' => 'getEntity model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Entity not found',
-                'details' => $ex->getMessage(),
+                'error' => 'getEntity model not found error',
             ], Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_ENTITY',
+                'context' => 'getEntity query error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
-            ]);
-
-            return response()->json(['error' => 'Database error'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        } catch( Exception $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getEntity general error',
-                'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'getEntity query error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch( Exception $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getEntity general error',
+                'params' => ['request' => $request->all()],
+                'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'getEntity general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function getEntityByName(string $name): JsonResponse
+    public function getEntityByName(string $name, CacheService $cacheService): JsonResponse
     {
         try {
-            // Entitás lekérdezése név alapján
-            $entity = Entity::where('name', $name)->first();
+            $cacheKey = "{$this->tag}_" . md5($name);
             
-            if( !$entity ) {   
-                return response()->json(['error' => 'Entity not found'], Response::HTTP_NOT_FOUND);
-            }
+            $entity = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+                return Entity::where('name', '=', $name)->firstOrFail();
+            });
             
             return response()->json($entity, Response::HTTP_OK);
         } catch( QueryException $ex ) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_ENTITY_BY_NAME',
+                'context' => 'getEntityByName query error',
+                'params' => ['name' => $name],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Database error',
+                'error' => 'getEntityByName query error',
                 'details' => $ex->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch( Exception $ex ) {
             // Általános hiba naplózása
             ErrorController::logServerError($ex, [
                 'context' => 'getEntityByName general error',
+                'params' => ['name' => $name],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'getEntityByName general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function createEntity(StoreEntityRequest $request): JsonResponse
+    public function createEntity(StoreEntityRequest $request, CacheService $cacheService): JsonResponse
     {
         try{
             $entity = Entity::create($request->all());
             
+            $cacheService->forgetAll($this->tag);
+            
             // Sikeres válasz
-            return response()->json([
-                'success' => true,
-                'message' => __('command_entity_created', ['id' => $request->id]),
-                'data' => $entity
-            ], Response::HTTP_CREATED);
+            return response()->json( $entity, Response::HTTP_CREATED);
         }catch( QueryException $ex ){
             ErrorController::logServerError($ex, [
-                'context' => 'CREATE_ENTITY_DATABASE_ERROR',
+                'context' => 'createEntity query error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'CREATE_ENTITY_DATABASE_ERROR',
-                'details' => $ex->getMessage(),
+                'error' => 'createEntity query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }catch( Exception $ex ){
             ErrorController::logServerError($ex, [
                 'context' => 'createEntity general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'createEntity general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function updateEntity(UpdateEntityRequest $request, int $id): JsonResponse
+    public function updateEntity(UpdateEntityRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try{
             // Keresse meg a frissítendő céget az azonosítója alapján
@@ -190,49 +232,53 @@ class EntityController extends Controller
             // Frissítjük a modelt
             $entity->refresh();
             
-            return reqponse()->json([
-                'success' => APP_TRUE,
-                'message' => 'ENTITY_UPDATED_SUCCESSFULLY',
-                'data' => $entity,
-            ], Response::HTTP_OK);
+            $cacheService->forgetAll($this->tag);
+            
+            return reqponse()->json($entity, Response::HTTP_OK);
         }catch( ModelNotFoundException $ex ){
             // Ha a cég nem található
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_UPDATE_ENTITY', // updateEntity nem található hiba
+                'context' => 'updateEntity model not found error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'ENTITY_NOT_FOUND', // A megadott entitás nem található
-                'details' => $ex->getMessage(),
+                'error' => 'updateEntity model not found error',
             ], Response::HTTP_NOT_FOUND);
         }catch( QueryException $ex ){
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_ENTITY', // updateEntity adatbázishiba
+                'context' => 'DB_ERROR_ENTITY',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
             
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'DB_ERROR_ENTITY', // Adatbázishiba történt az entitás frissítése közben
-                'details' => $ex->getMessage(),
+                'error' => 'updateEntity query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }catch( Exception $ex ){
             ErrorController::logServerError($ex, [
                 'context' => 'updateEntity general error',
+                'params' => ['id' => $id, 'request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'updateEntity general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function deleteEntity(GetEntityRequest $request): JsonResponse
+    public function deleteEntity(GetEntityRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             // Keresse meg a törölni kívánt céget az azonosítója alapján
@@ -240,44 +286,51 @@ class EntityController extends Controller
             
             $entity->delete();
             
-            return request()->json([
-                'success' => APP_TRUE,
-                'message' => 'DELETE_ENTITY_SUCCESSFULLY', // A város sikeresen törölve
-                'data' => $entity,
-            ], Request::HTTP_OK);
+            $cacheService->forgetAll($this->tag);
+            
+            return request()->json($entity, Request::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            //
         } catch( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
-                'context' => 'getCompany error',
+                'context' => 'deleteEntity model not found error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'ModelNotFoundException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'Company not found',
-                'details' => $ex->getMessage(),
+                'error' => 'deleteEntity model not found error',
             ], Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
             ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_COMPANY',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json(['error' => 'Database error'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        } catch( Exception $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompany general error',
+                'context' => 'deleteEntity query error',
                 'route' => request()->path(),
             ]);
 
             return response()->json([
                 'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
+                'error' => 'deleteEntity query error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch( Exception $ex ) {
+            ErrorController::logServerError($ex, [
+                'context' => 'getCompany general error',
+                'params' => ['request' => $request->all()],
+                'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
+            ]);
+
+            return response()->json([
+                'success' => APP_FALSE,
+                'error' => 'getCompany general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
-    public function deleteEntities(Request $request): JsonResponse
+    public function deleteEntities(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
             // Az azonosítók tömbjének validálása
@@ -292,12 +345,10 @@ class EntityController extends Controller
             // A cégek törlése
             $deletedCount = Entity::whereIn('id', $ids)->delete();
             
+            $cacheService->forgetAll($this->tag);
+            
             // Válasz visszaküldése
-            return response()->json([
-                'success' => true,
-                'message' => 'Selected entities deleted successfully.',
-                'deleted_count' => $deletedCount,
-            ], Response::HTTP_OK);
+            return response()->json($deletedCount, Response::HTTP_OK);
         } catch( ValidationException $ex ) {
             // Validációs hiba logolása
             //ErrorController::logClientValidationError($request);
@@ -305,30 +356,36 @@ class EntityController extends Controller
 
             // Kliens válasz
             return response()->json([
+                'success' => APP_FALSE,
                 'error' => 'Validation error occurred',
-                'details' => $ex->errors(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( QueryException $ex ) {
             // Adatbázis hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
-                'context' => 'deleteEntities database error',
+                'context' => 'deleteEntities query error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'QueryException',
+                'severity' => 'error',
             ]);
 
             return response()->json([
-                'error' => 'Database error occurred while deleting the selected entities.',
-                'details' => $ex->getMessage(),
+                'success' => APP_FALSE,
+                'error' => 'deleteEntities query error',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( Exception $ex ) {
             // Általános hiba logolása és visszajelzés
             ErrorController::logServerError($ex, [
                 'context' => 'deleteEntities general error',
+                'params' => ['request' => $request->all()],
                 'route' => request()->path(),
+                'type' => 'Exception',
+                'severity' => 'error',
             ]);
 
             return response()->json([
-                'error' => 'An unexpected error occurred.',
-                'details' => $ex->getMessage(),
+                'success' => APP_FALSE,
+                'error' => 'deleteEntities general error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

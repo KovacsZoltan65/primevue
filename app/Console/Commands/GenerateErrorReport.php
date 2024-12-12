@@ -31,7 +31,6 @@ class GenerateErrorReport extends Command
      */
     public function handle()
     {
-        /*
         $startDate = now()->startOfWeek();
         $endDate = now()->endOfWeek();
         
@@ -52,8 +51,6 @@ class GenerateErrorReport extends Command
         if (!file_exists($path)) mkdir($path, 0777, true);
         file_put_contents("$path/weekly_report_" . now()->format('Y_m_d') . ".json", $report->toJson());
         $this->info("Hiba riport generálva: $path");
-        */
-        $this->info('Error report generated successfully!');
-        return Command::SUCCESS;
+        
     }
 }

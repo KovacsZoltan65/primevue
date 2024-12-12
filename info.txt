@@ -50,6 +50,9 @@ php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvid
 // ---------------------------------------
 php artisan route:list --name=users
 
+kommandok kisálya
+php artisan list
+
 Lekérdezés kiírása:
 \DB::enableQueryLog();
 ADATLEKÉRÉS ...

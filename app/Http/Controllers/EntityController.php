@@ -225,14 +225,13 @@ class EntityController extends Controller
     public function updateEntity(UpdateEntityRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try{
-            // Keresse meg a frissítendő céget az azonosítója alapján
-            $entity = Entity::findOrFail($id);
-            // Frissítse a vállalatot a HTTP-kérés adataival
-            $entity->update($request->all());
-            // Frissítjük a modelt
-            $entity->refresh();
-            
-            $cacheService->forgetAll($this->tag);
+            $entity = null;
+            \DB::transaction(function() use($request, $id, $cacheService, $entity) {
+                $entity = Entity::findOrFail($id)->lockForUpdate();
+                $entity->update($request->all());
+                $entity->refresh();
+                $cacheService->forgetAll($this->tag);
+            });
             
             return reqponse()->json($entity, Response::HTTP_OK);
         }catch( ModelNotFoundException $ex ){

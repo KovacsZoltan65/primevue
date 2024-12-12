@@ -92,7 +92,7 @@ class ApplicationSettingController extends Controller
 
     public function getSetting(GetApplicationSettingRequest $request, CacheService $cacheService) {
         try {
-            $cacheKey = "application_setting_{$request->id}";
+            $cacheKey = "{$this->tag}_" . md5($request->id);
             
             $setting = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 return ApplicationSetting::findOrFail($request->id);
@@ -144,7 +144,7 @@ class ApplicationSettingController extends Controller
     
     public function getSettingByKey(string $key, CacheService $cacheService): JsonResponse {
         try {
-            $cacheKey = "application_key_" . md5($key);
+            $cacheKey = "{$this->tag}_" . md5($key);
 
             $setting = $cacheService->remember($this->tag, $cacheKey, function () use ($key) {
                 return ApplicationSetting::where('key', '=', $key)->firstOrFail();
@@ -199,6 +199,7 @@ class ApplicationSettingController extends Controller
     public function createSetting(StoreApplicationSettingRequest $request, CacheService $cacheService): JsonResponse{
         try{
             $setting = ApplicationSetting::create($request->all());
+            
             $cacheService->forgetAll($this->tag);
 
             return response()->json($setting, Response::HTTP_CREATED);
@@ -233,11 +234,15 @@ class ApplicationSettingController extends Controller
 
     public function updateSetting(UpdateApplicationSettingRequest $request, int $id, CacheService $cacheService): JsonResponse {
         try {
-            $setting = ApplicationSetting::findOrFail($id);
-            $setting->update($request->all());
-            $setting->refresh();
+            $setting = null;
+            
+            \DB::transaction(function() use($request, $id, $cacheService, &$setting) {
+                $setting = ApplicationSetting::findOrFail($id);
+                $setting->update($request->all())->lockForUpdate();
+                $setting->refresh();
 
-            $cacheService->forgetAll($this->tag);
+                $cacheService->forgetAll($this->tag);
+            });
 
             return response()->json($setting, Response::HTTP_OK);
 

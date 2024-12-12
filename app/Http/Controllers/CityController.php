@@ -172,7 +172,7 @@ class CityController extends Controller
     public function getCityByName(string $name, CacheService $cacheService): JsonResponse
     {
         try {
-            $cacheKey = "{$this->tag}_{$name}";
+            $cacheKey = "{$this->tag}_" . md5($name);
             
             $city = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
                 return City::where('name', '=', $name)->firstOrFail();
@@ -263,14 +263,14 @@ class CityController extends Controller
     public function updateCity(UpdateCityRequest $request, int $id, CacheService $cacheService)
     {
         try {
-            // Keresse meg a frissítendő céget az azonosítója alapján
-            $city = City::findOrFail($id);
+            $city = null;
             
-            // Frissítse a vállalatot a HTTP-kérés adataival
-            $city->update($request->all());
-            $city->refresh();
-            
-            $cacheService->forgetAll($this->tag);
+            \DB::transaction(function() use($request, $id, $cacheService, &$city) {
+                $city = City::findOrFail($id);
+                $city->update($request->all())->lockForUpdate();
+                $city->refresh();
+                $cacheService->forgetAll($this->tag);
+            });
             
             // A frissített vállalatot JSON-válaszként küldje vissza sikeres állapotkóddal
             return response()->json($city, Response::HTTP_OK);
@@ -330,7 +330,6 @@ class CityController extends Controller
         try {
             // Keresse meg a törölni kívánt céget az azonosítója alapján
             $city = City::findOrFail($request->id);
-            
             $city->delete();
             
             $cacheService->forgetAll($this->tag);
@@ -378,7 +377,7 @@ class CityController extends Controller
         }
     }
     
-    public function deleteCities(Request $request)
+    public function deleteCities(Request $request, CacheService $cacheService): JsonResponse
     {
         try{
             // Az azonosítók tömbjének validálása
@@ -390,6 +389,9 @@ class CityController extends Controller
             $ids = $validated['ids'];
             // A cégek törlése
             $deletedCount = City::whereIn('id', $ids)->delete();
+            
+            $cacheService->forgetAll($this->tag);
+            
             // Válasz visszaküldése
             return response()->json($deletedCount, Response::HTTP_OK);
         }catch( ValidationException $ex ){

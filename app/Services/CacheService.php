@@ -2,7 +2,11 @@
 
 namespace App\Services;
 
+use Illuminate\Cache\RedisStore;
+use Illuminate\Cache\TaggableStore;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use function config;
 
 class CacheService
 {
@@ -42,6 +46,39 @@ class CacheService
         }
     }
 
+    public function forgetByTag(string $tag): void
+    {
+        if (Cache::getStore() instanceof TaggableStore) {
+            // Ha a cache támogatja a tag-eket
+            Cache::tags($tag)->flush();
+        } else {
+            // Alternatív megoldás: Egyenként töröljük a kulcsokat a Redis prefix alapján
+            $this->forgetAllMatching("{$tag}_*");
+        }
+    }
+    
+    public function forgetAllMatching(string $pattern): void
+    {
+        $store = Cache::getStore();
+
+        if ($store instanceof RedisStore) {
+            // Redis cache: a kulcsok direkt lekérdezése
+            $keys = $store->connection()->keys(config('cache.prefix') . ":{$pattern}");
+            foreach ($keys as $key) {
+                Cache::forget(str_replace(config('cache.prefix') . ':', '', $key));
+            }
+        } elseif (method_exists($store, 'getKeys')) {
+            // Más támogatott cache-driverek: közvetlen kulcs lista lekérdezése
+            $keys = $store->getKeys($pattern);
+            foreach ($keys as $key) {
+                Cache::forget($key);
+            }
+        } else {
+            // Ha a cache nem támogat mintázat-alapú törlést, figyelmeztetés
+            Log::warning("Cache driver does not support pattern-based deletion.");
+        }
+    }
+    
     protected function storeKey($tag, $key): void
     {
         $keys = Cache::get("{$tag}_keys", []);

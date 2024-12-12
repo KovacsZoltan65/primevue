@@ -83,16 +83,6 @@ class CompanyController extends Controller
         ]);
     }
 
-    /**
-     * Módosítsa a lekérdezést a keresési paraméter alapján.
-     *
-     * Ha a keresési paraméter nem üres, akkor a lekérdezés tartalmazza
-     * a feltételt, hogy a vállalat neve tartalmazza a keresési paramétert.
-     *
-     * @param Builder $query A lekérdezés, amelyet módosítani kell.
-     * @param string $search A keresési paraméter.
-     * @return Builder A módosított lekérdezés.
-     */
     public function applySearch(Builder $query, string $search): Builder
     {
         return $query->when($search, function ($query, string $search) {
@@ -258,7 +248,7 @@ class CompanyController extends Controller
             $company = Company::create($request->all());
 
             $cacheService->forgetAll($this->tag);
-
+            
             return response()->json($company, Response::HTTP_CREATED);
 
         } catch( QueryException $ex ) {
@@ -294,10 +284,11 @@ class CompanyController extends Controller
     public function updateCompany(UpdateCompanyRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try {
-
-            \DB::transaction(function() use($request, $cacheService) {
+            $company = null;
+            
+            \DB::transaction(function() use($request, $id, $cacheService, &$company) {
                 // Keresse meg a frissítendő céget az azonosítója alapján
-                $company = Company::findOrFail($request->id)->lockForUpdate();
+                $company = Company::findOrFail($id)->lockForUpdate();
 
                 // Frissítse a vállalatot a HTTP-kérés adataival
                 $company->update($request->all());
@@ -305,6 +296,12 @@ class CompanyController extends Controller
                 $company->refresh();
 
                 $cacheService->forgetAll($this->tag);
+
+                // Egyedi cég cache frissítése
+                //$cacheService->put("company_{$company->id}", $company->toArray(), $this->tag);
+                // Lista cache-ek törlése (tag-alapú vagy mintázat-alapú)
+                //$cacheService->forgetByTag($this->tag);
+                
             });
 
             return response()->json($company, Response::HTTP_OK);

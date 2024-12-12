@@ -241,11 +241,15 @@ class SubdomainStateController extends Controller
     public function updateSubdomainState(UpdateSubdomainStateRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try {
-            $subdomainState = SubdomainState::findOrFail($id);
-            $subdomainState->update($request->all());
-            $subdomainState->refresh();
+            $subdomainState = null;
             
-            $cacheService->forgetAll($this->tag);
+            \DB::transaction(function() use($request, $id, $cacheService, &$subdomainState) {
+                $subdomainState = SubdomainState::findOrFail($id);
+                $subdomainState->update($request->all());
+                $subdomainState->refresh();
+
+                $cacheService->forgetAll($this->tag);
+            });
             
             return response()->json($subdomainState, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

@@ -289,13 +289,14 @@ class RegionController extends Controller
     public function updateRegion(Request $request, int $id, CacheService $cacheService): JsonResponse
     {
         try{
-            $region = Region::findOrFail($id);
+            $region = null;
             
-            $region->update($request->all());
-            
-            $region->refresh();
-            
-            $cacheService->forgetAll($this->tag);
+            \DB::transaction(function() use($request, $id, $cacheService, &$region) {
+                $region = Region::findOrFail($id)->lockForUpdate();
+                $region->update($request->all());
+                $region->refresh();
+                $cacheService->forgetAll($this->tag);
+            });
             
             return response()->json($region, Response::HTTP_OK);
         }catch(ModelNotFoundException $ex){

@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreCityRequest extends FormRequest
+class StoreCityRequest extends BaseRequest
 {
     /**
      * Határozza meg, hogy a felhasználó jogosult-e erre a kérésre.

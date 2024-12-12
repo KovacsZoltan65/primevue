@@ -234,15 +234,14 @@ class SubdomainController extends Controller
     public function updateSubdomain(UpdateCityRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try {
-            // Keresse meg a frissítendő céget az azonosítója alapján
-            $subdomain = Company::findOrFail($id);
-
-            // Frissítse a vállalatot a HTTP-kérés adataival
-            $subdomain->update($request->all());
-            // Frissítjük a modelt
-            $subdomain->refresh();
-
-            $cacheService->forgetAll($this->tag);
+            $subdomain = null;
+            
+            \DB::transaction(function() use($request, $id, $cacheService, &$subdomain) {
+                $subdomain = Company::findOrFail($id)->lockForUpdate();
+                $subdomain->update($request->all());
+                $subdomain->refresh();
+                $cacheService->forgetAll($this->tag);
+            });
             
             return response()->json($subdomain, Response::HTTP_OK);
             

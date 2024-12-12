@@ -230,11 +230,15 @@ class CompanySettingController extends Controller
 
     public function updateSetting(UpdateCompanySettingRequest $request, int $id, CacheService $cacheService): JsonResponse {
         try {
-            $setting = CompanySetting::findOrFail($id);
-            $setting->update($request->all());
-            $setting->refresh();
+            $setting = null;
+            
+            \DB::transaction(function() use($request, $id, $cacheService, &$setting) {
+                $setting = CompanySetting::findOrFail($id)->lockForUpdate();
+                $setting->update($request->all());
+                $setting->refresh();
 
-            $cacheService->forgetAll($this->tag);
+                $cacheService->forgetAll($this->tag);
+            });
 
             return response()->json($setting, Response::HTTP_OK);
 

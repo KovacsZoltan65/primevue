@@ -17,9 +17,14 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Traits\Functions;
 
 class CountryController extends Controller
 {
+    use AuthorizesRequests,
+        Functions;
+    
     protected string $tag = 'countries';
     
     /**
@@ -256,15 +261,14 @@ class CountryController extends Controller
     public function updateCountry(UpdateCountryRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try{
-            // Keresse meg a frissítendő céget az azonosítója alapján
-            $country = Country::findOrFail($id);
+            $country = null;
             
-            // Frissítse a vállalatot a HTTP-kérés adataival
-            $country->update($request->all());
-            // Frissítjük a modelt
-            $country->refresh();
-            
-            $cacheService->forgetAll($this->tag);
+            \DB::transaction(function() use($request, $id, $cacheService, &$country) {
+                $country = Country::findOrFail($id)->lockForUpdate();
+                $country->update($request->all());
+                $country->refresh();
+                $cacheService->forgetAll($this->tag);
+            });
             
             return response()->json($country, Response::HTTP_OK);
         }catch( ModelNotFoundException $ex ){
@@ -365,7 +369,7 @@ class CountryController extends Controller
         }
     }
     
-    public function deleteCountries(Request $request): JsonResponse
+    public function deleteCountries(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
             $validated = $request->validate([
@@ -376,12 +380,11 @@ class CountryController extends Controller
             $ids = $validated['ids'];
             // A cégek törlése
             $deletedCount = Country::whereIn('id', $ids)->delete();
+            
+            $cacheService->forgetAll($this->tag);
+            
             // Válasz visszaküldése
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => 'Selected countries deleted successfully.',
-                'deleted_count' => $deletedCount,
-            ], Response::HTTP_OK);
+            return response()->json($deletedCount, Response::HTTP_OK);
         } catch( ValidationException $ex ) {
             // Validációs hiba logolása
             //ErrorController::logClientValidationError($request);

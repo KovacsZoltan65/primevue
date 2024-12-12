@@ -50,7 +50,7 @@ class PersonController extends Controller
                 return PersonResource::collection($personQuery->get());
             });
             
-            return response()->json($person, Response::HTTP_OK);
+            return response()->json($persons, Response::HTTP_OK);
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
             ErrorController::logServerError($ex, [
@@ -223,13 +223,19 @@ class PersonController extends Controller
         }
     }
     
-    public function updatePerson(UpdatePersonRequest $request, int $id): JsonResponse
+    public function updatePerson(UpdatePersonRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try{
-            $person = Person::findOrFail($id);
+            $person = null;
             
-            $person->update($request->all());
-            $person->refresh();
+            \DB::transaction(function() use($request, $id, $cacheService, &$person) {
+                $person = Person::findOrFail($id)->lockForUpdate();
+            
+                $person->update($request->all());
+                $person->refresh();
+                
+                $cacheService->forgetAll($this->tag);
+            });
             
             return response()->json($person, Response::HTTP_OK);
             
@@ -326,7 +332,7 @@ class PersonController extends Controller
         }
     }
     
-    public function deletePersons(Request $request): JsonResponse
+    public function deletePersons(Request $request, CacheService $cacheService): JsonResponse
     {
         try{
             // Az azonosítók tömbjének validálása
@@ -340,6 +346,8 @@ class PersonController extends Controller
             
             // A cégek törlése
             $deletedCount = Person::whereIn('id', $ids)->delete();
+            
+            $cacheService->forgetAll($this->tag);
             
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ValidationException $ex) {

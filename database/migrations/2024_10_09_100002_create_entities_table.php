@@ -24,7 +24,7 @@ return new class extends Migration
 
             $table->enum('active', [0,1])->default(1)->index()->comment('Aktív állapot');
 
-            $table->timestamps()->comment('Létrehozás és frissítés dátuma');
+            $table->timestamps();
             $table->softDeletes()->comment('Lágy törlés dátuma');
             
             $table->foreign('company_id')->references('id')->on('companies')->cascadeOnDelete();

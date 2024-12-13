@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id()->comment('Rekord azonosító');
             $table->unsignedBigInteger('parent_id')->comment('Szülő entitás ID');
             $table->unsignedBigInteger('child_id')->comment('Gyermek entitás ID');
-            $table->timestamps()->comment('Létrehozás és frissítés dátuma');
+            
+            $table->timestamps();
             $table->softDeletes()->comment('Lágy törlés dátuma');
 
             $table->foreign('parent_id')->references('id')->on('entities')->cascadeOnDelete()->comment('Szülő entitás törlés esetén cascadelés.');

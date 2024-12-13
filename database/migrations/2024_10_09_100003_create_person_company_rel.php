@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreign('person_id')->references('id')->on('persons')->cascadeOnDelete();
             $table->foreign('company_id')->references('id')->on('companies')->cascadeOnDelete();
             
-            $table->timestamps()->comment('Létrehozás és frissítés dátuma');
+            $table->timestamps();
             $table->softDeletes()->comment('Lágy törlés dátuma');
         });
         

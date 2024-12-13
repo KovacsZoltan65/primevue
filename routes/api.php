@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\RoleController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CompanySettingController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\HierarchyController;

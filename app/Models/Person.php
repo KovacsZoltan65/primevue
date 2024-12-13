@@ -29,6 +29,12 @@ class Person extends Model
         'birthdate' => '', 
         'active' => 1
     ];
+
+    protected static $recordEvents = [
+        'created',
+        'updated',
+        'deleted',
+    ];
     
     protected static $logAttributes = [
         'name', 'email', 
@@ -46,14 +52,23 @@ class Person extends Model
     {
         return $query->when($request->search, function ($query) use ($request) {
                 $query->where(function ($query) use ($request) {
-                    $query->where('name', 'like', "%{$request->search}%");
+                    $query->where('name', 'like', "%{$request->search}%")
+                          ->orWhere('email', 'like', "%{$request->search}%");
                 });
-            })->where('active', APP_ACTIVE);
+            })->when($request->active, function ($query) use ($request) {
+                $query->where('active', $request->active);
+            });
     }
     
     /**
+     * =========================================================
      * Azok a cégek, amelyekhez az adott személy tartozik.
-     *
+     * =========================================================
+     * $person = Person::find(1);
+     * $companies = $person->companies;
+     * foreach ($companies as $company) {
+     *     echo $company->name;
+     * }
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function companies(): BelongsToMany
@@ -62,13 +77,44 @@ class Person extends Model
     }
     
     /**
+     * =========================================================
      * Azok az entitások, amelyekhez az adott személy a cégén keresztül tartozik.
-     *
+     * =========================================================
+     * $person = Person::find(1);
+     * $entities = $person->entities;
+     * foreach ($entities as $entity) {
+     *     echo $entity->name;
+     * }
+     * 
      * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
      */
     public function entities(): HasManyThrough
     {
-        return $this->hasManyThrough(Entity::class, Company::class, 'person_company', 'company_id', 'id', 'id');
+        return $this->hasManyThrough(
+            Entity::class,          // Cél tábla
+            Company::class,         // Közvetítő tábla
+            'id',                  // A `companies` idegen kulcsa a `person_company`-ban
+            'company_id',         // Az `entities` idegen kulcsa
+            'id',                  // A `persons` kulcsa
+            'id'             // A `companies` kulcsa
+        );
+
+        /*
+        return $this->hasManyThrough(
+            Entity::class,      // Cél tábla
+            Company::class,     // Közvetítő tábla
+            'person_company', 
+            'company_id', 
+            'id', 
+            'id'
+        );
+        */
+    }
+
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable();
     }
     
     #[Override]

@@ -48,11 +48,11 @@ class Company extends Model
         })
         // If class_id parameter is present, filter results by that class_id
         ->when($request->country, function ($query) use ($request) {
-            $query->where('country', $request->country);
+            $query->where('country_id', $request->country);
         })
         // If section_id parameter is present, filter results by that section_id
         ->when($request->city, function ($query) use ($request) {
-            $query->where('city', $request->city);
+            $query->where('city_id', $request->city);
         });
     }
 
@@ -73,7 +73,7 @@ class Company extends Model
         // Az ország, amelyhez a vállalat tartozik.
         // 
         // @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-        return $this->belongsTo(Country::class, 'country');
+        return $this->belongsTo(Country::class, 'country_id');
     }
 
     /**
@@ -88,7 +88,7 @@ class Company extends Model
         // Egy vállalatnak pontosan egy városa van.
         // 
         // @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-        return $this->belongsTo(City::class, 'city');
+        return $this->belongsTo(City::class, 'city_id');
     }
     
     /**
@@ -121,7 +121,6 @@ class Company extends Model
     #[Override]
     public function getActivitylogOptions(): LogOptions {
         return LogOptions::defaults()
-            ->logFillable()
-            ->logAll();
+            ->logFillable();
     }
 }

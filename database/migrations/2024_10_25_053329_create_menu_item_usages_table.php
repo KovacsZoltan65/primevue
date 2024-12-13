@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('usage_count')->default(0)->comment('Használat számáló'); // Használat számláló
             $table->timestamps();
 
-            $table->foreign('menu_item_id')->references('id')->on('menu_items')->onDelete('cascade');
+            $table->foreign('menu_item_id')->references('id')->on('menu_items')->cascadeOnDelete();
         });
     }
 

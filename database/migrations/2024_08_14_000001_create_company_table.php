@@ -15,20 +15,20 @@ return new class extends Migration
     {   
         Schema::create('companies', function (Blueprint $table) {
             $table->id()->comment('Rekord azonosító');
-            $table->string('name', 255)->index()->collation('utf8mb3_general_ci')->comment('Cégnév');
-            $table->string('directory', 255)->collation('utf8mb3_general_ci')->comment('Könyvtár');
+            $table->string('name', 255)->unique()->collation('utf8mb3_unicode_ci')->comment('Cégnév');
+            $table->string('directory', 255)->unique()->collation('utf8mb3_unicode_ci')->comment('Könyvtár');
 
-            $table->string('registration_number', 255)->collation('utf8mb3_general_ci')->comment('Regisztrációs szám');
-            $table->string('tax_id', 255)->collation('utf8mb3_general_ci')->comment('Adószám');
+            $table->string('registration_number', 255)->collation('utf8mb3_unicode_ci')->comment('Regisztrációs szám');
+            $table->string('tax_id', 255)->collation('utf8mb3_unicode_ci')->comment('Adószám');
 
-            $table->unsignedSmallInteger('country_id')->comment('Ország azonosító. A kapcsolódó ország azonosítója.');
-            $table->unsignedSmallInteger('city_id')->comment('Város azonosító. A kapcsolódó megye / régió azonosítója.');
-            $table->string('address', 255)->collation('utf8mb3_general_ci')->comment('Cím');
+            $table->unsignedSmallInteger('country_id')->index()->comment('Ország azonosító. A kapcsolódó ország azonosítója.');
+            $table->unsignedSmallInteger('city_id')->index()->comment('Város azonosító. A kapcsolódó megye / régió azonosítója.');
+            $table->string('address', 255)->collation('utf8mb3_unicode_ci')->comment('Cím');
 
-            $table->integer('active')->default(1)->index()->comment('Aktív.');
+            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív állapot');
 
-            $table->timestamps();
-            $table->softDeletes();
+            $table->timestamps()->comment('Létrehozás és frissítés dátuma');
+            $table->softDeletes()->comment('Lágy törlés dátuma');
         });
     }
 

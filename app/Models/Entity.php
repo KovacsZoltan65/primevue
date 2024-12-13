@@ -23,9 +23,9 @@ class Entity extends Model
     protected $attributes = [
         'name' => '',
         'email' => '',
-        'start_date' => '',
-        'end_date' => NULL,
-        'last_export' => NULL,
+        'start_date' => null,
+        'end_date' => null,
+        'last_export' => null,
         'active' => 1
     ];
 
@@ -45,16 +45,14 @@ class Entity extends Model
     public function scopeSerach(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {
-                $query->where(function ($query) use ($request) {
-                    $query->where('name', 'like', "%{$request->search}%");
-                });
-            })->where('active', APP_ACTIVE);
+            $query->where(function ($query) use ($request) {
+                $query->where('name', 'like', "%{$request->search}%")
+                      ->orWhere('email', 'like', "%{$request->search}%");
+            });
+        })->when($request->active, function ($query) use ($request) {
+            $query->where('active', $request->active);
+        });
     }
-
-    //public function persons()
-    //{
-    //    return $this->belongsTo(Person::class, 'person_entity_rel');
-    //}
 
     /**
      * =========================================================
@@ -68,6 +66,21 @@ class Entity extends Model
         return $this->belongsTo(Company::class);
     }
 
+    /**
+     * =========================================================
+     * Summary of parents
+     * =========================================================
+     * $entity = Entity::find(1);
+     * $parents = $entity->parents;
+     * foreach ($parents as $parent) {
+     *     echo $parent->name;
+     * }
+     * 
+     * Ha a töröltek is kellenek, tedd a végére:
+     * ->withTrashed();
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function parents(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -75,9 +88,24 @@ class Entity extends Model
             'entity_rel', 
             'child_id', 
             'parent_id'
-        );
+        )->withTimestamps();
     }
 
+    /**
+     * =========================================================
+     * Summary of children
+     * =========================================================
+     * $entity = Entity::find(1);
+     * $children = $entity->children;
+     * foreach ($children as $child) {
+     *     echo $child->name;
+     * }
+     * 
+     * Ha a töröltek is kellenek, tedd a végére:
+     * ->withTrashed();
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function children(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -85,6 +113,6 @@ class Entity extends Model
             'entity_rel', 
             'parent_id', 
             'child_id'
-        );
+        )->withTimestamps();
     }
 }

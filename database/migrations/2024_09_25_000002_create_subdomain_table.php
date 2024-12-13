@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('subdomains', function (Blueprint $table) {
             $table->id()->comment('Rekord azonosító');
             
-            $table->string('subdomain')->collation('utf8mb3_general_ci')->index()->comment('Példány');
-            $table->string('url')->collation('utf8mb3_general_ci')->comment('Példány url-je');
-            $table->string('name')->index()->collation('utf8mb3_general_ci')->index()->comment('Aldomain neve');
-            $table->string('db_host', 125)->collation('utf8mb3_general_ci')->default('localhost')->comment('Adatbázis szerver címe');
+            $table->string('subdomain')->collation('utf8mb3_unicode_ci')->index()->comment('Példány');
+            $table->string('url')->collation('utf8mb3_unicode_ci')->comment('Példány url-je');
+            $table->string('name')->index()->collation('utf8mb3_unicode_ci')->index()->comment('Aldomain neve');
+            $table->string('db_host', 125)->collation('utf8mb3_unicode_ci')->default('localhost')->comment('Adatbázis szerver címe');
             $table->integer('db_port')->default(3306)->comment('Adatbázis port');
-            $table->string('db_name')->collation('utf8mb3_general_ci')->comment('Adatbázis neve');
-            $table->string('db_user')->collation('utf8mb3_general_ci')->comment('Adatbázis felhasználó');
-            $table->string('db_password')->collation('utf8mb3_general_ci')->comment('Adatbázis jelszó');
+            $table->string('db_name')->collation('utf8mb3_unicode_ci')->comment('Adatbázis neve');
+            $table->string('db_user')->collation('utf8mb3_unicode_ci')->comment('Adatbázis felhasználó');
+            $table->string('db_password')->collation('utf8mb3_unicode_ci')->comment('Adatbázis jelszó');
             
             $table->enum('notification', [0,1])->default(1)->comment('Értesítés');
             

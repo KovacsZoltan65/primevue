@@ -8,7 +8,7 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
-use App\Http\Controllers\EntityRelController;
+use App\Http\Controllers\HierarchyController;
 use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MenuController;
@@ -60,25 +60,25 @@ Route::middleware(['web', 'auth'])->group(function () {
      * =======================================================
      */
     // Szülö hozzáadása
-    Route::post('/entity-hierarchy/{childId}/add-parent', [EntityRelController::class, 'addParent']);
+    Route::post('/entity-hierarchy/{childId}/add-parent', [HierarchyController::class, 'addParent']);
     // Gyermek hozzáadása
-    Route::post('/entity-hierarchy/{parentId}/add-child', [EntityRelController::class, 'addChild']);
+    Route::post('/entity-hierarchy/{parentId}/add-child', [HierarchyController::class, 'addChild']);
     // Hierarchia lekérdezése
-    Route::get('/entity-hierarchy/{entityId}/hierarchy', [EntityRelController::class, 'getHierarchy']);
+    Route::get('/entity-hierarchy/{entityId}/hierarchy', [HierarchyController::class, 'getHierarchy']);
     // Gyermek eltávolítása
-    Route::delete('/entity-hierarchy/{parentId}/remove-child', [EntityRelController::class, 'removeChild']);
+    Route::delete('/entity-hierarchy/{parentId}/remove-child', [HierarchyController::class, 'removeChild']);
     // Nagyfőnök lekérése
-    Route::get('/entity-hierarchy/big-bosses', [EntityRelController::class, 'getBigBosses']);
+    Route::get('/entity-hierarchy/big-bosses', [HierarchyController::class, 'getBigBosses']);
     // Hierarchia épségének ellenőrzése
-    Route::get('/entity-hierarchy/validate', [EntityRelController::class, 'validateHierarchy']);
+    Route::get('/entity-hierarchy/validate', [HierarchyController::class, 'validateHierarchy']);
     // Izolált entitások keresése
-    Route::get('/entity-hierarchy/isolated-entities', [EntityRelController::class, 'checkIsolatedEntities']);
+    Route::get('/entity-hierarchy/isolated-entities', [HierarchyController::class, 'checkIsolatedEntities']);
     // Egy vezető beosztottjainak áthelyezése egy másik vezető alá
-    Route::post('/entity-hierarchy/{fromManagerId}/transfer-subordinates', [EntityRelController::class, 'transferSubordinates']);
+    Route::post('/entity-hierarchy/{fromManagerId}/transfer-subordinates', [HierarchyController::class, 'transferSubordinates']);
     // Két vezető beosztottjainak kicserélése
-    Route::post('/entity-hierarchy/swap-subordinates', [EntityRelController::class, 'swapSubordinates']);
+    Route::post('/entity-hierarchy/swap-subordinates', [HierarchyController::class, 'swapSubordinates']);
     // Dolgozói szint megállapítása
-    Route::get('/employee/{id}/role', [EntityRelController::class, 'getEmployeeRole']);
+    Route::get('/employee/{id}/role', [HierarchyController::class, 'getEmployeeRole']);
     
     /**
      * =======================================================

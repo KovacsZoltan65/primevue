@@ -14,14 +14,17 @@ return new class extends Migration
         Schema::create('person_company', function(Blueprint $table) {
             $table->id()->comment('Rekord azonosító');
             
-            $table->unsignedBigInteger('person_id')->comment('Személy azonosító. A kapcsolódó Persons azonosítója.');
-            $table->unsignedBigInteger('company_id')->comment('Cég azonosító. A kapcsolódó Companies azonosítója.');
+            $table->unsignedBigInteger('person_id')->index()->comment('Személy azonosító. A kapcsolódó Persons azonosítója.');
+            $table->unsignedBigInteger('company_id')->index()->comment('Cég azonosító. A kapcsolódó Companies azonosítója.');
             
+            // Egyedi kulcs a párosításokra
+            $table->unique(['person_id', 'company_id'], 'person_company_unique');
+
             $table->foreign('person_id')->references('id')->on('persons')->cascadeOnDelete();
             $table->foreign('company_id')->references('id')->on('companies')->cascadeOnDelete();
             
-            $table->timestamps();
-            $table->softDeletes();
+            $table->timestamps()->comment('Létrehozás és frissítés dátuma');
+            $table->softDeletes()->comment('Lágy törlés dátuma');
         });
         
         //Schema::create('company_entity', function(Blueprint $table) {

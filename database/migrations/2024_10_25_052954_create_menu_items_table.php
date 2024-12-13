@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('parent_id')->nullable()->comment('Szülő menü azonosítója');
             $table->timestamps();
             
-            $table->foreign('parent_id')->references('id')->on('menu_items')->onDelete('cascade');
+            $table->foreign('parent_id')->references('id')->on('menu_items')->cascadeOnDelete();
         });
     }
 

@@ -3,17 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Entity;
-use App\Models\EntityRel;
+use App\Models\Hierarchy;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-class EntityRelController extends Controller
+class HierarchyController extends Controller
 {
     // Szülö hozzáadása
-    public function addParent(Request $request, $childId)
+    public function addParent(Request $request, $childId): JsonResponse
     {
         try {
             $parentId = $request->input('parent_id');
@@ -33,6 +35,11 @@ class EntityRelController extends Controller
                 'message' => 'Parent added successfully.',
                 'child' => $child->load('parents'),
             ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Entity not found.',
+                'details' => $e->getMessage(),
+            ], 404);
         } catch (Exception $e) {
             Log::error('Error adding parent to entity', [
                 'child_id' => $childId,
@@ -67,6 +74,11 @@ class EntityRelController extends Controller
                 'message' => 'Child added successfully.',
                 'parent' => $parent->load('children'),
             ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Entity not found.',
+                'details' => $e->getMessage(),
+            ], 404);
         } catch (Exception $e) {
             Log::error('Error adding child to entity', [
                 'parent_id' => $parentId,
@@ -87,6 +99,11 @@ class EntityRelController extends Controller
             $entity = Entity::with('parents', 'children')->findOrFail($entityId);
 
             return response()->json($entity);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Entity not found.',
+                'details' => $e->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
         } catch (Exception $e) {
             Log::error('Error fetching entity hierarchy', [
                 'entity_id' => $entityId,
@@ -120,6 +137,11 @@ class EntityRelController extends Controller
                 'message' => 'Child removed successfully.',
                 'parent' => $parent->load('children'),
             ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Parent or Child entity not found.',
+                'details' => $e->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
         } catch (Exception $e) {
             Log::error('Error removing child from entity', [
                 'parent_id' => $parentId,
@@ -143,7 +165,7 @@ class EntityRelController extends Controller
             if ($bigBosses->isEmpty()) {
                 return response()->json([
                     'message' => 'No big bosses found.',
-                ], 404);
+                ], Response::HTTP_NOT_FOUND);
             }
 
             return response()->json([
@@ -158,7 +180,7 @@ class EntityRelController extends Controller
             return response()->json([
                 'error' => 'Could not retrieve big bosses.',
                 'details' => $e->getMessage(),
-            ], 500);
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     // Egy vezető beosztottjainak áthelyezése egy másik vezető alá
@@ -265,6 +287,7 @@ class EntityRelController extends Controller
             ], 500);
         }
     }
+
     // Hierarchia épségének ellenőrzése
     public function validateHierarchy()
     {
@@ -308,19 +331,20 @@ class EntityRelController extends Controller
             ], 500);
         }
     }
+
     // Eléri a nagyfőnököt?
-    private function canReachBigBoss(Entity $entity, $bigBosses)
+    private function canReachBigBoss(Entity $entity, $bigBosses): bool
     {
         $current = $entity;
-
+    
         // Felfelé lépegetés a hierarchiában
         while ($current) {
-            if ($bigBosses->contains($current)) {
+            if ($bigBosses->contains($current->id)) { // ID-t használunk az összehasonlításhoz, hogy minimalizáljuk az objektumok összehasonlítását
                 return true;
             }
             $current = $current->parents()->first();
         }
-
+    
         return false;
     }
     
@@ -344,6 +368,7 @@ class EntityRelController extends Controller
     public function checkIsolatedEntities()
     {
         try {
+            // Első szülő nélküli, és első gyermek nélküli entitások keresése egyszerre
             $isolatedEntities = Entity::doesntHave('parents')
                 ->doesntHave('children')
                 ->get();
@@ -369,33 +394,34 @@ class EntityRelController extends Controller
             ], 500);
         }
     }
+
     
     /**
      * =========================================
      * Több dolgozó szintjének meghatározása
      * =========================================
      */
-    public function getEmployeesRoles(array $employeeIds)
+    public function getEmployeesRoles(array $employeeIds): JsonResponse
     {
         try {
             // Lekérjük az összes kapcsolódó relációt egyszerre
-            $relations = EntityRel::whereIn('child_id', $employeeIds)
+            $relations = Hierarchy::whereIn('child_id', $employeeIds)
                 ->orWhereIn('parent_id', $employeeIds)
                 ->get();
 
             // Csoportosítás a kapcsolatok alapján
-            $hasParent = $relations->pluck('child_id')->unique(); // Akik gyerekként szerepelnek
-            $hasChildren = $relations->pluck('parent_id')->unique(); // Akik szülőként szerepelnek
+            $parentIds = $relations->pluck('parent_id')->unique();
+            $childIds = $relations->pluck('child_id')->unique();
 
             // Az eredmények előkészítése
             $roles = [];
 
             foreach ($employeeIds as $employeeId) {
-                if (!$hasParent->contains($employeeId) && $hasChildren->contains($employeeId)) {
+                if (!$parentIds->contains($employeeId) && $childIds->contains($employeeId)) {
                     $roles[$employeeId] = 'Nagyfőnök';
-                } elseif ($hasParent->contains($employeeId) && $hasChildren->contains($employeeId)) {
+                } elseif ($parentIds->contains($employeeId) && $childIds->contains($employeeId)) {
                     $roles[$employeeId] = 'Vezető';
-                } elseif ($hasParent->contains($employeeId) && !$hasChildren->contains($employeeId)) {
+                } elseif ($parentIds->contains($employeeId) && !$childIds->contains($employeeId)) {
                     $roles[$employeeId] = 'Dolgozó';
                 } else {
                     $roles[$employeeId] = 'Isolated';
@@ -417,6 +443,7 @@ class EntityRelController extends Controller
             ], 500);
         }
     }
+
     
     /**
      * =========================================
@@ -435,21 +462,13 @@ class EntityRelController extends Controller
             $employee = Entity::findOrFail($employeeId);
 
             // Ellenőrizzük, hogy van-e felettese (parent_id)
-            $hasParent = EntityRel::where('child_id', $employeeId)->exists();
+            $hasParent = Hierarchy::where('child_id', $employeeId)->exists();
 
             // Ellenőrizzük, hogy van-e beosztottja (child_id)
-            $hasChildren = EntityRel::where('parent_id', $employeeId)->exists();
+            $hasChildren = Hierarchy::where('parent_id', $employeeId)->exists();
 
             // Meghatározzuk a szerepkört
-            if (!$hasParent && $hasChildren) {
-                $role = 'Nagyfőnök'; // Nincs felettese, de van beosztottja
-            } elseif ($hasParent && $hasChildren) {
-                $role = 'Vezető'; // Van felettese és vannak beosztottjai
-            } elseif ($hasParent && !$hasChildren) {
-                $role = 'Dolgozó'; // Csak felettese van, nincs beosztottja
-            } else {
-                $role = 'Isolated'; // Se felettese, se beosztottja (ritka, de lehetséges eset)
-            }
+            $role = $this->determineRole($hasParent, $hasChildren);
 
             return response()->json([
                 'employee_id' => $employeeId,
@@ -473,6 +492,19 @@ class EntityRelController extends Controller
             ], 500);
         }
     }
+
+    private function determineRole($hasParent, $hasChildren)
+    {
+        if (!$hasParent && $hasChildren) {
+            return 'Nagyfőnök'; // Nincs felettese, de van beosztottja
+        } elseif ($hasParent && $hasChildren) {
+            return 'Vezető'; // Van felettese és vannak beosztottjai
+        } elseif ($hasParent && !$hasChildren) {
+            return 'Dolgozó'; // Csak felettese van, nincs beosztottja
+        } else {
+            return 'Isolated'; // Se felettese, se beosztottja (ritka, de lehetséges eset)
+        }
+    }
     
     /**
      * =========================================
@@ -482,7 +514,7 @@ class EntityRelController extends Controller
     
     /**
      * =========================================
-     * 1. Többgyökér (multiroot) ellenőrzése
+     * 1. Több gyökér (multiroot) ellenőrzése
      * =========================================
      * Mit jelent?: Ha a rendszer támogatja, hogy több "nagyfőnök" (gyökér 
      *              szintű entitás) legyen, akkor biztosítani kell, hogy ezek 
@@ -524,13 +556,24 @@ class EntityRelController extends Controller
         }
     }
 
-    private function getAllDescendants(Entity $entity)
+
+    private function getAllDescendants(Entity $entity): Collection
     {
         $descendants = collect();
-        foreach ($entity->children as $child) {
-            $descendants->push($child);
-            $descendants = $descendants->merge($this->getAllDescendants($child));
+
+        // Egy iterációs módszer használata a teljes leszármazott lista összegyűjtéséhez
+        $queue = collect([$entity]);
+
+        while ($queue->isNotEmpty()) {
+            $current = $queue->shift(); // Az első elem kinyerése
+            $descendants->push($current); // Hozzáadása a leszármazottakhoz
+
+            // Az összes gyermek hozzáadása a sorhoz
+            foreach ($current->children as $child) {
+                $queue->push($child);
+            }
         }
+
         return $descendants;
     }
     
@@ -545,19 +588,20 @@ class EntityRelController extends Controller
      *              biztosítani kell, hogy a parent_id ne tartozzon már a 
      *              child_id leszármazottai közé.
      */
-    public function validateNoCycles($parentId, $childId)
+    public function validateNoCycles($parentId, $childId): bool
     {
         $current = Entity::find($parentId);
 
         while ($current) {
-            if ($current->id == $childId) {
-                return false; // Ciklus lenne
+            if ($current->id === $childId) {
+                return false; // Ciklus van
             }
-            $current = $current->parents()->first();
+            $current = $current->parents()->first(); // Egy szülő lekérése
         }
 
         return true;
     }
+
     
     /**
      * =========================================
@@ -579,15 +623,15 @@ class EntityRelController extends Controller
             $allEntities = Entity::pluck('id')->toArray();
 
             // Entitások, amelyek szülőként jelennek meg
-            $parents = EntityRel::pluck('parent_id')->toArray();
+            $parents = Hierarchy::pluck('parent_id')->unique()->toArray();
 
             // Entitások, amelyek gyermekként jelennek meg
-            $children = EntityRel::pluck('child_id')->toArray();
+            $children = Hierarchy::pluck('child_id')->unique()->toArray();
 
             // Azok az entitások, amelyek sem szülőként, sem gyermekként nem szerepelnek
             $orphans = array_diff($allEntities, $parents, $children);
 
-            if (count($orphans) > 0) {
+            if (!empty($orphans)) {
                 return response()->json([
                     'error' => 'Orphaned entities found.',
                     'orphans' => Entity::whereIn('id', $orphans)->get(),
@@ -608,6 +652,7 @@ class EntityRelController extends Controller
             ], 500);
         }
     }
+
     
     /**
      * =========================================
@@ -618,17 +663,40 @@ class EntityRelController extends Controller
      * Ellenőrzés:  Az entities táblában a company_id mező értéke a szülő és a 
      *              gyermek esetében egyezzen.
      */
-    public function validateCompanyIntegrity($parentId, $childId)
+    public function validateCompanyIntegrity($parentId, $childId): JsonResponse
     {
-        $parent = Entity::find($parentId);
-        $child = Entity::find($childId);
+        try {
+            $parent = Entity::findOrFail($parentId);
+            $child = Entity::findOrFail($childId);
 
-        if ($parent->company_id !== $child->company_id) {
-            throw new Exception('Parent and child must belong to the same company.');
+            if ($parent->company_id !== $child->company_id) {
+                return response()->json([
+                    'error' => 'Parent and child must belong to the same company.',
+                ], 400);
+            }
+
+            return response()->json([
+                'message' => 'Company integrity validated successfully.',
+            ]);
+        } catch (ModelNotFoundException $e) {
+            Log::error('Entity not found', ['parent_id' => $parentId, 'child_id' => $childId]);
+            return response()->json([
+                'error' => 'Entity not found.',
+            ], 404);
+        } catch (Exception $e) {
+            Log::error('Error validating company integrity', [
+                'error' => $e->getMessage(),
+                'parent_id' => $parentId,
+                'child_id' => $childId,
+            ]);
+
+            return response()->json([
+                'error' => 'Could not validate company integrity.',
+                'details' => $e->getMessage(),
+            ], 500);
         }
-
-        return true;
     }
+
     
     /**
      * =========================================
@@ -642,7 +710,7 @@ class EntityRelController extends Controller
     public function checkHierarchyLevels()
     {
         try {
-            $invalidRelations = EntityRel::with(['parent', 'child'])
+            $invalidRelations = Hierarchy::with(['parent', 'child'])
                 ->get()
                 ->filter(function ($relation) {
                     return abs($relation->parent->level - $relation->child->level) > 1;
@@ -669,6 +737,7 @@ class EntityRelController extends Controller
             ], 500);
         }
     }
+
     
     /**
      * =========================================
@@ -680,17 +749,31 @@ class EntityRelController extends Controller
      * Ellenőrzés:  Egy entitás csak akkor lehet egy másik szülője vagy gyermeke, 
      *              ha az időtartamok átfedik egymást.
      */
-    public function validateTemporalConsistency($parentId, $childId)
+    public function validateTemporalConsistency($parentId, $childId): bool
     {
-        $parent = Entity::find($parentId);
-        $child = Entity::find($childId);
+        try {
+            $parent = Entity::findOrFail($parentId);
+            $child = Entity::findOrFail($childId);
 
-        if ($child->start_date > $parent->end_date || $child->end_date < $parent->start_date) {
-            throw new Exception('Temporal inconsistency: Parent and child active periods do not overlap.');
+            if ($child->start_date > $parent->end_date || $child->end_date < $parent->start_date) {
+                throw new Exception('Temporal inconsistency: Parent and child active periods do not overlap.');
+            }
+
+            return true;
+        } catch (ModelNotFoundException $e) {
+            Log::error("Entity not found", ['parent_id' => $parentId, 'child_id' => $childId]);
+            throw new Exception('Entity not found.');
+        } catch (Exception $e) {
+            Log::error('Error validating temporal consistency', [
+                'error' => $e->getMessage(),
+                'parent_id' => $parentId,
+                'child_id' => $childId,
+            ]);
+
+            throw new Exception('Could not validate temporal consistency.', 0, $e);
         }
-
-        return true;
     }
+
     
     /**
      * =========================================
@@ -699,17 +782,28 @@ class EntityRelController extends Controller
      * Mit jelent?: Ne legyenek redundáns (ismétlődő) kapcsolatok a táblában.
      * Ellenőrzés:  Egy parent_id és child_id pár csak egyszer szerepelhet.
      */
-    public function validateUniqueRelationship($parentId, $childId)
+    public function validateUniqueRelationship($parentId, $childId): bool
     {
-        $exists = EntityRel::where('parent_id', $parentId)
-            ->where('child_id', $childId)
-            ->exists();
+        try {
+            $exists = Hierarchy::where('parent_id', $parentId)
+                ->where('child_id', $childId)
+                ->exists();
 
-        if ($exists) {
-            throw new Exception('This relationship already exists.');
+            if ($exists) {
+                throw new Exception('This relationship already exists.');
+            }
+
+            return true;
+        } catch (Exception $e) {
+            Log::error('Error validating unique relationship', [
+                'error' => $e->getMessage(),
+                'parent_id' => $parentId,
+                'child_id' => $childId,
+            ]);
+
+            throw new Exception('Could not validate unique relationship.', 0, $e);
         }
-
-        return true;
     }
+
     
 }

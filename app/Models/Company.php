@@ -25,12 +25,10 @@ class Company extends Model
         'tax_id', 'address', 'active'
     ];
 
-    protected static $logAttributes = [
-        'name', 'directory', 
-        'registration_number', 'tax_id', 
-        'country_id', 'city_id', 
-        'address', 'active'
-    ];
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'company';
     
     protected static $recordEvents = [
         'created',

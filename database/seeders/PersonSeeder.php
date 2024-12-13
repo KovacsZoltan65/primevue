@@ -6,6 +6,7 @@ use App\Models\Entity;
 use App\Models\Person;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Activitylog\Models\Activity;
 
 class PersonSeeder extends Seeder
 {
@@ -17,6 +18,9 @@ class PersonSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
         Entity::truncate();
         Schema::enableForeignKeyConstraints();
+
+        // Logolás letiltása
+        Activity::disableLogging();
 
         $this->command->warn(PHP_EOL . __('persons.create_title'));
         
@@ -33,5 +37,6 @@ class PersonSeeder extends Seeder
         
         $this->command->info(PHP_EOL . __('persons.created_title'));
         
+        Activity::enableLogging();
     }
 }

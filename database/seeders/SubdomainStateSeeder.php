@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Spatie\Activitylog\Models\Activity;
 
 class SubdomainStateSeeder extends Seeder
 {
@@ -18,6 +19,8 @@ class SubdomainStateSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
         SubdomainState::truncate();
         Schema::enableForeignKeyConstraints();
+
+        Activity::disableLogging();
 
         $arr_subdomain_states = [
             ['id' => 1, 'name' => 'Aktív',              'active' => 1],
@@ -38,5 +41,7 @@ class SubdomainStateSeeder extends Seeder
         $this->command->getOutput()->progressFinish();
         
         $this->command->info(PHP_EOL . __('migration_created_subdomain_states') );
+
+        Activity::enableLogging();
     }
 }

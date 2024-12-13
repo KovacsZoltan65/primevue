@@ -6,6 +6,7 @@ use App\Models\Company;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Activitylog\Models\Activity;
 
 class CompanySeeder extends Seeder
 {
@@ -18,6 +19,9 @@ class CompanySeeder extends Seeder
         Company::truncate();
         Schema::enableForeignKeyConstraints();
 
+        // Logolás letiltása
+        Activity::disableLogging();
+        
         $companies = [
             [ 'id' =>  1, 'name' => 'Company 01', 'directory' => 'company_01', 'registration_number' => fake()->phoneNumber(), 'tax_id' => fake()->phoneNumber(), 'country_id' => 92, 'city_id' =>  1, 'address' => 'Address 01' ],
             [ 'id' =>  2, 'name' => 'Company 02', 'directory' => 'company_02', 'registration_number' => fake()->phoneNumber(), 'tax_id' => fake()->phoneNumber(), 'country_id' => 92, 'city_id' =>  2, 'address' => 'Address 02' ],
@@ -53,5 +57,7 @@ class CompanySeeder extends Seeder
         $this->command->getOutput()->progressFinish();
 
         $this->command->info(PHP_EOL . __('migration_created_companies'));
+
+        Activity::enableLogging();
     }
 }

@@ -21,9 +21,10 @@ class Role extends Model
         'name', 'guard_name'
     ];
     
-    protected static $logAttributes = [
-        'name', 'guard_name'
-    ];
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'role';
     
     protected static $recordEvents = [
         'created',

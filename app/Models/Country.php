@@ -37,9 +37,10 @@ class Country extends Model
         'active' => 'integer',
     ];
 
-    protected static $logAttributes = [
-        'name', 'code', 'active'
-    ];
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'country';
     
     protected static $recordEvents = [
         'created',

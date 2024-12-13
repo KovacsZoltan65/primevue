@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
+use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -34,7 +35,16 @@ class City extends Model
         'longitude' => 'float'
     ];
     
-    protected static $logAttributes = ['region_id', 'country_id', 'latitude', 'longitude', 'name'];
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'city';
+    
+    protected static $recordEvents = [
+        'created',
+        'updated',
+        'deleted',
+    ];
     
     public function scopeSearch(Builder $query, Request $request)
     {

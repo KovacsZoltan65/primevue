@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Activitylog\Models\Activity;
 
 class UserSeeder extends Seeder
 {
@@ -17,6 +18,8 @@ class UserSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
         User::truncate();
         Schema::enableForeignKeyConstraints();
+
+        Activity::disableLogging();
 
         $password = 'password';
         $arr_users = [
@@ -39,5 +42,7 @@ class UserSeeder extends Seeder
         $this->command->getOutput()->progressFinish();
 
         $this->command->info(PHP_EOL . 'Users created');
+
+        Activity::enableLogging();
     }
 }

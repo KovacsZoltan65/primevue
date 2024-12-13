@@ -30,17 +30,10 @@ class Person extends Model
         'active' => 1
     ];
 
-    protected static $recordEvents = [
-        'created',
-        'updated',
-        'deleted',
-    ];
-    
-    protected static $logAttributes = [
-        'name', 'email', 
-        'password', 'language', 
-        'birthdate', 'active'
-    ];
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'entity';
     
     protected static $recordEvents = [
         'created',
@@ -115,12 +108,5 @@ class Person extends Model
     public function getActivitylogOptions(): LogOptions {
         return LogOptions::defaults()
             ->logFillable();
-    }
-    
-    #[Override]
-    public function getActivitylogOptions(): LogOptions {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logAll();
     }
 }

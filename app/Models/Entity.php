@@ -29,12 +29,10 @@ class Entity extends Model
         'active' => 1
     ];
 
-    protected static $logAttributes = [
-        'name', 'email', 
-        'start_date', 'end_date', 
-        'last_export', 'company_id', 
-        'active'
-    ];
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'entity';
     
     protected static $recordEvents = [
         'created',
@@ -114,5 +112,11 @@ class Entity extends Model
             'parent_id', 
             'child_id'
         )->withTimestamps();
+    }
+
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable();
     }
 }

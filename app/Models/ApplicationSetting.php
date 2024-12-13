@@ -18,7 +18,10 @@ class ApplicationSetting extends Model
     protected $table = 'application_settings';
     protected $fillable = ['key', 'value', 'is_active'];
 
-    protected $logAttributes = ['key', 'value', 'is_active'];
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'application_settings';
 
     protected static $recordEvents = [
         'created',

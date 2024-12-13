@@ -18,8 +18,11 @@ class CompanySetting extends Model
     protected $table = 'company_settings';
     protected $fillable = ['company_id', 'key', 'value', 'is_active'];
 
-    protected $logAttributes = ['company_id', 'key', 'value', 'is_active'];
-
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'company_settings';
+    
     protected static $recordEvents = [
         'created',
         'updated',

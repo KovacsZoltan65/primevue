@@ -8,6 +8,7 @@ use App\Models\Person;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Activitylog\Models\Activity;
 
 class PersonCompanyEntitySeeder extends Seeder
 {
@@ -16,6 +17,9 @@ class PersonCompanyEntitySeeder extends Seeder
      */
     public function run(): void
     {
+        // Logolás letiltása
+        Activity::disableLogging();
+        
         // Create 3 companies
         $companies = Company::factory()->count(3)->create();
 
@@ -32,5 +36,7 @@ class PersonCompanyEntitySeeder extends Seeder
         $companies->each(function (Company $company) {
             Entity::factory()->count(rand(1, 3))->create(['company_id' => $company->id]);
         });
+
+        Activity::enableLogging();
     }
 }

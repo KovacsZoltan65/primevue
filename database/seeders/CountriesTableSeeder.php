@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Country;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Activitylog\Models\Activity;
 
 class CountriesTableSeeder extends Seeder
 {
@@ -16,10 +17,11 @@ class CountriesTableSeeder extends Seeder
     public function run()
     {
         Schema::disableForeignKeyConstraints();
-
         Country::truncate();
-
         Schema::enableForeignKeyConstraints();
+
+        // Logolás letiltása
+        Activity::disableLogging();
 
         $countries = [
             /*
@@ -300,5 +302,7 @@ class CountriesTableSeeder extends Seeder
         $this->command->getOutput()->progressFinish();
         
         $this->command->info(PHP_EOL . __('migration_created_countries'));
+
+        Activity::enableLogging();
     }
 }

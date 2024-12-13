@@ -8,6 +8,7 @@ use App\Models\Person;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Activitylog\Models\Activity;
 
 class EntitySeeder extends Seeder
 {
@@ -20,7 +21,8 @@ class EntitySeeder extends Seeder
         Entity::truncate();
         Schema::enableForeignKeyConstraints();
         
-        //$arr_entities = [];
+        // Logolás letiltása
+        Activity::disableLogging();
         
         $faker = Factory::create();
         $company_ids = Company::pluck('id')->toArray();
@@ -54,5 +56,7 @@ class EntitySeeder extends Seeder
         $this->command->getOutput()->progressFinish();
         
         $this->command->info(PHP_EOL . __('migration_created_entities') );
+
+        Activity::enableLogging();
     }
 }

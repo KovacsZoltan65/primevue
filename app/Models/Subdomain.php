@@ -61,10 +61,10 @@ class Subdomain extends Model
     ];
     */
     
-    protected static $logAttributes = [
-        'name', 'db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'notification',
-        'state_id', 'is_mirror', 'sso', 'acs_id','active'
-    ];
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'subdomain';
     
     protected static $recordEvents = [
         'created',

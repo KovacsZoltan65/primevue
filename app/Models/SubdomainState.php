@@ -36,7 +36,10 @@ class SubdomainState extends Model
     //    'active' => 'integer',
     //];
     
-    protected static $logAttributes = ['name','active'];
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'subdomain_state';
     
     protected static $recordEvents = [
         'created',

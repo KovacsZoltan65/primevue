@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Subdomain;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Activitylog\Models\Activity;
 
 class SubdomainsSeeder extends Seeder
 {
@@ -16,6 +17,8 @@ class SubdomainsSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
         Subdomain::truncate();
         Schema::enableForeignKeyConstraints();
+
+        Activity::disableLogging();
         
         $arr_subdomains = [
             ['id' => 1, 'subdomain' => 'showtime','url'    => 'http://showtime.ejelenlet/',    'name' => 'Showtime - Ejelenlet Developer Instance', 'db_host' => 'localhost', 'db_port' => 3306, 'db_name' => 'ej3_showtime',      'db_user' => 'ej3_showtime',      'db_password' => 'bqNxN86xwatT68wv', 'notification' => 1, 'state_id' => 1, 'acs_id' => 5, 'last_export' => '2023-01-01 00:00:00',],
@@ -41,5 +44,7 @@ class SubdomainsSeeder extends Seeder
         $this->command->getOutput()->progressFinish();
         
         $this->command->info(PHP_EOL . __('migration_created_subdomains') );
+
+        Activity::enableLogging();
     }
 }

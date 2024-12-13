@@ -6,6 +6,7 @@ use App\Models\Region;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Activitylog\Models\Activity;
 
 class RegionsTableSeeder extends Seeder
 {
@@ -15,11 +16,10 @@ class RegionsTableSeeder extends Seeder
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
-
-        //\DB::table('regions')->truncate();
         Region::truncate();
-
         Schema::enableForeignKeyConstraints();
+
+        Activity::disableLogging();
         
         $regions = [
             ['id' => 1538,'name' => 'Komárom-Esztergom',     'code' => '12','country_id' => 92,'active' => 1,],
@@ -63,6 +63,8 @@ class RegionsTableSeeder extends Seeder
         $this->command->getOutput()->progressFinish();
         
         $this->command->info(PHP_EOL . __('migration_created_regions'));
+        
+        Activity::enableLogging();
         
         /*
         \DB::table('regions')->insert([

@@ -17,7 +17,10 @@ class SettingMetadata extends Model
     protected $table = 'setting_metadata';
     protected $fillable = ['key', 'type', 'description', 'default_value', 'scope'];
 
-    protected $logAttributes = ['key', 'type', 'description', 'default_value', 'scope'];
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'setting_metadata';
 
     protected static $recordEvents = [
         'created',

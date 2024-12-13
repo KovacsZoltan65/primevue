@@ -8,6 +8,7 @@ namespace Database\Seeders;
 use App\Models\MenuItem;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Activitylog\Models\Activity;
 
 class MenuItemSeeder extends Seeder
 {
@@ -17,11 +18,12 @@ class MenuItemSeeder extends Seeder
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
-
         MenuItem::truncate();
-
         Schema::enableForeignKeyConstraints();
         
+        // Logolás letiltása
+        Activity::disableLogging();
+
         // Főmenü - Home
         $home = MenuItem::create(
             [ 'label' => 'home', 'url' => '/home', 'default_weight' => 1, ]
@@ -79,5 +81,8 @@ class MenuItemSeeder extends Seeder
                 [ 'label' => 'subdomains', 'url' => '/subdomains', 'default_weight' => 2, ],
             ]
         );
+
+        Activity::enableLogging();
+        
     }
 }

@@ -19,7 +19,7 @@ class CitySeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         // Logolás letiltása
-        Activity::disableLogging();
+        activity()->disableLogging();
 
         $cities = [
             ['id' =>  1, 'region_id' => 1555, 'country_id' => 92, 'latitude' => '47.50000000', 'longitude' => '19.08333330', 'name' => 'Budapest',       'active' => 1],
@@ -50,6 +50,6 @@ class CitySeeder extends Seeder
         
         $this->command->info(PHP_EOL . __('migration_created_cities'));
 
-        Activity::enableLogging();
+        activity()->enableLogging();
     }
 }

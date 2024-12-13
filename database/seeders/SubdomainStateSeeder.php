@@ -20,7 +20,7 @@ class SubdomainStateSeeder extends Seeder
         SubdomainState::truncate();
         Schema::enableForeignKeyConstraints();
 
-        Activity::disableLogging();
+        activity()->disableLogging();
 
         $arr_subdomain_states = [
             ['id' => 1, 'name' => 'Aktív',              'active' => 1],
@@ -42,6 +42,6 @@ class SubdomainStateSeeder extends Seeder
         
         $this->command->info(PHP_EOL . __('migration_created_subdomain_states') );
 
-        Activity::enableLogging();
+        activity()->enableLogging();
     }
 }

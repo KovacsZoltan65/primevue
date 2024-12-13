@@ -4,11 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\Company;
 use App\Models\Entity;
+use App\Models\Hierarchy;
 use App\Models\Person;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
-use Spatie\Activitylog\Models\Activity;
 
 class EntitySeeder extends Seeder
 {
@@ -22,7 +22,7 @@ class EntitySeeder extends Seeder
         Schema::enableForeignKeyConstraints();
         
         // Logolás letiltása
-        Activity::disableLogging();
+        activity()->disableLogging();
         
         $faker = Factory::create();
         $company_ids = Company::pluck('id')->toArray();
@@ -33,8 +33,8 @@ class EntitySeeder extends Seeder
                 'id' => $i,
                 'name' => "Entity_{$i}",
                 'email' => "entity_{$i}@company.com",
-                'companies_id' => $faker->randomElement($company_ids),
-                'persons_id' => $faker->randomElement($person_ids),
+                'company_id' => $faker->randomElement($company_ids),
+                //'persons_id' => $faker->randomElement($person_ids),
                 'start_date' => $faker->dateTimeBetween('-10 year', 'now'),
                 'end_date' => $faker->dateTimeBetween('now', '+10 year'),
                 'last_export' => NULL,
@@ -57,6 +57,31 @@ class EntitySeeder extends Seeder
         
         $this->command->info(PHP_EOL . __('migration_created_entities') );
 
-        Activity::enableLogging();
+        // Hierarchia kapcsolatok létrehozása
+        $this->createInitialHierarchy();
+        
+        activity()->enableLogging();
+        
+    }
+    
+    /**
+     * Hierarchia első kapcsolatainak létrehozása
+     */
+    private function createInitialHierarchy(): void
+    {
+        $this->command->warn(__('Creating initial hierarchy relationships...'));
+
+        // Példa: Az első entitás a "nagyfőnök", a következő 5 entitás gyermeke lesz
+        $parent = Entity::first(); // Az első entitás
+        $children = Entity::where('id', '>', $parent->id)->take(5)->get();
+
+        foreach ($children as $child) {
+            Hierarchy::create([
+                'parent_id' => $parent->id,
+                'child_id' => $child->id,
+            ]);
+        }
+
+        $this->command->info(__('Initial hierarchy relationships created.'));
     }
 }

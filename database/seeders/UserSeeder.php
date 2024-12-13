@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
         User::truncate();
         Schema::enableForeignKeyConstraints();
 
-        Activity::disableLogging();
+        activity()->disableLogging();
 
         $password = 'password';
         $arr_users = [
@@ -43,6 +43,6 @@ class UserSeeder extends Seeder
 
         $this->command->info(PHP_EOL . 'Users created');
 
-        Activity::enableLogging();
+        activity()->enableLogging();
     }
 }

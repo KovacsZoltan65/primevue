@@ -16,7 +16,7 @@ class Hierarchy extends Model
         SoftDeletes,
         LogsActivity;
 
-    protected $table = 'entity_rel';
+    protected $table = 'hierarchy';
 
     protected $fillable = [
         'parent_id',

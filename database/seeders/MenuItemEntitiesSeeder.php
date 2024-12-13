@@ -15,7 +15,7 @@ class MenuItemEntitiesSeeder extends Seeder
     public function run(): void
     {
         // Logolás letiltása
-        Activity::disableLogging();
+        activity()->disableLogging();
         
         $specimens = MenuItem::where('label', '=', 'specimens')->first();
 
@@ -23,6 +23,6 @@ class MenuItemEntitiesSeeder extends Seeder
             [ 'label' => 'entities', 'url' => '/entities', 'default_weight' => 3, ],
         ]);
 
-        Activity::enableLogging();
+        activity()->enableLogging();
     }
 }

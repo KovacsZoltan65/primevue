@@ -22,7 +22,7 @@ class MenuItemSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
         
         // Logolás letiltása
-        Activity::disableLogging();
+        activity()->disableLogging();
 
         // Főmenü - Home
         $home = MenuItem::create(
@@ -82,7 +82,7 @@ class MenuItemSeeder extends Seeder
             ]
         );
 
-        Activity::enableLogging();
+        activity()->enableLogging();
         
     }
 }

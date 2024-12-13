@@ -35,6 +35,8 @@ class DatabaseSeeder extends Seeder
             RoleAndPermissionSeeder::class,
 
             ApplicationSettingSeeder::class,
+            
+            EntitySeeder::class,
 
         ]);
 

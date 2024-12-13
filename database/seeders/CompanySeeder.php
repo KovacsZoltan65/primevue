@@ -20,7 +20,7 @@ class CompanySeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         // Logolás letiltása
-        Activity::disableLogging();
+        activity()->disableLogging();
         
         $companies = [
             [ 'id' =>  1, 'name' => 'Company 01', 'directory' => 'company_01', 'registration_number' => fake()->phoneNumber(), 'tax_id' => fake()->phoneNumber(), 'country_id' => 92, 'city_id' =>  1, 'address' => 'Address 01' ],
@@ -58,6 +58,6 @@ class CompanySeeder extends Seeder
 
         $this->command->info(PHP_EOL . __('migration_created_companies'));
 
-        Activity::enableLogging();
+        activity()->enableLogging();
     }
 }

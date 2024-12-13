@@ -21,7 +21,7 @@ class CountriesTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         // Logolás letiltása
-        Activity::disableLogging();
+        activity()->disableLogging();
 
         $countries = [
             /*
@@ -303,6 +303,6 @@ class CountriesTableSeeder extends Seeder
         
         $this->command->info(PHP_EOL . __('migration_created_countries'));
 
-        Activity::enableLogging();
+        activity()->enableLogging();
     }
 }

@@ -18,7 +18,7 @@ class PersonCompanyEntitySeeder extends Seeder
     public function run(): void
     {
         // Logolás letiltása
-        Activity::disableLogging();
+        activity()->disableLogging();
         
         // Create 3 companies
         $companies = Company::factory()->count(3)->create();
@@ -37,6 +37,6 @@ class PersonCompanyEntitySeeder extends Seeder
             Entity::factory()->count(rand(1, 3))->create(['company_id' => $company->id]);
         });
 
-        Activity::enableLogging();
+        activity()->enableLogging();
     }
 }

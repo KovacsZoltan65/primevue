@@ -18,7 +18,7 @@ class SubdomainsSeeder extends Seeder
         Subdomain::truncate();
         Schema::enableForeignKeyConstraints();
 
-        Activity::disableLogging();
+        activity()->disableLogging();
         
         $arr_subdomains = [
             ['id' => 1, 'subdomain' => 'showtime','url'    => 'http://showtime.ejelenlet/',    'name' => 'Showtime - Ejelenlet Developer Instance', 'db_host' => 'localhost', 'db_port' => 3306, 'db_name' => 'ej3_showtime',      'db_user' => 'ej3_showtime',      'db_password' => 'bqNxN86xwatT68wv', 'notification' => 1, 'state_id' => 1, 'acs_id' => 5, 'last_export' => '2023-01-01 00:00:00',],
@@ -45,6 +45,6 @@ class SubdomainsSeeder extends Seeder
         
         $this->command->info(PHP_EOL . __('migration_created_subdomains') );
 
-        Activity::enableLogging();
+        activity()->enableLogging();
     }
 }

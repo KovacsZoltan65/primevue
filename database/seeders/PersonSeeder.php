@@ -20,7 +20,7 @@ class PersonSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         // Logolás letiltása
-        Activity::disableLogging();
+        activity()->disableLogging();
 
         $this->command->warn(PHP_EOL . __('persons.create_title'));
         
@@ -37,6 +37,6 @@ class PersonSeeder extends Seeder
         
         $this->command->info(PHP_EOL . __('persons.created_title'));
         
-        Activity::enableLogging();
+        activity()->enableLogging();
     }
 }

@@ -19,7 +19,7 @@ class ApplicationSettingSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
         
         // Logolás letiltása
-        Activity::disableLogging();
+        activity()->disableLogging();
 
         $settings = [
             ['key' => 'default_language', 'value' => 'en', 'is_active' => 1],
@@ -30,6 +30,6 @@ class ApplicationSettingSeeder extends Seeder
             ApplicationSetting::create($setting);
         }
 
-        Activity::enableLogging();
+        activity()->enableLogging();
     }
 }

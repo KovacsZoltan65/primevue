@@ -26,6 +26,8 @@ class RoleAndPermissionSeeder extends Seeder
         DB::table('model_has_roles')->truncate();
         Schema::enableForeignKeyConstraints();
         
+        activity()->disableLogging();
+        
         $classes = [
             'companies', 'roles', 'permissions', 'subdomainstate',
         ];
@@ -65,5 +67,7 @@ class RoleAndPermissionSeeder extends Seeder
         // Admin szerepköró hozzárendelés
         $user = User::find(1);
         $user->assignRole('admin');
+        
+        activity()->enableLogging();
     }
 }

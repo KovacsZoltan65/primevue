@@ -6,9 +6,10 @@ use App\Http\Requests\GetCompanyRequest;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Http\Resources\CompanyResource;
-use App\Models\City;
 use App\Models\Company;
-use App\Models\Country;
+use App\Repositories\CityRepository;
+use App\Repositories\CompanyRepository;
+use App\Repositories\CountryRepository;
 use App\Services\CacheService;
 use App\Traits\Functions;
 use Exception;
@@ -36,9 +37,16 @@ class CompanyController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected string $tag = 'companies';
+    protected $cityRepository,
+              $countryRepository,
+              $companyRepository;
 
-    public function __construct() {
+    public function __construct(CityRepository $cityRepository, CountryRepository $countryRepository, CompanyRepository $companyRepository)
+    {
+        $this->cityRepository = $cityRepository;
+        $this->countryRepository = $countryRepository;
+        $this->companyRepository = $companyRepository;
+        
         $this->middleware('can:companies list', ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
         $this->middleware('can:companies create', ['only' => ['createCompany']]);
         $this->middleware('can:companies edit', ['only' => ['updateCompany']]);
@@ -54,31 +62,16 @@ class CompanyController extends Controller
     public function index(Request $request): InertiaResponse
     {
         $roles = $this->getUserRoles('companies');
-        /*
-        $user = \App\Models\User::find(1); // Például az első felhasználó
-        dd(
-            'user', $user,
-            'hasRole admin', $user->hasRole('admin'),
-            'has permission companies create', auth()->user()->hasPermissionTo('companies create')
-        );
-        */
-        // Vagy közvetlen jogosultság hozzárendelés:
-        //$user->givePermissionTo('edit companies');
-
-        // A City modelben a városok listáját adjuk vissza, azokkal a mezőkkel, amelyek
-        // az Inertia oldalakon használtak.
-        $cities = City::select('id', 'name')
-            ->orderBy('name')
-            ->active()->get()->toArray();
-        $countries = Country::select('id', 'name')
-            ->orderBy('name')
-            ->active()->get()->toArray();
+        //$roles = auth()->user()->getRoles(); // Például dinamikusan betöltött jogosultságok
+        //dd($roles);
+        $cities = $this->cityRepository->getActiveCities();
+        $countries = $this->countryRepository->getActiveCountries();
 
         // Adjon vissza egy Inertia választ a vállalatok és a keresési paraméterek megadásával.
         return Inertia::render("Companies/Index", [
             'countries' => $countries,
             'cities' => $cities,
-            'search' => request('search'),
+            'search' => $request->input('search'),
             'can' => $roles,
         ]);
     }
@@ -93,38 +86,17 @@ class CompanyController extends Controller
     public function getCompanies(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
-
-            $companies = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                $companyQuery = Company::search($request);
-                return CompanyResource::collection($companyQuery->get());
-            });
+            $companies = $this->companyRepository->getCompanies($request);
+            $companies = CompanyResource::collection($companies);
 
             return response()->json($companies, Response::HTTP_OK);
-
+            
         } catch (QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompanies query error',
-                'params' => ['request' => $request->all()],
-                'route' => $request->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'getCompanies query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompanies general error',
-                'params' => ['request' => $request->all()],
-                'route' => $request->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'getCompanies general error'

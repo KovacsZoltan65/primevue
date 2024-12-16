@@ -54,9 +54,13 @@ class Company extends Model
         });
     }
 
-    public function scopeActive(Builder $query, Request $request): Builder
+    public function scopeActive(Builder $query): Builder
     {
-        return $query->where('active', 1);
+        return $query->where(
+            'active', 
+            '=',
+            1
+        );
     }
     
     /**

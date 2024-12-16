@@ -59,7 +59,7 @@ const toast = useToast();
 const dt = ref();
 
 const companies = ref();
-const company = ref({
+const defaultCompany = {
     id: null,
     name: "",
     directory: "",
@@ -69,10 +69,13 @@ const company = ref({
     tax_id: null,
     address: null,
     active: 1,
-});
+};
+
+//const company = ref({ ...defaultCompany });
+const company = ref({ ...defaultCompany });
 
 const initialCompany = () => {
-    return {...company.value};
+    return { ...defaultCompany }; // Mindig a defaultCompany értékeit adja vissza
 };
 
 watch(
@@ -240,7 +243,6 @@ function confirmDeleteSelected() {
  */
 function openNew() {
     company.value = initialCompany();
-console.log('openNew', company.value);
     submitted.value = false;
     companyDialog.value = true;
 };
@@ -252,14 +254,12 @@ console.log('openNew', company.value);
  * A v$.value.$reset() függvénnyel visszaállítja a validációs objektumot az alapértelmezett állapotába.
  */
 const hideDialog = () => {
-    company.value = initialCompany();
-console.log('hideDialog', company.value);
+    company.value = initialCompany(); // Visszaáll az alapértelmezett állapotra
     companyDialog.value = false;
     deleteCompanyDialog.value = false;
     deleteSelectedCompaniesDialog.value = false;
     submitted.value = false;
 
-    // Visszaállítja a validációs objektumot az alapértelmezett állapotába.
     v$.value.$reset();
 };
 

@@ -2,18 +2,16 @@
 
 namespace App\Repositories;
 
-use App\Http\Controllers\ErrorController;
-use App\Interfaces\CompanyRepositoryInterface;
-use App\Models\Company;
-use App\Services\CacheService;
-use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Eloquent\BaseRepository;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use App\Interfaces\CompanyRepositoryInterface;
+use App\Models\Company;
+use App\Services\CacheService;
+use App\Traits\Functions;
+use Override;
+use Exception;
 
 /**
  * Class CityRepositoryEloquent.
@@ -22,6 +20,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class CompanyRepository extends BaseRepository implements CompanyRepositoryInterface
 {
+    use Functions;
+
     protected CacheService $cacheService;
 
     protected string $tag = 'companies';
@@ -33,7 +33,9 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
 
     public function getActiveCompanies()
     {
-        $companies = $this->model->select('id', 'name')
+        $model = $this->model();
+        $companies = $model::query()
+            ->select('id', 'name')
             ->orderBy('name')
             ->where('active','=',1)
             ->get()->toArray();
@@ -43,8 +45,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
 
     public function getCompanies(Request $request)
     {
-        try
-        {
+        try {
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
@@ -52,16 +53,16 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
                 return $companyQuery->get();
             });
         } catch (Exception $ex) {
-            $this->logError($ex, 'getCompanies error', ['filters' => $request]);
+            $this->logError($ex, 'getCompanies error', ['request' => $request]);
             throw $ex;
         }
     }
-    
+
     public function getCompany(int $id)
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
-            
+
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
                 return Company::findOrFail($id);
             });
@@ -70,7 +71,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
             throw $ex; // A kivétel dobása a kontroller szintjére.
         }
     }
-    
+
     public function getCompanyByName(string $name)
     {
         try {
@@ -95,15 +96,18 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
             throw $ex;
         }
     }
-    
+
     public function updateCompany(Request $request, int $id)
     {
-        try{
-            $company = Company::findOrFail($id)->lockForUpdate();
-            $company->update($request->all());
-            $company->refresh();
-            
-            $this->cacheService->forgetAll($this->tag);
+        try {
+            $company = null;
+            \DB::transaction(function() use($request, $id, &$company) {
+                $company = Company::findOrFail($id)->lockForUpdate();
+                $company->update($request->all());
+                $company->refresh();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
             
             return $company;
         } catch(Exception $ex) {
@@ -111,8 +115,9 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
             throw $ex;
         }
     }
-    
-    public function deleteCompanies(Request $request) {
+
+    public function deleteCompanies(Request $request)
+    {
         try {
             $validated = $request->validate([
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
@@ -120,17 +125,18 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
             ]);
             $ids = $validated['ids'];
             $deletedCount = Company::whereIn('id', $ids)->delete();
-            
+
             $this->cacheService->forgetAll($this->tag);
-            
+
             return $deletedCount;
         } catch(Exception $ex) {
             $this->logError($ex, 'deleteCompanies error', ['request' => $request->all()]);
             throw $ex;
         }
     }
-    
-    public function deleteCompany(Request $request) {
+
+    public function deleteCompany(Request $request)
+    {
         try {
             $company = Company::findOrFail($request->id);
             $company->delete();
@@ -143,8 +149,9 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
             throw $ex;
         }
     }
-    
-    public function restoreCompany(Request $request) {
+
+    public function restoreCompany(Request $request)
+    {
         try {
             $company = Company::withTrashed()->findOrFail($request->id);
             $company->restore();
@@ -158,31 +165,15 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
+    #[Override]
     public function model()
     {
-        //return Company::class;
-        return 'Company';
-        //return new Company();
+        return Company::class;
     }
 
+    #[Override]
     public function boot()
     {
         $this->pushCriteria(app(RequestCriteria::class));
-    }
-
-    private function logError(Exception $ex, string $context, array $params):void
-    {
-        ErrorController::logServerError($ex, [
-            'context' => $context,
-            'params' => $params,
-            'route' => request()->path(),
-            'type' => get_class($ex),
-            'severity' => 'error',
-        ]);
-    }
-    
-    private function generateCacheKey(string $tag, string $key): string
-    {
-        return "{$tag}_" . md5($key);
     }
 }

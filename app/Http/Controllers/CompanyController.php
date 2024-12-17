@@ -2,17 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\GetCompanyRequest;
-use App\Http\Requests\StoreCompanyRequest;
-use App\Http\Requests\UpdateCompanyRequest;
-use App\Http\Resources\CompanyResource;
-use App\Models\Company;
-use App\Repositories\CityRepository;
-use App\Repositories\CompanyRepository;
-use App\Repositories\CountryRepository;
-use App\Services\CacheService;
-use App\Traits\Functions;
-use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -22,9 +11,17 @@ use Illuminate\Routing\Controller;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Exception;
+use App\Http\Requests\GetCompanyRequest;
+use App\Http\Requests\StoreCompanyRequest;
+use App\Http\Requests\UpdateCompanyRequest;
+use App\Http\Resources\CompanyResource;
+use App\Repositories\CityRepository;
+use App\Repositories\CompanyRepository;
+use App\Repositories\CountryRepository;
+use App\Traits\Functions;
 
 /**
  * A CompanyController osztálya a cégek listázásához, létrehozásához, módosításához és
@@ -46,7 +43,7 @@ class CompanyController extends Controller
         $this->cityRepository = $cityRepository;
         $this->countryRepository = $countryRepository;
         $this->companyRepository = $companyRepository;
-        
+
         $this->middleware('can:companies list', ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
         $this->middleware('can:companies create', ['only' => ['createCompany']]);
         $this->middleware('can:companies edit', ['only' => ['updateCompany']]);
@@ -90,9 +87,9 @@ class CompanyController extends Controller
             $companies = CompanyResource::collection($companies);
 
             return response()->json($companies, Response::HTTP_OK);
-            
+
         } catch (QueryException $ex) {
-            return $this->handleException($ex, 'getCompanies query error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCompanies query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
             return $this->handleException($ex, 'getCompanies general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -102,12 +99,12 @@ class CompanyController extends Controller
     {
         try {
             $company = $this->companyRepository->getCompany($request->id);
-            
+
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'getCompany model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            return $this->handleException($ex, 'getCompany query error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCompany query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             return $this->handleException($ex, 'getCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -122,7 +119,7 @@ class CompanyController extends Controller
         } catch ( ModelNotFoundException $ex ) {
             return $this->handleException($ex, 'getCompanyByName model not found error', Response::HTTP_NOT_FOUND);
         } catch (QueryException $ex) {
-            return $this->handleException($ex, 'getCompanyByName query error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCompanyByName query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
             return $this->handleException($ex, 'getCompanyByName general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -132,7 +129,7 @@ class CompanyController extends Controller
     {
         try {
             $company = $this->companyRepository->createCompany($request);
-            
+
             return response()->json($company, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
             return $this->handleException($ex, 'createCompany query error', Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -145,7 +142,7 @@ class CompanyController extends Controller
     {
         try{
             $company = $this->updateCompany($request, $id);
-            
+
             return response()->json($company, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'updateCompany model not found error', Response::HTTP_NOT_FOUND);
@@ -161,7 +158,7 @@ class CompanyController extends Controller
         try {
             $deletedCount = $this->companyRepository->deleteCompanies($request);
             return response()->json($deletedCount, Response::HTTP_OK);
-            
+
         } catch(ValidationException $ex) {
             return $this->handleException($ex, 'deleteCompanies model not found error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(QueryException $ex) {
@@ -170,12 +167,12 @@ class CompanyController extends Controller
             return $this->handleException($ex, 'deleteCompanies general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deleteCompany(GetCompanyRequest $request): JsonResponse
     {
         try {
             $company = $this->companyRepository($request);
-            
+
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'deleteCompany model not found error', Response::HTTP_NOT_FOUND);
@@ -200,13 +197,4 @@ class CompanyController extends Controller
             return $this->handleException($ex, 'restoreCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
-    private function handleException(Exception $ex, string $defaultMessage, int $statusCode)
-    {
-        return response()->json([
-            'success' => App_FALSE,
-            'error' => $defaultMessage,
-        ], $statusCode);
-    }
-    
 }

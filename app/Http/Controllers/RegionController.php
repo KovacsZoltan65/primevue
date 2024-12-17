@@ -7,6 +7,7 @@ use App\Http\Requests\StoreRegionRequest;
 use App\Http\Resources\RegionResource;
 use App\Models\Country;
 use App\Models\Region;
+use App\Services\CacheService;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -20,14 +21,15 @@ use Nette\Schema\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use App\Traits\Functions;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 
 class RegionController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    
+
     protected string $tag = 'regions';
-    
+
     public function __construct() {
         $this->middleware('can:regions list', ['only' => ['index', 'applySearch', 'getRegions', 'getSRegion', 'getRegionByName']]);
         $this->middleware('can:regions create', ['only' => ['createRegion']]);
@@ -35,7 +37,7 @@ class RegionController extends Controller
         $this->middleware('can:regions delete', ['only' => ['deleteRegion', 'deleteRegions']]);
         $this->middleware('can:regions restore', ['only' => ['restoreRegion']]);
     }
-    
+
     /**
      * Jelenítse meg az erőforrás listáját.
      *
@@ -49,21 +51,21 @@ class RegionController extends Controller
     public function index(Request $request): InertiaResponse
     {
         $countries = Country::where('active', 1)->orderBy('name')->get()->toArray();
-        
+
         $search = $request->query('search');
-        
+
         return Inertia::render('Geo/Region/Index', [
             'countries' => $countries,
             'search' => $search,
         ]);
     }
-    
+
     /**
      * Módosítsa a lekérdezést a keresési paraméter alapján.
-     * 
+     *
      * Ha a keresési paraméter nem üres, akkor a lekérdezés tartalmazza
      * a feltételt, hogy a régió neve tartalmazza a keresési paramétert.
-     * 
+     *
      * @param  Builder  $query
      * @param  string  $search
      * @return Builder
@@ -75,17 +77,17 @@ class RegionController extends Controller
             $query->where('name', 'LIKE', "%{$search}%");
         });
     }
-    
+
     public function getRegions(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
             $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
-            
+
             $regions = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $regionQuery = Region::search($request);
                 return RegionResource::collection($regionQuery->get());
             });
-            
+
             return response()->json($regions, Response::HTTP_OK);
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
@@ -117,12 +119,12 @@ class RegionController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getRegion(GetRegionRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             $cacheKey = "{$this->tag}_" . md5($request->id);
-            
+
             $region = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 return Region::findOrFail($request->id);
             });
@@ -169,16 +171,16 @@ class RegionController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getRegionByName(string $name, CacheService $cacheService): JsonResponse
     {
         try {
             $cacheKey = "{$this->tag}_" . md5($name);
-            
+
             $region = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
-                return Region::where('name', '=', $request->name)->firstOrFail();
+                return Region::where('name', '=', $name)->firstOrFail();
             });
-            
+
             if (!$region) {
                 // Ha a régió nem található, 404-es hibát adunk vissza
                 return response()->json([
@@ -186,7 +188,7 @@ class RegionController extends Controller
                     'error' => 'Region not found'
                 ], Response::HTTP_NOT_FOUND);
             }
-            
+
             return response()->json($region, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
@@ -196,7 +198,7 @@ class RegionController extends Controller
                 'type' => 'ModelNotFoundException',
                 'severity' => 'error',
             ]);
-            
+
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => "getRegionByName model not found error"
@@ -230,7 +232,7 @@ class RegionController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Hozzon létre új régiót az adatbázisban.
      *
@@ -243,9 +245,9 @@ class RegionController extends Controller
     {
         try {
             $region = Region::create($request->all());
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             // Sikeres válasz
             return response()->json($region, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
@@ -276,7 +278,7 @@ class RegionController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Frissítse egy régiót az adatbázisban.
      *
@@ -290,14 +292,14 @@ class RegionController extends Controller
     {
         try{
             $region = null;
-            
-            \DB::transaction(function() use($request, $id, $cacheService, &$region) {
+
+            DB::transaction(function() use($request, $id, $cacheService, &$region) {
                 $region = Region::findOrFail($id)->lockForUpdate();
                 $region->update($request->all());
                 $region->refresh();
                 $cacheService->forgetAll($this->tag);
             });
-            
+
             return response()->json($region, Response::HTTP_OK);
         }catch(ModelNotFoundException $ex){
             // Ha a cég nem található
@@ -342,7 +344,7 @@ class RegionController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Töröljön egy régiót az adatbázisból.
      *
@@ -351,14 +353,14 @@ class RegionController extends Controller
      * @param  int  $id  A törölni kívánt régió azonosítója.
      * @return JsonResponse  A törölt régió adatait tartalmazó JSON-válasz.
      */
-    public function deleteRegion(StoreRegionRequest $id, CacheService $cacheService): JsonResponse
+    public function deleteRegion(StoreRegionRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
-            $region = Region::findOrFail($id);
+            $region = Region::findOrFail($request->id);
             $region->delete();
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             return response()->json($region, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             // Ha a cég nem található
@@ -402,7 +404,7 @@ class RegionController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deleteRegions(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
@@ -411,15 +413,15 @@ class RegionController extends Controller
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
                 'ids.*' => 'integer|exists:regions,id', // Az id-k egész számok és létező cégek legyenek
             ]);
-            
+
             // Az azonosítók kigyűjtése
             $ids = $validated['ids'];
-            
+
             // A cégek törlése
             $deletedCount = Region::whereIn('id', $ids)->delete();
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             // Válasz visszaküldése
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ValidationException $ex) {

@@ -11,6 +11,7 @@ use App\Models\ApplicationSetting;
 use App\Traits\Functions;
 use Override;
 use \Exception;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class ApplicationSettingRepositoryEloquent.
@@ -42,7 +43,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         return $settings;
     }
 
-    public function getSettings(Request $request)
+    public function getAppSettings(Request $request)
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
@@ -57,7 +58,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         }
     }
 
-    public function getSetting(int $id): ApplicationSetting
+    public function getAppSetting(int $id): ApplicationSetting
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
@@ -71,7 +72,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         }
     }
 
-    public function getSettingByKey(string $key): ApplicationSetting
+    public function getAppSettingByKey(string $key): ApplicationSetting
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, $key);
@@ -85,7 +86,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         }
     }
 
-    public function createSetting(Request $request): ApplicationSetting
+    public function createAllSetting(Request $request): ApplicationSetting
     {
         try {
             $setting = ApplicationSetting::create($request->all());
@@ -97,7 +98,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         }
     }
 
-    public function updateSetting(Request $request, int $id): ApplicationSetting
+    public function updateApppSetting(Request $request, int $id): ApplicationSetting
     {
         try {
             $setting = null;
@@ -115,7 +116,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
             throw $ex;
         }
     }
-    
+
     public function deleteAppSettings(Request $request)
     {
         try {
@@ -149,6 +150,21 @@ class ApplicationSettingRepository extends BaseRepository implements Application
             throw $ex;
         }
     }
+    
+    public function restoreAppSettings(Request $request)
+    {
+        try {
+            $appSetting = ApplicationSetting::withTrashed()->findOrFail($request->id);
+            $appSetting->restore();
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return response()->json($appSetting, Response::HTTP_OK);
+        } catch(Exception $ex) {
+            $this->logError($ex, 'restoreAppSettings error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
 
     /**
      * Specify Model class name
@@ -160,8 +176,6 @@ class ApplicationSettingRepository extends BaseRepository implements Application
     {
         return ApplicationSetting::class;
     }
-
-
 
     /**
      * Boot up the repository, pushing criteria

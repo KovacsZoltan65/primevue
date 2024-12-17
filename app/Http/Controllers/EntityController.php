@@ -7,34 +7,36 @@ use App\Http\Requests\StoreEntityRequest;
 use App\Http\Requests\UpdateEntityRequest;
 use App\Http\Resources\EntityResource;
 use App\Models\Entity;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use App\Services\CacheService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Traits\Functions;
+use Illuminate\Support\Facades\DB;
 
 class EntityController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    
+
     protected string $tag = 'companies';
-    
+
     public function __construct()
     {
         //
     }
-    
+
     public function index(Request $request): InertiaResponse
     {
-        Inertia::render('Entity/Index',[
+        return Inertia::render('Entity/Index',[
             'search' => request('search')
         ]);
     }
@@ -52,12 +54,12 @@ class EntityController extends Controller
     {
         try {
             $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
-            
+
             $entities = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $entityQuery = Entity::Search($request);
                 return EntityResource::collection($entityQuery->get());
             });
-            
+
             return response()->json($entities, Response::HTTP_OK);
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
@@ -94,11 +96,11 @@ class EntityController extends Controller
     {
         try {
             $cacheKey = "{$this->tag}_" . md5($request->id);
-            
+
             $entity = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 return Entity::findOrFail($request->id);
             });
-            
+
             return response()->json($entity, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
@@ -146,11 +148,11 @@ class EntityController extends Controller
     {
         try {
             $cacheKey = "{$this->tag}_" . md5($name);
-            
+
             $entity = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
                 return Entity::where('name', '=', $name)->firstOrFail();
             });
-            
+
             return response()->json($entity, Response::HTTP_OK);
         } catch( QueryException $ex ) {
             // Adatbázis hiba naplózása
@@ -188,9 +190,9 @@ class EntityController extends Controller
     {
         try{
             $entity = Entity::create($request->all());
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             // Sikeres válasz
             return response()->json( $entity, Response::HTTP_CREATED);
         }catch( QueryException $ex ){
@@ -226,14 +228,14 @@ class EntityController extends Controller
     {
         try{
             $entity = null;
-            \DB::transaction(function() use($request, $id, $cacheService, $entity) {
+            DB::transaction(function() use($request, $id, $cacheService, $entity) {
                 $entity = Entity::findOrFail($id)->lockForUpdate();
                 $entity->update($request->all());
                 $entity->refresh();
                 $cacheService->forgetAll($this->tag);
             });
-            
-            return reqponse()->json($entity, Response::HTTP_OK);
+
+            return response()->json($entity, Response::HTTP_OK);
         }catch( ModelNotFoundException $ex ){
             // Ha a cég nem található
             ErrorController::logServerError($ex, [
@@ -256,7 +258,7 @@ class EntityController extends Controller
                 'type' => 'QueryException',
                 'severity' => 'error',
             ]);
-            
+
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'updateEntity query error',
@@ -281,13 +283,13 @@ class EntityController extends Controller
     {
         try {
             // Keresse meg a törölni kívánt céget az azonosítója alapján
-            $entity = Entity::findOrFail($id);
-            
+            $entity = Entity::findOrFail($request->id);
+
             $entity->delete();
-            
+
             $cacheService->forgetAll($this->tag);
-            
-            return request()->json($entity, Request::HTTP_OK);
+
+            return response()->json($entity, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             //
         } catch( ModelNotFoundException $ex ) {
@@ -328,7 +330,7 @@ class EntityController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deleteEntities(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
@@ -337,15 +339,15 @@ class EntityController extends Controller
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
                 'ids.*' => 'integer|exists:entities,id', // Az id-k egész számok és létező cégek legyenek
             ]);
-            
+
             // Az azonosítók kigyűjtése
             $ids = $validated['ids'];
-            
+
             // A cégek törlése
             $deletedCount = Entity::whereIn('id', $ids)->delete();
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             // Válasz visszaküldése
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch( ValidationException $ex ) {

@@ -11,22 +11,24 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 use App\Services\CacheService;
-use Illuminate\Validation\ValidationException;
+
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Traits\Functions;
+use Illuminate\Support\Facades\DB;
 
 class CountryController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    
+
     protected string $tag = 'countries';
-    
+
     /**
      * Jelenítse meg az erőforrás listáját.
      */
@@ -61,12 +63,12 @@ class CountryController extends Controller
             $query->where('name', 'LIKE', "%{$search}%");
         });
     }
-    
+
     public function getCountries(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
             $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
-            
+
             $countries = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $countryQuery = Country::search($request);
                 return CountryResource::collection($countryQuery->get());
@@ -107,11 +109,11 @@ class CountryController extends Controller
     {
         try {
             $cacheKey = "{$this->tag}_" . md5($request->id);
-            
+
             $country = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 return Country::findOrFail($request->id);
             });
-            
+
             return response()->json($country, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
@@ -165,11 +167,11 @@ class CountryController extends Controller
     {
         try {
             $cacheKey = "{$this->tag}_" . md5($name);
-            
+
             $country = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
                 return Country::where('name', '=', $name)->firstOrFail();
             });
-            
+
             return response()->json($country, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
@@ -179,7 +181,7 @@ class CountryController extends Controller
                 'type' => 'ModelNotFoundException',
                 'severity' => 'error',
             ]);
-            
+
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => "getCountryByName model not found error"
@@ -228,9 +230,9 @@ class CountryController extends Controller
     {
         try{
             $country = Country::create($request->all());
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             // Sikeres válasz
             return response()->json($country, Response::HTTP_CREATED);
         }catch( QueryException $ex ){
@@ -262,14 +264,14 @@ class CountryController extends Controller
     {
         try{
             $country = null;
-            
-            \DB::transaction(function() use($request, $id, $cacheService, &$country) {
+
+            DB::transaction(function() use($request, $id, $cacheService, &$country) {
                 $country = Country::findOrFail($id)->lockForUpdate();
                 $country->update($request->all());
                 $country->refresh();
                 $cacheService->forgetAll($this->tag);
             });
-            
+
             return response()->json($country, Response::HTTP_OK);
         }catch( ModelNotFoundException $ex ){
             // Ha a cég nem található
@@ -293,7 +295,7 @@ class CountryController extends Controller
                 'type' => 'QueryException',
                 'severity' => 'error',
             ]);
-            
+
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'updateCountry query error',
@@ -315,15 +317,15 @@ class CountryController extends Controller
     }
 
     public function deleteCountry(GetCountryRequest $request, CacheService $cacheService): JsonResponse
-    {    
+    {
         try{
             // Keresse meg a törölni kívánt céget az azonosítója alapján
             $country = Country::findOrFail($request->id);
 
             $country->delete();
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             return response()->json($country, Response::HTTP_OK);
         }catch( ModelNotFoundException $ex ){
             // Ha a cég nem található
@@ -360,7 +362,7 @@ class CountryController extends Controller
                 'type' => 'Exception',
                 'severity' => 'error',
             ]);
-            
+
             //
             return response()->json([
                 'success' => APP_FALSE,
@@ -368,7 +370,7 @@ class CountryController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deleteCountries(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
@@ -380,9 +382,9 @@ class CountryController extends Controller
             $ids = $validated['ids'];
             // A cégek törlése
             $deletedCount = Country::whereIn('id', $ids)->delete();
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             // Válasz visszaküldése
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch( ValidationException $ex ) {

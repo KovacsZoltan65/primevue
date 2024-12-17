@@ -7,15 +7,20 @@ use App\Http\Requests\StorePersonRequest;
 use App\Http\Requests\UpdatePersonRequest;
 use App\Http\Resources\PersonResource;
 use App\Models\Person;
+use App\Services\CacheService;
 use App\Traits\Functions;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class PersonController extends Controller
 {
@@ -23,33 +28,33 @@ class PersonController extends Controller
         Functions;
 
     protected string $tag = 'persons';
-    
+
     public function __construct() {
         //
     }
-    
+
     public function index(Request $request): InertiaResponse
     {
-        Inertia::render('Person/Index');
+        return Inertia::render('Person/Index');
     }
-    
+
     public function applySearch(Builder $query, string $search): Builder
     {
         return $query->when($search, function($query, string $search) {
             $query->where('name', 'LIKE', "%{$search}%");
         });
     }
-    
+
     public function getPersons(Request $request, CacheService $cacheService): JsonResponse
     {
         try {
             $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
-            
+
             $persons = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $personQuery = Person::Search($request);
                 return PersonResource::collection($personQuery->get());
             });
-            
+
             return response()->json($persons, Response::HTTP_OK);
         } catch(QueryException $ex) {
             // Adatbázis hiba naplózása
@@ -81,16 +86,16 @@ class PersonController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getPerson(GetPersonRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             $cacheKey = "{$this->tag}_" . md5($request->id);
-            
+
             $person = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 return Person::findOrFail($request->id);
             });
-            
+
             return response()->json($person, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
@@ -133,16 +138,16 @@ class PersonController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getPersonByName(string $name, CacheService $cacheService): JsonResponse
     {
         try {
             $cacheKey = "{$this->tag}_" . md5($name);
-            
+
             $person = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
                 return Person::where('name', '=', $name)->firstOrFail();
             });
-            
+
             return response()->json($person, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
@@ -185,14 +190,14 @@ class PersonController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function createPerson(StorePersonRequest $request, CacheService $cacheService): JsonResponse
     {
         try {
             $person = Person::create($request->all());
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             return response()->json($person, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
             ErrorController::logServerError($ex, [
@@ -222,23 +227,23 @@ class PersonController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function updatePerson(UpdatePersonRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try{
             $person = null;
-            
-            \DB::transaction(function() use($request, $id, $cacheService, &$person) {
+
+            DB::transaction(function() use($request, $id, $cacheService, &$person) {
                 $person = Person::findOrFail($id)->lockForUpdate();
-            
+
                 $person->update($request->all());
                 $person->refresh();
-                
+
                 $cacheService->forgetAll($this->tag);
             });
-            
+
             return response()->json($person, Response::HTTP_OK);
-            
+
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'updatePerson model not found error',
@@ -260,7 +265,7 @@ class PersonController extends Controller
                 'type' => 'QueryException',
                 'severity' => 'error',
             ]);
-            
+
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'updatePerson query error',
@@ -280,15 +285,15 @@ class PersonController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deletePerson(GetPersonRequest $request, CacheService $cacheService): JsonResponse
     {
         try{
             $person = Person::findOrFail($request->id);
             $person->delete();
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             return response()->json($person, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             ErrorController::logServerError($ex, [
@@ -331,7 +336,7 @@ class PersonController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deletePersons(Request $request, CacheService $cacheService): JsonResponse
     {
         try{
@@ -340,15 +345,15 @@ class PersonController extends Controller
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
                 'ids.*' => 'integer|exists:persons,id', // Az id-k egész számok és létező cégek legyenek
             ]);
-            
+
             // Az azonosítók kigyűjtése
             $ids = $validated['ids'];
-            
+
             // A cégek törlése
             $deletedCount = Person::whereIn('id', $ids)->delete();
-            
+
             $cacheService->forgetAll($this->tag);
-            
+
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ValidationException $ex) {
             ErrorController::logServerValidationError($ex, $request);

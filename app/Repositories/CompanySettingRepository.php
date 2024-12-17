@@ -55,6 +55,54 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
         }
     }
 
+    public function getCompSettingByKey(string $key)
+    {
+        try {
+            $cacheKey = $this->generateCacheKey($this->tag, $key);
+
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($key) {
+                return CompanySetting::where('key', '=', $key)->firstOrFail();
+            });
+        } catch(Exception $ex) {
+            $this->logError($ex, 'getSettingByKey error', ['key' => $key]);
+            throw $ex;
+        }
+    }
+
+    public function createCompSetting(Request $request)
+    {
+        try {
+            $setting = CompanySetting::create($request->all());
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return $setting;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'createCompSetting error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    public function updateCompSetting(Request $request, int $id)
+    {
+        try {
+            $setting = null;
+
+            \DB::transaction(function() use($request, $id, &$setting) {
+                $setting = CompanySetting::findOrFail($id)->lockForUpdate();
+                $setting->update($request->all());
+                $setting->refresh();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
+
+            return $setting;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'updateCompSetting error', ['id' => $id, 'request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
     /**
      * Boot up the repository, pushing criteria
      */
@@ -62,5 +110,5 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
-    
+
 }

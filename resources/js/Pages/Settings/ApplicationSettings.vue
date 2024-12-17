@@ -63,7 +63,7 @@ const state = reactive({
         id: { field: 'id', is_visible: true, is_sortable: true, is_filterable: true },
         key: { field: 'key', is_visible: true, is_sortable: true, is_filterable: true },
         value: { field: 'value', is_visible: true, is_sortable: true, is_filterable: true },
-        is_active:  { field: 'is_active', is_visible: true, is_sortable: true, is_filterable: true },
+        active:  { field: 'active', is_visible: true, is_sortable: true, is_filterable: true },
     }
 });
 
@@ -284,15 +284,15 @@ const getStatusValue = (status) => {
 
                 <!-- IS ACTIVE -->
                 <Column
-                    :field="state.columns.is_active.field"
-                    :header="$t(state.columns.is_active.field)"
+                    :field="state.columns.active.field"
+                    :header="$t(state.columns.active.field)"
                     style="min-width: 16rem"
-                    :sortable="state.columns.is_active.is_sortable"
+                    :sortable="state.columns.active.is_sortable"
                 >
                     <template #body="slotProps">
                         <Tag
-                            :value="getStatusValue(slotProps.data.is_active)"
-                            :severity="getStatusSeverity(slotProps.data.is_active)"
+                            :value="getStatusValue(slotProps.data.active)"
+                            :severity="getStatusSeverity(slotProps.data.active)"
                         />
                     </template>
                 </Column>

@@ -16,13 +16,13 @@ class CompanySetting extends Model
     use HasFactory, LogsActivity;
 
     protected $table = 'company_settings';
-    protected $fillable = ['company_id', 'key', 'value', 'is_active'];
+    protected $fillable = ['company_id', 'key', 'value', 'active'];
 
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'company_settings';
-    
+
     protected static $recordEvents = [
         'created',
         'updated',
@@ -35,14 +35,14 @@ class CompanySetting extends Model
                 $query->where('key', 'like', "%{$request->search}%");
             });
         });
-        
+
     }
-    
+
     public function scopeActive(Builder $query, Request $request): Builder
     {
         return $query->where('active', 1);
     }
-    
+
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);

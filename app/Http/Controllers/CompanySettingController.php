@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCompanysettingRequest;
 use App\Http\Requests\UpdateCompanySettingRequest;
 use App\Http\Resources\CompanySettingsResource;
 use App\Models\CompanySetting;
+use App\Repositories\CompanySettingRepository;
 use App\Services\CacheService;
 use App\Traits\Functions;
 use Exception;
@@ -21,14 +22,19 @@ use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 
 class CompanySettingController extends Controller
 {
     use AuthorizesRequests,
         Functions;
+    protected CompanySettingRepository $compSettingRepository;
     protected string $tag = 'company_settings';
 
-    public function __construct() {
+    public function __construct(CompanySettingRepository $repository)
+    {
+        $this->compSettingRepository = $repository;
+
         $this->middleware('can:company_settings list', ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicationSetting', 'getApplicatonSettingByName']]);
         $this->middleware('can:company_settings create', ['only' => ['createApplicationSetting']]);
         $this->middleware('can:company_settings edit', ['only' => ['updateApplicationSetting']]);
@@ -50,42 +56,17 @@ class CompanySettingController extends Controller
         });
     }
     
-    public function getSettings(Request $request, CacheService $cacheService): JsonResponse {
+    public function getCompSettings(Request $request): JsonResponse {
         try {
             $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
 
-            $settings = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                $settingsQuery = CompanySetting::search($request);
-                return CompanySettingsResource::collection($settingsQuery->get());
-            });
+            $settings = $this->compSettingRepository->getCompSettings($request);
 
             return response()->json($settings, Response::HTTP_OK);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompanySettings query exception error',
-                'params' => ['request' => $request->all()],
-                'route' => $request->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getCompanySettings query exception error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCompanySettings query exception error', Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompanySettings general error',
-                'params' => ['request' => $request->all()],
-                'route' => $request->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getCompanySettings general error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCompanySettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -192,7 +173,8 @@ class CompanySettingController extends Controller
         }
     }
 
-    public function createSetting(StoreCompanysettingRequest $request, CacheService $cacheService): JsonResponse{
+    public function createSetting(StoreCompanysettingRequest $request, CacheService $cacheService): JsonResponse
+    {
         try{
             $setting = CompanySetting::create($request->all());
             
@@ -232,7 +214,7 @@ class CompanySettingController extends Controller
         try {
             $setting = null;
             
-            \DB::transaction(function() use($request, $id, $cacheService, &$setting) {
+            DB::transaction(function() use($request, $id, $cacheService, &$setting) {
                 $setting = CompanySetting::findOrFail($id)->lockForUpdate();
                 $setting->update($request->all());
                 $setting->refresh();

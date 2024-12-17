@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Interfaces\CityRepositoryInterface;
+use App\Traits\Functions;
 
 /**
  * Class CityRepositoryEloquent.
@@ -19,6 +20,8 @@ use App\Interfaces\CityRepositoryInterface;
  */
 class CityRepository extends BaseRepository implements CityRepositoryInterface
 {
+    use Functions;
+
     protected CacheService $cacheService;
 
     protected string $tag = 'cities';
@@ -30,14 +33,16 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
 
     public function getActiveCities()
     {
-        $cities = $this->model->select('id', 'name')
+        $model = $this->model();
+        $cities = $model::query()
+            ->select('id', 'name')
             ->orderBy('name')
             ->where('active', '=', 1)
             ->get()->toArray();
-        
+
         return $cities;
     }
-    
+
     public function getCities(Request $request)
     {
         try {
@@ -53,7 +58,8 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
         }
     }
 
-    public function getCity(int $id) {
+    public function getCity(int $id)
+    {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
 
@@ -82,7 +88,7 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
 
     public function createCity(Request $request)
     {
-        try {
+        try{
             $city = City::create($request->all());
             return $city;
         } catch(Exception $ex) {
@@ -91,34 +97,53 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
         }
     }
 
+    public function updateCity(Request $request, int $id)
+    {
+        try{
+            $city = City::findOrFail($id)->lockForUpdate();
+            $city->update($request->all());
+            $city->refresh();
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return $city;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'updateCity error', ['id' => $id, 'request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    public function deleteCities(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
+                'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
+            ]);
+            $ids = $validated['ids'];
+            $deletedCount = City::whereIn('id', $ids)->delete();
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return $deletedCount;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'deleteCities error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
     /**
      * Boot up the repository, pushing criteria
      */
+    #[\Override]
     public function boot()
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
 
+    #[\Override]
     public function model()
     {
-        //return City::class;
-        return 'City';
-        //return new City();
-    }
-
-    private function logError(Exception $ex, string $context, array $params):void
-    {
-        ErrorController::logServerError($ex, [
-            'context' => $context,
-            'params' => $params,
-            'route' => request()->path(),
-            'type' => get_class($ex),
-            'severity' => 'error',
-        ]);
-    }
-    
-    private function generateCacheKey(string $tag, string $key): string
-    {
-        return "{$tag}_" . md5($key);
+        return City::class;
     }
 }

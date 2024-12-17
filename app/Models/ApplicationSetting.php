@@ -16,7 +16,7 @@ class ApplicationSetting extends Model
         LogsActivity;
 
     protected $table = 'application_settings';
-    protected $fillable = ['key', 'value', 'is_active'];
+    protected $fillable = ['key', 'value', 'active'];
 
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
@@ -35,14 +35,14 @@ class ApplicationSetting extends Model
                 $query->where('key', 'like', "%{$request->search}%");
             });
         });
-        
+
     }
-    
+
     public function scopeActive(Builder $query, Request $request): Builder
     {
         return $query->where('active', 1);
     }
-    
+
     #[Override]
     public function getActivitylogOptions(): LogOptions {
         return LogOptions::defaults()

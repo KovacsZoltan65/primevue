@@ -12,6 +12,7 @@ use App\Interfaces\HierarchyRepositoryInterface;
 use App\Models\Hierarchy;
 use Override;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class HierarchyRepositoryEloquent.
@@ -34,14 +35,27 @@ class HierarchyRepository extends BaseRepository implements HierarchyRepositoryI
     public function addParent(Request $request, $childId)
     {
         try {
-            //
+            $child = null;
+
+            DB::transaction(function() use($request, $childId, &$child){
+                $parentId = $request->input('parent_id');
+                $parent = Entity::findOrFail($parentId);
+                $child = Entity::findOrFail($childId);
+
+                $child->parents()->attach($parent);
+
+                return $child->load('parents');
+            });
+
+            return $child;
+
         } catch(Exception $ex) {
             $this->logError($ex, 'addParent error', ['request' => $request->all(), 'childId' => $childId]);
             throw $ex;
         }
     }
 
-    public function addChild(Request $request, $parentId)
+    public function addChild(Request $request, int $parentId)
     {
         try {
             //
@@ -51,7 +65,7 @@ class HierarchyRepository extends BaseRepository implements HierarchyRepositoryI
         }
     }
 
-    public function getHierarchy($entityId)
+    public function getHierarchy(int $entityId)
     {
         try {
             //
@@ -61,7 +75,7 @@ class HierarchyRepository extends BaseRepository implements HierarchyRepositoryI
         }
     }
 
-    public function removeChild($entityId)
+    public function removeChild(int $entityId)
     {
         try {
             //

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Entity;
 use App\Models\Hierarchy;
+use App\Repositories\HierarchyRepository;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -12,9 +13,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Routing\Controller;
+use App\Traits\Functions;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class HierarchyController extends Controller
 {
+    use AuthorizesRequests,
+        Functions;
+
+    protected HierarchyRepository $hierarchyRepository;
+
+    public function __construct(HierarchyRepository $repository)
+    {
+        $this->hierarchyRepository = $repository;
+
+        //$this->middleware('can:herarchies list', ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
+        //$this->middleware('can:herarchies create', ['only' => ['createCompany']]);
+        //$this->middleware('can:herarchies edit', ['only' => ['updateCompany']]);
+        //$this->middleware('can:herarchies delete', ['only' => ['deleteCompany', 'deleteCompanies']]);
+        //$this->middleware('can:herarchies restore', ['only' => ['restoreCompany']]);
+    }
+
     /**
      * Szülő entitást ad az alárendelt entitásokhoz.
      *
@@ -25,7 +45,7 @@ class HierarchyController extends Controller
      *
      * @param Request $request A HTTP-kérelem objektum, amely tartalmazza a szülő_azonosítót.
      * @param int $childId Annak az utód entitásnak az azonosítója, amelyhez a szülő hozzáadódik.
-     * 
+     *
      * @return JsonResponse Sikert vagy kudarcot jelző JSON-válasz.
      *
      * @throws ModelNotFoundException Ha a szülő vagy gyermek entitás nem található.
@@ -34,59 +54,17 @@ class HierarchyController extends Controller
     public function addParent(Request $request, $childId): JsonResponse
     {
         try {
-            $parentId = $request->input('parent_id');
-            $parent = Entity::findOrFail($parentId);
-            $child = Entity::findOrFail($childId);
-
-            // Add parent-child relationship
-            $child->parents()->attach($parent);
-
-            return response()->json([
-                'message' => 'Parent added successfully.',
-                'child' => $child->load('parents'),
-            ]);
+            $child = $this->hierarchyRepository->addParent($request, $childId);
+            return response()->json([$child, Response::HTTP_OK]);
         } catch (ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'addParent model not found error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'addParent model not found error'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'addParent model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'addParent query error',
-                'params' => ['id' => $request->id],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'addParent query error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'addParent query error', Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'addParent general error',
-                'params' => ['id' => $request->id],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'addParent general error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'addParent general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Hozzáad egy utód entitást a szülő entitás gyermeklistájához.
      *
@@ -97,7 +75,7 @@ class HierarchyController extends Controller
      *
      * @param Request $request A HTTP-kérelem objektum, amely tartalmazza a „child_id” értéket.
      * @param int $parentId Annak a szülőentitásnak az azonosítója, amelyhez a gyermek hozzá lett adva.
-     * 
+     *
      * @return JsonResponse JSON-válasz sikert vagy kudarcot jelez.
      *
      * @throws ModelNotFoundException Ha a szülő vagy a gyermek entitás nem található.
@@ -541,7 +519,7 @@ class HierarchyController extends Controller
     private function canReachBigBoss(Entity $entity, $bigBosses): bool
     {
         $current = $entity;
-    
+
         // Felfelé lépegetés a hierarchiában
         while ($current) {
             if ($bigBosses->contains($current->id)) { // ID-t használunk az összehasonlításhoz, hogy minimalizáljuk az objektumok összehasonlítását
@@ -549,10 +527,10 @@ class HierarchyController extends Controller
             }
             $current = $current->parents()->first();
         }
-    
+
         return false;
     }
-    
+
     /*
      * =========================================
      * Ciklusok ellenőrzése
@@ -562,12 +540,12 @@ class HierarchyController extends Controller
      *  2. Ez megakadályozható a kapcsolatok létrehozásakor:
      *  2.1 Ellenőrizzük, hogy a beosztott nem már egy őse a vezetőnek.
      */
-    
+
     /**
      * =========================================
      * Izolált entitások keresése
      * =========================================
-     * Azok az entitások, amelyek nem kapcsolódnak semmihez (nincs szülőjük és gyerekük sem), 
+     * Azok az entitások, amelyek nem kapcsolódnak semmihez (nincs szülőjük és gyerekük sem),
      * hibás állapotot jelezhetnek.
      */
     public function checkIsolatedEntities()
@@ -630,7 +608,7 @@ class HierarchyController extends Controller
         }
     }
 
-    
+
     /**
      * =========================================
      * Több dolgozó szintjének meghatározása
@@ -708,12 +686,12 @@ class HierarchyController extends Controller
         }
     }
 
-    
+
     /**
      * =========================================
      * Dolgozói szint megállapítása
      * =========================================
-     * 
+     *
      * példa:   {
      *              "employee_id": 123,
      *              "role": "Vezető"
@@ -792,21 +770,21 @@ class HierarchyController extends Controller
             return 'Isolated'; // Se felettese, se beosztottja (ritka, de lehetséges eset)
         }
     }
-    
+
     /**
      * =========================================
      * ELLENŐRZÉSEK
      * =========================================
      */
-    
+
     /**
      * =========================================
      * 1. Több gyökér (multiroot) ellenőrzése
      * =========================================
-     * Mit jelent?: Ha a rendszer támogatja, hogy több "nagyfőnök" (gyökér 
-     *              szintű entitás) legyen, akkor biztosítani kell, hogy ezek 
+     * Mit jelent?: Ha a rendszer támogatja, hogy több "nagyfőnök" (gyökér
+     *              szintű entitás) legyen, akkor biztosítani kell, hogy ezek
      *              ténylegesen függetlenek maradjanak egymástól.
-     * Ellenőrzés:  Az egyes gyökerekből induló hierarchiák nem keresztezhetik 
+     * Ellenőrzés:  Az egyes gyökerekből induló hierarchiák nem keresztezhetik
      *              egymást (egy entitás nem tartozhat egyszerre több gyökérhez).
      */
     public function checkMultipleRootsIntegrity()
@@ -893,16 +871,16 @@ class HierarchyController extends Controller
 
         return $descendants;
     }
-    
+
     /**
      * =========================================
      * 2. Ciklusmentesség ellenőrzése valós idejű módosításokkor
      * =========================================
-     * Mit jelent?: Minden módosítás (pl. új kapcsolat létrehozása vagy szülő 
-     *              változtatása) során ellenőrizni kell, hogy a változtatás 
+     * Mit jelent?: Minden módosítás (pl. új kapcsolat létrehozása vagy szülő
+     *              változtatása) során ellenőrizni kell, hogy a változtatás
      *              nem hoz létre ciklust.
-     * Ellenőrzés:  Amikor egy child_id értéket egy új parent_id alá helyeznek, 
-     *              biztosítani kell, hogy a parent_id ne tartozzon már a 
+     * Ellenőrzés:  Amikor egy child_id értéket egy új parent_id alá helyeznek,
+     *              biztosítani kell, hogy a parent_id ne tartozzon már a
      *              child_id leszármazottai közé.
      */
     public function validateNoCycles($parentId, $childId): bool
@@ -919,18 +897,18 @@ class HierarchyController extends Controller
         return true;
     }
 
-    
+
     /**
      * =========================================
      * 3. Elhagyott kapcsolatok ellenőrzése
      * =========================================
-     * Mit jelent?: Biztosítani kell, hogy minden entitás vagy szülő, vagy 
-     *              gyermek kapcsolatban álljon, vagy valamilyen logikus 
-     *              állapotban legyen (pl. "izolált entitások" nem kívánt 
+     * Mit jelent?: Biztosítani kell, hogy minden entitás vagy szülő, vagy
+     *              gyermek kapcsolatban álljon, vagy valamilyen logikus
+     *              állapotban legyen (pl. "izolált entitások" nem kívánt
      *              állapotban ne maradjanak).
-     * Ellenőrzés:  Az összes entitásnak vagy gyökérként kell léteznie, vagy 
+     * Ellenőrzés:  Az összes entitásnak vagy gyökérként kell léteznie, vagy
      *              alá kell tartoznia egy hierarchiának.
-     * Például:     Egy újonnan létrehozott entitás ne maradjon kapcsolatok 
+     * Például:     Egy újonnan létrehozott entitás ne maradjon kapcsolatok
      *              nélkül.
      */
     public function checkOrphanedEntities()
@@ -1000,14 +978,14 @@ class HierarchyController extends Controller
         }
     }
 
-    
+
     /**
      * =========================================
      * 4. Körülhatárolt hierarchia a cégeken belül
      * =========================================
-     * Mit jelent?: Ha a hierarchia cégekhez kötött, minden entitásnak 
+     * Mit jelent?: Ha a hierarchia cégekhez kötött, minden entitásnak
      *              ugyanahhoz a céghez kell tartoznia, mint a szülője.
-     * Ellenőrzés:  Az entities táblában a company_id mező értéke a szülő és a 
+     * Ellenőrzés:  Az entities táblában a company_id mező értéke a szülő és a
      *              gyermek esetében egyezzen.
      */
     public function validateCompanyIntegrity($parentId, $childId): JsonResponse
@@ -1067,14 +1045,14 @@ class HierarchyController extends Controller
         }
     }
 
-    
+
     /**
      * =========================================
      * 5. Kör teljes szint ellenőrzése
      * =========================================
-     * Mit jelent?: Ha egy szülőhöz több gyermek tartozik, biztosítani kell, 
+     * Mit jelent?: Ha egy szülőhöz több gyermek tartozik, biztosítani kell,
      *              hogy a gyermekek azonos hierarchiai szinten legyenek.
-     * Ellenőrzés:  Ez az ellenőrzés különösen fontos, ha a hierarchia 
+     * Ellenőrzés:  Ez az ellenőrzés különösen fontos, ha a hierarchia
      *              szintekhez kötött (pl. különböző beosztási szintek).
      */
     public function checkHierarchyLevels()
@@ -1138,15 +1116,15 @@ class HierarchyController extends Controller
         }
     }
 
-    
+
     /**
      * =========================================
      * 6. Időbeli érvényesség ellenőrzése
      * =========================================
-     * Mit jelent?: Az entities táblában lévő start_date és end_date mezők 
-     *              alapján biztosítani kell, hogy egy entitás csak érvényes 
+     * Mit jelent?: Az entities táblában lévő start_date és end_date mezők
+     *              alapján biztosítani kell, hogy egy entitás csak érvényes
      *              időtartamon belül szerepeljen a hierarchiában.
-     * Ellenőrzés:  Egy entitás csak akkor lehet egy másik szülője vagy gyermeke, 
+     * Ellenőrzés:  Egy entitás csak akkor lehet egy másik szülője vagy gyermeke,
      *              ha az időtartamok átfedik egymást.
      */
     public function validateTemporalConsistency($parentId, $childId): bool
@@ -1202,7 +1180,7 @@ class HierarchyController extends Controller
         }
     }
 
-    
+
     /**
      * =========================================
      * 7. Adatkapcsolati redundancia ellenőrzése
@@ -1264,5 +1242,5 @@ class HierarchyController extends Controller
         }
     }
 
-    
+
 }

@@ -9,8 +9,10 @@ use Illuminate\Http\Request;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Interfaces\CountryRepositoryInterface;
+use Illuminate\Support\Facades\DB;
 use Override;
 use Exception;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class CountryRepositoryEloquent.
@@ -28,6 +30,18 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function __construct(CacheService $cacheService)
     {
         $this->cacheService = $cacheService;
+    }
+
+    public function getActiveCountries()
+    {
+        $model = $this->model();
+        $countries = $model::query()
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->where('active', '=', 1)
+            ->get()->toArray();
+
+            return $countries;
     }
 
     public function getCountries(Request $request)
@@ -48,7 +62,10 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function getCountry(int $id)
     {
         try {
-            //
+            $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
+                return Country::findOrFail($id);
+            });
         } catch(Exception $ex) {
             $this->logError($ex, 'getCountry error', ['id' => $id]);
             throw $ex;
@@ -58,17 +75,22 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function getCountryByName(string $name)
     {
         try {
-            //
+            $cacheKey = $this->generateCacheKey($this->tag, $name);
+
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+                return Country::where('name', '=', $name)->firstOrFail();
+            });
         } catch(Exception $ex) {
             $this->logError($ex, 'getCountryByName error', ['name' => $name]);
-            throw $ex;
+            throw $ex; // A kivétel dobása a kontroller szintjére.
         }
     }
 
     public function createCountry(Request $request)
     {
-        try {
-            //
+        try{
+            $country = Country::create($request->all());
+            return $country;
         } catch(Exception $ex) {
             $this->logError($ex, 'createCountry error', ['request' => $request->all()]);
             throw $ex;
@@ -78,9 +100,18 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function updateCountry(Request $request, int $id)
     {
         try {
-            //
+            $country = null;
+            DB::transaction(function() use($request, $id, &$country) {
+                $country = Country::findOrFail($id)->lockForUpdate();
+                $country->update($request->all());
+                $country->refresh();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
+            
+            return $country;
         } catch(Exception $ex) {
-            $this->logError($ex, 'updateCountry error', ['request' => $request->all()]);
+            $this->logError($ex, 'updateCompany error', ['id' => $id, 'request' => $request->all()]);
             throw $ex;
         }
     }
@@ -88,7 +119,16 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function deleteCountries(Request $request)
     {
         try {
-            //
+            $validated = $request->validate([
+                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
+                'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
+            ]);
+            $ids = $validated['ids'];
+            $deletedCount = Country::whereIn('id', $ids)->delete();
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return $deletedCount;
         } catch(Exception $ex) {
             $this->logError($ex, 'deleteCountries error', ['request' => $request->all()]);
             throw $ex;
@@ -98,9 +138,14 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function deleteCountry(Request $request)
     {
         try {
-            //
+            $country = Country::findOrFail($request->id);
+            $country->delete();
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return response()->json($country, Response::HTTP_OK);
         } catch(Exception $ex) {
-            $this->logError($ex, 'deleteCountry error', ['request' => $request->all()]);
+            $this->logError($ex, 'deleteCompany error', ['request' => $request->all()]);
             throw $ex;
         }
     }
@@ -108,7 +153,12 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function restoreCountry(Request $request)
     {
         try {
-            //
+            $company = Country::withTrashed()->findOrFail($request->id);
+            $company->restore();
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return response()->json($company, Response::HTTP_OK);
         } catch(Exception $ex) {
             $this->logError($ex, 'restoreCountry error', ['request' => $request->all()]);
             throw $ex;
@@ -124,26 +174,6 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function model()
     {
         return Country::class;
-    }
-
-/*************  ✨ Codeium Command ⭐  *************/
-    /**
-     * Retrieve a list of active countries.
-     *
-     * by name, and returns the result as an array of country IDs and names.
-     * @return array The array of active countries with 'id' and 'name' keys.
-     */
-
-
-
-/******  69acc8a2-18bd-4f86-96c6-a832f5b990e3  *******/
-    public function getActiveCountries()
-    {
-        $countries = $this->model->select('id', 'name')
-            ->orderBy('name')
-            ->active()->get()->toArray();
-        
-        return $countries;
     }
     
     /**

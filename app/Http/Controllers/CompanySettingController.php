@@ -16,13 +16,12 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Services\SettingService;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\DB;
 
 class CompanySettingController extends Controller
 {
@@ -127,7 +126,46 @@ class CompanySettingController extends Controller
         }
     }
     
-    public function deleteApplicationSettings() {}
+    public function deleteCompSettings(Request $request): JsonResponse 
+    {
+        try {
+            $deletedCount = $this->compSettingRepository->deleteCompSettings($request);
+            return response()->json($deletedCount, Response::HTTP_OK);
+        } catch (ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'deleteAppSettings model not found error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (QueryException $ex) {
+            return $this->handleException($ex, 'deleteAppSettings query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (Exception $ex) {
+            return $this->handleException($ex, 'deleteAppSettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
     
-    public function deleteApplicationSetting() {}
+    public function deleteCompSetting(GetCompanySettingRequest $request): JsonResponse
+    {
+        try {
+            $appSetting = $this->compSettingRepository->deleteCompSetting($request);
+            
+            return response()->json($appSetting, Response::HTTP_OK);
+        } catch (ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'deleteCompSetting model not found exception', Response::HTTP_NOT_FOUND);
+        } catch (QueryException $ex) {
+            return $this->handleException($ex, 'deleteCompSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (Exception $ex) {
+            return $this->handleException($ex, 'deleteCompSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function restoreCompSetting(GetCompanySettingRequest $request): JsonResponse {
+        try {
+            $appSetting = $this->compSettingRepository->restoreCompSetting($request);
+
+            return response()->json($appSetting, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'restoreCompSetting model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'restoreCompSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'restoreCompSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }

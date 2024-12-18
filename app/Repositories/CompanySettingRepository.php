@@ -9,8 +9,8 @@ use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Interfaces\CompanySettingRepositoryInterface;
 use App\Models\CompanySetting;
-use App\Validators\CompanySettingValidator;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class CompanySettingRepositoryEloquent.
@@ -23,7 +23,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
 
     protected CacheService $cacheService;
 
-    protected string $tag = 'company_settings';
+    protected string $tag = 'comp_settings';
 
     /**
      * Specify Model class name
@@ -37,7 +37,14 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
 
     public function getActiveCompSettings()
     {
-        // TODO: Implement getActiveCompSettings() method.
+        $model = $this->model();
+        $settings = $model::query()
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->where('active','=',1)
+            ->get()->toArray();
+
+        return $settings;
     }
 
     public function getCompSettings(Request $request)
@@ -88,7 +95,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
         try {
             $setting = null;
 
-            \DB::transaction(function() use($request, $id, &$setting) {
+            DB::transaction(function() use($request, $id, &$setting) {
                 $setting = CompanySetting::findOrFail($id)->lockForUpdate();
                 $setting->update($request->all());
                 $setting->refresh();
@@ -99,6 +106,53 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             return $setting;
         } catch(Exception $ex) {
             $this->logError($ex, 'updateCompSetting error', ['id' => $id, 'request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    public function deleteCompSettings(Request $request) {
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
+                'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
+            ]);
+            $ids = $validated['ids'];
+            $deletedCount = CompanySetting::whereIn('id', $ids)->delete();
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return $deletedCount;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'deleteCompSettings error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+    
+    public function deleteCompSetting(Request $request)
+    {
+        try {
+            $appSetting = CompanySetting::findOrFail($request->id);
+            $appSetting->delete();
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return $appSetting;
+        } catch (Exception $ex) {
+            $this->logError($ex, 'deleteCompSetting error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    public function restoreCompSetting(Request $request){
+        try {
+            $compSetting = CompanySetting::withTrashed()->findOrFail($request->id);
+            $compSetting->restore();
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return $compSetting;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'restoreCompSetting error', ['request' => $request->all()]);
             throw $ex;
         }
     }

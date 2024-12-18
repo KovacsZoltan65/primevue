@@ -9,9 +9,10 @@ use Prettus\Repository\Criteria\RequestCriteria;
 use App\Interfaces\ApplicationSettingRepositoryInterface;
 use App\Models\ApplicationSetting;
 use App\Traits\Functions;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\DB;
 use Override;
 use \Exception;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class ApplicationSettingRepositoryEloquent.
@@ -31,7 +32,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveSettings()
+    public function getActiveAppSettings()
     {
         $model = $this->model();
         $settings = $model::query()
@@ -86,7 +87,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         }
     }
 
-    public function createAllSetting(Request $request): ApplicationSetting
+    public function createAppSetting(Request $request): ApplicationSetting
     {
         try {
             $setting = ApplicationSetting::create($request->all());
@@ -98,11 +99,11 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         }
     }
 
-    public function updateApppSetting(Request $request, int $id): ApplicationSetting
+    public function updateAppSetting(Request $request, int $id): ApplicationSetting
     {
         try {
             $setting = null;
-            \DB::transaction(function() use($request, $id, &$setting) {
+            DB::transaction(function() use($request, $id, &$setting) {
                 $setting = ApplicationSetting::findOrFail($id)->lockForUpdate();
                 $setting->update($request->all());
                 $setting->refresh();
@@ -144,7 +145,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
 
             $this->cacheService->forgetAll($this->tag);
 
-            return response()->json($appSetting, Response::HTTP_OK);
+            return $appSetting;
         } catch (Exception $ex) {
             $this->logError($ex, 'deleteAppSetting error', ['request' => $request->all()]);
             throw $ex;
@@ -159,7 +160,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
 
             $this->cacheService->forgetAll($this->tag);
 
-            return response()->json($appSetting, Response::HTTP_OK);
+            return $appSetting;
         } catch(Exception $ex) {
             $this->logError($ex, 'restoreAppSettings error', ['request' => $request->all()]);
             throw $ex;

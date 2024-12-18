@@ -8,8 +8,6 @@ use App\Http\Requests\UpdateApplicationSettingRequest;
 use App\Http\Resources\ApplicationSettingsResource;
 use App\Models\ApplicationSetting;
 use App\Repositories\ApplicationSettingRepository;
-use App\Services\CacheService;
-use Exception;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -22,6 +20,7 @@ use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use App\Traits\Functions;
+use Exception;
 
 class ApplicationSettingController extends Controller
 {
@@ -69,7 +68,7 @@ class ApplicationSettingController extends Controller
         }
     }
 
-    public function geApptSetting(GetApplicationSettingRequest $request): JsonResponse
+    public function getApptSetting(GetApplicationSettingRequest $request): JsonResponse
     {
         try {
             $setting = $this->appSettingRepository->getAppSetting($request->id);
@@ -131,7 +130,7 @@ class ApplicationSettingController extends Controller
         try {
             $deletedCount = $this->appSettingRepository->deleteAppSettings($request);
             return response()->json($deletedCount, Response::HTTP_OK);
-        } catch (ValidationException $ex) {
+        } catch (ModelNotFoundException $ex) {
             return $this->handleException($ex, 'deleteAppSettings model not found error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (QueryException $ex) {
             return $this->handleException($ex, 'deleteAppSettings query error', Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -146,7 +145,7 @@ class ApplicationSettingController extends Controller
             $appSetting = $this->appSettingRepository->deleteAppSetting($request);
             
             return response()->json($appSetting, Response::HTTP_OK);
-        } catch (ValidationException $ex) {
+        } catch (ModelNotFoundException $ex) {
             return $this->handleException($ex, 'deleteAppSetting model not found exception', Response::HTTP_NOT_FOUND);
         } catch (QueryException $ex) {
             return $this->handleException($ex, 'deleteAppSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -155,10 +154,10 @@ class ApplicationSettingController extends Controller
         }
     }
     
-    public function restoreAppSettings(GetApplicationSettingRequest $request)
+    public function restoreAppSettings(GetApplicationSettingRequest $request): JsonResponse
     {
         try {
-            $appSetting = $this->appSettingRepository->restoreCompany($request);
+            $appSetting = $this->appSettingRepository->restoreAppSettings($request);
 
             return response()->json($appSetting, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

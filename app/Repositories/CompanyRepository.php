@@ -54,7 +54,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
                 return $companyQuery->get();
             });
         } catch (Exception $ex) {
-            $this->logError($ex, 'getCompanies error', ['request' => $request]);
+            $this->logError($ex, 'getCompanies error', ['request' => $request->all()]);
             throw $ex;
         }
     }

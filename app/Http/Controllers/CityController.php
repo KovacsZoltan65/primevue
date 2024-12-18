@@ -10,7 +10,9 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\Region;
 use App\Repositories\CityRepository;
+use App\Traits\Functions;
 use Exception;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -24,6 +26,8 @@ use App\Services\CacheService;
 
 class CityController extends Controller
 {
+    use AuthorizesRequests,
+        Functions;
     protected $cityRepository;
     
     public function __construct(CityRepository $cityRepository)
@@ -110,10 +114,10 @@ class CityController extends Controller
         }
     }
 
-    public function updateCity(UpdateCompanyRequest $request, int $id): JsonResponse
+    public function updateCity(UpdateCityRequest $request, int $id): JsonResponse
     {
         try{
-            $company = $this->updateCompany($request, $id);
+            $company = $this->updateCity($request, $id);
             
             return response()->json($company, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
@@ -143,7 +147,7 @@ class CityController extends Controller
     public function deleteCity(GetCityRequest $request): JsonResponse
     {
         try {
-            $city = $this->cityRepository($request);
+            $city = $this->cityRepository->deleteCity($request);
             
             return response()->json($city, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

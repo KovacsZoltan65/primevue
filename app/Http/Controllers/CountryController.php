@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCountryRequest;
 use App\Http\Requests\UpdateCountryRequest;
 use App\Http\Resources\CountryResource;
 use App\Models\Country;
+use App\Repositories\CountryRepository;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -27,7 +28,18 @@ class CountryController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected string $tag = 'countries';
+    protected CountryRepository $countryRepository;
+
+    public function __construct(CountryRepository $repository)
+    {
+        $this->countryRepository = $repository;
+
+        $this->middleware('can:countries list', ['only' => ['index', 'applySearch', 'getCountries', 'getCountry', 'getCountryByName']]);
+        $this->middleware('can:countries create', ['only' => ['createCountry']]);
+        $this->middleware('can:countries edit', ['only' => ['updateCountry']]);
+        $this->middleware('can:countries delete', ['only' => ['deleteCountry', 'deleteCountries']]);
+        $this->middleware('can:countries restore', ['only' => ['restoreCountry']]);
+    }
 
     /**
      * Jelenítse meg az erőforrás listáját.
@@ -64,44 +76,25 @@ class CountryController extends Controller
         });
     }
 
-    public function getCountries(Request $request, CacheService $cacheService): JsonResponse
+    public function getCountries(Request $request): JsonResponse
     {
         try {
+            /*
             $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
 
             $countries = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $countryQuery = Country::search($request);
                 return CountryResource::collection($countryQuery->get());
             });
+            */
+            $countries = $this->countryRepository->getCountries($request);
+            $countries = CountryResource::collection($countries);
 
             return response()->json($countries, Response::HTTP_OK);
         } catch(QueryException $ex) {
-            // Adatbázis hiba naplózása
-            ErrorController::logServerError($ex, [
-                'context' => 'getCountries query error',
-                'params' => ['request' => $request->all()],
-                'route' => $request->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getCountries query error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCountries query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            // Általános hiba naplózása
-            ErrorController::logServerError($ex, [
-                'context' => 'getCountries general error',
-                'route' => $request->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getCountries general error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCountries general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

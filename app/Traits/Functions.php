@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Http\Controllers\ErrorController;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 
 trait Functions
@@ -30,7 +31,7 @@ trait Functions
 
         foreach ($prefixes as $str) {
             foreach ($permissions as $permission) {
-                $userRoles["{$str}_{$permission}"] = \Auth::user()->can("{$str} {$permission}");
+                $userRoles["{$str}_{$permission}"] = Auth::user()->can("{$str} {$permission}");
             }
         }
 

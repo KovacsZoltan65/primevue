@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Symfony\Component\HttpFoundation\Response;
@@ -101,7 +102,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
     {
         try {
             $company = null;
-            \DB::transaction(function() use($request, $id, &$company) {
+            DB::transaction(function() use($request, $id, &$company) {
                 $company = Company::findOrFail($id)->lockForUpdate();
                 $company->update($request->all());
                 $company->refresh();

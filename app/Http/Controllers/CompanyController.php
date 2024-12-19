@@ -83,8 +83,8 @@ class CompanyController extends Controller
     public function getCompanies(Request $request): JsonResponse
     {
         try {
-            $companies = $this->companyRepository->getCompanies($request);
-            $companies = CompanyResource::collection($companies);
+            $_companies = $this->companyRepository->getCompanies($request);
+            $companies = CompanyResource::collection($_companies);
 
             return response()->json($companies, Response::HTTP_OK);
 

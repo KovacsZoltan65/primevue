@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Eloquent\BaseRepository;
-use Symfony\Component\HttpFoundation\Response;
 use App\Interfaces\CompanyRepositoryInterface;
 use App\Models\Company;
 use App\Services\CacheService;
@@ -91,6 +90,9 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
     {
         try{
             $company = Company::create($request->all());
+            
+            $this->cacheService->forgetAll($this->tag);
+            
             return $company;
         } catch(Exception $ex) {
             $this->logError($ex, 'createCompany error', ['request' => $request->all()]);
@@ -144,7 +146,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
 
             $this->cacheService->forgetAll($this->tag);
 
-            return response()->json($company, Response::HTTP_OK);
+            return $company;
         } catch(Exception $ex) {
             $this->logError($ex, 'deleteCompany error', ['request' => $request->all()]);
             throw $ex;
@@ -159,7 +161,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
 
             $this->cacheService->forgetAll($this->tag);
 
-            return response()->json($company, Response::HTTP_OK);
+            return $company;
         } catch(Exception $ex) {
             $this->logError($ex, 'restoreCompany error', ['request' => $request->all()]);
             throw $ex;

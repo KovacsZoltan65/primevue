@@ -6,8 +6,9 @@ use App\Http\Requests\GetSubdomainStateRequest;
 use App\Http\Requests\StoreSubdomainStateRequest;
 use App\Http\Requests\UpdateSubdomainStateRequest;
 use App\Http\Resources\SubdomainStateResource;
-use App\Models\Company;
+use Illuminate\Support\Facades\DB;
 use App\Models\SubdomainState;
+use App\Services\CacheService;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -62,7 +63,7 @@ class SubdomainStateController extends Controller
 
             $subdomainStates = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $subdomainStateQuery = SubdomainState::search($request);
-                return CompanyResource::collection($subdomainStateQuery->get());
+                return SubdomainStateResource::collection($subdomainStateQuery->get());
             });
             
             return response()->json($subdomainStates, Response::HTTP_OK);
@@ -101,7 +102,7 @@ class SubdomainStateController extends Controller
             $cacheKey = "{$this->tag}_" . md5($request->id);
             
             $subdomainState = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                return Subdomain::findOrFail($request->id);
+                return SubdomainState::findOrFail($request->id);
             });
             
             return response()->json($subdomainState, Response::HTTP_OK);
@@ -243,7 +244,7 @@ class SubdomainStateController extends Controller
         try {
             $subdomainState = null;
             
-            \DB::transaction(function() use($request, $id, $cacheService, &$subdomainState) {
+            DB::transaction(function() use($request, $id, $cacheService, &$subdomainState) {
                 $subdomainState = SubdomainState::findOrFail($id);
                 $subdomainState->update($request->all());
                 $subdomainState->refresh();

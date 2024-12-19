@@ -143,7 +143,7 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
 
             $this->cacheService->forgetAll($this->tag);
 
-            return response()->json($country, Response::HTTP_OK);
+            return $country;
         } catch(Exception $ex) {
             $this->logError($ex, 'deleteCompany error', ['request' => $request->all()]);
             throw $ex;
@@ -158,7 +158,7 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
 
             $this->cacheService->forgetAll($this->tag);
 
-            return response()->json($company, Response::HTTP_OK);
+            return $company;
         } catch(Exception $ex) {
             $this->logError($ex, 'restoreCountry error', ['request' => $request->all()]);
             throw $ex;

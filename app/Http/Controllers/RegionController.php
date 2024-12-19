@@ -7,7 +7,7 @@ use App\Http\Requests\StoreRegionRequest;
 use App\Http\Resources\RegionResource;
 use App\Models\Country;
 use App\Models\Region;
-use App\Repositories\RegionRepository;
+use App\Repositories\RegionRepositoryInterface;
 use App\Services\CacheService;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,9 +30,9 @@ class RegionController extends Controller
         Functions;
 
     protected string $tag = 'regions';
-    protected RegionRepository $regionRepository;
+    protected RegionRepositoryInterface $regionRepository;
 
-    public function __construct(RegionRepository $repository) {
+    public function __construct(RegionRepositoryInterface $repository) {
         $this->regionRepository = $repository;
         
         $this->middleware('can:regions list', ['only' => ['index', 'applySearch', 'getRegions', 'getSRegion', 'getRegionByName']]);

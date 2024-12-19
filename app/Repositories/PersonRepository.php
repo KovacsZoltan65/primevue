@@ -30,7 +30,7 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
     {
         $this->cacheService = $cacheService;
     }
-    
+
     public function getActivePersons()
     {
         $model = $this->model();
@@ -42,12 +42,12 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
 
         return $companies;
     }
-    
+
     public function getPersons(Request $request)
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
-            
+
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $personQuery = Person::search($request);
                 return $personQuery->get();
@@ -57,7 +57,7 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
             throw $ex;
         }
     }
-    
+
     public function getPerson(int $id)
     {
         try {
@@ -71,7 +71,7 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
             throw $ex;
         }
     }
-    
+
     public function getPersonByName(string $name)
     {
         try {
@@ -85,21 +85,21 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
             throw $ex;
         }
     }
-    
+
     public function createPerson(StorePersonRequest $request)
     {
         try{
             $person = Person::create($request->all());
-            
+
             $this->cacheService->forgetAll($this->tag);
-            
+
             return $person;
         } catch(Exception $ex) {
             $this->logError($ex, 'createPerson error', ['request' => $request->all()]);
             throw $ex;
         }
     }
-    
+
     public function updatePerson(Request $request, int $id)
     {
         try {
@@ -120,7 +120,56 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
             throw $ex;
         }
     }
-    
+
+    public function deletePersons(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
+                'ids.*' => 'integer|exists:persons,id', // Az id-k egész számok és létező cégek legyenek
+            ]);
+
+            $ids = $validated['ids'];
+            $deletedCount = Person::whereIn('id', $ids)->delete();
+            $cacheService->forgetAll($this->tag);
+
+            return $deletedCount;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'deletePersons error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    public function deletePerson(Request $request)
+    {
+        try {
+            $person = Person::findOrFail($request->id);
+            $person->delete();
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return $person;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'deletePerson error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    public function restorePerson(Request $request)
+    {
+        try {
+            $person = Person::withTrashed()->findOrFail($request->id);
+            $person->restore();
+
+            $this->cacheService->forgetAll($this->tag);
+
+            return $person;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'restorePerson error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
     /**
      * Specify Model class name
      *
@@ -132,8 +181,6 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
         return Person::class;
     }
 
-    
-
     /**
      * Boot up the repository, pushing criteria
      */
@@ -142,5 +189,5 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
-    
+
 }

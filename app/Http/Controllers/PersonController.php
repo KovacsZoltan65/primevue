@@ -34,7 +34,7 @@ class PersonController extends Controller
     public function __construct(PersonRepository $repository)
     {
         $this->personRepository = $repository;
-        
+
         $this->middleware('can:persons list', ['only' => ['index', 'applySearch', 'getPersons', 'getPerson', 'getPersonByName']]);
         $this->middleware('can:persons create', ['only' => ['createPerson']]);
         $this->middleware('can:persons edit', ['only' => ['updatePerson']]);
@@ -125,111 +125,48 @@ class PersonController extends Controller
         }
     }
 
-    public function deletePerson(GetPersonRequest $request, CacheService $cacheService): JsonResponse
+    public function deletePersons(Request $request): JsonResponse
+        {
+            try{
+                $deletedCount = $this->personRepository->deletePersons($request);
+
+                return response()->json($deletedCount, Response::HTTP_OK);
+            } catch(ValidationException $ex) {
+                return $this->handleException($ex, 'deletePersons validation error', Response::HTTP_UNPROCESSABLE_ENTITY);
+            } catch(QueryException $ex) {
+                return $this->handleException($ex, 'deletePersons database error', Response::HTTP_UNPROCESSABLE_ENTITY);
+            } catch(Exception $ex) {
+                return $this->handleException($ex, 'deletePersons general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+        }
+
+    public function deletePerson(GetPersonRequest $request): JsonResponse
     {
         try{
-            $person = Person::findOrFail($request->id);
-            $person->delete();
-
-            $cacheService->forgetAll($this->tag);
+            $person = $this->personRepository->deletePerson($request);
 
             return response()->json($person, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'deletePerson model not found error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deletePerson model not found error',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'deletePerson model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'deletePerson database error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deletePerson database error',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'deletePerson database error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'deletePerson general error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deletePerson general error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'deletePerson general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function deletePersons(Request $request, CacheService $cacheService): JsonResponse
+    public function restorePerson(GetPersonRequest $request): JsonResponse
     {
-        try{
-            // Az azonosítók tömbjének validálása
-            $validated = $request->validate([
-                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
-                'ids.*' => 'integer|exists:persons,id', // Az id-k egész számok és létező cégek legyenek
-            ]);
+            try {
+                $person = $this->personRepository->restorePerson($request);
 
-            // Az azonosítók kigyűjtése
-            $ids = $validated['ids'];
-
-            // A cégek törlése
-            $deletedCount = Person::whereIn('id', $ids)->delete();
-
-            $cacheService->forgetAll($this->tag);
-
-            return response()->json($deletedCount, Response::HTTP_OK);
-        } catch(ValidationException $ex) {
-            ErrorController::logServerValidationError($ex, $request);
-
-            // Kliens válasz
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deletePersons validation error',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch(QueryException $ex) {
-            // Adatbázis hiba logolása és visszajelzés
-            ErrorController::logServerError($ex, [
-                'context' => 'deletePersons database error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deletePersons database error',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch(Exception $ex) {
-            // Általános hiba logolása és visszajelzés
-            ErrorController::logServerError($ex, [
-                'context' => 'deletePersons general error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deletePersons general error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                return response()->json($person, Response::HTTP_OK);
+            } catch(ModelNotFoundException $ex) {
+                return $this->handleException($ex, 'restorePerson model not found exception', Response::HTTP_NOT_FOUND);
+            } catch(QueryException $ex) {
+                return $this->handleException($ex, 'restorePerson query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+            } catch(Exception $ex) {
+                return $this->handleException($ex, 'restorePerson general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
         }
-    }
 }

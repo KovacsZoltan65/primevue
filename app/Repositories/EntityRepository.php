@@ -143,7 +143,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
 
             $this->cacheService->forgetAll($this->tag);
 
-            return response()->json($entity, Response::HTTP_OK);
+            return $entity;
         } catch(Exception $ex) {
             $this->logError($ex, 'deleteEntity error', ['request' => $request->all()]);
             throw $ex;
@@ -158,7 +158,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
 
             $this->cacheService->forgetAll($this->tag);
 
-            return response()->json($entity, Response::HTTP_OK);
+            return $entity;
         } catch(Exception $ex) {
             $this->logError($ex, 'restoreEntity error', ['request' => $request->all()]);
             throw $ex;

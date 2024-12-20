@@ -89,7 +89,16 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function createCountry(Request $request)
     {
         try{
-            $country = Country::create($request->all());
+            $country = null;
+            
+            DB::transaction(function() use($request, &$country) {
+                $country = Country::create($request->all());
+                
+                $this->createDefaultSettings($country);
+                
+                $this->cacheService->forgetAll($this->tag);
+            });
+            
             return $country;
         } catch(Exception $ex) {
             $this->logError($ex, 'createCountry error', ['request' => $request->all()]);
@@ -102,7 +111,7 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
         try {
             $country = null;
             DB::transaction(function() use($request, $id, &$country) {
-                $country = Country::findOrFail($id)->lockForUpdate();
+                $country = Country::lockForUpdate()->findOrFail($id);
                 $country->update($request->all());
                 $country->refresh();
 
@@ -123,10 +132,20 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
                 'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
             ]);
+            
             $ids = $validated['ids'];
-            $deletedCount = Country::whereIn('id', $ids)->delete();
+            $deletedCount = 0;
+            
+            \DB::transaction(function () use ($ids, &$deletedCount) {
+                $countries = Country::whereIn('id', $ids)->lockForUpdate()->get();
 
-            $this->cacheService->forgetAll($this->tag);
+                $deletedCount = $countries->each(function ($country) {
+                    $country->delete();
+                })->count();
+
+                // Cache törlése, ha szükséges
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $deletedCount;
         } catch(Exception $ex) {
@@ -138,14 +157,18 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function deleteCountry(Request $request)
     {
         try {
-            $country = Country::findOrFail($request->id);
-            $country->delete();
+            $country = null;
+            
+            DB::transaction(function() use($request, &$country) {
+                $country = Country::lockForUpdate()->findOrFail($request->id);
+                $country->delete();
 
-            $this->cacheService->forgetAll($this->tag);
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $country;
         } catch(Exception $ex) {
-            $this->logError($ex, 'deleteCompany error', ['request' => $request->all()]);
+            $this->logError($ex, 'deleteCountry error', ['request' => $request->all()]);
             throw $ex;
         }
     }
@@ -153,18 +176,44 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function restoreCountry(Request $request)
     {
         try {
-            $company = Country::withTrashed()->findOrFail($request->id);
-            $company->restore();
+            $country = null;
+            DB::transaction(function() use($request, &$country) {
+                $country = Country::withTrashed()->lockForUpdate()->findOrFail($request->id);
+                $country->restore();
 
-            $this->cacheService->forgetAll($this->tag);
+                $this->cacheService->forgetAll($this->tag);
+            });
 
-            return $company;
+            return $country;
         } catch(Exception $ex) {
             $this->logError($ex, 'restoreCountry error', ['request' => $request->all()]);
             throw $ex;
         }
     }
 
+    public function realDeleteCountry(Request $request)
+    {
+        try {
+            $country = null;
+            DB::transaction(function() use($request, &$country) {
+                $country = Country::withTrashed()->lockForUpdate()->findOrFail($request->id);
+                $country->forceDelete();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
+
+            return $country;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'realDeleteCountry error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    private function createDefaultSettings(Company $company): void
+    {
+        //
+    }
+    
     /**
      * Specify Model class name
      *

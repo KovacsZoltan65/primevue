@@ -89,7 +89,15 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
     public function createCity(Request $request)
     {
         try{
-            $city = City::create($request->all());
+            $city = null;
+            DB::transaction(function() use($request, &$city) {
+                $city = City::create($request->all());
+                
+                $this->createDefaultSettings($city);
+                
+                $this->cacheService->forgetAll($this->tag);
+            });
+
             return $city;
         } catch(Exception $ex) {
             $this->logError($ex, 'createCity error', ['request' => $request->all()]);
@@ -100,11 +108,14 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
     public function updateCity(Request $request, int $id)
     {
         try{
-            $city = City::findOrFail($id)->lockForUpdate();
-            $city->update($request->all());
-            $city->refresh();
-
-            $this->cacheService->forgetAll($this->tag);
+            $city = null;
+            DB::transaction(function() use($request, $id) {
+                $city = City::lockForUpdate()->findOrFail($id);
+                $city->update($request->all());
+                $city->refresh();
+                
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $city;
         } catch(Exception $ex) {
@@ -121,7 +132,18 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
                 'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
             ]);
             $ids = $validated['ids'];
-            $deletedCount = City::whereIn('id', $ids)->delete();
+            $deletedCount = 0;
+            
+            DB::transaction(function() use($ids, & $deletedCount) {
+                $cities = City::whereIn('id', $ids)->lockForUpdate()->get();
+
+                $deletedCount = $cities->each(function ($city) {
+                    $city->delete();
+                })->count();
+
+                // Cache törlése, ha szükséges
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             $this->cacheService->forgetAll($this->tag);
 
@@ -131,7 +153,66 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
             throw $ex;
         }
     }
+    
+    public function deleteCity(Request $request)
+    {
+        try {
+            $city = null;
+            DB::transaction(function() use($request, &$city) {
+                $city = City::lockForUpdate()->findOrFail($request->id);
+                $city->delete();
 
+                $this->cacheService->forgetAll($this->tag);
+            });
+
+            return $city;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'deleteCity error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+    
+    public function restoreCity(Request $request)
+    {
+        try {
+            $city = null;
+            DB::transaction(function() use($request, &$city) {
+                $city = City::withTrashed()->lockForUpdate()->findOrFail($request->id);
+                $city->restore();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
+
+            return $city;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'restoreCity error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+    
+    public function realDeleteCity(int $id)
+    {
+        try {
+            $city = null;
+            DB::transaction(function() use($id, &$city) {
+                $city = City::withTrashed()->lockForUpdate()->findOrFail($id);
+                $city->forceDelete();
+                
+                $this->cacheService->forgetAll($this->tag);
+            });
+
+            return $city;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'realDeleteCity error', ['id' => $id]);
+            throw $ex;
+        }
+    }
+
+    private function createDefaultSettings(City $city): void
+    {
+        //
+    }
+    
     /**
      * Boot up the repository, pushing criteria
      */

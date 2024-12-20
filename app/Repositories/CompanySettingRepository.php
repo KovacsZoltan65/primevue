@@ -28,7 +28,6 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
 
     public function getActiveCompSettings()
     {
-        /*
         $model = $this->model();
         $settings = $model::query()
             ->select('id', 'name')
@@ -37,7 +36,6 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             ->get()->toArray();
 
         return $settings;
-        */
     }
 
     public function getCompSettings(Request $request)
@@ -86,10 +84,16 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
     public function createCompSetting(Request $request)
     {
         try {
-            $setting = CompanySetting::create($request->all());
-
-            $this->cacheService->forgetAll($this->tag);
-
+            $setting = null;
+            
+            DB::transaction(function() use($request, &$setting) {
+                $setting = CompanySetting::create($request->all());
+                
+                $this->createDefaultSettings($setting);
+                
+                $this->cacheService->forgetAll($this->tag);
+            });
+            
             return $setting;
         } catch(Exception $ex) {
             $this->logError($ex, 'createCompSetting error', ['request' => $request->all()]);
@@ -103,7 +107,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             $setting = null;
 
             DB::transaction(function() use($request, $id, &$setting) {
-                $setting = CompanySetting::findOrFail($id)->lockForUpdate();
+                $setting = CompanySetting::lockForUpdate()->findOrFail($id);
                 $setting->update($request->all());
                 $setting->refresh();
 
@@ -117,16 +121,27 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
         }
     }
 
-    public function deleteCompSettings(Request $request) {
+    public function deleteCompSettings(Request $request)
+    {
         try {
             $validated = $request->validate([
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
                 'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
             ]);
+            
             $ids = $validated['ids'];
-            $deletedCount = CompanySetting::whereIn('id', $ids)->delete();
+            $deletedCount = 0;
+            
+            DB::transaction(function () use ($ids, &$deletedCount) {
+                $settings = CompanySetting::whereIn('id', $ids)->lockForUpdate()->get();
 
-            $this->cacheService->forgetAll($this->tag);
+                $deletedCount = $settings->each(function ($setting) {
+                    $setting->delete();
+                })->count();
+
+                // Cache törlése, ha szükséges
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $deletedCount;
         } catch(Exception $ex) {
@@ -138,32 +153,66 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
     public function deleteCompSetting(Request $request)
     {
         try {
-            $appSetting = CompanySetting::findOrFail($request->id);
-            $appSetting->delete();
+            $setting = null;
+            DB::transaction(function() use($request, &$setting) {
+                $setting = CompanySetting::lockForUpdate()->findOrFail($request->id);
+                $setting->delete();
 
-            $this->cacheService->forgetAll($this->tag);
-
-            return $appSetting;
+                $this->cacheService->forgetAll($this->tag);
+            });
+            
+            return $setting;
         } catch (Exception $ex) {
             $this->logError($ex, 'deleteCompSetting error', ['request' => $request->all()]);
             throw $ex;
         }
     }
 
-    public function restoreCompSetting(Request $request){
+    public function restoreCompSetting(Request $request)
+    {
         try {
-            $compSetting = CompanySetting::withTrashed()->findOrFail($request->id);
-            $compSetting->restore();
+            $setting = null;
+            
+            DB::transaction(function() use($request, &$setting) {
+                $setting = CompanySetting::withTrashed()->lockForUpdate()->findOrFail($request->id);
+                $setting->restore();
 
-            $this->cacheService->forgetAll($this->tag);
+                $this->cacheService->forgetAll($this->tag);
+            });
 
-            return $compSetting;
+            return $setting;
         } catch(Exception $ex) {
             $this->logError($ex, 'restoreCompSetting error', ['request' => $request->all()]);
             throw $ex;
         }
     }
 
+    public function realDeleteSetting(Request $request)
+    {
+        try {
+            $setting = null;
+            
+            DB::transaction(function() use($request, &$setting) {
+                $setting = CompanySetting::withTrashed()->lockForUpdate()->findOrFail($id);
+                $setting->forceDelete();
+                
+                $this->cacheService->forgetAll($this->tag);
+            });
+            
+            
+
+            return $setting;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'realDeleteSetting error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+    
+    private function createDefaultSettings(CompanySetting $setting): void
+    {
+        //
+    }
+    
     /**
      * Specify Model class name
      *

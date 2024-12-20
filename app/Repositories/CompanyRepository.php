@@ -69,7 +69,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
             });
         } catch(Exception $ex) {
             $this->logError($ex, 'getCompany error', ['id' => $id]);
-            throw $ex; // A kivétel dobása a kontroller szintjére.
+            throw $ex;
         }
     }
 
@@ -83,17 +83,25 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
             });
         } catch(Exception $ex) {
             $this->logError($ex, 'getCompanyByName error', ['name' => $name]);
-            throw $ex; // A kivétel dobása a kontroller szintjére.
+            throw $ex;
         }
     }
 
     public function createCompany(Request $request)
     {
         try{
-            $company = Company::create($request->all());
-            
-            $this->cacheService->forgetAll($this->tag);
-            
+            $company = null;
+            DB::transaction(function() use($request, &$company) {
+                // 1. Cég létrehozása
+                $company = Company::create($request->all());
+
+                // 2. Kapcsolódó rekordok létrehozása (pl. alapértelmezett beállítások)
+                $this->createDefaultSettings($company);
+
+                // 3. Cache törlése, ha releváns
+                $this->cacheService->forgetAll($this->tag);
+            });
+
             return $company;
         } catch(Exception $ex) {
             $this->logError($ex, 'createCompany error', ['request' => $request->all()]);
@@ -106,13 +114,13 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         try {
             $company = null;
             DB::transaction(function() use($request, $id, &$company) {
-                $company = Company::findOrFail($id)->lockForUpdate();
+                $company = Company::lockForUpdate()->findOrFail($id);
                 $company->update($request->all());
                 $company->refresh();
 
                 $this->cacheService->forgetAll($this->tag);
             });
-            
+
             return $company;
         } catch(Exception $ex) {
             $this->logError($ex, 'updateCompany error', ['id' => $id, 'request' => $request->all()]);
@@ -127,10 +135,20 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
                 'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
             ]);
+            
             $ids = $validated['ids'];
-            $deletedCount = Company::whereIn('id', $ids)->delete();
+            $deletedCount = 0;
+            
+            \DB::transaction(function () use ($ids, &$deletedCount) {
+                $companies = Company::whereIn('id', $ids)->lockForUpdate()->get();
 
-            $this->cacheService->forgetAll($this->tag);
+                $deletedCount = $companies->each(function ($company) {
+                    $company->delete();
+                })->count();
+
+                // Cache törlése, ha szükséges
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $deletedCount;
         } catch(Exception $ex) {
@@ -142,10 +160,13 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
     public function deleteCompany(Request $request)
     {
         try {
-            $company = Company::findOrFail($request->id);
-            $company->delete();
+            $company = null;
+            DB::transaction(function() use($request, &$company) {
+                $company = Company::lockForUpdate()->findOrFail($request->id);
+                $company->delete();
 
-            $this->cacheService->forgetAll($this->tag);
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $company;
         } catch(Exception $ex) {
@@ -154,13 +175,16 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function restoreCompany(Request $request)
+    public function restoreCompany(Request $request): Company
     {
         try {
-            $company = Company::withTrashed()->findOrFail($request->id);
-            $company->restore();
+            $company = null;
+            DB::transaction(function() use($request, &$company) {
+                $company = Company::withTrashed()->lockForUpdate()->findOrFail($request->id);
+                $company->restore();
 
-            $this->cacheService->forgetAll($this->tag);
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $company;
         } catch(Exception $ex) {
@@ -168,18 +192,29 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
             throw $ex;
         }
     }
-    
-    public function realDeleteCompany(int $id)
+
+    public function realDeleteCompany(int $id): Company
     {
         try {
-            $company = Company::withTrashed()->findOrFail($id);
-            $deletedCount = $company->forceDelete();
+            $company = null;
+            DB::transaction(function() use($id, &$company) {
+                $company = Company::withTrashed()->lockForUpdate()->findOrFail($id);
+                $company->forceDelete();
+                
+                $this->cacheService->forgetAll($this->tag);
+            });
             
-            return $deletedCount;
+
+            return $company;
         } catch(Exception $ex) {
-            $this->handleException($ex, 'realDeleteCompany error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            $this->logError($ex, 'realDeleteCompany error', ['id' => $id]);
             throw $ex;
         }
+    }
+
+    private function createDefaultSettings(Company $company): void
+    {
+        //
     }
 
     #[Override]

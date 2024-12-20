@@ -90,7 +90,15 @@ class ApplicationSettingRepository extends BaseRepository implements Application
     public function createAppSetting(Request $request): ApplicationSetting
     {
         try {
-            $setting = ApplicationSetting::create($request->all());
+            $setting = null;
+
+            DB::transaction(function()use($request, &$setting) {
+                $setting = ApplicationSetting::create($request->all());
+
+                $this->createDefaultSettings($setting);
+
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $setting;
         } catch(Exception $ex) {
@@ -104,7 +112,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         try {
             $setting = null;
             DB::transaction(function() use($request, $id, &$setting) {
-                $setting = ApplicationSetting::findOrFail($id)->lockForUpdate();
+                $setting = ApplicationSetting::lockForUpdate()->findOrFail($id);
                 $setting->update($request->all());
                 $setting->refresh();
 
@@ -126,9 +134,18 @@ class ApplicationSettingRepository extends BaseRepository implements Application
                 'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
             ]);
             $ids = $validated['ids'];
-            $deletedCount = ApplicationSetting::whereIn('id', $ids)->delete();
+            $deletedCount = 0;
+            
+            DB::transaction(function() use($request, &$deletedCount) {
+                $settings = City::whereIn('id', $request->ids)->lockForUpdate()->get();
 
-            $this->cacheService->forgetAll($this->tag);
+                $deletedCount = $settings->each(function ($setting) {
+                    $setting->delete();
+                })->count();
+
+                // Cache törlése, ha szükséges
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $deletedCount;
         } catch (Exception $ex) {
@@ -151,7 +168,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
             throw $ex;
         }
     }
-    
+
     public function restoreAppSettings(Request $request)
     {
         try {
@@ -165,6 +182,11 @@ class ApplicationSettingRepository extends BaseRepository implements Application
             $this->logError($ex, 'restoreAppSettings error', ['request' => $request->all()]);
             throw $ex;
         }
+    }
+
+    private function createDefaultSettings(ApplicationSetting $setting): void
+    {
+        //
     }
 
     /**

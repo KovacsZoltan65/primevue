@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\City;
 use Illuminate\Console\Command;
-use \Validator;
+
 
 class CityCommand extends Command
 {

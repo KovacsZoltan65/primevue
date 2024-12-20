@@ -8,6 +8,7 @@ use App\Http\Requests\StorePermissionRequest;
 use App\Http\Requests\UpdatePermissionRequest;
 use App\Http\Resources\Auth\PermissionResource;
 use App\Models\Auth\Permission;
+use App\Repositories\Auth\PermissionRepository;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,12 +21,18 @@ use Inertia\Response as InertiaResponse;
 use Nette\Schema\ValidationException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PermissionController extends Controller
 {
-    use Functions;
+    use AuthorizesRequests,
+        Functions;
+
+    protected PermissionRepository $permissionRepository;
     
-    public function __construct() {
+    public function __construct(PermissionRepository $repository) {
+        $this->permissionRepository = $repository;
+
         $this->middleware('can:permissions list', ['only' => ['index', 'applySearch', 'getPermissions', 'getPermission', 'getPermissionByName']]);
         $this->middleware('can:permissions create', ['only' => ['createPermission']]);
         $this->middleware('can:permissions edit', ['only' => ['updatePermission', 'updateRolePermissions']]);
@@ -54,332 +61,132 @@ class PermissionController extends Controller
     public function getPermissions(Request $request): JsonResponse
     {
         try {
-            $permissionQuery = Permission::search($request);
-
-            $permissions = PermissionResource::collection($permissionQuery->get());
+            $_permissions = $this->permissionRepository->getPermissions($request);
+            $permissions = PermissionResource::collection($_permissions);
 
             return response()->json($permissions, Response::HTTP_OK);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_PERMISSIONS',
-                'route' => $request->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'Database error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getPermissions query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getPermissions general error',
-                'route' => $request->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getPermissions general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
     public function getPermission(GetPermissionRequest $request): JsonResponse
     {
         try {
-            $permission = Permission::findOrFail($request->id);
+            $permission = $this->permissionRepository->getPermission($request->id);
 
             return response()->json($permission, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getPermission error',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'Permission not found'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'getPermission model not founderror', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_PERMISSION',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'Database error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getPermission query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getPermission general error',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getPermission general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
     public function getPermissionByName(string $name): JsonResponse
     {
         try {
-            $permission = Permission::where('name', '=', $name)->first();
+            $permission = $this->permissionRepository->getPermissionByName($name);
 
             return response()->json($permission, Response::HTTP_OK);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_PERMISSION',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'Database error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getPermissionByName query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getPermissionByName general error',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getPermissionByName general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
     public function createPermission(StorePermissionRequest $request): JsonResponse
     {
         try {
-            $permission = Permission::create($request->all());
+            $permission = $this->permissionRepository->createPermission($request);
             
             return response()->json($permission, Response::HTTP_CREATED);
         } catch(ValidationException $ex) {
-            ErrorController::logServerValidationError($ex, $request);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'Validation error occurred',
-                'details' => $ex->errors(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'createPermission validation error occurred', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'CREATE_ROLE_DATABASE_ERROR',
-                'route' => request()->path(),
-            ]);
-            
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => __('command_permission_create_database_error'),
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'createPermission query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'createPermission general error',
-                'route' => $request->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'createPermission general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
     public function updatePermission(UpdatePermissionRequest $request): JsonResponse
     {
         try {
-            $permission = Permission::findOrFail($id);
-            $permission->update($request->all());
-            $permission->refresh();
+            $permission = $this->permissionRepository->updatePermission($request, $request->id);
             
             return response()->json($permission, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_UPDATE_PERMISSION',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'PERMISSION_NOT_FOUND',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'updatePermission model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_PERMISSIONS',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'DB_ERROR_PERMISSIONS',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'updatePermission query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'updatePermission general error',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-    
-    public function deletePermission(Request $request): JsonResponse
-    {
-        try {
-            $permission = Permission::findOrFail($request->id);
-            $permission->delete();
-
-            return response()->json([
-                'success' => APP_TRUE,
-                'message' => 'Permissione deleted successfully.',
-                'data' => $permission,
-            ], Response::HTTP_OK);
-        } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'deletePermissions error',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deletePermissions State not found',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_NOT_FOUND);
-        } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'deletePermissions database error',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'Database error occurred while deleting the permission.',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'deleteSubdomainState general error',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred.',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'updatePermission general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
     public function deletePermissions(Request $request): JsonResponse
     {
         try {
-            // Az azonosítók tömbjének validálása
-            $validated = $request->validate([
-                'ids' => 'required|array|min:1',
-                'ids.*' => 'integer|exists:permissions,id',
-            ]);
-
-            // Az azonosítók kigyűjtése
-            $ids = $validated['ids'];
-
-            // A cégek törlése
-            $deletedCount = Permission::whereIn('id', $ids)->delete();
-
-            // Válasz visszaküldése
-            return response()->json([
-                'success' => true,
-                'message' => 'Selected permissions deleted successfully.',
-                'deleted_count' => $deletedCount,
-            ], Response::HTTP_OK);
-
+            $deletedCount = $this->permissionRepository->deletePermissions($request);
+            
+            return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ValidationException $ex) {
-            // Validációs hiba logolása
-            //ErrorController::logClientValidationError($request);
-            ErrorController::logServerValidationError($ex, $request);
-
-            // Kliens válasz
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'Validation error occurred',
-                'details' => $ex->errors(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'Validation error occurred', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(QueryException $ex) {
-            // Adatbázis hiba logolása és visszajelzés
-            ErrorController::logServerError($ex, [
-                'context' => 'deletePermissions database error',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'Database error occurred while deleting the selected permissions.',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'deletePermissions database error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            // Általános hiba logolása és visszajelzés
-            ErrorController::logServerError($ex, [
-                'context' => 'deletePermissions general error',
-                'route' => request()->path(),
-            ]);
+            return $this->handleException($ex, 'deletePermissions general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public function deletePermission(Request $request): JsonResponse
+    {
+        try {
+            $permission = $this->permissionRepository->deletePermission($request);
 
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred.',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json($permission, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'deletePermissions model not found error', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'deletePermissions database error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'deleteSubdomainState general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
     public function restorePermission(GetPermissionRequest $request): JsonResponse
     {
         try {
-            $permission = Permission::withTrashed()->findOrFail($request->id);
-            $permission->restore();
+            $permission = $this->permissionRepository->deletePermission($request);
             
             return response()->json($permission, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_RESTORE_PERMISSION', // updateCompany not found error
-                'route' => request()->path(),
-            ]);
-
-            // Ha a rekord nem található
-            return response()->json([
-                'success' => false,
-                'message' => 'Permission not found in trashed records',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'restorePermission model not found exception', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_PERMISSION',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'DB_ERROR_PERMISSION',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'restorePermission query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'restorePermission general error',
-                'route' => request()->path(),
-            ]);
-
-            // Általános hibakezelés
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while restoring the subdomain state',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'restorePermission general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public function realDeletePermission(GetPermissionRequest $request)
+    {
+        try {
+            $deletedCount = $this->permissionRepository->realDeletePermission($request->id);
+            
+            return response()->json($deletedCount, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'realDeletePermission model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'realDeletePermission query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'realDeletePermission general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

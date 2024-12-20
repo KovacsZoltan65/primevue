@@ -160,7 +160,7 @@ class CompanyController extends Controller
             return response()->json($deletedCount, Response::HTTP_OK);
 
         } catch(ValidationException $ex) {
-            return $this->handleException($ex, 'deleteCompanies model not found error', Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'deleteCompanies validation error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(QueryException $ex) {
             return $this->handleException($ex, 'deleteCompanies query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
@@ -195,6 +195,21 @@ class CompanyController extends Controller
             return $this->handleException($ex, 'restoreCompany query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             return $this->handleException($ex, 'restoreCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public function realDeleteCompany(GetCompanyRequest $request)
+    {
+        try {
+            $deletedCount = $this->companyRepository->realDeleteCompany($request->id);
+            
+            return response()->json($deletedCount, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'realDeleteCompany model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'realDeleteCompany query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'realDeleteCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

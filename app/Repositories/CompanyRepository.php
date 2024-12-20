@@ -12,6 +12,7 @@ use App\Services\CacheService;
 use App\Traits\Functions;
 use Override;
 use Exception;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class CityRepositoryEloquent.
@@ -164,6 +165,19 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
             return $company;
         } catch(Exception $ex) {
             $this->logError($ex, 'restoreCompany error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+    
+    public function realDeleteCompany(int $id)
+    {
+        try {
+            $company = Company::withTrashed()->findOrFail($id);
+            $deletedCount = $company->forceDelete();
+            
+            return $deletedCount;
+        } catch(Exception $ex) {
+            $this->handleException($ex, 'realDeleteCompany error', Response::HTTP_INTERNAL_SERVER_ERROR);
             throw $ex;
         }
     }

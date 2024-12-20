@@ -9,7 +9,7 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 
 trait DateTime
 {

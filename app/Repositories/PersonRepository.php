@@ -2,12 +2,13 @@
 
 namespace App\Repositories;
 
+use App\Http\Requests\StorePersonRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Interfaces\PersonRepositoryInterface;
-use App\Entities\Person;
+use App\Models\Person;
 use App\Services\CacheService;
 use App\Traits\Functions;
 use Override;
@@ -131,7 +132,7 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
 
             $ids = $validated['ids'];
             $deletedCount = Person::whereIn('id', $ids)->delete();
-            $cacheService->forgetAll($this->tag);
+            $this->cacheService->forgetAll($this->tag);
 
             return $deletedCount;
         } catch(Exception $ex) {

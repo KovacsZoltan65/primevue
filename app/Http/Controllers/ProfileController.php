@@ -9,29 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
-use Inertia\Response AS InertiaResponse;
-use App\Traits\Functions;
-use App\Repositories\ProfileRepository;
-use Illuminate\Routing\Controller;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Inertia\Response;
 
 class ProfileController extends Controller
 {
-    use AuthorizesRequests,
-        Functions;
-
-    protected ProfileRepository $profileRepository;
-
-    public function __construct(ProfileRepository $repository)
-    {
-        $this->profileRepository = $repository;
-
-        //$this->middleware('can:profiles list', ['only' => ['index', 'applySearch', 'getProfiles', 'getProfile', 'getProfileByName']]);
-        //$this->middleware('can:profiles create', ['only' => ['createProfile']]);
-        //$this->middleware('can:profiles edit', ['only' => ['updateProfile']]);
-        //$this->middleware('can:profiles delete', ['only' => ['deleteProfile', 'deleteProfiles']]);
-        //$this->middleware('can:profiles restore', ['only' => ['restoreProfile']]);
-    }
 
     /**
      * Display the user's profile form.
@@ -49,9 +30,6 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $this->profileRepository->updateProfile($request->user(), $request->validated());
-
-        /*
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
@@ -59,7 +37,7 @@ class ProfileController extends Controller
         }
 
         $request->user()->save();
-        */
+
         return Redirect::route('profile.edit');
     }
 
@@ -76,8 +54,7 @@ class ProfileController extends Controller
 
         Auth::logout();
 
-        //$user->delete();
-        $this->profileRepository->deleteUserAccount($user);
+        $user->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

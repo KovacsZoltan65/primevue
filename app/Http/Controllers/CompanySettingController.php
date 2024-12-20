@@ -3,12 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GetCompanySettingRequest;
-use App\Http\Requests\StoreCompanysettingRequest;
+use App\Http\Requests\StoreCompanySettingRequest;
 use App\Http\Requests\UpdateCompanySettingRequest;
-use App\Http\Resources\CompanySettingsResource;
-use App\Models\CompanySetting;
 use App\Repositories\CompanySettingRepository;
-use App\Services\CacheService;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,7 +13,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
@@ -27,6 +23,7 @@ class CompanySettingController extends Controller
 {
     use AuthorizesRequests,
         Functions;
+    
     protected CompanySettingRepository $compSettingRepository;
     protected string $tag = 'compSettings';
 
@@ -57,22 +54,23 @@ class CompanySettingController extends Controller
         });
     }
     
-    public function getCompSettings(Request $request): JsonResponse {
+    public function getCompSettings(Request $request): JsonResponse
+    {
         try {
             $settings = $this->compSettingRepository->getCompSettings($request);
 
             return response()->json($settings, Response::HTTP_OK);
         } catch(QueryException $ex) {
-            return $this->handleException($ex, 'getCompanySettings query exception error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCompSettings query exception error', Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
-            return $this->handleException($ex, 'getCompanySettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCompSettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
     public function getCompSetting(GetCompanySettingRequest $request)
     {
         try {
-            $setting = $this->compSettingRepository->getCompSettings($request);
+            $setting = $this->compSettingRepository->getCompSetting($request->id);
             
             return response()->json($setting, Response::HTTP_OK);
             

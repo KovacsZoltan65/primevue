@@ -10,6 +10,7 @@ use Prettus\Repository\Criteria\RequestCriteria;
 use App\Interfaces\CompanySettingRepositoryInterface;
 use App\Models\CompanySetting;
 use Exception;
+use Override;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -25,18 +26,9 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
 
     protected string $tag = 'comp_settings';
 
-    /**
-     * Specify Model class name
-     *
-     * @return string
-     */
-    public function model(): string
-    {
-        return CompanySetting::class;
-    }
-
     public function getActiveCompSettings()
     {
+        /*
         $model = $this->model();
         $settings = $model::query()
             ->select('id', 'name')
@@ -45,6 +37,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             ->get()->toArray();
 
         return $settings;
+        */
     }
 
     public function getCompSettings(Request $request)
@@ -58,6 +51,20 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             });
         } catch(Exception $ex) {
             $this->logError($ex, 'getCompSettings error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    public function getCompSetting(int $id)
+    {
+        try {
+            $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
+
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
+                return CompanySetting::findOrFail($id);
+            });
+        } catch(Exception $ex) {
+            $this->logError($ex, 'getCompSetting error', ['id' => $id]);
             throw $ex;
         }
     }
@@ -158,9 +165,21 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
     }
 
     /**
+     * Specify Model class name
+     *
+     * @return string
+     */
+    #[Override]
+     public function model(): string
+    {
+        return CompanySetting::class;
+    }
+
+    /**
      * Boot up the repository, pushing criteria
      */
-    public function boot()
+    #[Override]
+     public function boot()
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }

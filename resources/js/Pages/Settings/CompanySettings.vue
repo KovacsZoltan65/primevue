@@ -81,7 +81,7 @@ const fetchItems = async () => {
             company_settings.value = response.data;
         })
         .catch((error) => {
-            console.error("getCompanySettings API Error:", error);
+            console.error("getCompSettings API Error:", error);
 
             ErrorService.logClientError(error, {
                 componentName: "Fetch CompanySettings",

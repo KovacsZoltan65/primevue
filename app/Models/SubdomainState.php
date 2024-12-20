@@ -8,19 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-
-/**
- *
- * @property int $id
- * @property string $name
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property Carbon $deleted_at
- */
 
 class SubdomainState extends Model
 {

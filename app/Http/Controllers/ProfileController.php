@@ -13,6 +13,7 @@ use Inertia\Response AS InertiaResponse;
 use App\Traits\Functions;
 use App\Repositories\ProfileRepository;
 use Illuminate\Routing\Controller;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ProfileController extends Controller
 {
@@ -48,7 +49,7 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $this->profileRepository->updateProfile($request->user(), $request->validated();
+        $this->profileRepository->updateProfile($request->user(), $request->validated());
 
         /*
         $request->user()->fill($request->validated());

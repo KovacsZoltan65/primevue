@@ -12,7 +12,6 @@ use App\Services\CacheService;
 use App\Traits\Functions;
 use Override;
 use Exception;
-use App\Models\SubdomainState;
 
 /**
  * Class SubdomainStateRepositoryEloquent.
@@ -82,7 +81,7 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
                 return SubdomainState::where('name', '=', $name)->firstOrFail();
             });
         } catch(Exception $ex) {
-            $this->logError($ex, 'getSubdomainStateByName error', ['id' => $id]);
+            $this->logError($ex, 'getSubdomainStateByName error', ['name' => $name]);
             throw $ex;
         }
     }
@@ -90,7 +89,7 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
     public function createSubdomainState(Request $request)
     {
         try {
-            $state = SubdomainState->create($request->all();
+            $state = SubdomainState::create($request->all());
 
             $this->cacheService->forgetAll($this->tag);
 
@@ -106,7 +105,7 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
         try {
             $state = null;
 
-            DB::transaction(function() use($request, $id, $cacheService, &$state) {
+            DB::transaction(function() use($request, $id, &$state) {
                 $state = SubdomainState::findOrFail($id);
                 $state->update($request->all());
                 $state->refresh();
@@ -164,7 +163,7 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
             $this->cacheService->forgetAll($this->tag);
 
             return $state;
-        } cache(Exception $ex) {
+        } catch(Exception $ex) {
             $this->logError($ex, 'restoreSubdomainState error', ['request' => $request->all()]);
             throw $ex;
         }

@@ -21,9 +21,19 @@ class StoreApplicationSettingRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        // Lekérdezzük a beállítás metaadatát
+        $key = $this->route('key'); // Feltételezzük, hogy az útvonal tartalmazza a kulcsot
+        $metadata = SettingMetadata::where('key', $key)->first();
+        
+        $rules = [
             'key' => 'required',
             'value' => 'required',
         ];
+        
+        if ($metadata) {
+            $rules['value'] = json_decode($metadata->validation_rules, true) ?? [];
+        }
+        
+        return $rules;
     }
 }

@@ -10,14 +10,14 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Override;
 
-class SettingMetadata extends Model
+class SettingsMetadata extends Model
 {
     use HasFactory, LogsActivity;
-    
-    protected $table = 'setting_metadata';
-    protected $fillable = ['key', 'type', 'description', 'default_value', 'scope'];
 
-    protected $logAttributes = ['key', 'type', 'description', 'default_value', 'scope'];
+    protected $table = 'settings_metadata';
+    protected $fillable = ['key', 'label', 'description', 'type', 'level', 'is_required', 'default_value', 'validation_rules'];
+
+    protected $logAttributes = ['key', 'label', 'description', 'type', 'level', 'is_required', 'default_value', 'validation_rules'];
 
     protected static $recordEvents = [
         'created',

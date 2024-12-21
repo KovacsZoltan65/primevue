@@ -28,14 +28,16 @@ class CompanySettingController extends Controller
         Functions;
     protected string $tag = 'company_settings';
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->middleware('can:company_settings list', ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicationSetting', 'getApplicatonSettingByName']]);
         $this->middleware('can:company_settings create', ['only' => ['createApplicationSetting']]);
         $this->middleware('can:company_settings edit', ['only' => ['updateApplicationSetting']]);
         $this->middleware('can:company_settings delete', ['only' => ['deleteApplicationSetting', 'deleteApplicationSettings']]);
     }
 
-    public function index(Request $request): InertiaResponse {
+    public function index(Request $request): InertiaResponse
+    {
         $roles = $this->getUserRoles('company_settings');
         
         return Inertia::render('Settings/CompanySettings', [
@@ -44,13 +46,15 @@ class CompanySettingController extends Controller
         ]);
     }
 
-    public function applySearch(Builder $query, string $search): Builder {
+    public function applySearch(Builder $query, string $search): Builder
+    {
         return $query->when($search, function ($query, string $search) {
             $query->where('key', 'like', "%{$search}%");
         });
     }
     
-    public function getSettings(Request $request, CacheService $cacheService): JsonResponse {
+    public function getSettings(Request $request, CacheService $cacheService): JsonResponse
+    {
         try {
             $cacheKey = "company_settings_" . md5(json_encode($request->all()));
 
@@ -83,7 +87,8 @@ class CompanySettingController extends Controller
         }
     }
 
-    public function getSetting(GetCompanySettingRequest $request, CacheService $cacheService) {
+    public function getSetting(GetCompanySettingRequest $request, CacheService $cacheService)
+    {
         try {
             $cacheKey = "company_setting_{$request->id}";
             
@@ -126,7 +131,8 @@ class CompanySettingController extends Controller
         }
     }
     
-    public function getSettingByKey(string $key, CacheService $cacheService): JsonResponse {
+    public function getSettingByKey(string $key, CacheService $cacheService): JsonResponse
+    {
         try {
             $cacheKey = "company_key_" . md5($key);
 
@@ -169,9 +175,37 @@ class CompanySettingController extends Controller
         }
     }
 
-    public function createSetting(StoreCompanysettingRequest $request, CacheService $cacheService): JsonResponse{
+    /**
+     * =============================================
+     * 
+     * =============================================
+     * URL: POST /company_settings/key/default_language
+     * Body: {
+     *           "company_id": 1,
+     *           "value": "fr",
+     *           "active": 1
+     *       }
+     * 
+     * @param StoreCompanysettingRequest $request
+     * @param CacheService $cacheService
+     * @return JsonResponse
+     */
+    public function createSetting(StoreCompanysettingRequest $request, string $key, CacheService $cacheService): JsonResponse
+    {
         try{
-            $setting = CompanySetting::create($request->all());
+            $metadata = \App\Models\SettingsMetadata::where('key', $key)->first();
+            
+            if( !$metadata ) {
+                return response()->json(['error' => 'Invalid setting key'], Response::HTTP_NOT_FOUND);
+            }
+            
+            $setting = CompanySetting::create([
+                'company_id' => $request->input('company_id'),
+                'key' => $key,
+                'value' => $request->input('value'),
+                'active' => $request->input('active', 1),
+            ]);
+            
             $cacheService->forgetAll($this->tag);
 
             return response()->json($setting, Response::HTTP_CREATED);
@@ -200,10 +234,33 @@ class CompanySettingController extends Controller
         }
     }
 
-    public function updateSetting(UpdateCompanySettingRequest $request, int $id, CacheService $cacheService): JsonResponse {
+    /**
+     * =============================================
+     * 
+     * =============================================
+     * URL: PUT /company_settings/key/default_language
+     * Body: {
+     *           "company_id": 1,
+     *           "value": "es",
+     *           "active": 0
+     *       }
+     * 
+     * 
+     * @param UpdateCompanySettingRequest $request
+     * @param int $id
+     * @param CacheService $cacheService
+     * @return JsonResponse
+     */
+    public function updateSetting(UpdateCompanySettingRequest $request, string $key, CacheService $cacheService): JsonResponse
+    {
         try {
-            $setting = CompanySetting::findOrFail($id);
-            $setting->update($request->all());
+            $setting = CompanySetting::where('company_id', '=', $request->input('company_id'))
+                ->where('key', '=', $key)
+                ->firstOrFail();
+            $setting->update([
+                'value' => $request->input('value'),
+                'active' => $request->input('active', $setting->active),
+            ]);
             $setting->refresh();
 
             $cacheService->forgetAll($this->tag);

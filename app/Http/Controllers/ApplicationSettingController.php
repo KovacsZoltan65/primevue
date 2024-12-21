@@ -28,14 +28,16 @@ class ApplicationSettingController extends Controller
         Functions;
     protected string $tag = 'application_settings';
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->middleware('can:application_settings list', ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicatopnSetting', 'getApplicatopnSettingByName']]);
         $this->middleware('can:application_settings create', ['only' => ['createApplicatopnSetting']]);
         $this->middleware('can:application_settings edit', ['only' => ['updateApplicatopnSetting']]);
         $this->middleware('can:application_settings delete', ['only' => ['deleteApplicatopnSetting', 'deleteApplicationSettings']]);
     }
 
-    public function index(Request $request): InertiaResponse {
+    public function index(Request $request): InertiaResponse
+    {
         $roles = $this->getUserRoles('application_settings');
         
         return Inertia::render('Settings/ApplicationSettings',[
@@ -44,13 +46,15 @@ class ApplicationSettingController extends Controller
         ]);
     }
 
-    public function applySearch(Builder $query, string $search): Builder {
+    public function applySearch(Builder $query, string $search): Builder
+    {
         return $query->when($search, function ($query, string $search) {
             $query->where('key', 'like', "%{$search}%");
         });
     }
     
-    public function getSettings(Request $request, CacheService $cacheService): JsonResponse {
+    public function getSettings(Request $request, CacheService $cacheService): JsonResponse
+    {
         try {
             $cacheKey = "application_settings_" . md5(json_encode($request->all()));
 
@@ -83,7 +87,8 @@ class ApplicationSettingController extends Controller
         }
     }
 
-    public function getSetting(GetApplicationSettingRequest $request, CacheService $cacheService) {
+    public function getSetting(GetApplicationSettingRequest $request, CacheService $cacheService)
+    {
         try {
             $cacheKey = "application_setting_{$request->id}";
             
@@ -126,7 +131,8 @@ class ApplicationSettingController extends Controller
         }
     }
     
-    public function getSettingByKey(string $key, CacheService $cacheService): JsonResponse {
+    public function getSettingByKey(string $key, CacheService $cacheService): JsonResponse
+    {
         try {
             $cacheKey = "application_key_" . md5($key);
 
@@ -169,7 +175,8 @@ class ApplicationSettingController extends Controller
         }
     }
 
-    public function createSetting(StoreApplicationSettingRequest $request, CacheService $cacheService): JsonResponse{
+    public function createSetting(StoreApplicationSettingRequest $request, CacheService $cacheService): JsonResponse
+    {
         try{
             $setting = ApplicationSetting::create($request->all());
             $cacheService->forgetAll($this->tag);
@@ -200,7 +207,8 @@ class ApplicationSettingController extends Controller
         }
     }
 
-    public function updateSetting(UpdateApplicationSettingRequest $request, int $id, CacheService $cacheService): JsonResponse {
+    public function updateSetting(UpdateApplicationSettingRequest $request, int $id, CacheService $cacheService): JsonResponse
+    {
         try {
             $setting = ApplicationSetting::findOrFail($id);
             $setting->update($request->all());

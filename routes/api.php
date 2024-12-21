@@ -5,15 +5,16 @@ use App\Http\Controllers\Auth\PermissionController;
 use App\Http\Controllers\Auth\RoleController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
-use App\Http\Controllers\CompanySettingController;
-use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CompanySettingController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
+use App\Http\Controllers\ErrorController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\RegionController;
+use App\Http\Controllers\SettingsMetadataController;
 use App\Http\Controllers\SubdomainController;
 use App\Http\Controllers\SubdomainStateController;
 use Illuminate\Http\JsonResponse;
@@ -105,8 +106,15 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/company_settings', [CompanySettingController::class, 'getSettings']);
     Route::get('/company_settings/{id}', [CompanySettingController::class, 'getSetting']);
     Route::get('/company_settings/key/{key}', [CompanySettingController::class, 'getSettingByKey']);
-    Route::post('/company_settings', [CompanySettingController::class, 'createSetting']);
-    Route::put('/company_settings/{id}', [CompanySettingController::class, 'updateSetting']);
+    Route::post('/company_settings/key/{key}', [CompanySettingController::class, 'createSetting']);
+    Route::put('/company_settings/key/{key}', [CompanySettingController::class, 'updateSetting']);
+    
+    Route::get('/settings_metadata', [SettingsMetadataController::class, 'getAllMetadata'])->name('getAllMetadata');
+    Route::get('/settings_metadata/{id}', [SettingsMetadataController::class, 'getMeatadata'])->name('getMeatadata')->where('id', '[0-9]+');
+    Route::get('/settings_metadata/key/{key}', [SettingsMetadataController::class, 'getMeatadataByKey'])->name('getMeatadataByKey')->where('key', '[a-zA-Z0-9\s]{3,}');
+    Route::post('/settings_metadata', [SettingsMetadataController::class, 'createMetadata'])->name('createMetadata');
+    Route::put('/settings_metadata', [SettingsMetadataController::class, 'updateMetadata'])->name('updateMetadata');
+    Route::delete('/settings_metadata/{id}', [SettingsMetadataController::class, 'deleteMetadata'])->name('deleteMetadata')->where('id', '[0-9]+');
 
     /**
      * Hozzon létre új céget az API-n keresztül.

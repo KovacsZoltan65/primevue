@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('company_settings', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('company_id')->constrained()->onDelete('cascade');
-            $table->string('key');
-            $table->text('value')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->id()->comment('Rekord azonosító');
+            $table->foreignId('company_id')->constrained()->onDelete('cascade')->comment('Cég azonosító');
+            $table->string('key')->comment('Kulcs');
+            $table->text('value')->nullable()->comment('Érték');
+            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
             $table->timestamps();
 
             $table->unique(['company_id', 'key']); // Egyedi cég + kulcs páros.

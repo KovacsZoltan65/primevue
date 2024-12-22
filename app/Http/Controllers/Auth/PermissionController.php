@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\ErrorController;
 use App\Http\Requests\GetPermissionRequest;
 use App\Http\Requests\StorePermissionRequest;
 use App\Http\Requests\UpdatePermissionRequest;
 use App\Http\Resources\Auth\PermissionResource;
-use App\Models\Auth\Permission;
 use App\Repositories\Auth\PermissionRepository;
 use App\Traits\Functions;
 use Exception;

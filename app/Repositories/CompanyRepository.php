@@ -12,7 +12,7 @@ use App\Services\CacheService;
 use App\Traits\Functions;
 use Override;
 use Exception;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class CityRepositoryEloquent.
@@ -135,11 +135,11 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
                 'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
             ]);
-            
+
             $ids = $validated['ids'];
             $deletedCount = 0;
-            
-            \DB::transaction(function () use ($ids, &$deletedCount) {
+
+            DB::transaction(function () use ($ids, &$deletedCount) {
                 $companies = Company::whereIn('id', $ids)->lockForUpdate()->get();
 
                 $deletedCount = $companies->each(function ($company) {
@@ -178,7 +178,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
     public function restoreCompany(Request $request): Company
     {
         try {
-            $company = null;
+            $company = new Company();
             DB::transaction(function() use($request, &$company) {
                 $company = Company::withTrashed()->lockForUpdate()->findOrFail($request->id);
                 $company->restore();
@@ -200,10 +200,10 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
             DB::transaction(function() use($id, &$company) {
                 $company = Company::withTrashed()->lockForUpdate()->findOrFail($id);
                 $company->forceDelete();
-                
+
                 $this->cacheService->forgetAll($this->tag);
             });
-            
+
 
             return $company;
         } catch(Exception $ex) {

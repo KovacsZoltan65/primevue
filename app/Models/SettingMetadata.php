@@ -13,9 +13,15 @@ use Override;
 class SettingMetadata extends Model
 {
     use HasFactory, LogsActivity;
-    
+
     protected $table = 'setting_metadata';
     protected $fillable = ['key', 'type', 'description', 'default_value', 'scope'];
+
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
 
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
@@ -27,6 +33,10 @@ class SettingMetadata extends Model
         'updated',
         'deleted',
     ];
+
+    /*
+     * ==============================================================
+     */
 
     public function scopeActive(Builder $query, Request $request): Builder
     {

@@ -17,35 +17,43 @@ class City extends Model
     use HasFactory,
         SoftDeletes,
         LogsActivity;
-    
+
     protected $table = 'cities';
-    
+
     protected $fillable = [
-        'region_id', 
-        'country_id', 
-        'latitude', 
-        'longitude', 
+        'region_id',
+        'country_id',
+        'latitude',
+        'longitude',
         'name'
     ];
-    
+
     protected $casts = [
         'region_id' => 'int',
         'country_id' => 'int',
         'latitude' => 'float',
         'longitude' => 'float'
     ];
-    
+
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'city';
-    
+
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
     ];
-    
+
+    /*
+     * ==============================================================
+     */
     public function scopeSearch(Builder $query, Request $request)
     {
         /**
@@ -95,7 +103,7 @@ class City extends Model
     {
         return $this->belongsTo(Country::class, 'country_id');
     }
-    
+
     #[Override]
     public function getActivitylogOptions(): LogOptions {
         return LogOptions::defaults()

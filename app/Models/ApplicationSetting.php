@@ -18,6 +18,11 @@ class ApplicationSetting extends Model
     protected $table = 'application_settings';
     protected $fillable = ['key', 'value', 'active'];
 
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
@@ -28,6 +33,10 @@ class ApplicationSetting extends Model
         'updated',
         'deleted',
     ];
+
+    /*
+     * ==============================================================
+     */
 
     public function scopeSearch(Builder $query, Request $request): Builder {
         return $query->when($request->search, function (Builder $query) use ($request) {

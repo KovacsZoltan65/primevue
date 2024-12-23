@@ -29,17 +29,27 @@ class Entity extends Model
         'active' => 1
     ];
 
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
+
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'entity';
-    
+
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
     ];
-    
+
+    /*
+     * ==============================================================
+     */
+
     public function scopeSerach(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {
@@ -73,18 +83,18 @@ class Entity extends Model
      * foreach ($parents as $parent) {
      *     echo $parent->name;
      * }
-     * 
+     *
      * Ha a töröltek is kellenek, tedd a végére:
      * ->withTrashed();
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function parents(): BelongsToMany
     {
         return $this->belongsToMany(
-            Entity::class, 
-            'entity_rel', 
-            'child_id', 
+            Entity::class,
+            'entity_rel',
+            'child_id',
             'parent_id'
         )->withTimestamps();
     }
@@ -98,18 +108,18 @@ class Entity extends Model
      * foreach ($children as $child) {
      *     echo $child->name;
      * }
-     * 
+     *
      * Ha a töröltek is kellenek, tedd a végére:
      * ->withTrashed();
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function children(): BelongsToMany
     {
         return $this->belongsToMany(
-            Entity::class, 
-            'entity_rel', 
-            'parent_id', 
+            Entity::class,
+            'entity_rel',
+            'parent_id',
             'child_id'
         )->withTimestamps();
     }

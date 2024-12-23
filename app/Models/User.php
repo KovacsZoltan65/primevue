@@ -11,12 +11,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
-    use HasFactory, 
+    use HasFactory,
         Notifiable,
-        HasRoles;
+        HasRoles,
+        LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -28,6 +30,26 @@ class User extends Authenticatable
         'email',
         'password',
     ];
+
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
+    // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true; // Csak a változásokat naplózza
+    protected static $logName = 'user';
+
+    protected static $recordEvents = [
+        'created',
+        'updated',
+        'deleted',
+    ];
+
+    /*
+     * ==============================================================
+     */
 
     /**
      * The attributes that should be hidden for serialization.
@@ -51,7 +73,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    
+
     public function scopeSearch(Builder $query, Request $request){
 
         return $query->when($request->search, function ($query) use ($request) {

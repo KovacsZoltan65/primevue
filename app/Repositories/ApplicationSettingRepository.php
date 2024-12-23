@@ -9,7 +9,6 @@ use Prettus\Repository\Criteria\RequestCriteria;
 use App\Interfaces\ApplicationSettingRepositoryInterface;
 use App\Models\ApplicationSetting;
 use App\Traits\Functions;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
 use Override;
 use \Exception;
@@ -135,9 +134,9 @@ class ApplicationSettingRepository extends BaseRepository implements Application
             ]);
             $ids = $validated['ids'];
             $deletedCount = 0;
-            
+
             DB::transaction(function() use($request, &$deletedCount) {
-                $settings = City::whereIn('id', $request->ids)->lockForUpdate()->get();
+                $settings = ApplicationSetting::whereIn('id', $request->ids)->lockForUpdate()->get();
 
                 $deletedCount = $settings->each(function ($setting) {
                     $setting->delete();

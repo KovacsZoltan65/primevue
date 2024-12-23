@@ -29,13 +29,17 @@ class CityController extends Controller
     use AuthorizesRequests,
         Functions;
     protected $cityRepository;
-    
+
     public function __construct(CityRepository $cityRepository)
     {
         $this->cityRepository = $cityRepository;
-        //$this->middleware('can:city list', ['only' => ['index', '']]);
+
+        $this->middleware('can:city list', ['only' => ['index', 'applySearch', 'getCity', 'getCity', 'getCityByName']]);
+        $this->middleware('can:city create', ['only' => ['createCity']]);
+        $this->middleware('can:city edit', ['only' => ['updateCity']]);
+        $this->middleware('can:city delete', ['only' => ['deleteCity', 'deleteCity']]);
     }
-    
+
     public function index(Request $request)
     {
         $countries = Country::where('active', 1)->orderBy('name')->get()->toArray();
@@ -105,7 +109,7 @@ class CityController extends Controller
     {
         try {
             $city = $this->cityRepository->createCity($request);
-            
+
             return response()->json($city, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
             return $this->handleException($ex, 'createCity query error', Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -118,7 +122,7 @@ class CityController extends Controller
     {
         try{
             $company = $this->updateCity($request, $id);
-            
+
             return response()->json($company, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'updateCompany model not found error', Response::HTTP_NOT_FOUND);
@@ -134,7 +138,7 @@ class CityController extends Controller
         try {
             $deletedCount = $this->cityRepository->deleteCompanies($request);
             return response()->json($deletedCount, Response::HTTP_OK);
-            
+
         } catch(ValidationException $ex) {
             return $this->handleException($ex, 'deleteCities model not found error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(QueryException $ex) {
@@ -143,12 +147,12 @@ class CityController extends Controller
             return $this->handleException($ex, 'deleteCities general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deleteCity(GetCityRequest $request): JsonResponse
     {
         try {
             $city = $this->cityRepository->deleteCity($request);
-            
+
             return response()->json($city, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'deleteCity model not found error', Response::HTTP_NOT_FOUND);
@@ -158,7 +162,7 @@ class CityController extends Controller
             return $this->handleException($ex, 'deleteCity database error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function restoreCity(GetCityRequest $request): JsonResponse
     {
         try {
@@ -172,5 +176,5 @@ class CityController extends Controller
         } catch(Exception $ex) {
             return $this->handleException($ex, 'restoreCity general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-    }   
+    }
 }

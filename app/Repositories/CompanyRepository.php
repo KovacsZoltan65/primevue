@@ -12,7 +12,6 @@ use App\Services\CacheService;
 use App\Traits\Functions;
 use Override;
 use Exception;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Class CityRepositoryEloquent.

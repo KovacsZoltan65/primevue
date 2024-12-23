@@ -27,7 +27,7 @@ class ApplicationSettingController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected $appSettingRepository;
+    protected ApplicationSettingRepository $appSettingRepository;
 
     protected string $tag = 'appSettings';
 
@@ -39,6 +39,7 @@ class ApplicationSettingController extends Controller
         $this->middleware('can:application_settings create', ['only' => ['createApplicatopnSetting']]);
         $this->middleware('can:application_settings edit', ['only' => ['updateApplicatopnSetting']]);
         $this->middleware('can:application_settings delete', ['only' => ['deleteApplicatopnSetting', 'deleteApplicationSettings']]);
+        $this->middleware('can:application_settings restore', ['only' => ['restoreApplicationSetting']]);
     }
 
     public function index(Request $request): InertiaResponse {
@@ -143,7 +144,7 @@ class ApplicationSettingController extends Controller
     {
         try {
             $appSetting = $this->appSettingRepository->deleteAppSetting($request);
-            
+
             return response()->json($appSetting, Response::HTTP_OK);
         } catch (ModelNotFoundException $ex) {
             return $this->handleException($ex, 'deleteAppSetting model not found exception', Response::HTTP_NOT_FOUND);
@@ -153,7 +154,7 @@ class ApplicationSettingController extends Controller
             return $this->handleException($ex, 'deleteAppSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function restoreAppSettings(GetApplicationSettingRequest $request): JsonResponse
     {
         try {

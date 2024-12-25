@@ -19,13 +19,14 @@ class Entity extends Model
         LogsActivity;
 
     protected $table = 'entities';
-    protected $fillable = ['name', 'email', 'start_date', 'end_date', 'last_export', 'active'];
+    protected $fillable = ['name', 'email', 'start_date', 'end_date', 'last_export', 'company_id', 'active'];
     protected $attributes = [
         'name' => '',
         'email' => '',
         'start_date' => null,
         'end_date' => null,
         'last_export' => null,
+        'company_id' => null,
         'active' => 1
     ];
 
@@ -33,13 +34,13 @@ class Entity extends Model
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'entity';
-    
+
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
     ];
-    
+
     public function scopeSerach(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {
@@ -73,18 +74,18 @@ class Entity extends Model
      * foreach ($parents as $parent) {
      *     echo $parent->name;
      * }
-     * 
+     *
      * Ha a töröltek is kellenek, tedd a végére:
      * ->withTrashed();
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function parents(): BelongsToMany
     {
         return $this->belongsToMany(
-            Entity::class, 
-            'entity_rel', 
-            'child_id', 
+            Entity::class,
+            'hierarchy',
+            'child_id',
             'parent_id'
         )->withTimestamps();
     }
@@ -98,18 +99,18 @@ class Entity extends Model
      * foreach ($children as $child) {
      *     echo $child->name;
      * }
-     * 
+     *
      * Ha a töröltek is kellenek, tedd a végére:
      * ->withTrashed();
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function children(): BelongsToMany
     {
         return $this->belongsToMany(
-            Entity::class, 
-            'entity_rel', 
-            'parent_id', 
+            Entity::class,
+            'hierarchy',
+            'parent_id',
             'child_id'
         )->withTimestamps();
     }

@@ -1,0 +1,92 @@
+Tesztadatbázis beállítása lépésről lépésre
+    1. Készíts egy külön adatbázist a teszteléshez:
+        - Hozz létre egy új adatbázist, például testing_database néven:
+          CREATE DATABASE testing_database;
+    2. Állítsd be az .env.testing fájlt:
+        - Ha még nem létezik, hozz létre egy .env.testing fájlt a projekt gyökérkönyvtárában.
+        - Állítsd be az adatbázis-kapcsolatot a tesztelési környezethez:
+          DB_CONNECTION=mysql
+          DB_HOST=127.0.0.1
+          DB_PORT=3306
+          DB_DATABASE=testing_database
+          DB_USERNAME=root
+          DB_PASSWORD=
+    3. Migrációk futtatása a tesztadatbázison:
+        - A tesztfuttatás automatikusan elvégzi a migrációkat, ha a RefreshDatabase trait-et használod.
+        - Ha manuálisan szeretnéd futtatni:
+          php artisan migrate --env=testing
+    4. Tesztelés futtatása a tesztadatbázison:
+        - Laravel automatikusan felismeri a tesztelési környezetet, ha az php artisan test parancsot használod.
+        Példa:
+        php artisan test
+    5. Frissítsd a tesztosztályt
+        - Használj egy Laravel trait-et, hogy biztosítsd a tesztadatbázis automatikus takarítását:
+          namespace Tests\Feature;
+
+          use Tests\TestCase;
+          use Illuminate\Foundation\Testing\RefreshDatabase;
+          use App\Models\Entity;
+          use App\Models\Hierarchy;
+          use Illuminate\Http\Request;
+
+          class HierarchyAddChildTest extends TestCase
+          {
+              use RefreshDatabase; // Automatikusan törli a tesztadatokat
+    6. Futtasd a tesztet
+        - Futtasd a HierarchyAddChildTest tesztet az alábbi paranccsal:
+          php artisan test --filter=HierarchyAddChildTest
+        - Ez automatikusan a tesztadatbázist fogja használni az .env.testing konfiguráció alapján.
+    7. Ellenőrizd a migrációkat
+        - Ha a tesztek során a migrációk nincsenek naprakészen, futtasd őket a tesztadatbázison:
+          php artisan migrate --env=testing
+    8. Gyakori hibák és megoldások
+        - Hiba: Az adatbázis nem érhető el
+          Ellenőrizd, hogy a tesztadatbázis létezik, és a DB_DATABASE helyesen van konfigurálva az .env.testing fájlban.
+        - Hiba: Táblák hiányoznak
+          Futtasd a migrációkat a tesztadatbázison: php artisan migrate --env=testing.
+        - Hiba: Adatbázis nem inicializálódik automatikusan
+          Győződj meg arról, hogy a RefreshDatabase trait szerepel a tesztosztályban.
+        Ezekkel a lépésekkel a HierarchyAddChildTest a tesztadatbázisra fog támaszkodni, és automatikusan törli az adatokat a tesztek között.
+
+    Ha továbbra is a PHPUnit Test Explorer-t szeretnéd használni a VS Code-ban,
+    hogy a tesztadatbázist használja, akkor az alábbi lépéseket kövesd:
+        1. Configure PHPUnit Settings for Test Database
+          - Nyisd meg a phpunit.xml fájlt (vagy ha nem létezik, hozd létre a gyökérkönyvtárban),
+            és állítsd be az adatbázist a testing környezetre:
+
+        <?xml version="1.0"?>
+        <phpunit bootstrap="vendor/autoload.php">
+            <php>
+                <env name="DB_CONNECTION" value="mysql"/>
+                <env name="DB_HOST" value="127.0.0.1"/>
+                <env name="DB_PORT" value="3306"/>
+                <env name="DB_DATABASE" value="testing_database"/>
+                <env name="DB_USERNAME" value="root"/>
+                <env name="DB_PASSWORD" value=""/>
+            </php>
+            <testsuites>
+                <testsuite name="Unit Tests">
+                    <directory suffix="Test.php">./tests/Unit</directory>
+                </testsuite>
+            </testsuites>
+        </phpunit>
+
+        2. Futtasd a tesztet a PHPUnit Test Exploreren keresztül
+            2.1 Nyisd meg a VS Code-ot, és navigálj a PHPUnit Test Explorer-be (View > Test > Test Explorer).
+            2.2 A HierarchyAddChildTest osztályt válaszd ki, majd kattints a "Run All Tests" vagy a "Run Test" gombra.
+            2.3 A teszt a testing_database környezetet fogja használni.
+
+        3. Ellenőrzések
+            - Ellenőrizd, hogy a tesztadatbázis megfelelően van konfigurálva az .env.testing fájlban.
+            - Győződj meg arról, hogy a RefreshDatabase trait-t használd a tesztben.
+            Ha minden be van állítva, a tesztek sikeresen futnak a tesztadatbázison keresztül.
+
+
+Beállítások:
+    .env.test
+migráció:
+    php artisan migrate --env=test
+    php artisan migrate:fresh --seed --env=test
+
+teszt futtatása:
+    php artisan test --filter=HierarchyAddChildTest

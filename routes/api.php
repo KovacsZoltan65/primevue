@@ -36,7 +36,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      */
     Route::post('/client-errors', [ErrorController::class, 'logClientError']);
     Route::post('/client_validation_errors', [ErrorController::class, 'logClientValidationError']);
-    
+
     Route::get('/server-errors/by_id/{errorId}', [ErrorController::class, 'getErrorById']);
     Route::get('/server-errors/by_unique_id/{uniqueErrorId}', [ErrorController::class, 'getErrorByUniqueId']);
 
@@ -63,7 +63,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     // Szülö hozzáadása
     Route::post('/entity-hierarchy/{childId}/add-parent', [HierarchyController::class, 'addParent']);
     // Gyermek hozzáadása
-    Route::post('/entity-hierarchy/{parentId}/add-child', [HierarchyController::class, 'addChild']);
+    Route::post('/entity-hierarchy/{parentId}/add-child', [HierarchyController::class, 'addChild'])->name('addChild');
     // Hierarchia lekérdezése
     Route::get('/entity-hierarchy/{entityId}/hierarchy', [HierarchyController::class, 'getHierarchy']);
     // Gyermek eltávolítása
@@ -80,7 +80,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/entity-hierarchy/swap-subordinates', [HierarchyController::class, 'swapSubordinates']);
     // Dolgozói szint megállapítása
     Route::get('/employee/{id}/role', [HierarchyController::class, 'getEmployeeRole']);
-    
+
     /**
      * =======================================================
      * MENÜ
@@ -104,7 +104,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      * COMPANIES
      * =======================================================
      * A cégek listájának lekérése az API-n keresztül.
-     * 
+     *
      * @param CompanyController $companyController A cégvezérlő példány.
      * @return JsonResponse A vállalatok listáját tartalmazó JSON-válasz.
      */
@@ -127,7 +127,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/application_settings/key/{key}', [ApplicationSettingController::class, 'getSettingByKey']);
     Route::post('/application_settings', [ApplicationSettingController::class, 'createSetting']);
     Route::put('/application_settings/{id}', [ApplicationSettingController::class, 'updateSetting']);
-    
+
     Route::get('/company_settings', [CompanySettingController::class, 'getSettings']);
     Route::get('/company_settings/{id}', [CompanySettingController::class, 'getSetting']);
     Route::get('/company_settings/key/{key}', [CompanySettingController::class, 'getSettingByKey']);
@@ -167,7 +167,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      *
      * A városokhoz tartozó API útvonalak.
      * A városok listáját szolgáltatja az API-n keresztül.
-     * 
+     *
      * @param CityController $cityController A CityController példány.
      * @return JsonResponse A városok listáját tartalmazó JSON-válasz.
      */
@@ -175,7 +175,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     /**
      * Egy város lekérése azonosító alapján az API-n keresztül.
-     * 
+     *
      * @param int $id A lekérdezni kívánt város azonosítója.
      * @return JsonResponse A várost tartalmazó JSON-válasz.
      */

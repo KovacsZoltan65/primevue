@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * ./vendor/bin/phpunit tests/Unit/ExampleTest.php
+ */
+
 namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;

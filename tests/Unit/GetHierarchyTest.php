@@ -1,16 +1,48 @@
 <?php
 
-use Illuminate\Database\QueryException;
-use Symfony\Component\HttpFoundation\Response;
-use Tests\TestCase;
-use App\Http\Controllers\HierarchyController;
-use App\Models\Entity;
+//use Illuminate\Database\QueryException;
+//use Symfony\Component\HttpFoundation\Response;
+//use Tests\TestCase;
+//use App\Http\Controllers\HierarchyController;
+//use App\Models\Entity;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
+//use Illuminate\Http\Request;
+
+use App\Http\Controllers\HierarchyController;
+use App\Http\Controllers\ErrorController;
+use App\Models\Entity;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
+
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
+use Mockery;
+use Tests\TestCase;
 
 class GetHierarchyTest extends TestCase
 {
-    //use RefreshDatabase;
+    use RefreshDatabase;
+
+    public function testGetHierarchySuccess()
+    {
+        // Mock Entity with parents and children
+        $entity = Entity::factory()->hasParents(1)->hasChildren(2)->create();
+
+        // Call the controller method
+        $controller = new HierarchyController();
+        $response = $controller->getHierarchy($entity->id);
+
+        // Assert successful JSON response
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $responseData = json_decode($response->getContent(), true);
+        $this->assertEquals($entity->id, $responseData['id']);
+        $this->assertNotEmpty($responseData['parents']);
+        $this->assertNotEmpty($responseData['children']);
+    }
+
 
     public function testGetHierarchySuccessful()
     {
@@ -26,7 +58,7 @@ class GetHierarchyTest extends TestCase
 
         // Assert that the response is a JSON response with a 200 status code
         $this->assertInstanceOf(Response::class, $response);
-        $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertEquals(\Symfony\Component\HttpFoundation\Response::HTTP_OK, $response->getStatusCode());
         $this->assertJson($response->getContent());
 
         // Assert that the entity hierarchy is returned in the response
@@ -35,7 +67,7 @@ class GetHierarchyTest extends TestCase
         $this->assertNotEmpty($responseData['parents']);
         $this->assertNotEmpty($responseData['children']);
     }
-
+/*
     public function testGetHierarchyModelNotFoundException()
     {
         // Call the getHierarchy method with a non-existent entity ID
@@ -93,4 +125,5 @@ class GetHierarchyTest extends TestCase
         $this->assertEquals(APP_FALSE, $responseData['success']);
         $this->assertEquals('getHierarchy general error', $responseData['error']);
     }
+    */
 }

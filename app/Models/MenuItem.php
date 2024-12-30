@@ -39,6 +39,11 @@ class MenuItem extends Model
      * ==============================================================
      */
 
+    public static function getTag(): string
+    {
+        return self::$logName;
+    }
+
     /**
      * Az aktuális menüpont gyermekmenüpontjainak lekérése.
      *

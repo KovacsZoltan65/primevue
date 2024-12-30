@@ -36,15 +36,16 @@ class ApplicationSettingController extends Controller
     {
         $this->appSettingRepository = $repository;
 
-        $this->middleware('can:application_settings list', ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicatopnSetting', 'getApplicatopnSettingByName']]);
-        $this->middleware('can:application_settings create', ['only' => ['createApplicatopnSetting']]);
-        $this->middleware('can:application_settings edit', ['only' => ['updateApplicatopnSetting']]);
-        $this->middleware('can:application_settings delete', ['only' => ['deleteApplicatopnSetting', 'deleteApplicationSettings']]);
-        $this->middleware('can:application_settings restore', ['only' => ['restoreApplicationSetting']]);
+        $tag = ApplicationSetting::getTag();
+        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicatopnSetting', 'getApplicatopnSettingByName']]);
+        $this->middleware("can:{$tag} create", ['only' => ['createApplicatopnSetting']]);
+        $this->middleware("can:{$tag} edit", ['only' => ['updateApplicatopnSetting']]);
+        $this->middleware("can:{$tag} delete", ['only' => ['deleteApplicatopnSetting', 'deleteApplicationSettings']]);
+        $this->middleware("can:{$tag} restore", ['only' => ['restoreApplicationSetting']]);
     }
 
     public function index(Request $request): InertiaResponse {
-        $roles = $this->getUserRoles('application_settings');
+        $roles = $this->getUserRoles($this->tag);
 
         return Inertia::render('Settings/ApplicationSettings',[
             'search' => request('search'),

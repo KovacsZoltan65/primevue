@@ -35,11 +35,12 @@ class PersonController extends Controller
     {
         $this->personRepository = $repository;
 
-        $this->middleware('can:persons list', ['only' => ['index', 'applySearch', 'getPersons', 'getPerson', 'getPersonByName']]);
-        $this->middleware('can:persons create', ['only' => ['createPerson']]);
-        $this->middleware('can:persons edit', ['only' => ['updatePerson']]);
-        $this->middleware('can:persons delete', ['only' => ['deletePerson', 'deletePersons']]);
-        $this->middleware('can:persons restore', ['only' => ['restorePerson']]);
+        $tag = Person::getTag();
+        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getPersons', 'getPerson', 'getPersonByName']]);
+        $this->middleware("can:{$tag} create", ['only' => ['createPerson']]);
+        $this->middleware("can:{$tag} edit", ['only' => ['updatePerson']]);
+        $this->middleware("can:{$tag} delete", ['only' => ['deletePerson', 'deletePersons']]);
+        $this->middleware("can:{$tag} restore", ['only' => ['restorePerson']]);
     }
 
     public function index(Request $request): InertiaResponse

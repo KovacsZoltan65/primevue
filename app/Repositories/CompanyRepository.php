@@ -28,6 +28,8 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = Company::getTag();
+        
         $this->cacheService = $cacheService;
     }
 

@@ -29,6 +29,7 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = Country::getTag();
         $this->cacheService = $cacheService;
     }
 

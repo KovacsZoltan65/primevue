@@ -41,7 +41,7 @@ class User extends Authenticatable
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
-    protected static $logName = 'user';
+    protected static $logName = 'users';
 
     protected static $recordEvents = [
         'created',
@@ -52,6 +52,11 @@ class User extends Authenticatable
     /*
      * ==============================================================
      */
+
+    public static function getTag(): string
+    {
+        return self::$logName;
+    }
 
     /**
      * The attributes that should be hidden for serialization.

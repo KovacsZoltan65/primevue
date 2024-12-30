@@ -28,6 +28,8 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = Entity::getTag();
+        
         $this->cacheService = $cacheService;
     }
 

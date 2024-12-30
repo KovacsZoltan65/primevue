@@ -26,7 +26,7 @@ class SettingMetadata extends Model
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
-    protected static $logName = 'setting_metadata';
+    protected static $logName = 'settingMetadata';
 
     protected static $recordEvents = [
         'created',
@@ -37,6 +37,11 @@ class SettingMetadata extends Model
     /*
      * ==============================================================
      */
+
+    public static function getTag(): string
+    {
+        return self::$logName;
+    }
 
     public function scopeActive(Builder $query, Request $request): Builder
     {

@@ -29,6 +29,7 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = City::getTag();
         $this->cacheService = $cacheService;
     }
 

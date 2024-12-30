@@ -2,13 +2,15 @@
 
 namespace Database\Seeders;
 
+use App\Models\ApplicationSetting;
+use App\Models\CompanySetting;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Schema;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Activity;
 
 class RoleAndPermissionSeeder extends Seeder
@@ -25,19 +27,22 @@ class RoleAndPermissionSeeder extends Seeder
         DB::table('model_has_permissions')->truncate();
         DB::table('model_has_roles')->truncate();
         Schema::enableForeignKeyConstraints();
-        
+
         activity()->disableLogging();
-        
+
         $classes = [
-            'companies', 'roles', 'permissions', 'subdomainstate',
+            \App\Models\Company::getTag(),
+            'roles',
+            'permissions',
+            'subdomainstate',
         ];
-        
+
         $permissions = [
             'list', 'create', 'edit', 'delete', 'restore'
         ];
-        
+
         $admin = Role::create(['name' => 'admin']);
-        
+
         foreach($classes as $class)
         {
             foreach($permissions as $permission)
@@ -46,15 +51,17 @@ class RoleAndPermissionSeeder extends Seeder
                 $admin->givePermissionTo(["{$class} {$permission}"]);
             }
         }
-        
+
         $classes = [
-            'application_settings', 'company_settings',
+            //'appSettings', 'compSettings',
+            ApplicationSetting::getTag(),
+            CompanySetting::getTag(),
         ];
-        
+
         $permissions = [
             'list', 'create', 'edit', 'delete'
         ];
-        
+
         foreach($classes as $class)
         {
             foreach($permissions as $permission)
@@ -63,11 +70,11 @@ class RoleAndPermissionSeeder extends Seeder
                 $admin->givePermissionTo(["{$class} {$permission}"]);
             }
         }
-        
+
         // Admin szerepköró hozzárendelés
         $user = User::find(1);
         $user->assignRole('admin');
-        
+
         activity()->enableLogging();
     }
 }

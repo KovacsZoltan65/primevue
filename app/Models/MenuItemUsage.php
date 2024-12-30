@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Override;
 
 class MenuItemUsage extends Model
 {
@@ -23,7 +25,7 @@ class MenuItemUsage extends Model
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
-    protected static $logName = 'menu_item_usage';
+    protected static $logName = 'menuItemUsage';
 
     protected static $recordEvents = [
         'created',
@@ -35,6 +37,11 @@ class MenuItemUsage extends Model
      * ==============================================================
      */
 
+    public static function getTag(): string
+    {
+        return self::$logName;
+    }
+
     /**
      * Szerezze be a rekordhoz tartozó menüpontot.
      *
@@ -43,5 +50,11 @@ class MenuItemUsage extends Model
     public function menuItem(): BelongsTo
     {
         return $this->belongsTo(MenuItem::class);
+    }
+
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable();
     }
 }

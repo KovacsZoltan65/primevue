@@ -5,25 +5,26 @@ namespace App\Http\Controllers;
 use App\Http\Requests\GetCompanySettingRequest;
 use App\Http\Requests\StoreCompanySettingRequest;
 use App\Http\Requests\UpdateCompanySettingRequest;
+use App\Models\CompanySetting;
 use App\Repositories\CompanySettingRepository;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Symfony\Component\HttpFoundation\Response;
 
 class CompanySettingController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    
+
     protected CompanySettingRepository $compSettingRepository;
     protected string $tag = 'compSettings';
 
@@ -31,19 +32,20 @@ class CompanySettingController extends Controller
     {
         $this->compSettingRepository = $repository;
 
-        $this->middleware('can:company_settings list', ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicationSetting', 'getApplicatonSettingByName']]);
-        $this->middleware('can:company_settings create', ['only' => ['createApplicationSetting']]);
-        $this->middleware('can:company_settings edit', ['only' => ['updateApplicationSetting']]);
-        $this->middleware('can:company_settings delete', ['only' => ['deleteApplicationSetting', 'deleteApplicationSettings']]);
+        $tag = CompanySetting::getTag();
+        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicationSetting', 'getApplicatonSettingByName']]);
+        $this->middleware("can:{$tag} create", ['only' => ['createApplicationSetting']]);
+        $this->middleware("can:{$tag} edit", ['only' => ['updateApplicationSetting']]);
+        $this->middleware("can:{$tag} delete", ['only' => ['deleteApplicationSetting', 'deleteApplicationSettings']]);
     }
 
     public function index(Request $request): InertiaResponse
     {
-        $roles = $this->getUserRoles('company_settings');
-        
+        $roles = $this->getUserRoles($this->tag);
+
         return Inertia::render('Settings/CompanySettings', [
             'search' => request('search'),
-            'can' => $roles 
+            'can' => $roles
         ]);
     }
 
@@ -53,7 +55,7 @@ class CompanySettingController extends Controller
             $query->where('key', 'like', "%{$search}%");
         });
     }
-    
+
     public function getCompSettings(Request $request): JsonResponse
     {
         try {
@@ -71,9 +73,9 @@ class CompanySettingController extends Controller
     {
         try {
             $setting = $this->compSettingRepository->getCompSetting($request->id);
-            
+
             return response()->json($setting, Response::HTTP_OK);
-            
+
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'getCompanySetting model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
@@ -82,7 +84,7 @@ class CompanySettingController extends Controller
             return $this->handleException($ex, 'getApplicationSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getCompSettingByKey(string $key): JsonResponse
     {
         try {
@@ -123,8 +125,8 @@ class CompanySettingController extends Controller
             return $this->handleException($ex, 'updateCompSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
-    public function deleteCompSettings(Request $request): JsonResponse 
+
+    public function deleteCompSettings(Request $request): JsonResponse
     {
         try {
             $deletedCount = $this->compSettingRepository->deleteCompSettings($request);
@@ -137,12 +139,12 @@ class CompanySettingController extends Controller
             return $this->handleException($ex, 'deleteAppSettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deleteCompSetting(GetCompanySettingRequest $request): JsonResponse
     {
         try {
             $appSetting = $this->compSettingRepository->deleteCompSetting($request);
-            
+
             return response()->json($appSetting, Response::HTTP_OK);
         } catch (ModelNotFoundException $ex) {
             return $this->handleException($ex, 'deleteCompSetting model not found exception', Response::HTTP_NOT_FOUND);

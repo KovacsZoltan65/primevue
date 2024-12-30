@@ -31,6 +31,7 @@ class PermissionRepository extends BaseRepository implements PermissionRepositor
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = Permission::getTag();
         $this->cacheService = $cacheService;
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -44,11 +45,12 @@ class CompanyController extends Controller
         $this->countryRepository = $countryRepository;
         $this->companyRepository = $companyRepository;
 
-        $this->middleware('can:companies list', ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
-        $this->middleware('can:companies create', ['only' => ['createCompany']]);
-        $this->middleware('can:companies edit', ['only' => ['updateCompany']]);
-        $this->middleware('can:companies delete', ['only' => ['deleteCompany', 'deleteCompanies']]);
-        $this->middleware('can:companies restore', ['only' => ['restoreCompany']]);
+        $tag = Company::getTag();
+        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
+        $this->middleware("can:{$tag} create", ['only' => ['createCompany']]);
+        $this->middleware("can:{$tag} edit", ['only' => ['updateCompany']]);
+        $this->middleware("can:{$tag} delete", ['only' => ['deleteCompany', 'deleteCompanies']]);
+        $this->middleware("can:{$tag} restore", ['only' => ['restoreCompany']]);
     }
     /**
      * Jelenítse meg a cégek listáját.
@@ -197,12 +199,12 @@ class CompanyController extends Controller
             return $this->handleException($ex, 'restoreCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function realDeleteCompany(GetCompanyRequest $request)
     {
         try {
             $deletedCount = $this->companyRepository->realDeleteCompany($request->id);
-            
+
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'realDeleteCompany model not found exception', Response::HTTP_NOT_FOUND);

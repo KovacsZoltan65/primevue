@@ -30,12 +30,15 @@ class SubdomainController extends Controller
 
     protected SubdomainRepository $subdomainRepository;
     
-    public function __construct() {
-        $this->middleware('can:subdomains list', ['only' => ['index', 'applySearch', 'getSubdomains', 'getSubdomain', 'getSubdomainByName']]);
-        $this->middleware('can:subdomains create', ['only' => ['createSubdomain']]);
-        $this->middleware('can:subdomains edit', ['only' => ['updateSubdomain']]);
-        $this->middleware('can:subdomains delete', ['only' => ['deleteSubdomain', 'deleteSubdomains']]);
-        $this->middleware('can:subdomains restore', ['only' => ['restoreSubdomain']]);
+    public function __construct(SubdomainRepository $subdomainRepository) {
+        $this->subdomainRepository = $subdomainRepository;
+        
+        $tag = Subdomain::getTag();
+        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getSubdomains', 'getSubdomain', 'getSubdomainByName']]);
+        $this->middleware("can:{$tag} create", ['only' => ['createSubdomain']]);
+        $this->middleware("can:{$tag} edit", ['only' => ['updateSubdomain']]);
+        $this->middleware("can:{$tag} delete", ['only' => ['deleteSubdomain', 'deleteSubdomains']]);
+        $this->middleware("can:{$tag} restore", ['only' => ['restoreSubdomain']]);
     }
     
     public function index(Request $request): InertiaResponse

@@ -35,7 +35,7 @@ class SubdomainState extends Model
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
-    protected static $logName = 'subdomain_state';
+    protected static $logName = 'subdomainState';
 
     protected static $recordEvents = [
         'created',
@@ -46,6 +46,11 @@ class SubdomainState extends Model
     /*
      * ==============================================================
      */
+
+    public static function getTag(): string
+    {
+        return self::$logName;
+    }
 
     /**
      * Határozza meg a lekérdezést, hogy a keresési kifejezésnek megfelelő névvel rendelkező aldomain állapotokat is tartalmazzon.

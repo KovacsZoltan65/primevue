@@ -81,6 +81,11 @@ class Subdomain extends Model
      * ==============================================================
      */
 
+    public static function getTag(): string
+    {
+        return self::$logName;
+    }
+
     public function scopeSearch(Builder $query, Request $request): Builder
     {
         return $query->when($request->search, function ($query) use ($request) {

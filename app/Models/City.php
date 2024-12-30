@@ -54,6 +54,12 @@ class City extends Model
     /*
      * ==============================================================
      */
+
+    public static function getTag(): string
+    {
+        return self::$logName;
+    }
+
     public function scopeSearch(Builder $query, Request $request)
     {
         /**

@@ -29,6 +29,7 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = \App\Models\Auth\Permission::getTag();
         $this->cacheService = $cacheService;
     }
 

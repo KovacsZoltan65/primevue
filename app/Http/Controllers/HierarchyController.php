@@ -27,11 +27,12 @@ class HierarchyController extends Controller
     {
         $this->hierarchyRepository = $repository;
 
-        //$this->middleware('can:herarchies list', ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
-        //$this->middleware('can:herarchies create', ['only' => ['createCompany']]);
-        //$this->middleware('can:herarchies edit', ['only' => ['updateCompany']]);
-        //$this->middleware('can:herarchies delete', ['only' => ['deleteCompany', 'deleteCompanies']]);
-        //$this->middleware('can:herarchies restore', ['only' => ['restoreCompany']]);
+        $tag = Hierarchy::getTag();
+        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
+        $this->middleware("can:{$tag} create", ['only' => ['createCompany']]);
+        $this->middleware("can:{$tag} edit", ['only' => ['updateCompany']]);
+        $this->middleware("can:{$tag} delete", ['only' => ['deleteCompany', 'deleteCompanies']]);
+        $this->middleware("can:{$tag} restore", ['only' => ['restoreCompany']]);
     }
 
     /**

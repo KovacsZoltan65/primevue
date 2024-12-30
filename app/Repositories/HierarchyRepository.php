@@ -25,10 +25,11 @@ class HierarchyRepository extends BaseRepository implements HierarchyRepositoryI
 
     protected CacheService $cacheService;
 
-    protected string $tag = 'hierarchies';
+    protected string $tag = 'hierarchy';
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = Hierarchy::getTag();
         $this->cacheService = $cacheService;
     }
 

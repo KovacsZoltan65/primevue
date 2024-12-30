@@ -33,11 +33,12 @@ class CityController extends Controller
     public function __construct(CityRepository $cityRepository)
     {
         $this->cityRepository = $cityRepository;
-
-        $this->middleware('can:city list', ['only' => ['index', 'applySearch', 'getCity', 'getCity', 'getCityByName']]);
-        $this->middleware('can:city create', ['only' => ['createCity']]);
-        $this->middleware('can:city edit', ['only' => ['updateCity']]);
-        $this->middleware('can:city delete', ['only' => ['deleteCity', 'deleteCity']]);
+        
+        $tag = City::getTag();
+        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getCity', 'getCity', 'getCityByName']]);
+        $this->middleware("can:{$tag} create", ['only' => ['createCity']]);
+        $this->middleware("can:{$tag} edit", ['only' => ['updateCity']]);
+        $this->middleware("can:{$tag} delete", ['only' => ['deleteCity', 'deleteCity']]);
     }
 
     public function index(Request $request)

@@ -28,6 +28,8 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = \App\Models\Subdomain::getTag();
+        
         $this->cacheService = $cacheService;
     }
 

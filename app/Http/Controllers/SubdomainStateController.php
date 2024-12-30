@@ -36,12 +36,13 @@ class SubdomainStateController extends Controller
     public function __construct(SubdomainStateRepository $repository)
     {
         $this->stateRepository = $repository;
-
-        $this->middleware('can:subdomainstate list', ['only' => ['index', 'applySearch', 'getSubdomainStates', 'getSubdomainState', 'getSubdomainStateByName']]);
-        $this->middleware('can:subdomainstate create', ['only' => ['createSubdomainState']]);
-        $this->middleware('can:subdomainstate edit', ['only' => ['updateSubdomainStates']]);
-        $this->middleware('can:subdomainstate delete', ['only' => ['deleteSubdomainState', 'deleteSubdomainStates']]);
-        $this->middleware('can:subdomainstate restore', ['only' => ['restoreSubdomainState']]);
+        
+        $tag = SubdomainState::getTag();
+        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getSubdomainStates', 'getSubdomainState', 'getSubdomainStateByName']]);
+        $this->middleware("can:{$tag} create", ['only' => ['createSubdomainState']]);
+        $this->middleware("can:{$tag} edit", ['only' => ['updateSubdomainStates']]);
+        $this->middleware("can:{$tag} delete", ['only' => ['deleteSubdomainState', 'deleteSubdomainStates']]);
+        $this->middleware("can:{$tag} restore", ['only' => ['restoreSubdomainState']]);
     }
 
     public function index(Request $request): InertiaResponse

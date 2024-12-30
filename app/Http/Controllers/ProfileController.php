@@ -13,7 +13,10 @@ use Inertia\Response AS InertiaResponse;
 
 class ProfileController extends Controller
 {
-
+    public function __construct()
+    {
+        
+    }
     /**
      * Display the user's profile form.
      */

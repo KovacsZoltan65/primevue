@@ -34,11 +34,12 @@ class EntityController extends Controller
     {
         $this->entityRepository = $repository;
 
-        $this->middleware('can:entities list', ['only' => ['index', 'applySearch', 'getEntities', 'getEntity', 'getEntityByName']]);
-        $this->middleware('can:entities create', ['only' => ['createEntity']]);
-        $this->middleware('can:entities edit', ['only' => ['updateEntity']]);
-        $this->middleware('can:entities delete', ['only' => ['deleteEntity', 'deleteEntities']]);
-        $this->middleware('can:entities restore', ['only' => ['restoreEntity']]);
+        $tag = Entity::getTag();
+        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getEntities', 'getEntity', 'getEntityByName']]);
+        $this->middleware("can:{$tag} create", ['only' => ['createEntity']]);
+        $this->middleware("can:{$tag} edit", ['only' => ['updateEntity']]);
+        $this->middleware("can:{$tag} delete", ['only' => ['deleteEntity', 'deleteEntities']]);
+        $this->middleware("can:{$tag} restore", ['only' => ['restoreEntity']]);
     }
 
     public function index(Request $request): InertiaResponse

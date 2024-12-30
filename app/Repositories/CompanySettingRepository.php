@@ -24,8 +24,15 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
 
     protected CacheService $cacheService;
 
-    protected string $tag = 'comp_settings';
+    protected string $tag = 'compSettings';
 
+    public function __construct(CacheService $cacheService)
+    {
+        $this->tag = CompanySetting::getTag();
+        
+        $this->cacheService = $cacheService;
+    }
+    
     public function getActiveCompSettings()
     {
         $model = $this->model();

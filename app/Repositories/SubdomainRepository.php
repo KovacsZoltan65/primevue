@@ -29,6 +29,8 @@ class SubdomainRepository extends BaseRepository implements SubdomainRepositoryI
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = Subdomain::getTag();
+        
         $this->cacheService = $cacheService;
     }
 

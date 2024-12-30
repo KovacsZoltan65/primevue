@@ -27,7 +27,7 @@ class CompanySetting extends Model
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
-    protected static $logName = 'company_settings';
+    protected static $logName = 'compSettings';
 
     protected static $recordEvents = [
         'created',
@@ -38,6 +38,11 @@ class CompanySetting extends Model
     /*
      * ==============================================================
      */
+
+    public static function getTag(): string
+    {
+        return self::$logName;
+    }
 
     public function scopeSearch(Builder $query, Request $request): Builder {
         return $query->when($request->search, function (Builder $query) use ($request) {

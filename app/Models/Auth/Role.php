@@ -24,13 +24,18 @@ class Role extends Model
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
-    protected static $logName = 'role';
+    protected static $logName = 'roles';
     
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
     ];
+    
+    public static function getTag(): string
+    {
+        return self::$logName;
+    }
     
     public function scopeSearch(Builder $query, Request $request)
     {

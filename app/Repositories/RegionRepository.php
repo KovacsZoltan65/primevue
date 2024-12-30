@@ -28,6 +28,7 @@ class RegionRepository extends BaseRepository implements RegionRepositoryInterfa
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = Region::getTag();
         $this->cacheService = $cacheService;
     }
     

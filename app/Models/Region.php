@@ -43,12 +43,6 @@ class Region extends Model
         'country_id'
     ];
 
-    protected static $recordEvents = [
-        'created',
-        'updated',
-        'deleted',
-    ];
-
     /*
      * ==============================================================
      * LOGOLÁS
@@ -58,11 +52,21 @@ class Region extends Model
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
-    protected static $logName = 'entity';
+    protected static $logName = 'regions';
+    protected static $recordEvents = [
+        'created',
+        'updated',
+        'deleted',
+    ];
 
     /*
      * ==============================================================
      */
+
+    public static function getTag(): string
+    {
+        return self::$logName;
+    }
 
     /**
      * A régiók listázásához keresési feltételek

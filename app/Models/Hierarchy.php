@@ -42,6 +42,11 @@ class Hierarchy extends Model
      * ==============================================================
      */
 
+    public static function getTag(): string
+    {
+        return self::$logName;
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Entity::class, 'parent_id');

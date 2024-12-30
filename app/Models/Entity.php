@@ -39,7 +39,7 @@ class Entity extends Model
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
-    protected static $logName = 'entity';
+    protected static $logName = 'entities';
 
     protected static $recordEvents = [
         'created',
@@ -50,6 +50,11 @@ class Entity extends Model
     /*
      * ==============================================================
      */
+
+     public static function getTag(): string
+     {
+         return self::$logName;
+     }
 
     public function scopeSerach(Builder $query, Request $request)
     {

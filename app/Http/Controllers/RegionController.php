@@ -32,14 +32,16 @@ class RegionController extends Controller
     protected string $tag = 'regions';
     protected RegionRepositoryInterface $regionRepository;
 
-    public function __construct(RegionRepositoryInterface $repository) {
+    public function __construct(RegionRepositoryInterface $repository)
+    {
         $this->regionRepository = $repository;
         
-        $this->middleware('can:regions list', ['only' => ['index', 'applySearch', 'getRegions', 'getSRegion', 'getRegionByName']]);
-        $this->middleware('can:regions create', ['only' => ['createRegion']]);
-        $this->middleware('can:regions edit', ['only' => ['updateRegion']]);
-        $this->middleware('can:regions delete', ['only' => ['deleteRegion', 'deleteRegions']]);
-        $this->middleware('can:regions restore', ['only' => ['restoreRegion']]);
+        $tag = Region::getTag();
+        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getRegions', 'getSRegion', 'getRegionByName']]);
+        $this->middleware("can:{$tag} create", ['only' => ['createRegion']]);
+        $this->middleware("can:{$tag} edit", ['only' => ['updateRegion']]);
+        $this->middleware("can:{$tag} delete", ['only' => ['deleteRegion', 'deleteRegions']]);
+        $this->middleware("can:{$tag} restore", ['only' => ['restoreRegion']]);
     }
 
     /**

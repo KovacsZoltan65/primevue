@@ -29,6 +29,8 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = Role::getTag();
+        
         $this->cacheService = $cacheService;
     }
 

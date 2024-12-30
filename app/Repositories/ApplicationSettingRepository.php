@@ -24,10 +24,11 @@ class ApplicationSettingRepository extends BaseRepository implements Application
 
     protected CacheService $cacheService;
 
-    protected string $tag = 'app_settings';
+    protected string $tag = 'appSettings';
 
     public function __construct(CacheService $cacheService)
     {
+        $this->tag = ApplicationSetting::getTag();
         $this->cacheService = $cacheService;
     }
 

@@ -35,11 +35,12 @@ class CountryController extends Controller
     {
         $this->countryRepository = $repository;
 
-        $this->middleware('can:countries list', ['only' => ['index', 'applySearch', 'getCountries', 'getCountry', 'getCountryByName']]);
-        $this->middleware('can:countries create', ['only' => ['createCountry']]);
-        $this->middleware('can:countries edit', ['only' => ['updateCountry']]);
-        $this->middleware('can:countries delete', ['only' => ['deleteCountry', 'deleteCountries']]);
-        $this->middleware('can:countries restore', ['only' => ['restoreCountry']]);
+        $tag = Country::getTag();
+        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getCountries', 'getCountry', 'getCountryByName']]);
+        $this->middleware("can:{$tag} create", ['only' => ['createCountry']]);
+        $this->middleware("can:{$tag} edit", ['only' => ['updateCountry']]);
+        $this->middleware("can:{$tag} delete", ['only' => ['deleteCountry', 'deleteCountries']]);
+        $this->middleware("can:{$tag} restore", ['only' => ['restoreCountry']]);
     }
 
     /**

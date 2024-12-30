@@ -28,24 +28,24 @@ class RoleController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    
+
     protected RoleRepository $roleRepository;
 
     public function __construct(RoleRepository $repository)
     {
         $this->roleRepository = $repository;
-        
+
         $this->middleware('can:roles list', ['only' => ['index', 'applySearch', 'listRolesAndPermissions', 'getRoles', 'getRole', 'getRoleByName']]);
         $this->middleware('can:roles create', ['only' => ['createRole']]);
         $this->middleware('can:roles edit', ['only' => ['updateRole', 'updateRolePermissions']]);
         $this->middleware('can:roles delete', ['only' => ['deleteRole', 'deleteRoles']]);
         $this->middleware('can:roles restore', ['only' => ['restoreRole']]);
     }
-    
+
     public function index(Request $request): InertiaResponse
     {
         $roles = $this->getUserRoles('roles');
-        
+
         $users = User::orderBy('name')->get()->toArray();
         $permissions = Permission::orderBy('name')->get()->toArray();
 
@@ -68,52 +68,18 @@ class RoleController extends Controller
     public function listRolesAndPermissions(): JsonResponse
     {
         try {
-            $roles = Role::with('permissions')->get();
-            $permissions = Permission::all();
+            $array = $this->roleRepository->listRolesAndPermissions();
 
-            return response()->json([
-                'roles' => $roles,
-                'premissions' => $permissions,
-            ], Response::HTTP_OK);
+            return response()->json($array, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
-            $modelName = $ex->getModel(); // A kiváltó modell neve
-            $ids = $ex->getIds();         // Az érintett ID vagy ID-k tömbje
-            
-            ErrorController::logServerError($ex, [
-                'context' => 'MODEL_NOT_FOUND',
-                'model' => $modelName,
-                'ids' => $ids,
-                'route' => request()->path(),
-            ]);
-            
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => "The requested resource ({$modelName}) was not found.",
-            ], Response::HTTP_NOT_FOUND);
-            
+            return $this->handleException($ex, 'listRolesAndPermissions model not found', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'DB_ERROR_ROLE_AND_PERMISSIONS',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'Database error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'listRolesAndPermissions query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'listRolesAndPermissions general error',
-                'route' => request()->path(),
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'listRolesAndPermissions general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getRoles(Request $request): JsonResponse
     {
         try {
@@ -178,7 +144,7 @@ class RoleController extends Controller
     {
         try {
             $role = $this->roleRepository->updateRole($request, $id);
-            
+
             return response()->json($role, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'updateRole model not found error', Response::HTTP_NOT_FOUND);
@@ -194,12 +160,12 @@ class RoleController extends Controller
         $validated = $request->validate([
             'permissions' => 'array'
         ]);
-        
+
         $role->syncPermissions($validated['permissions']);
-        
+
         return response()->json(['role' => $role], Response::HTTP_OK);
     }
-    
+
     public function deleteRoles(Request $request): JsonResponse
     {
         try {
@@ -215,7 +181,7 @@ class RoleController extends Controller
             return $this->handleException($ex, 'deleteRoles general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deleteRole(GetRoleRequest $request): JsonResponse
     {
         try {
@@ -245,12 +211,12 @@ class RoleController extends Controller
             return $this->handleException($ex, 'restoreRole general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function realDeleteRole(GetRoleRequest $request): JsonResponse
     {
         try {
             $deletedCount = $this->roleRepository->realDeleteRole($request->id);
-            
+
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'realDeleteRole model not found exception', Response::HTTP_NOT_FOUND);

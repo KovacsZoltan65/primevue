@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Interfaces\Auth\RoleRepositoryInterface;
+use App\Models\Auth\Permission;
 use App\Models\Auth\Role;
 use App\Services\CacheService;
 use App\Traits\Functions;
@@ -21,16 +22,32 @@ use Illuminate\Support\Facades\DB;
 class RoleRepository extends BaseRepository implements RoleRepositoryInterface
 {
     use Functions;
-    
+
     protected CacheService $cacheService;
-    
+
     protected string $tag = 'roles';
-    
+
     public function __construct(CacheService $cacheService)
     {
         $this->cacheService = $cacheService;
     }
-    
+
+    public function listRolesAndPermissions()
+    {
+        try {
+            $roles = Role::with('permissions')->get();
+            $permissions = Permission::all();
+
+            return [
+                'roles' => $roles,
+                'permissions' => $permissions,
+            ];
+        } catch(Exception $ex) {
+            $this->logError($ex, 'listRolesAndPermission error', []);
+            throw $ex;
+        }
+    }
+
     public function getRoles(Request $request)
     {
         try {
@@ -45,7 +62,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function getRole(int $id)
     {
         try {
@@ -59,7 +76,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function getRoleByName(string $name)
     {
         try {
@@ -73,7 +90,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function createRole(Request $request)
     {
         try{
@@ -95,7 +112,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function updateRole(Request $request, int $id): Role
     {
         try {
@@ -108,7 +125,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
                 if( isset($request->permissions) ) {
                     $role->syncPermissions($request->permissions);
                 }
-            
+
                 $this->cacheService->forgetAll($this->tag);
             });
 
@@ -118,7 +135,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function deleteRoles(Request $request)
     {
         try {
@@ -126,10 +143,10 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
                 'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
             ]);
-            
+
             $ids = $validated['ids'];
             $deletedCount = 0;
-            
+
             DB::transaction(function () use ($ids, &$deletedCount) {
                 $roles = Company::whereIn('id', $ids)->lockForUpdate()->get();
 
@@ -147,7 +164,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function deleteRole(Request $request)
     {
         try {
@@ -165,7 +182,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function restoreRole(Request $request): Role
     {
         try {
@@ -183,7 +200,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function realDeleteRole(int $id): Role
     {
         try {
@@ -201,12 +218,12 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
             throw $ex;
         }
     }
-    
+
     private function createDefaultSettings(Role $role): void
     {
         //
     }
-    
+
     /**
      * Specify Model class name
      *
@@ -218,7 +235,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
         return Role::class;
     }
 
-    
+
 
     /**
      * Boot up the repository, pushing criteria
@@ -228,5 +245,5 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
-    
+
 }

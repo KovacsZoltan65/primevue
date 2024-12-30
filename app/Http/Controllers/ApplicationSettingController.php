@@ -21,12 +21,13 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Services\CacheService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class ApplicationSettingController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    
+
     protected string $tag = 'app_settings';
 
     public function __construct() {
@@ -38,7 +39,7 @@ class ApplicationSettingController extends Controller
 
     public function index(Request $request): InertiaResponse {
         $roles = $this->getUserRoles('application_settings');
-        
+
         return Inertia::render('Settings/ApplicationSettings',[
             'search' => request('search'),
             'can' => $roles
@@ -50,7 +51,7 @@ class ApplicationSettingController extends Controller
             $query->where('key', 'like', "%{$search}%");
         });
     }
-    
+
     public function getSettings(Request $request, CacheService $cacheService): JsonResponse {
         try {
             $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
@@ -93,13 +94,13 @@ class ApplicationSettingController extends Controller
     public function getSetting(GetApplicationSettingRequest $request, CacheService $cacheService) {
         try {
             $cacheKey = "{$this->tag}_" . md5($request->id);
-            
+
             $setting = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 return ApplicationSetting::findOrFail($request->id);
             });
-            
+
             return response()->json($setting, Response::HTTP_OK);
-            
+
         } catch( ModelNotFoundException $ex ) {
             ErrorController::logServerError($ex, [
                 'context' => 'getApplicationSetting model not found error',
@@ -141,7 +142,7 @@ class ApplicationSettingController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getSettingByKey(string $key, CacheService $cacheService): JsonResponse {
         try {
             $cacheKey = "{$this->tag}_" . md5($key);
@@ -159,7 +160,7 @@ class ApplicationSettingController extends Controller
                 'type' => 'ModelNotFoundException',
                 'severity' => 'error',
             ]);
-            
+
             return response()->json([
                 'success' => APP_FALSE,
                 'error' => 'getApplicationSettingByKey model not found error'
@@ -181,7 +182,7 @@ class ApplicationSettingController extends Controller
         } catch(Exception $ex) {
             ErrorController::logServerError($ex, [
                 'context' => 'getSettingByKey general error',
-                'params' => ['request' => $request->all()],
+                'params' => ['key' => $key],
                 'route' => request()->path(),
                 'type' => 'Exception',
                 'severity' => 'error',
@@ -199,7 +200,7 @@ class ApplicationSettingController extends Controller
     public function createSetting(StoreApplicationSettingRequest $request, CacheService $cacheService): JsonResponse{
         try{
             $setting = ApplicationSetting::create($request->all());
-            
+
             $cacheService->forgetAll($this->tag);
 
             return response()->json($setting, Response::HTTP_CREATED);
@@ -235,8 +236,8 @@ class ApplicationSettingController extends Controller
     public function updateSetting(UpdateApplicationSettingRequest $request, int $id, CacheService $cacheService): JsonResponse {
         try {
             $setting = null;
-            
-            \DB::transaction(function() use($request, $id, $cacheService, &$setting) {
+
+            DB::transaction(function() use($request, $id, $cacheService, &$setting) {
                 $setting = ApplicationSetting::findOrFail($id);
                 $setting->update($request->all())->lockForUpdate();
                 $setting->refresh();
@@ -288,8 +289,8 @@ class ApplicationSettingController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deleteApplicationSettings() {}
-    
+
     public function deleteApplicationSetting() {}
 }

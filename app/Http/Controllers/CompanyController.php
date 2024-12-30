@@ -24,6 +24,7 @@ use Inertia\Response as InertiaResponse;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\DB;
 
 /**
  * A CompanyController osztálya a cégek listázásához, létrehozásához, módosításához és
@@ -248,7 +249,7 @@ class CompanyController extends Controller
             $company = Company::create($request->all());
 
             $cacheService->forgetAll($this->tag);
-            
+
             return response()->json($company, Response::HTTP_CREATED);
 
         } catch( QueryException $ex ) {
@@ -285,8 +286,8 @@ class CompanyController extends Controller
     {
         try {
             $company = null;
-            
-            \DB::transaction(function() use($request, $id, $cacheService, &$company) {
+
+            DB::transaction(function() use($request, $id, $cacheService, &$company) {
                 // Keresse meg a frissítendő céget az azonosítója alapján
                 $company = Company::findOrFail($id)->lockForUpdate();
 
@@ -301,7 +302,7 @@ class CompanyController extends Controller
                 //$cacheService->put("company_{$company->id}", $company->toArray(), $this->tag);
                 // Lista cache-ek törlése (tag-alapú vagy mintázat-alapú)
                 //$cacheService->forgetByTag($this->tag);
-                
+
             });
 
             return response()->json($company, Response::HTTP_OK);

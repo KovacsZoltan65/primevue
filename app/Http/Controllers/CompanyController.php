@@ -39,18 +39,21 @@ class CompanyController extends Controller
               $countryRepository,
               $companyRepository;
 
+    protected string $tag = '';
+    
     public function __construct(CityRepository $cityRepository, CountryRepository $countryRepository, CompanyRepository $companyRepository)
-    {
+    {   
         $this->cityRepository = $cityRepository;
         $this->countryRepository = $countryRepository;
         $this->companyRepository = $companyRepository;
 
-        $tag = Company::getTag();
-        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
-        $this->middleware("can:{$tag} create", ['only' => ['createCompany']]);
-        $this->middleware("can:{$tag} edit", ['only' => ['updateCompany']]);
-        $this->middleware("can:{$tag} delete", ['only' => ['deleteCompany', 'deleteCompanies']]);
-        $this->middleware("can:{$tag} restore", ['only' => ['restoreCompany']]);
+        $this->tag = Company::getTag();
+        
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createCompany']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateCompany']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteCompany', 'deleteCompanies']]);
+        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreCompany']]);
     }
     /**
      * Jelenítse meg a cégek listáját.
@@ -60,9 +63,8 @@ class CompanyController extends Controller
      */
     public function index(Request $request): InertiaResponse
     {
-        $roles = $this->getUserRoles('companies');
-        //$roles = auth()->user()->getRoles(); // Például dinamikusan betöltött jogosultságok
-        //dd($roles);
+        $roles = $this->getUserRoles($this->tag);
+        
         $cities = $this->cityRepository->getActiveCities();
         $countries = $this->countryRepository->getActiveCountries();
 

@@ -35,17 +35,22 @@ class PersonController extends Controller
     {
         $this->personRepository = $repository;
 
-        $tag = Person::getTag();
-        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getPersons', 'getPerson', 'getPersonByName']]);
-        $this->middleware("can:{$tag} create", ['only' => ['createPerson']]);
-        $this->middleware("can:{$tag} edit", ['only' => ['updatePerson']]);
-        $this->middleware("can:{$tag} delete", ['only' => ['deletePerson', 'deletePersons']]);
-        $this->middleware("can:{$tag} restore", ['only' => ['restorePerson']]);
+        $this->tag = Person::getTag();
+        
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getPersons', 'getPerson', 'getPersonByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createPerson']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updatePerson']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deletePerson', 'deletePersons']]);
+        $this->middleware("can:{$this->tag} restore", ['only' => ['restorePerson']]);
     }
 
     public function index(Request $request): InertiaResponse
     {
-        return Inertia::render('Person/Index');
+        $roles = $this->getUserRoles($this->tag);
+        
+        return Inertia::render('Person/Index', [
+            'can' => $roles,
+        ]);
     }
 
     public function applySearch(Builder $query, string $search): Builder

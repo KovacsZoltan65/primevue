@@ -36,12 +36,13 @@ class ApplicationSettingController extends Controller
     {
         $this->appSettingRepository = $repository;
 
-        $tag = ApplicationSetting::getTag();
-        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicatopnSetting', 'getApplicatopnSettingByName']]);
-        $this->middleware("can:{$tag} create", ['only' => ['createApplicatopnSetting']]);
-        $this->middleware("can:{$tag} edit", ['only' => ['updateApplicatopnSetting']]);
-        $this->middleware("can:{$tag} delete", ['only' => ['deleteApplicatopnSetting', 'deleteApplicationSettings']]);
-        $this->middleware("can:{$tag} restore", ['only' => ['restoreApplicationSetting']]);
+        $this->tag = ApplicationSetting::getTag();
+        
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicatopnSetting', 'getApplicatopnSettingByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createApplicatopnSetting']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateApplicatopnSetting']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteApplicatopnSetting', 'deleteApplicationSettings']]);
+        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreApplicationSetting']]);
     }
 
     public function index(Request $request): InertiaResponse {

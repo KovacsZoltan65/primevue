@@ -668,9 +668,9 @@ const throwError = () => {
                         severity="secondary"
                         class="mr-2"
                         @click="confirmDeleteSelected"
-                        :disabled="
-                            !selectedCompanies || !selectedCompanies.length
-                        "
+                        :disabled="!props.can.companies_delete ||
+                            !selectedCompanies ||
+                            !selectedCompanies.length"
                     />
                 </template>
 

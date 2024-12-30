@@ -22,17 +22,29 @@ class HierarchyController extends Controller
         Functions;
 
     protected HierarchyRepository $hierarchyRepository;
+    
+    protected string $tag = 'hierarchy';
 
     public function __construct(HierarchyRepository $repository)
     {
         $this->hierarchyRepository = $repository;
 
-        $tag = Hierarchy::getTag();
-        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
-        $this->middleware("can:{$tag} create", ['only' => ['createCompany']]);
-        $this->middleware("can:{$tag} edit", ['only' => ['updateCompany']]);
-        $this->middleware("can:{$tag} delete", ['only' => ['deleteCompany', 'deleteCompanies']]);
-        $this->middleware("can:{$tag} restore", ['only' => ['restoreCompany']]);
+        $this->tag = Hierarchy::getTag();
+        
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createCompany']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateCompany']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteCompany', 'deleteCompanies']]);
+        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreCompany']]);
+    }
+    
+    public function index(REquest $request)
+    {
+        $roles = $this->getUserRoles($this->tag);
+        
+        return Inertia::render('Hierarchy/Index', [
+            'can' => $roles,
+        ]);
     }
 
     /**

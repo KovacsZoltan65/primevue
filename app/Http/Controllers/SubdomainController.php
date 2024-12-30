@@ -30,21 +30,27 @@ class SubdomainController extends Controller
 
     protected SubdomainRepository $subdomainRepository;
     
+    protected string $tag = 'subdomains';
+
     public function __construct(SubdomainRepository $subdomainRepository) {
         $this->subdomainRepository = $subdomainRepository;
         
-        $tag = Subdomain::getTag();
-        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getSubdomains', 'getSubdomain', 'getSubdomainByName']]);
-        $this->middleware("can:{$tag} create", ['only' => ['createSubdomain']]);
-        $this->middleware("can:{$tag} edit", ['only' => ['updateSubdomain']]);
-        $this->middleware("can:{$tag} delete", ['only' => ['deleteSubdomain', 'deleteSubdomains']]);
-        $this->middleware("can:{$tag} restore", ['only' => ['restoreSubdomain']]);
+        $this->tag = Subdomain::getTag();
+        
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getSubdomains', 'getSubdomain', 'getSubdomainByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createSubdomain']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateSubdomain']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteSubdomain', 'deleteSubdomains']]);
+        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreSubdomain']]);
     }
     
     public function index(Request $request): InertiaResponse
     {
+        $roles = $this->getUserRoles($this->tag);
+        
         return Inertia::render('Subdomain/Index', [
-            'search' => $request->get('search')
+            'search' => $request->get('search'),
+            'can' => $roles,
         ]);
     }
     

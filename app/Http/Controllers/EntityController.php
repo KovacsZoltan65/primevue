@@ -29,12 +29,15 @@ class EntityController extends Controller
     use AuthorizesRequests,
         Functions;
     protected EntityRepository $entityRepository;
+    
+    protected string $tag = 'entities';
 
     public function __construct(EntityRepository $repository)
     {
         $this->entityRepository = $repository;
 
         $tag = Entity::getTag();
+        
         $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getEntities', 'getEntity', 'getEntityByName']]);
         $this->middleware("can:{$tag} create", ['only' => ['createEntity']]);
         $this->middleware("can:{$tag} edit", ['only' => ['updateEntity']]);
@@ -44,8 +47,11 @@ class EntityController extends Controller
 
     public function index(Request $request): InertiaResponse
     {
+        $roles = $this->getUserRoles($this->tag);
+        
         return Inertia::render('Entity/Index',[
-            'search' => request('search')
+            'search' => request('search'),
+            'can' => $roles,
         ]);
     }
 

@@ -28,21 +28,27 @@ class CityController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    protected $cityRepository;
+    
+    protected CityRepository $cityRepository;
+    
+    protected string $tag = 'cities';
 
     public function __construct(CityRepository $cityRepository)
     {
         $this->cityRepository = $cityRepository;
         
-        $tag = City::getTag();
-        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getCity', 'getCity', 'getCityByName']]);
-        $this->middleware("can:{$tag} create", ['only' => ['createCity']]);
-        $this->middleware("can:{$tag} edit", ['only' => ['updateCity']]);
-        $this->middleware("can:{$tag} delete", ['only' => ['deleteCity', 'deleteCity']]);
+        $this->tag = City::getTag();
+        
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getCity', 'getCity', 'getCityByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createCity']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateCity']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteCity', 'deleteCity']]);
     }
 
     public function index(Request $request)
     {
+        $roles = $this->getUserRoles($this->tag);
+                
         $countries = Country::where('active', 1)->orderBy('name')->get()->toArray();
         $regions = Region::where('active', 1)->orderBy('name')->get()->toArray();
 
@@ -51,6 +57,7 @@ class CityController extends Controller
             'countries' => $countries,
             'regions' => $regions,
             'search' => $request->get('search'),
+            'can' => $roles,
         ]);
 
     }

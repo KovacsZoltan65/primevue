@@ -37,17 +37,18 @@ class SubdomainStateController extends Controller
     {
         $this->stateRepository = $repository;
         
-        $tag = SubdomainState::getTag();
-        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getSubdomainStates', 'getSubdomainState', 'getSubdomainStateByName']]);
-        $this->middleware("can:{$tag} create", ['only' => ['createSubdomainState']]);
-        $this->middleware("can:{$tag} edit", ['only' => ['updateSubdomainStates']]);
-        $this->middleware("can:{$tag} delete", ['only' => ['deleteSubdomainState', 'deleteSubdomainStates']]);
-        $this->middleware("can:{$tag} restore", ['only' => ['restoreSubdomainState']]);
+        $this->tag = SubdomainState::getTag();
+        
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getSubdomainStates', 'getSubdomainState', 'getSubdomainStateByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createSubdomainState']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateSubdomainStates']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteSubdomainState', 'deleteSubdomainStates']]);
+        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreSubdomainState']]);
     }
 
     public function index(Request $request): InertiaResponse
     {
-        $roles = $this->getUserRoles('subdomainstate');
+        $roles = $this->getUserRoles($this->tag);
 
         return Inertia::render('SubdomainState/Index', [
             'search' => $request->get('search'),

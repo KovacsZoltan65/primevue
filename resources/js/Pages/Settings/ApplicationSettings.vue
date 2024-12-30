@@ -175,7 +175,7 @@ const getStatusValue = (status) => {
 
         <Toast />
 
-        {{ app_settings }}
+        {{ props.can }}<br/>
 
         <div class="card">
             <Toolbar class="md-6">
@@ -195,7 +195,7 @@ const getStatusValue = (status) => {
                         severity="secondary"
                         class="mr-2"
                         @click="openNew"
-                        :disabled="!props.can.create"
+                        :disabled="!props.can.appSettings_create"
                     />
 
                     <!-- Delete Selected Button -->
@@ -205,9 +205,9 @@ const getStatusValue = (status) => {
                         severity="secondary"
                         class="mr-2"
                         @click="confirmDeleteSelected"
-                        :disabled="
-                            !selectedSettings || !selectedSettings.length
-                        "
+                        :disabled="!props.can.appSettings_delete ||
+                            !selectedSettings ||
+                            !selectedSettings.length"
                     />
                 </template>
 
@@ -264,6 +264,7 @@ const getStatusValue = (status) => {
                     selectionMode="multiple"
                     style="width: 3rem"
                     :exportable="false"
+                    :disabled="!props.can.appSettings_delete"
                 />
 
                 <!-- KEY -->
@@ -301,7 +302,7 @@ const getStatusValue = (status) => {
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
                         <Button
-                            :disabled="!props.can.edit"
+                            :disabled="!props.can.appSettings_edit"
                             icon="pi pi-pencil"
                             outlined
                             rounded
@@ -314,7 +315,7 @@ const getStatusValue = (status) => {
                             rounded
                             severity="danger"
                             @click="confirmDeleteSetting(slotProps.data)"
-                            :disabled="!props.can.delete"
+                            :disabled="!props.can.appSettings_delete"
                         />
                     </template>
                 </Column>

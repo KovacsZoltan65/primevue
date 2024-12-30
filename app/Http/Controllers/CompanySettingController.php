@@ -26,17 +26,19 @@ class CompanySettingController extends Controller
         Functions;
 
     protected CompanySettingRepository $compSettingRepository;
+    
     protected string $tag = 'compSettings';
 
     public function __construct(CompanySettingRepository $repository)
     {
         $this->compSettingRepository = $repository;
 
-        $tag = CompanySetting::getTag();
-        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicationSetting', 'getApplicatonSettingByName']]);
-        $this->middleware("can:{$tag} create", ['only' => ['createApplicationSetting']]);
-        $this->middleware("can:{$tag} edit", ['only' => ['updateApplicationSetting']]);
-        $this->middleware("can:{$tag} delete", ['only' => ['deleteApplicationSetting', 'deleteApplicationSettings']]);
+        $this->tag = CompanySetting::getTag();
+        
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicationSetting', 'getApplicatonSettingByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createApplicationSetting']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateApplicationSetting']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteApplicationSetting', 'deleteApplicationSettings']]);
     }
 
     public function index(Request $request): InertiaResponse

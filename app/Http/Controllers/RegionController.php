@@ -36,12 +36,13 @@ class RegionController extends Controller
     {
         $this->regionRepository = $repository;
         
-        $tag = Region::getTag();
-        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getRegions', 'getSRegion', 'getRegionByName']]);
-        $this->middleware("can:{$tag} create", ['only' => ['createRegion']]);
-        $this->middleware("can:{$tag} edit", ['only' => ['updateRegion']]);
-        $this->middleware("can:{$tag} delete", ['only' => ['deleteRegion', 'deleteRegions']]);
-        $this->middleware("can:{$tag} restore", ['only' => ['restoreRegion']]);
+        $this->tag = Region::getTag();
+        
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getRegions', 'getSRegion', 'getRegionByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createRegion']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateRegion']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteRegion', 'deleteRegions']]);
+        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreRegion']]);
     }
 
     /**
@@ -56,6 +57,8 @@ class RegionController extends Controller
      */
     public function index(Request $request): InertiaResponse
     {
+        $roles = $this->getUserRoles($this->tag);
+        
         $countries = Country::where('active', 1)->orderBy('name')->get()->toArray();
 
         $search = $request->query('search');
@@ -63,6 +66,7 @@ class RegionController extends Controller
         return Inertia::render('Geo/Region/Index', [
             'countries' => $countries,
             'search' => $search,
+            'can' => $roles,
         ]);
     }
 

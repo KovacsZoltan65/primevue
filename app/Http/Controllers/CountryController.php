@@ -30,17 +30,20 @@ class CountryController extends Controller
         Functions;
 
     protected CountryRepository $countryRepository;
+    
+    protected string $tag = 'countries';
 
     public function __construct(CountryRepository $repository)
     {
         $this->countryRepository = $repository;
 
-        $tag = Country::getTag();
-        $this->middleware("can:{$tag} list", ['only' => ['index', 'applySearch', 'getCountries', 'getCountry', 'getCountryByName']]);
-        $this->middleware("can:{$tag} create", ['only' => ['createCountry']]);
-        $this->middleware("can:{$tag} edit", ['only' => ['updateCountry']]);
-        $this->middleware("can:{$tag} delete", ['only' => ['deleteCountry', 'deleteCountries']]);
-        $this->middleware("can:{$tag} restore", ['only' => ['restoreCountry']]);
+        $this->tag = Country::getTag();
+        
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getCountries', 'getCountry', 'getCountryByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createCountry']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateCountry']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteCountry', 'deleteCountries']]);
+        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreCountry']]);
     }
 
     /**
@@ -48,6 +51,7 @@ class CountryController extends Controller
      */
     public function index(Request $request)
     {
+        $roles = $this->getUserRoles($this->tag);
         //$cities = City::where('active', 1)->orderBy('name')->get()->toArray();
         //$regions = Region::where('active', 1)->orderBy('name')->get()->toArray();
 
@@ -55,6 +59,7 @@ class CountryController extends Controller
             //'cities' => $cities,
             //'regions' => $regions,
             'search' => request('search'),
+            'can' => $roles,
         ]);
     }
 

@@ -85,15 +85,15 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
     {
         try {
             $setting = null;
-            
+
             DB::transaction(function() use($request, &$setting) {
                 $setting = CompanySetting::create($request->all());
-                
+
                 $this->createDefaultSettings($setting);
-                
+
                 $this->cacheService->forgetAll($this->tag);
             });
-            
+
             return $setting;
         } catch(Exception $ex) {
             $this->logError($ex, 'createCompSetting error', ['request' => $request->all()]);
@@ -128,10 +128,10 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
                 'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
             ]);
-            
+
             $ids = $validated['ids'];
             $deletedCount = 0;
-            
+
             DB::transaction(function () use ($ids, &$deletedCount) {
                 $settings = CompanySetting::whereIn('id', $ids)->lockForUpdate()->get();
 
@@ -149,7 +149,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             throw $ex;
         }
     }
-    
+
     public function deleteCompSetting(Request $request)
     {
         try {
@@ -160,7 +160,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
 
                 $this->cacheService->forgetAll($this->tag);
             });
-            
+
             return $setting;
         } catch (Exception $ex) {
             $this->logError($ex, 'deleteCompSetting error', ['request' => $request->all()]);
@@ -172,7 +172,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
     {
         try {
             $setting = null;
-            
+
             DB::transaction(function() use($request, &$setting) {
                 $setting = CompanySetting::withTrashed()->lockForUpdate()->findOrFail($request->id);
                 $setting->restore();
@@ -191,15 +191,15 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
     {
         try {
             $setting = null;
-            
+
             DB::transaction(function() use($request, &$setting) {
-                $setting = CompanySetting::withTrashed()->lockForUpdate()->findOrFail($id);
+                $setting = CompanySetting::withTrashed()->lockForUpdate()->findOrFail($request->id);
                 $setting->forceDelete();
-                
+
                 $this->cacheService->forgetAll($this->tag);
             });
-            
-            
+
+
 
             return $setting;
         } catch(Exception $ex) {
@@ -207,18 +207,17 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             throw $ex;
         }
     }
-    
+
     private function createDefaultSettings(CompanySetting $setting): void
     {
         //
     }
-    
+
     /**
      * Specify Model class name
      *
      * @return string
      */
-    #[Override]
      public function model(): string
     {
         return CompanySetting::class;
@@ -227,7 +226,6 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
     /**
      * Boot up the repository, pushing criteria
      */
-    #[Override]
      public function boot()
     {
         $this->pushCriteria(app(RequestCriteria::class));

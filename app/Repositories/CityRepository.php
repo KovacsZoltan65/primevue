@@ -12,6 +12,7 @@ use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Interfaces\CityRepositoryInterface;
 use App\Traits\Functions;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class CityRepositoryEloquent.
@@ -92,9 +93,9 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
             $city = null;
             DB::transaction(function() use($request, &$city) {
                 $city = City::create($request->all());
-                
+
                 $this->createDefaultSettings($city);
-                
+
                 $this->cacheService->forgetAll($this->tag);
             });
 
@@ -113,7 +114,7 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
                 $city = City::lockForUpdate()->findOrFail($id);
                 $city->update($request->all());
                 $city->refresh();
-                
+
                 $this->cacheService->forgetAll($this->tag);
             });
 
@@ -133,7 +134,7 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
             ]);
             $ids = $validated['ids'];
             $deletedCount = 0;
-            
+
             DB::transaction(function() use($ids, & $deletedCount) {
                 $cities = City::whereIn('id', $ids)->lockForUpdate()->get();
 
@@ -153,7 +154,7 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function deleteCity(Request $request)
     {
         try {
@@ -171,7 +172,7 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function restoreCity(Request $request)
     {
         try {
@@ -189,7 +190,7 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function realDeleteCity(int $id)
     {
         try {
@@ -197,7 +198,7 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
             DB::transaction(function() use($id, &$city) {
                 $city = City::withTrashed()->lockForUpdate()->findOrFail($id);
                 $city->forceDelete();
-                
+
                 $this->cacheService->forgetAll($this->tag);
             });
 
@@ -212,17 +213,15 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
     {
         //
     }
-    
+
     /**
      * Boot up the repository, pushing criteria
      */
-    #[\Override]
     public function boot()
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
 
-    #[\Override]
     public function model()
     {
         return City::class;

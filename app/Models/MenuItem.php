@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Override;
 
 class MenuItem extends Model
 {
@@ -75,5 +77,11 @@ class MenuItem extends Model
     public function usages(): HasMany
     {
         return $this->hasMany(MenuItemUsage::class);
+    }
+
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable();
     }
 }

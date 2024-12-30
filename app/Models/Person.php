@@ -18,29 +18,39 @@ class Person extends Model
     use HasFactory,
         SoftDeletes,
         LogsActivity;
-    
+
     protected $table = 'persons';
     protected $fillable = ['name', 'email', 'password', 'language', 'birthdate', 'active'];
     protected $attributes = [
-        'name' => '', 
-        'email' => '', 
-        'password' => '', 
-        'language' => 'hu', 
-        'birthdate' => '', 
+        'name' => '',
+        'email' => '',
+        'password' => '',
+        'language' => 'hu',
+        'birthdate' => '',
         'active' => 1
     ];
+
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
 
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'entity';
-    
+
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
     ];
-    
+
+    /*
+     * ==============================================================
+     */
+
     public function scopeSearch(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {
@@ -52,7 +62,7 @@ class Person extends Model
                 $query->where('active', $request->active);
             });
     }
-    
+
     /**
      * =========================================================
      * Azok a cégek, amelyekhez az adott személy tartozik.
@@ -68,7 +78,7 @@ class Person extends Model
     {
         return $this->belongsToMany(Company::class, 'person_company');
     }
-    
+
     /**
      * =========================================================
      * Azok az entitások, amelyekhez az adott személy a cégén keresztül tartozik.
@@ -78,7 +88,7 @@ class Person extends Model
      * foreach ($entities as $entity) {
      *     echo $entity->name;
      * }
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
      */
     public function entities(): HasManyThrough
@@ -96,9 +106,9 @@ class Person extends Model
         return $this->hasManyThrough(
             Entity::class,      // Cél tábla
             Company::class,     // Közvetítő tábla
-            'person_company', 
-            'company_id', 
-            'id', 
+            'person_company',
+            'company_id',
+            'id',
             'id'
         );
         */

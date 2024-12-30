@@ -2,16 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\GetCompanyRequest;
-use App\Http\Requests\StoreCompanyRequest;
-use App\Http\Requests\UpdateCompanyRequest;
-use App\Http\Resources\CompanyResource;
-use App\Models\City;
-use App\Models\Company;
-use App\Models\Country;
-use App\Services\CacheService;
-use App\Traits\Functions;
-use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -21,10 +11,17 @@ use Illuminate\Routing\Controller;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\DB;
+use Exception;
+use App\Http\Requests\GetCompanyRequest;
+use App\Http\Requests\StoreCompanyRequest;
+use App\Http\Requests\UpdateCompanyRequest;
+use App\Http\Resources\CompanyResource;
+use App\Repositories\CityRepository;
+use App\Repositories\CompanyRepository;
+use App\Repositories\CountryRepository;
+use App\Traits\Functions;
 
 /**
  * A CompanyController osztálya a cégek listázásához, létrehozásához, módosításához és
@@ -37,9 +34,16 @@ class CompanyController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected string $tag = 'companies';
+    protected $cityRepository,
+              $countryRepository,
+              $companyRepository;
 
-    public function __construct() {
+    public function __construct(CityRepository $cityRepository, CountryRepository $countryRepository, CompanyRepository $companyRepository)
+    {
+        $this->cityRepository = $cityRepository;
+        $this->countryRepository = $countryRepository;
+        $this->companyRepository = $companyRepository;
+
         $this->middleware('can:companies list', ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
         $this->middleware('can:companies create', ['only' => ['createCompany']]);
         $this->middleware('can:companies edit', ['only' => ['updateCompany']]);
@@ -55,31 +59,16 @@ class CompanyController extends Controller
     public function index(Request $request): InertiaResponse
     {
         $roles = $this->getUserRoles('companies');
-        /*
-        $user = \App\Models\User::find(1); // Például az első felhasználó
-        dd(
-            'user', $user,
-            'hasRole admin', $user->hasRole('admin'),
-            'has permission companies create', auth()->user()->hasPermissionTo('companies create')
-        );
-        */
-        // Vagy közvetlen jogosultság hozzárendelés:
-        //$user->givePermissionTo('edit companies');
-
-        // A City modelben a városok listáját adjuk vissza, azokkal a mezőkkel, amelyek
-        // az Inertia oldalakon használtak.
-        $cities = City::select('id', 'name')
-            ->orderBy('name')
-            ->active()->get()->toArray();
-        $countries = Country::select('id', 'name')
-            ->orderBy('name')
-            ->active()->get()->toArray();
+        //$roles = auth()->user()->getRoles(); // Például dinamikusan betöltött jogosultságok
+        //dd($roles);
+        $cities = $this->cityRepository->getActiveCities();
+        $countries = $this->countryRepository->getActiveCountries();
 
         // Adjon vissza egy Inertia választ a vállalatok és a keresési paraméterek megadásával.
         return Inertia::render("Companies/Index", [
             'countries' => $countries,
             'cities' => $cities,
-            'search' => request('search'),
+            'search' => $request->input('search'),
             'can' => $roles,
         ]);
     }
@@ -91,424 +80,136 @@ class CompanyController extends Controller
         });
     }
 
-    public function getCompanies(Request $request, CacheService $cacheService): JsonResponse
+    public function getCompanies(Request $request): JsonResponse
     {
         try {
-            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
-
-            $companies = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                $companyQuery = Company::search($request);
-                return CompanyResource::collection($companyQuery->get());
-            });
+            $_companies = $this->companyRepository->getCompanies($request);
+            $companies = CompanyResource::collection($_companies);
 
             return response()->json($companies, Response::HTTP_OK);
 
         } catch (QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompanies query error',
-                'params' => ['request' => $request->all()],
-                'route' => $request->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getCompanies query error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
+            return $this->handleException($ex, 'getCompanies query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompanies general error',
-                'params' => ['request' => $request->all()],
-                'route' => $request->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getCompanies general error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCompanies general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function getCompany(GetCompanyRequest $request, CacheService $cacheService): JsonResponse
+    public function getCompany(GetCompanyRequest $request): JsonResponse
     {
         try {
-
-            $cacheKey = "{$this->tag}_" . md5($request->id);
-
-            $company = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                return Company::findOrFail($request->id);
-            });
+            $company = $this->companyRepository->getCompany($request->id);
 
             return response()->json($company, Response::HTTP_OK);
-
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompany model not found error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getCompany model not found error'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'getCompany model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompany query error',
-                'params' => ['id' => $request->id],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getCompany query error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCompany query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompany general error',
-                'params' => ['id' => $request->id],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getCompany general error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function getCompanyByName(string $name, CacheService $cacheService): JsonResponse
+    public function getCompanyByName(string $name): JsonResponse
     {
         try {
-            $cacheKey = "{$this->tag}_" . md5($name);
-
-            $company = $cacheService->remember($this->tag, $cacheKey, function () use ($name) {
-                return Company::where('name', '=', $name)->firstOrFail();
-            });
+            $company = $this->companyRepository->getCompanyByName($name);
 
             return response()->json($company, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompanyByName model not found error',
-                'params' => ['name' => $name],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => "getCompanyByName model not found error"
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'getCompanyByName model not found error', Response::HTTP_NOT_FOUND);
         } catch (QueryException $ex) {
-            // Adatbázis hiba naplózása
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompanyByName query error',
-                'params' => ['name' => $name],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getCompanyByName query error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
+            return $this->handleException($ex, 'getCompanyByName query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
-            // Általános hiba naplózása
-            ErrorController::logServerError($ex, [
-                'context' => 'getCompanyByName general error',
-                'params' => ['name' => $name],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            // JSON-választ küld vissza, jelezve, hogy váratlan hiba történt
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getCompanyByName general error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getCompanyByName general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function createCompany(StoreCompanyRequest $request, CacheService $cacheService): JsonResponse
+    public function createCompany(StoreCompanyRequest $request): JsonResponse
     {
         try {
-            $company = Company::create($request->all());
-
-            $cacheService->forgetAll($this->tag);
+            $company = $this->companyRepository->createCompany($request);
 
             return response()->json($company, Response::HTTP_CREATED);
-
-        } catch( QueryException $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'createCompany query error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'createCompany query error',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-
-        } catch( Exception $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'createCompany general error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'createCompany general error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'createCompany query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'createCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function updateCompany(UpdateCompanyRequest $request, int $id, CacheService $cacheService): JsonResponse
+    public function updateCompany(UpdateCompanyRequest $request, int $id): JsonResponse
     {
-        try {
-            $company = null;
+        try{
+            $company = $this->updateCompany($request, $id);
 
-            DB::transaction(function() use($request, $id, $cacheService, &$company) {
-                // Keresse meg a frissítendő céget az azonosítója alapján
-                $company = Company::findOrFail($id)->lockForUpdate();
-
-                // Frissítse a vállalatot a HTTP-kérés adataival
-                $company->update($request->all());
-                // Frissítjük a modelt
-                $company->refresh();
-
-                $cacheService->forgetAll($this->tag);
-
-                // Egyedi cég cache frissítése
-                //$cacheService->put("company_{$company->id}", $company->toArray(), $this->tag);
-                // Lista cache-ek törlése (tag-alapú vagy mintázat-alapú)
-                //$cacheService->forgetByTag($this->tag);
-
-            });
-
-            return response()->json($company, Response::HTTP_OK);
-        } catch( ModelNotFoundException $ex ) {
-            // Ha a cég nem található
-            ErrorController::logServerError($ex, [
-                'context' => 'updateCompany model not found error',
-                'params' => ['id' => $id, 'request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'updateCompany model not found error',
-            ], Response::HTTP_NOT_FOUND);
-        } catch( QueryException $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'updateCompany query error',
-                'params' => ['id' => $id, 'request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'updateCompany query error',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch( Exception $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'updateCompany general error',
-                'params' => ['id' => $id, 'request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'updateCompany general error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json($company, Response::HTTP_CREATED);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'updateCompany model not found error', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'updateCompany query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'updateCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function restoreCompany(GetCompanyRequest $request, CacheService $cacheService): JsonResponse
+    public function deleteCompanies(Request $request): JsonResponse
     {
         try {
-            $company = Company::withTrashed()->findOrFail($request->id);
-            $company->restore();
+            $deletedCount = $this->companyRepository->deleteCompanies($request);
+            return response()->json($deletedCount, Response::HTTP_OK);
 
-            $cacheService->forgetAll($this->tag);
+        } catch(ValidationException $ex) {
+            return $this->handleException($ex, 'deleteCompanies validation error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'deleteCompanies query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'deleteCompanies general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function deleteCompany(GetCompanyRequest $request): JsonResponse
+    {
+        try {
+            $company = $this->companyRepository($request);
 
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'restoreCompany model not found exception',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            // Ha a rekord nem található
-            return response()->json([
-                'success' => APP_FALSE,
-                'message' => 'restoreCompany model not found exception',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'deleteCompany model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'restoreCompany query error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'restoreCompany query error',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'deleteCompany database error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'restoreCompany general error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            // Általános hibakezelés
-            return response()->json([
-                'success' => false,
-                'message' => 'restoreCompany general error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'deleteCompany database error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function deleteCompany(GetCompanyRequest $request, CacheService $cacheService): JsonResponse
+    public function restoreCompany(GetCompanyRequest $request): JsonResponse
     {
         try {
-            $company = Company::findOrFail($request->id);
-            $company->delete();
-
-            $cacheService->forgetAll($this->tag);
+            $company = $this->companyRepository->restoreCompany($request);
 
             return response()->json($company, Response::HTTP_OK);
-        } catch( ModelNotFoundException $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'deleteCompany model not found error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deleteCompany model not found error',
-            ], Response::HTTP_NOT_FOUND);
-        } catch( QueryException $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'deleteCompany database error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deleteCompany database error',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch( Exception $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'deleteCompany general error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deleteCompany general error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'restoreCompany model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'restoreCompany query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'restoreCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
-    public function deleteCompanies(Request $request, CacheService $cacheService): JsonResponse
+    
+    public function realDeleteCompany(GetCompanyRequest $request)
     {
         try {
-            // Az azonosítók tömbjének validálása
-            $validated = $request->validate([
-                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
-                'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
-            ]);
-
-            // Az azonosítók kigyűjtése
-            $ids = $validated['ids'];
-
-            // A cégek törlése
-            $deletedCount = Role::whereIn('id', $ids)->delete();
-
-            $cacheService->forgetAll($this->tag);
-
-            // Válasz visszaküldése
+            $deletedCount = $this->companyRepository->realDeleteCompany($request->id);
+            
             return response()->json($deletedCount, Response::HTTP_OK);
-        } catch( ValidationException $ex ){
-            // Validációs hiba logolása
-            ErrorController::logServerValidationError($ex, $request);
-
-            // Kliens válasz
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deleteCompanies validation error',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch( QueryException $ex ) {
-            // Adatbázis hiba logolása és visszajelzés
-            ErrorController::logServerError($ex, [
-                'context' => 'deleteCompanies database error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deleteCompanies database error',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch( Exception $ex ) {
-            // Általános hiba logolása és visszajelzés
-            ErrorController::logServerError($ex, [
-                'context' => 'deleteCompanies general error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'deleteCompanies general error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'realDeleteCompany model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'realDeleteCompany query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'realDeleteCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

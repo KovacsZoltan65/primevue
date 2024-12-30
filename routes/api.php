@@ -122,17 +122,17 @@ Route::middleware(['web', 'auth'])->group(function () {
      * SETTINGS
      * =====================================================
      */
-    Route::get('/application_settings', [ApplicationSettingController::class, 'getSettings']);
-    Route::get('/application_settings/{id}', [ApplicationSettingController::class, 'getSetting']);
-    Route::get('/application_settings/key/{key}', [ApplicationSettingController::class, 'getSettingByKey']);
-    Route::post('/application_settings', [ApplicationSettingController::class, 'createSetting']);
-    Route::put('/application_settings/{id}', [ApplicationSettingController::class, 'updateSetting']);
+    Route::get('/application_settings', [ApplicationSettingController::class, 'getAppSettings']);
+    Route::get('/application_settings/{id}', [ApplicationSettingController::class, 'getApptSetting']);
+    Route::get('/application_settings/key/{key}', [ApplicationSettingController::class, 'getAppSettingByKey']);
+    Route::post('/application_settings', [ApplicationSettingController::class, 'createAppSetting']);
+    Route::put('/application_settings/{id}', [ApplicationSettingController::class, 'updateAppSetting']);
 
-    Route::get('/company_settings', [CompanySettingController::class, 'getSettings']);
-    Route::get('/company_settings/{id}', [CompanySettingController::class, 'getSetting']);
-    Route::get('/company_settings/key/{key}', [CompanySettingController::class, 'getSettingByKey']);
-    Route::post('/company_settings', [CompanySettingController::class, 'createSetting']);
-    Route::put('/company_settings/{id}', [CompanySettingController::class, 'updateSetting']);
+    Route::get('/company_settings', [CompanySettingController::class, 'getCompSettings']);
+    Route::get('/company_settings/{id}', [CompanySettingController::class, 'getCompSetting']);
+    Route::get('/company_settings/key/{key}', [CompanySettingController::class, 'getCompSettingByKey']);
+    Route::post('/company_settings', [CompanySettingController::class, 'createCompSetting']);
+    Route::put('/company_settings/{id}', [CompanySettingController::class, 'updateCompSetting']);
 
     /**
      * Hozzon létre új céget az API-n keresztül.

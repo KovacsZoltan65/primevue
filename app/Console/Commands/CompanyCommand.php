@@ -43,7 +43,6 @@ use App\Models\Company;
 use Faker\Factory as Faker;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use \Validator;
 
 class CompanyCommand extends Command
 {

@@ -19,7 +19,7 @@ class RegionsTableSeeder extends Seeder
         Region::truncate();
         Schema::enableForeignKeyConstraints();
 
-        activity()->disableLogging();
+        //activity()->disableLogging();
         
         $regions = [
             ['id' => 1538,'name' => 'Komárom-Esztergom',     'code' => '12','country_id' => 92,'active' => 1,],
@@ -64,7 +64,7 @@ class RegionsTableSeeder extends Seeder
         
         $this->command->info(PHP_EOL . __('migration_created_regions'));
         
-        activity()->enableLogging();
+        //activity()->enableLogging();
         
         /*
         \DB::table('regions')->insert([

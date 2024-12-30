@@ -16,7 +16,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Class Country
- * 
+ *
  * @property int $id
  * @property string $name
  * @property string $code
@@ -37,17 +37,26 @@ class Country extends Model
         'active' => 'integer',
     ];
 
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'country';
-    
+
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
     ];
-    
+
+    /*
+     * ==============================================================
+     */
+
     public function scopeSearch(Builder $query, Request $request): Builder
     {
         return $query->when($request->search, function ($query) use ($request) {
@@ -83,7 +92,7 @@ class Country extends Model
     {
         return $this->hasMany(Region::class, 'region_id');
     }
-    
+
     #[Override]
     public function getActivitylogOptions(): LogOptions {
         return LogOptions::defaults()

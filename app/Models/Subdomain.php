@@ -6,7 +6,6 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -60,18 +59,28 @@ class Subdomain extends Model
         'last_export' => '',
     ];
     */
-    
+
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
+
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'subdomain';
-    
+
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
     ];
-    
+
+    /*
+     * ==============================================================
+     */
+
     public function scopeSearch(Builder $query, Request $request): Builder
     {
         return $query->when($request->search, function ($query) use ($request) {
@@ -102,7 +111,7 @@ class Subdomain extends Model
     {
         return $this->belongsTo(SubdomainState::class, 'state_id');
     }
-    
+
     #[Override]
     public function getActivitylogOptions(): LogOptions {
         return LogOptions::defaults()

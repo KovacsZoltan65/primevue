@@ -21,16 +21,26 @@ class Hierarchy extends Model
         'child_id',
     ];
 
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
+
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'hierarchy';
-    
+
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
     ];
+
+    /*
+     * ==============================================================
+     */
 
     public function parent(): BelongsTo
     {

@@ -7,20 +7,20 @@ use App\Http\Requests\StoreApplicationSettingRequest;
 use App\Http\Requests\UpdateApplicationSettingRequest;
 use App\Http\Resources\ApplicationSettingsResource;
 use App\Models\ApplicationSetting;
-use App\Traits\Functions;
-use Exception;
+use App\Repositories\ApplicationSettingRepository;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use App\Services\SettingService;
 use Illuminate\Routing\Controller;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use App\Services\CacheService;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use App\Traits\Functions;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 class ApplicationSettingController extends Controller
@@ -28,13 +28,19 @@ class ApplicationSettingController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected string $tag = 'app_settings';
+    protected ApplicationSettingRepository $appSettingRepository;
 
-    public function __construct() {
+    protected string $tag = 'appSettings';
+
+    public function __construct(ApplicationSettingRepository $repository)
+    {
+        $this->appSettingRepository = $repository;
+
         $this->middleware('can:application_settings list', ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicatopnSetting', 'getApplicatopnSettingByName']]);
         $this->middleware('can:application_settings create', ['only' => ['createApplicatopnSetting']]);
         $this->middleware('can:application_settings edit', ['only' => ['updateApplicatopnSetting']]);
         $this->middleware('can:application_settings delete', ['only' => ['deleteApplicatopnSetting', 'deleteApplicationSettings']]);
+        $this->middleware('can:application_settings restore', ['only' => ['restoreApplicationSetting']]);
     }
 
     public function index(Request $request): InertiaResponse {
@@ -52,245 +58,116 @@ class ApplicationSettingController extends Controller
         });
     }
 
-    public function getSettings(Request $request, CacheService $cacheService): JsonResponse {
+    public function getAppSettings(Request $request): JsonResponse {
         try {
-            $cacheKey = "{$this->tag}_" . md5(json_encode($request->all()));
-
-            $settings = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                $settingsQuery = ApplicationSetting::search($request);
-                return ApplicationSettingsResource::collection($settingsQuery->get());
-            });
+            $settings = $this->appSettingRepository->getAppSettings($request);
 
             return response()->json($settings, Response::HTTP_OK);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getApplicationSettings query error',
-                'params' => ['request' => $request->all()],
-                'route' => $request->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getSettings query error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getAppSettings query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( Exception $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getApplicationSettings general error',
-                'params' => ['request' => $request->all()],
-                'route' => $request->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getAppSettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function getSetting(GetApplicationSettingRequest $request, CacheService $cacheService) {
+    public function getApptSetting(GetApplicationSettingRequest $request): JsonResponse
+    {
         try {
-            $cacheKey = "{$this->tag}_" . md5($request->id);
-
-            $setting = $cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                return ApplicationSetting::findOrFail($request->id);
-            });
+            $setting = $this->appSettingRepository->getAppSetting($request->id);
 
             return response()->json($setting, Response::HTTP_OK);
 
         } catch( ModelNotFoundException $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getApplicationSetting model not found error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getApplicationSetting model not found error'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'geApptSetting model not found error', Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getApplicationSetting query exception',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getApplicationSetting query exception'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'geApptSetting query exception', Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getApplicationSetting general error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getApplicationSetting general error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'geApptSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function getSettingByKey(string $key, CacheService $cacheService): JsonResponse {
+    public function getAppSettingByKey(string $key): JsonResponse
+    {
         try {
-            $cacheKey = "{$this->tag}_" . md5($key);
-
-            $setting = $cacheService->remember($this->tag, $cacheKey, function () use ($key) {
-                return ApplicationSetting::where('key', '=', $key)->firstOrFail();
-            });
+            $setting = $this->appSettingRepository->getAppSettingByKey($key);
 
             return response()->json($setting, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getApplicationSettingByKey model not found error',
-                'params' => ['key' => $key],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getApplicationSettingByKey model not found error'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'getApplicationSettingByKey model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getApplicationSettingByKey query exception',
-                'params' => ['key' => $key],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getApplicationByKey query exception',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getAppSettingByKey query exception', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'getSettingByKey general error',
-                'params' => ['key' => $key],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            // JSON-választ küld vissza, jelezve, hogy váratlan hiba történt
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getAppSettingByKey general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function createSetting(StoreApplicationSettingRequest $request, CacheService $cacheService): JsonResponse{
+    public function createAppSetting(StoreApplicationSettingRequest $request): JsonResponse{
         try{
-            $setting = ApplicationSetting::create($request->all());
-
-            $cacheService->forgetAll($this->tag);
+            $setting = $this->appSettingRepository->createAppSetting($request);
 
             return response()->json($setting, Response::HTTP_CREATED);
         }catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'CREATE_APPLICATION_SETING_DATABASE_ERROR',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => __('command_application__setting_create_database_error'),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'createAppSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'createApplicationSetting general error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'An unexpected error occurred',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'createAppSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function updateSetting(UpdateApplicationSettingRequest $request, int $id, CacheService $cacheService): JsonResponse {
+    public function updateAppSetting(UpdateApplicationSettingRequest $request, int $id): JsonResponse {
         try {
-            $setting = null;
-
-            DB::transaction(function() use($request, $id, $cacheService, &$setting) {
-                $setting = ApplicationSetting::findOrFail($id);
-                $setting->update($request->all())->lockForUpdate();
-                $setting->refresh();
-
-                $cacheService->forgetAll($this->tag);
-            });
+            $setting = $this->appSettingRepository->updateAppSetting($request, $id);
 
             return response()->json($setting, Response::HTTP_OK);
-
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'updateSetting model not found error',
-                'params' => ['id' => $id, 'request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'updateSetting model not found error',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'updateAppSetting model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'updateSetting query error',
-                'params' => ['id' => $id, 'request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'updateSetting query error',
-                'details' => $ex->getMessage(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'updateAppSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'updateApplicationSetting general error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'updateApplicationSetting general error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'updateAppSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function deleteApplicationSettings() {}
+    public function deleteAppSettings(Request $request)
+    {
+        try {
+            $deletedCount = $this->appSettingRepository->deleteAppSettings($request);
+            return response()->json($deletedCount, Response::HTTP_OK);
+        } catch (ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'deleteAppSettings model not found error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (QueryException $ex) {
+            return $this->handleException($ex, 'deleteAppSettings query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (Exception $ex) {
+            return $this->handleException($ex, 'deleteAppSettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 
-    public function deleteApplicationSetting() {}
+    public function deleteAppSetting(GetApplicationSettingRequest $request)
+    {
+        try {
+            $appSetting = $this->appSettingRepository->deleteAppSetting($request);
+
+            return response()->json($appSetting, Response::HTTP_OK);
+        } catch (ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'deleteAppSetting model not found exception', Response::HTTP_NOT_FOUND);
+        } catch (QueryException $ex) {
+            return $this->handleException($ex, 'deleteAppSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (Exception $ex) {
+            return $this->handleException($ex, 'deleteAppSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function restoreAppSettings(GetApplicationSettingRequest $request): JsonResponse
+    {
+        try {
+            $appSetting = $this->appSettingRepository->restoreAppSettings($request);
+
+            return response()->json($appSetting, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'restoreAppSettings model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'restoreAppSettings query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'restoreAppSettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }

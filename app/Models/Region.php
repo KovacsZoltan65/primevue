@@ -28,7 +28,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Region extends Model
 {
-    use HasFactory, 
+    use HasFactory,
         LogsActivity;
 
     protected $table = 'regions';
@@ -48,12 +48,22 @@ class Region extends Model
         'updated',
         'deleted',
     ];
-    
+
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
+
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'entity';
-    
+
+    /*
+     * ==============================================================
+     */
+
     /**
      * A régiók listázásához keresési feltételek
      *
@@ -69,7 +79,7 @@ class Region extends Model
             });
         })->where('active', 1);
     }
-    
+
     /**
      * A régióhoz tartozó ország
      *
@@ -89,7 +99,7 @@ class Region extends Model
     {
         return $this->hasMany(City::class, 'region_id');
     }
-    
+
     #[Override]
     public function getActivitylogOptions(): LogOptions {
         return LogOptions::defaults()

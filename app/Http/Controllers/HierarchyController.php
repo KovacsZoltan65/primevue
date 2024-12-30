@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Entity;
 use App\Models\Hierarchy;
-use Illuminate\Database\Eloquent\Collection;
-
+use App\Repositories\HierarchyRepository;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -13,9 +12,28 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Routing\Controller;
+use App\Traits\Functions;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class HierarchyController extends Controller
 {
+    use AuthorizesRequests,
+        Functions;
+
+    protected HierarchyRepository $hierarchyRepository;
+
+    public function __construct(HierarchyRepository $repository)
+    {
+        $this->hierarchyRepository = $repository;
+
+        //$this->middleware('can:herarchies list', ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
+        //$this->middleware('can:herarchies create', ['only' => ['createCompany']]);
+        //$this->middleware('can:herarchies edit', ['only' => ['updateCompany']]);
+        //$this->middleware('can:herarchies delete', ['only' => ['deleteCompany', 'deleteCompanies']]);
+        //$this->middleware('can:herarchies restore', ['only' => ['restoreCompany']]);
+    }
+
     /**
      * Szülő entitást ad az alárendelt entitásokhoz.
      *
@@ -35,56 +53,14 @@ class HierarchyController extends Controller
     public function addParent(Request $request, $childId): JsonResponse
     {
         try {
-            $parentId = $request->input('parent_id');
-            $parent = Entity::findOrFail($parentId);
-            $child = Entity::findOrFail($childId);
-
-            // Add parent-child relationship
-            $child->parents()->attach($parent);
-
-            return response()->json([
-                'message' => 'Parent added successfully.',
-                'child' => $child->load('parents'),
-            ], Response::HTTP_OK);
+            $child = $this->hierarchyRepository->addParent($request, $childId);
+            return response()->json([$child, Response::HTTP_OK]);
         } catch (ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'addParent model not found error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'addParent model not found error'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'addParent model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'addParent query error',
-                'params' => ['id' => $request->id],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'addParent query error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'addParent query error', Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
-                'context' => 'addParent general error',
-                'params' => ['id' => $request->id],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'addParent general error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'addParent general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

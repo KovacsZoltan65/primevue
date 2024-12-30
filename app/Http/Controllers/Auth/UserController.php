@@ -26,7 +26,7 @@ class UserController extends Controller
         // Jelenítse meg a felhasználókezelő oldalt
         return Inertia::render('Auth/User/Index');
     }
-    
+
     /**
      * A felhasználók lekérdezésénél alkalmazza a keresési feltételt.
      *
@@ -41,7 +41,7 @@ class UserController extends Controller
             $query->where('name', 'like', "%{$search}%");
         });
     }
-    
+
     /**
      * Visszaadja a felhasználókat a keresési feltételek alapján.
      *
@@ -54,22 +54,20 @@ class UserController extends Controller
     {
         // A keresési feltétel alkalmazása a lekérdezéshez
         $userQuery = User::search($request);
-        
+
         // A lekérdezés eredményének átalakítása erőforrásgyűjteménnyé
         $users = UserResource::collection($userQuery->get());
-        
+
         // Visszaadás
         return $users;
     }
-    
+
     public function getUser(Request $request)
     {
-\Log::info('$user: ' . print_r($request->all(), true));
         $user = User::find($request->get('id'));
-//\Log::info('$user: ' . print_r($user, true));
         return $user;
     }
-    
+
     /**
      * Létrehoz egy új felhasználót az adatbázisban.
      *
@@ -82,11 +80,11 @@ class UserController extends Controller
     {
         // Létrehoz egy új felhasználót az adatbázisban
         $user = User::create($request->all());
-        
+
         // A létrehozott felhasználó adatait tartalmazó JSON-válasz visszaadása
         return response()->json($user, Response::HTTP_OK);
     }
-    
+
     /**
      * Frissít egy meglévő felhasználót az adatbázisban.
      *
@@ -100,10 +98,10 @@ class UserController extends Controller
     {
         // Keresse meg a frissítendő felhasználót az azonosítója alapján
         $old_user = User::find( $id);
-        
+
         // Frissítse a felhasználót a HTTP-kérés adataival
         $user = $old_user->update($request->all());
-        
+
         // A frissített felhasználó adatait tartalmazó JSON-válasz visszaadása
         return response()->json($user, Response::HTTP_OK);
     }
@@ -130,7 +128,7 @@ class UserController extends Controller
         // A frissített felhasználó adatait tartalmazó JSON-válasz visszaadása
         return response()->json($user, Response::HTTP_OK);
     }
-    
+
     /**
      * Törli a megadott azonosítójú felhasználót az adatbázisból.
      *
@@ -143,31 +141,33 @@ class UserController extends Controller
     {
         // Keresse meg a törlendő felhasználót az azonosítója alapján
         $old_user = User::where('id', $id)->first();
-        
+
         // Törli a felhasználót az adatbázisból
         $old_user->delete();
-        
+
         // A törlés eredményét tartalmazó JSON-válasz visszaadása
         return response()->json($old_user, Response::HTTP_OK);
     }
-    
+
     public function assignRoleToUser(Request $request, User $user): JsonResponse
     {
         $validated = $request->validate([
             'role' => 'required|string|exists:role,name'
         ]);
-        
+
         $user->assignRole($validated['role']);
-        
+
         return response()->json(['user' => $user], Response::HTTP_OK);
     }
-    
+
     public function assignPermissionToUser(Request $request, User $user): JsonResponse
     {
         $validated = $request->validate([
             'role' => 'required|string|exists:permissions,name'
         ]);
-        
-        //$user->assignP
+
+        $user->assignPermission($validated['permissions']);
+
+        return response()->json(['user' => $user], Response::HTTP_OK);
     }
 }

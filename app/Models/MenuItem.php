@@ -6,25 +6,39 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Override;
 
 class MenuItem extends Model
 {
-    use HasFactory;
-    
+    use HasFactory,
+        LogsActivity;
+
     protected $table = 'menu_items';
     protected $fillable = ['title', 'icon', 'url', 'default_weight', 'parent_id'];
+
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
 
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'menu_item';
-    
+
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
     ];
-    
+
+    /*
+     * ==============================================================
+     */
+
     /**
      * Az aktuális menüpont gyermekmenüpontjainak lekérése.
      *
@@ -63,5 +77,11 @@ class MenuItem extends Model
     public function usages(): HasMany
     {
         return $this->hasMany(MenuItemUsage::class);
+    }
+
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable();
     }
 }

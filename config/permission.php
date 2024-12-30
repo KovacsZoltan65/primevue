@@ -183,4 +183,6 @@ return [
 
         'store' => 'default',
     ],
+    
+    'permissions' => ['list', 'create', 'edit', 'delete', 'restore'],
 ];

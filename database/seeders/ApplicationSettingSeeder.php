@@ -17,15 +17,15 @@ class ApplicationSettingSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
         ApplicationSetting::truncate();
         Schema::enableForeignKeyConstraints();
-        
+
         // Logolás letiltása
         activity()->disableLogging();
 
         $settings = [
-            ['key' => 'default_language', 'value' => 'en', 'is_active' => 1],
-            ['key' => 'theme', 'value' => 'light', 'is_active' => 1],
+            ['key' => 'default_language', 'value' => 'en', 'active' => 1],
+            ['key' => 'theme', 'value' => 'light', 'active' => 1],
         ];
-        
+
         foreach($settings as $setting) {
             ApplicationSetting::create($setting);
         }

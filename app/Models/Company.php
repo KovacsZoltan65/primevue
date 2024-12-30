@@ -17,24 +17,34 @@ class Company extends Model
     use HasFactory,
         SoftDeletes,
         LogsActivity;
-    
+
     protected $table = 'companies';
     protected $fillable = [
-        'name', 'country_id', 
-        'city_id', 'directory', 'registration_number', 
+        'name', 'country_id',
+        'city_id', 'directory', 'registration_number',
         'tax_id', 'address', 'active'
     ];
+
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
 
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'company';
-    
+
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
     ];
+
+    /*
+     * ==============================================================
+     */
 
     public function scopeSearch(Builder $query, Request $request): Builder
     {
@@ -54,11 +64,15 @@ class Company extends Model
         });
     }
 
-    public function scopeActive(Builder $query, Request $request): Builder
+    public function scopeActive(Builder $query): Builder
     {
-        return $query->where('active', 1);
+        return $query->where(
+            'active',
+            '=',
+            1
+        );
     }
-    
+
     /**
      * Get the country that owns the Company
      *
@@ -67,9 +81,9 @@ class Company extends Model
     public function country()
     {
         // A vállalat tartozó országa
-        // 
+        //
         // Az ország, amelyhez a vállalat tartozik.
-        // 
+        //
         // @return \Illuminate\Database\Eloquent\Relations\BelongsTo
         return $this->belongsTo(Country::class, 'country_id');
     }
@@ -82,16 +96,16 @@ class Company extends Model
     public function city()
     {
         // A vállalat tartozó városa
-        // 
+        //
         // Egy vállalatnak pontosan egy városa van.
-        // 
+        //
         // @return \Illuminate\Database\Eloquent\Relations\BelongsTo
         return $this->belongsTo(City::class, 'city_id');
     }
-    
+
     /**
      * =========================================================
-     * 
+     *
      * =========================================================
      * $person = Person::find(1);
      * $entities = $person->entities;
@@ -103,7 +117,7 @@ class Company extends Model
     {
         return $this->belongsToMany(Person::class, 'person_company');
     }
-    
+
     /**
      * =========================================================
      * Egy Company lekérdezése, amelyhez tartozó Entity-je van

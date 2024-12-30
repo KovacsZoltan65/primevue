@@ -30,6 +30,12 @@ class Entity extends Model
         'active' => 1
     ];
 
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
+
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
@@ -40,6 +46,10 @@ class Entity extends Model
         'updated',
         'deleted',
     ];
+
+    /*
+     * ==============================================================
+     */
 
     public function scopeSerach(Builder $query, Request $request)
     {
@@ -84,7 +94,7 @@ class Entity extends Model
     {
         return $this->belongsToMany(
             Entity::class,
-            'hierarchy',
+            'entity_rel',
             'child_id',
             'parent_id'
         )->withTimestamps();
@@ -109,7 +119,7 @@ class Entity extends Model
     {
         return $this->belongsToMany(
             Entity::class,
-            'hierarchy',
+            'entity_rel',
             'parent_id',
             'child_id'
         )->withTimestamps();

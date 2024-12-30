@@ -8,19 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-
-/**
- *
- * @property int $id
- * @property string $name
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property Carbon $deleted_at
- */
 
 class SubdomainState extends Model
 {
@@ -35,18 +25,28 @@ class SubdomainState extends Model
     //protected $casts = [
     //    'active' => 'integer',
     //];
-    
+
+    /*
+     * ==============================================================
+     * LOGOLÁS
+     * ==============================================================
+     */
+
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'subdomain_state';
-    
+
     protected static $recordEvents = [
         'created',
         'updated',
         'deleted',
     ];
-    
+
+    /*
+     * ==============================================================
+     */
+
     /**
      * Határozza meg a lekérdezést, hogy a keresési kifejezésnek megfelelő névvel rendelkező aldomain állapotokat is tartalmazzon.
      *
@@ -62,7 +62,7 @@ class SubdomainState extends Model
             });
         });
     }
-    
+
     /**
      * Szerezze be az ehhez az aldomain állapothoz társított aldomaineket.
      *
@@ -72,7 +72,7 @@ class SubdomainState extends Model
     {
         return $this->hasMany(Subdomain::class, 'state_id');
     }
-    
+
     #[Override]
     public function getActivitylogOptions(): LogOptions {
         return LogOptions::defaults()

@@ -59,7 +59,7 @@ const toast = useToast();
 const dt = ref();
 
 const companies = ref();
-const company = ref({
+const defaultCompany = {
     id: null,
     name: "",
     directory: "",
@@ -69,10 +69,13 @@ const company = ref({
     tax_id: null,
     address: null,
     active: 1,
-});
+};
+
+//const company = ref({ ...defaultCompany });
+const company = ref({ ...defaultCompany });
 
 const initialCompany = () => {
-    return {...company.value};
+    return { ...defaultCompany }; // Mindig a defaultCompany értékeit adja vissza
 };
 
 watch(
@@ -240,7 +243,6 @@ function confirmDeleteSelected() {
  */
 function openNew() {
     company.value = initialCompany();
-
     submitted.value = false;
     companyDialog.value = true;
 };
@@ -252,12 +254,12 @@ function openNew() {
  * A v$.value.$reset() függvénnyel visszaállítja a validációs objektumot az alapértelmezett állapotába.
  */
 const hideDialog = () => {
+    company.value = initialCompany(); // Visszaáll az alapértelmezett állapotra
     companyDialog.value = false;
     deleteCompanyDialog.value = false;
     deleteSelectedCompaniesDialog.value = false;
     submitted.value = false;
 
-    // Visszaállítja a validációs objektumot az alapértelmezett állapotába.
     v$.value.$reset();
 };
 
@@ -636,7 +638,7 @@ const throwError = () => {
         <Head :title="$t('companies')" />
 
         <Toast />
-
+{{ props.can }}
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
@@ -656,7 +658,7 @@ const throwError = () => {
                         severity="secondary"
                         class="mr-2"
                         @click="openNew"
-                        :disabled="!props.can.create"
+                        :disabled="!props.can.companies_create"
                     />
 
                     <!-- Delete Selected Button -->
@@ -828,7 +830,7 @@ const throwError = () => {
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
                         <Button
-                            :disabled="!props.can.edit"
+                            :disabled="!props.can.companies_edit"
                             icon="pi pi-pencil"
                             outlined
                             rounded
@@ -841,7 +843,7 @@ const throwError = () => {
                             rounded
                             severity="danger"
                             @click="confirmDeleteCompany(slotProps.data)"
-                            :disabled="!props.can.delete"
+                            :disabled="!props.can.companies_delete"
                         />
                     </template>
                 </Column>

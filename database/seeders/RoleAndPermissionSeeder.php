@@ -34,8 +34,14 @@ class RoleAndPermissionSeeder extends Seeder
             \App\Models\Company::getTag(),
             \App\Models\Auth\Role::getTag(),
             \App\Models\Auth\Permission::getTag(),
+
+            \App\Models\Subdomain::getTag(),
             \App\Models\SubdomainState::getTag(),
+
             \App\Models\Hierarchy::getTag(),
+
+            \App\Models\Person::getTag(),
+            \App\Models\Entity::getTag(),
         ];
 
         $permissions = [

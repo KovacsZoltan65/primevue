@@ -4,15 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\GetRegionRequest;
 use App\Http\Requests\StoreRegionRequest;
-use App\Http\Resources\RegionResource;
 use App\Models\Country;
 use App\Models\Region;
-use App\Repositories\RegionRepositoryInterface;
-use App\Services\CacheService;
+use App\Repositories\RegionRepository;
+use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -20,9 +20,6 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Nette\Schema\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
-use App\Traits\Functions;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\DB;
 
 class RegionController extends Controller
 {
@@ -30,9 +27,9 @@ class RegionController extends Controller
         Functions;
 
     protected string $tag = 'regions';
-    protected RegionRepositoryInterface $regionRepository;
+    protected RegionRepository $regionRepository;
 
-    public function __construct(RegionRepositoryInterface $repository)
+    public function __construct(RegionRepository $repository)
     {
         $this->regionRepository = $repository;
         

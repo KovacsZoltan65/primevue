@@ -163,6 +163,25 @@ const rules = {
     },
 };
 
+const state = reactive({
+    columns: {
+        'id': { field: 'id', is_visible: true, is_sortable: true, is_filterable: true },
+        'name': { field: 'name', is_visible: true, is_sortable: true, is_filterable: true },
+        'country_id': { field: 'country_id', is_visible: true, is_sortable: true, is_filterable: true },
+        'city_id': { field: 'city_id', is_visible: true, is_sortable: true, is_filterable: true },
+        'directory': { field: 'directory', is_visible: true, is_sortable: true, is_filterable: true },
+        'registration_number': { field: 'registration_number', is_visible: true, is_sortable: true, is_filterable: true },
+        'tax_id': { field: 'tax_id', is_visible: true, is_sortable: true, is_filterable: true },
+        'address': { field: 'address', is_visible: true, is_sortable: true, is_filterable: true },
+        'active': { field: 'active', is_visible: true, is_sortable: true, is_filterable: true }
+    }
+});
+const local_storage_column_key = 'ln_companies_grid_columns';
+watch(state.columns, (new_value, old_value) => {
+    localStorage.setItem(local_storage_column_key, JSON.stringify(new_value));
+});
+
+
 /**
  * Létrehozza a validációs példányt a validációs szabályok alapján.
  *
@@ -217,7 +236,29 @@ const fetchItems = async () => {
  */
 onMounted(() => {
     fetchItems();
+
+    let columns = localStorage.getItem(local_storage_column_key);
+    if( columns ) {
+        columns = JSON.parse(columns);
+        for(const column_name in columns) {
+            state.columns[column_name] = columns[column_name];
+        }
+    }
 });
+
+/**
+ * Megerősítés a város törléséhez.
+ *
+ * Ez a funkció a company változóba másolja a kiválasztott város adatait,
+ * és megnyitja a dialógusablakot a város törléséhez.
+ *
+ * @param {object} data - A kiválasztott város adatai.
+ * @return {void}
+ */
+ const confirmDeleteCompany = (data) => {
+    company.value = { ...data };
+    deleteCompanyDialog.value = true;
+};
 
 /**
  * Megerősíti a kiválasztott termékek törlését.
@@ -275,20 +316,6 @@ const hideDialog = () => {
 const editCompany = (data) => {
     company.value = { ...data };
     companyDialog.value = true;
-};
-
-/**
- * Megerősítés a város törléséhez.
- *
- * Ez a funkció a company változóba másolja a kiválasztott város adatait,
- * és megnyitja a dialógusablakot a város törléséhez.
- *
- * @param {object} data - A kiválasztott város adatai.
- * @return {void}
- */
-const confirmDeleteCompany = (data) => {
-    company.value = { ...data };
-    deleteCompanyDialog.value = true;
 };
 
 const saveCompany = async () => {
@@ -640,6 +667,8 @@ const throwError = () => {
         <Toast />
 
         {{ props.can }}<br/>
+        {{ state.columns.name.field }}<br/>
+        {{ state.columns.directory.field }}<br/>
 
         <div class="card">
             <Toolbar class="md-6">
@@ -772,11 +801,12 @@ const throwError = () => {
                     selectionMode="multiple"
                     style="width: 3rem"
                     :exportable="false"
+                    :disabled="!props.can.companies_delete"
                 />
 
                 <!-- NAME -->
                 <Column
-                    field="name"
+                    :field="state.columns.name.field"
                     :header="$t('name')"
                     sortable
                     style="min-width: 16rem"
@@ -795,7 +825,7 @@ const throwError = () => {
 
                 <!-- DIRECTORY -->
                 <Column
-                    field="directory"
+                    :field="state.columns.directory.field"
                     :header="$t('directory')"
                     sortable
                     style="min-width: 16rem"
@@ -814,7 +844,7 @@ const throwError = () => {
 
                 <!-- COUNTRY -->
                 <Column
-                    field="country_id"
+                    :field="state.columns.country_id.filed"
                     :header="$t('country')"
                     sortable
                     style="min-width: 16rem"
@@ -826,7 +856,7 @@ const throwError = () => {
 
                 <!-- CITY -->
                 <Column
-                    field="city_id"
+                    :field="state.columns.city_id.field"
                     :header="$t('city')"
                     sortable
                     style="min-width: 16rem"

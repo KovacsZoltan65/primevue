@@ -40,13 +40,22 @@ const toast = useToast();
 const loading = ref(true);
 const dt = ref();
 const filters = ref({});
+
 const app_settings = ref();
-const app_setting = ref({
+
+const defaultSetting = {
     id: null,
     key: "",
     value: "",
     active: 1,
-});
+};
+
+const app_setting = ref({ ...defaultSetting });
+
+const initialSetting = () => {
+    return { ...defaultSetting };
+};
+
 const submitted = ref(false);
 
 const rules = {
@@ -71,10 +80,6 @@ const local_storage_column_key = 'ln_app_settins_grid_columns';
 watch(state.columns, (new_value, old_value) => {
     localStorage.setItem(local_storage_column_key, JSON.stringify(new_value));
 });
-
-const initialSetting = () => {
-    return {...app_setting.value};
-};
 
 const selectedSettings = ref([]);
 const settingDialog = ref(false);
@@ -119,8 +124,20 @@ onMounted(() => {
     }
 });
 
+const hideDialog = () => {
+    app_setting.value = initialSetting();
+    settingDialog.value = false;
+    deleteSettingDialog.value = false;
+    deleteSelectedSettingsDialog.value = false;
+    submitted.value = false;
+
+    v$.value.$reset();
+};
+
 const openNew = () => {
-    //
+    app_setting.value = initialSetting();
+    submitted.value = false;
+    settingDialog.value = true;
 };
 
 const editSetting = (data) => {
@@ -128,12 +145,173 @@ const editSetting = (data) => {
     settingDialog.value = true;
 }
 
-const confirmDeleteSelected = () => {
-    //
+const saveSetting = async () => {
+    const result = await v$.value.$validate();
+
+    if ( result ) {
+        submitted.value = true;
+
+        if( app_setting.value.id ) {
+            updateSetting();
+        } else {
+            createSetting();
+        }
+    } else {
+        // Validációs hibák összegyűjtése
+        const validationErrors = v$.value.$errors.map((error) => ({
+                field: error.$property,
+                message: trans(error.$message),
+            }));
+        // Adatok előkészítése logoláshoz
+        const data = {
+            componentName: "saveAppSetting",
+            additionalInfo: "Client-side validation failed during app_setting update",
+            category: "Validation Error",
+            priority: "low",
+            validationErrors: validationErrors,
+        };
+        // Validációs hibák logolása
+        ErrorService.logValidationError(new Error('Client-side validation error'), data);
+
+        // Hibaüzenet megjelenítése a felhasználónak
+        toast.add({
+            severity: "error",
+            summary: "Validation Error",
+            detail: "Please fix the highlighted errors before submitting.",
+        });
+    }
 };
 
-const confirmDeleteSetting = () => {
-    //
+const createSetting = async () => {
+
+    const newSetting = {...app_setting.value, id: createId() };
+
+    app_settings.value.push(newSetting);
+
+    toast.add({
+        severity: "success",
+        summary: "Creating...",
+        detail: "App Setting creation in progress",
+        life: 3000,
+    });
+
+    await AppSettingsService.createSetting(app_setting.value)
+        .then((response) => {
+            // Lokális adat frissítése a szerver válasza alapján
+            const index = findIndexById(newSetting.id);
+            if (index !== -1) {
+                app_settings.value.splice(index, 1, response.data);
+            }
+            hideDialog();
+
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "App Setting Created",
+                life: 3000,
+            });
+        })
+        .catch((error) => {
+            if( error.response && error.response.status === 422) {
+                const validationErrors = error.response.data.details;
+
+                toast.add({
+                    severity: "warn",
+                    summary: "Validation Error",
+                    detail: "Please check your inputs",
+                    life: 4000,
+                });
+
+                // Validációs hibák logolása
+                ErrorService.logClientError(error, {
+                    componentName: "CreateAppSettingDialog",
+                    additionalInfo: "Validation errors occurred during app setting creation",
+                    category: "Validation Error",
+                    priority: "medium",
+                    validationErrors: validationErrors,
+                });
+            } else {
+                // Hibás esetben a lokális adat törlése
+                const index = findIndexById(newSetting.id);
+                if (index !== -1) {
+                    app_settings.value.splice(index, 1);
+                }
+
+                // Toast hibaüzenet
+                toast.add({
+                    severity: "error",
+                    summary: "Error",
+                    detail: trans('error_app_setting_create'),
+                });
+
+                // Hiba naplózása
+                ErrorService.logClientError(error, {
+                    componentName: "CreateAppSettingDialog",
+                    additionalInfo: "Failed to create a app setting in the backend",
+                    category: "Error",
+                    priority: "high",
+                    data: app_setting.value,
+                });
+            }
+        });
+};
+
+const updateSetting = async () => {
+    const index = findIndexById(company.value.id);
+    if (index === -1) {
+        console.error(`App Setting with id ${app_setting.value.id} not found`);
+        return;
+    }
+
+    // Eredeti adat mentése az optimista frissítéshez
+    const originalAppSetting = { ...app_settings.value[index] };
+
+    // Lokális frissítés az optimista visszacsatoláshoz
+    app_settings.value.splice(index, 1, { ...app_setting.value });
+    hideDialog();
+
+    // "Frissítés folyamatban" visszajelzés
+    toast.add({
+        severity: "info",
+        summary: "Updating...",
+        detail: "App Setting update in progress",
+        life: 2000,
+    });
+
+    await AppSettingsService.updateSetting(app_setting.value.id, app_setting.value)
+        .then((response) => {})
+        .catch((error) => {
+            // Sikertelen frissítés esetén az eredeti adat visszaállítása
+            app_settings.value.splice(index, 1, originalAppSetting);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to app setting",
+            });
+
+            // Hiba naplózása a szerver felé
+            ErrorService.logClientError(error, {
+                componentName: "UpdateAppSettingDialog",
+                additionalInfo: "Failed to update app setting in the backend",
+                category: "Error",
+                priority: "medium",
+                data: app_setting.value,
+            });
+        });
+};
+
+const deleteSelectedSettings = async () => {};
+
+const deleteSetting = async () => {};
+
+const confirmDeleteSelected = () => {
+    deleteSelectedSettingsDialog.value = true;
+};
+
+const confirmDeleteSetting = (data) => {
+    app_setting.value = {...data};
+    deleteSettingDialog.value = true;
 };
 
 const onUpload = () => {
@@ -150,6 +328,9 @@ const exportCSV = () => {
 };
 
 const getStatusSeverity = (status) => {
+
+    console.log('getStatusSeverity status', status);
+
     switch (status) {
         case 0:
             return "danger";
@@ -159,12 +340,18 @@ const getStatusSeverity = (status) => {
 };
 
 const getStatusValue = (status) => {
+
+    console.log('getStatusValue status', status);
+
+    //['', '', ''][] || 'pending';
+
     switch (status) {
         case 0:
             return "INACTIVE";
         case 1:
             return "ACTIVE";
     }
+
 };
 
 const initFilters = () => {
@@ -180,6 +367,12 @@ const clearFilters = () => {
 
 initFilters();
 
+const getModalTitle = () => {
+    return app_setting.value.id
+        ? $t('edit_setting')
+        : $t('add_new_setting');
+};
+
 </script>
 
 <template>
@@ -189,6 +382,7 @@ initFilters();
         <Toast />
 
         {{ props.can }}<br/>
+        {{ state.columns.id }}
 
         <div class="card">
             <Toolbar class="md-6">
@@ -331,7 +525,7 @@ initFilters();
                     :sortable="state.columns.value.is_sortable"
                 />
 
-                <!-- IS ACTIVE -->
+                <!-- ACTIVE -->
                 <Column
                     :field="state.columns.active.field"
                     :header="$t(state.columns.active.field)"
@@ -372,11 +566,21 @@ initFilters();
 
         </div>
 
+        <!-- SETTINGS DIALOG -->
+        <Dialog
+            v-model:visible="settingsDialog"
+            :style="{ width: '550px' }"
+            :header="getModalTitle()"
+            :modal="true"
+        >
+            <div class="flex flex-col gap-6" style="margin-top: 17px;"></div>
+        </Dialog>
+
         <!-- SETTINGS -->
         <Dialog
             v-model:visible="settingsDialog"
             :style="{ width: '550px' }"
-            :header="SETTINGS"
+            :header="$t('app_settings_title')"
             :modal="true"
         >
             <div class="flex flex-col gap-6" style="margin-top: 17px;">

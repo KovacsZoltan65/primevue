@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreCompanySettingRequest extends FormRequest
+class StoreAppSettingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,6 @@ class StoreCompanySettingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'company_id' => 'required',
             'key' => 'required',
             'value' => 'required',
         ];

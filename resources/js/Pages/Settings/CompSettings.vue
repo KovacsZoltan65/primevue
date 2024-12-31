@@ -14,7 +14,7 @@ import validationRules from '@/Validation/ValidationRules.json';
 import { useToast } from "primevue/usetoast";
 import Toast from 'primevue/toast';
 
-import CompanySettingsService from "@/service/CompanySettingsService";
+import CompSettingsService from "@/service/CompSettingsService";
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -76,7 +76,7 @@ const v$ = useVuelidate(rules, company_setting);
 const fetchItems = async () => {
     loading.value = true;
 
-    await CompanySettingsService.getSettings()
+    await CompSettingsService.getSettings()
         .then((response) => {
             company_settings.value = response.data;
         })
@@ -84,7 +84,7 @@ const fetchItems = async () => {
             console.error("getCompSettings API Error:", error);
 
             ErrorService.logClientError(error, {
-                componentName: "Fetch CompanySettings",
+                componentName: "Fetch CompSettings",
                 additionalInfo: "Failed to retrieve the company",
                 category: "Error",
                 priority: "high",

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\GetApplicationSettingRequest;
-use App\Http\Requests\StoreApplicationSettingRequest;
-use App\Http\Requests\UpdateApplicationSettingRequest;
-use App\Http\Resources\ApplicationSettingsResource;
-use App\Models\ApplicationSetting;
-use App\Repositories\ApplicationSettingRepository;
+use App\Http\Requests\GetAppSettingRequest;
+use App\Http\Requests\StoreAppSettingRequest;
+use App\Http\Requests\UpdateAppSettingRequest;
+use App\Http\Resources\AppSettingsResource;
+use App\Models\AppSetting;
+use App\Repositories\AppSettingRepository;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -23,32 +23,32 @@ use App\Traits\Functions;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
-class ApplicationSettingController extends Controller
+class AppSettingController extends Controller
 {
     use AuthorizesRequests,
         Functions;
 
-    protected ApplicationSettingRepository $appSettingRepository;
+    protected AppSettingRepository $appSettingRepository;
 
     protected string $tag = 'appSettings';
 
-    public function __construct(ApplicationSettingRepository $repository)
+    public function __construct(AppSettingRepository $repository)
     {
         $this->appSettingRepository = $repository;
 
-        $this->tag = ApplicationSetting::getTag();
+        $this->tag = AppSetting::getTag();
         
-        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicatopnSetting', 'getApplicatopnSettingByName']]);
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getAppSettings', 'getApplicatopnSetting', 'getApplicatopnSettingByName']]);
         $this->middleware("can:{$this->tag} create", ['only' => ['createApplicatopnSetting']]);
         $this->middleware("can:{$this->tag} edit", ['only' => ['updateApplicatopnSetting']]);
-        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteApplicatopnSetting', 'deleteApplicationSettings']]);
-        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreApplicationSetting']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteApplicatopnSetting', 'deleteAppSettings']]);
+        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreAppSetting']]);
     }
 
     public function index(Request $request): InertiaResponse {
         $roles = $this->getUserRoles($this->tag);
 
-        return Inertia::render('Settings/ApplicationSettings',[
+        return Inertia::render('Settings/AppSettings',[
             'search' => request('search'),
             'can' => $roles
         ]);
@@ -72,7 +72,7 @@ class ApplicationSettingController extends Controller
         }
     }
 
-    public function getApptSetting(GetApplicationSettingRequest $request): JsonResponse
+    public function getApptSetting(GetAppSettingRequest $request): JsonResponse
     {
         try {
             $setting = $this->appSettingRepository->getAppSetting($request->id);
@@ -95,7 +95,7 @@ class ApplicationSettingController extends Controller
 
             return response()->json($setting, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
-            return $this->handleException($ex, 'getApplicationSettingByKey model not found error', Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'getAppSettingByKey model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             return $this->handleException($ex, 'getAppSettingByKey query exception', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
@@ -103,7 +103,7 @@ class ApplicationSettingController extends Controller
         }
     }
 
-    public function createAppSetting(StoreApplicationSettingRequest $request): JsonResponse{
+    public function createAppSetting(StoreAppSettingRequest $request): JsonResponse{
         try{
             $setting = $this->appSettingRepository->createAppSetting($request);
 
@@ -115,7 +115,7 @@ class ApplicationSettingController extends Controller
         }
     }
 
-    public function updateAppSetting(UpdateApplicationSettingRequest $request, int $id): JsonResponse {
+    public function updateAppSetting(UpdateAppSettingRequest $request, int $id): JsonResponse {
         try {
             $setting = $this->appSettingRepository->updateAppSetting($request, $id);
 
@@ -143,7 +143,7 @@ class ApplicationSettingController extends Controller
         }
     }
 
-    public function deleteAppSetting(GetApplicationSettingRequest $request)
+    public function deleteAppSetting(GetAppSettingRequest $request)
     {
         try {
             $appSetting = $this->appSettingRepository->deleteAppSetting($request);
@@ -158,7 +158,7 @@ class ApplicationSettingController extends Controller
         }
     }
 
-    public function restoreAppSettings(GetApplicationSettingRequest $request): JsonResponse
+    public function restoreAppSettings(GetAppSettingRequest $request): JsonResponse
     {
         try {
             $appSetting = $this->appSettingRepository->restoreAppSettings($request);

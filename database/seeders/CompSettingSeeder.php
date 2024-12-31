@@ -4,10 +4,10 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\CompanySetting;
+use App\Models\CompSetting;
 use Illuminate\Support\Facades\Schema;
 
-class CompanySettingSeeder extends Seeder
+class CompSettingSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,7 +15,7 @@ class CompanySettingSeeder extends Seeder
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
-        CompanySetting::truncate();
+        CompSetting::truncate();
         Schema::enableForeignKeyConstraints();
 
         $settings = [
@@ -24,7 +24,7 @@ class CompanySettingSeeder extends Seeder
         ];
 
         foreach ($settings as $setting) {
-            CompanySetting::create($setting);
+            CompSetting::create($setting);
         }
     }
 }

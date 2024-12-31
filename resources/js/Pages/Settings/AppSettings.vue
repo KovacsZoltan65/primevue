@@ -14,7 +14,7 @@ import validationRules from '@/Validation/ValidationRules.json';
 import { useToast } from "primevue/usetoast";
 import Toast from 'primevue/toast';
 
-import ApplicationSettingsService from "@/service/ApplicationSettingsService";
+import AppSettingsService from "@/service/AppSettingsService";
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -87,7 +87,7 @@ const v$ = useVuelidate(rules, app_setting);
 const fetchItems = async () => {
     loading.value = true;
 
-    await ApplicationSettingsService.getSettings()
+    await AppSettingsService.getSettings()
         .then((response) => {
             app_settings.value = response.data;
         })
@@ -95,7 +95,7 @@ const fetchItems = async () => {
             console.error("getCompSettings API Error:", error);
 
             ErrorService.logClientError(error, {
-                componentName: "Fetch CompanySettings",
+                componentName: "Fetch CompSettings",
                 additionalInfo: "Failed to retrieve the company",
                 category: "Error",
                 priority: "high",
@@ -166,6 +166,19 @@ const getStatusValue = (status) => {
             return "ACTIVE";
     }
 };
+
+const initFilters = () => {
+    filters.value = {
+        global: {value: null, matchMode: FilterMatchMode.CONTAINS},
+        key: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+    };
+};
+
+const clearFilters = () => {
+    initFilters();
+};
+
+initFilters();
 
 </script>
 
@@ -247,9 +260,44 @@ const getStatusValue = (status) => {
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
             >
 
-                <template #header></template>
+                <template #header>
+                    <div class="flex flex-wrap gap-2 items-center justify-between">
+                        <!-- SZŰRÉS TÖRLÉSE -->
+                        <Button
+                            type="button"
+                            icon="pi pi-filter-slash"
+                            :label="$t('clear')"
+                            outlined
+                            @click="clearFilter()"
+                        />
 
-                <template #paginatorstart></template>
+                        <!-- FELIRAT -->
+                        <div class="font-semibold text-xl mb-1">
+                            {{ $t("appFilter_title") }}
+                        </div>
+
+                        <!-- KERESÉS -->
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText
+                                v-model="filters['global'].value"
+                                :placeholder="$t('search')"
+                            />
+                        </IconField>
+
+                    </div>
+                </template>
+
+                <template #paginatorstart>
+                    <Button
+                        type="button"
+                        icon="pi pi-refresh"
+                        class="p-button-text"
+                        @click="fetchItems()"
+                    />
+                </template>
 
                 <template #empty>
                     {{ $t("data_not_found", { data: "settings" }) }}

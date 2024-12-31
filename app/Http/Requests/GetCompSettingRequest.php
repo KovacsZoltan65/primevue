@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateApplicationSettingRequest extends FormRequest
+class GetCompSettingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,8 +22,7 @@ class UpdateApplicationSettingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'key' => 'required',
-            'value' => 'required',
+            'id' => ['required', 'integer', 'exists:comp_settings,id'],
         ];
     }
 }

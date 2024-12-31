@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\ApplicationSetting;
-use App\Models\CompanySetting;
+use App\Models\AppSetting;
+use App\Models\CompSetting;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -32,9 +32,10 @@ class RoleAndPermissionSeeder extends Seeder
 
         $classes = [
             \App\Models\Company::getTag(),
-            'roles',
-            'permissions',
-            'subdomainstate',
+            \App\Models\Auth\Role::getTag(),
+            \App\Models\Auth\Permission::getTag(),
+            \App\Models\SubdomainState::getTag(),
+            \App\Models\Hierarchy::getTag(),
         ];
 
         $permissions = [
@@ -53,9 +54,8 @@ class RoleAndPermissionSeeder extends Seeder
         }
 
         $classes = [
-            //'appSettings', 'compSettings',
-            ApplicationSetting::getTag(),
-            CompanySetting::getTag(),
+            AppSetting::getTag(),
+            CompSetting::getTag(),
         ];
 
         $permissions = [

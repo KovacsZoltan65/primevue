@@ -638,10 +638,20 @@ const throwError = () => {
         <Head :title="$t('companies')" />
 
         <Toast />
-{{ props.can }}
+
+        {{ props.can }}<br/>
+
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
+
+                    <!-- Settings -->
+                    <Button
+                        icon="pi pi-cog"
+                        severity="secondary"
+                        class="mr-2"
+                    />
+
                     <!-- ERROR -->
                     <Button
                         label="ERROR"

@@ -6,19 +6,19 @@ use App\Services\CacheService;
 use Illuminate\Http\Request;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
-use App\Interfaces\ApplicationSettingRepositoryInterface;
-use App\Models\ApplicationSetting;
+use App\Interfaces\AppSettingRepositoryInterface;
+use App\Models\AppSetting;
 use App\Traits\Functions;
 use Illuminate\Support\Facades\DB;
 use Override;
 use \Exception;
 
 /**
- * Class ApplicationSettingRepositoryEloquent.
+ * Class AppSettingRepositoryEloquent.
  *
  * @package namespace App\Repositories;
  */
-class ApplicationSettingRepository extends BaseRepository implements ApplicationSettingRepositoryInterface
+class AppSettingRepository extends BaseRepository implements AppSettingRepositoryInterface
 {
     use Functions;
 
@@ -28,7 +28,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
 
     public function __construct(CacheService $cacheService)
     {
-        $this->tag = ApplicationSetting::getTag();
+        $this->tag = AppSetting::getTag();
         $this->cacheService = $cacheService;
     }
 
@@ -50,7 +50,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                $appSettingQuery = ApplicationSetting::search($request);
+                $appSettingQuery = AppSetting::search($request);
                 return $appSettingQuery->get();
             });
         } catch(Exception $ex) {
@@ -59,13 +59,13 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         }
     }
 
-    public function getAppSetting(int $id): ApplicationSetting
+    public function getAppSetting(int $id): AppSetting
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
 
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
-                return ApplicationSetting::findOrFail($id);
+                return AppSetting::findOrFail($id);
             });
         } catch(Exception $ex) {
             $this->logError($ex, 'getAppSettings error', ['id' => $id]);
@@ -73,13 +73,13 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         }
     }
 
-    public function getAppSettingByKey(string $key): ApplicationSetting
+    public function getAppSettingByKey(string $key): AppSetting
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, $key);
 
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($key) {
-                return ApplicationSetting::where('key', '=', $key)->firstOrFail();
+                return AppSetting::where('key', '=', $key)->firstOrFail();
             });
         } catch(Exception $ex) {
             $this->logError($ex, 'getAppSettingByKey error', ['key' => $key]);
@@ -87,13 +87,13 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         }
     }
 
-    public function createAppSetting(Request $request): ApplicationSetting
+    public function createAppSetting(Request $request): AppSetting
     {
         try {
             $setting = null;
 
             DB::transaction(function()use($request, &$setting) {
-                $setting = ApplicationSetting::create($request->all());
+                $setting = AppSetting::create($request->all());
 
                 $this->createDefaultSettings($setting);
 
@@ -107,12 +107,12 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         }
     }
 
-    public function updateAppSetting(Request $request, int $id): ApplicationSetting
+    public function updateAppSetting(Request $request, int $id): AppSetting
     {
         try {
             $setting = null;
             DB::transaction(function() use($request, $id, &$setting) {
-                $setting = ApplicationSetting::lockForUpdate()->findOrFail($id);
+                $setting = AppSetting::lockForUpdate()->findOrFail($id);
                 $setting->update($request->all());
                 $setting->refresh();
 
@@ -137,7 +137,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
             $deletedCount = 0;
 
             DB::transaction(function() use($request, &$deletedCount) {
-                $settings = ApplicationSetting::whereIn('id', $request->ids)->lockForUpdate()->get();
+                $settings = AppSetting::whereIn('id', $request->ids)->lockForUpdate()->get();
 
                 $deletedCount = $settings->each(function ($setting) {
                     $setting->delete();
@@ -157,7 +157,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
     public function deleteAppSetting(Request $request)
     {
         try {
-            $appSetting = ApplicationSetting::findOrFail($request->id);
+            $appSetting = AppSetting::findOrFail($request->id);
             $appSetting->delete();
 
             $this->cacheService->forgetAll($this->tag);
@@ -172,7 +172,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
     public function restoreAppSettings(Request $request)
     {
         try {
-            $appSetting = ApplicationSetting::withTrashed()->findOrFail($request->id);
+            $appSetting = AppSetting::withTrashed()->findOrFail($request->id);
             $appSetting->restore();
 
             $this->cacheService->forgetAll($this->tag);
@@ -184,7 +184,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
         }
     }
 
-    private function createDefaultSettings(ApplicationSetting $setting): void
+    private function createDefaultSettings(AppSetting $setting): void
     {
         //
     }
@@ -197,7 +197,7 @@ class ApplicationSettingRepository extends BaseRepository implements Application
     #[Override]
     public function model()
     {
-        return ApplicationSetting::class;
+        return AppSetting::class;
     }
 
     /**

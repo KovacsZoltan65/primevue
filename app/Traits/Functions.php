@@ -41,7 +41,7 @@ trait Functions
     public function handleException(Exception $ex, string $defaultMessage, int $statusCode)
     {
         return response()->json([
-            'success' => App_FALSE,
+            'success' => APP_FALSE,
             'error' => $defaultMessage,
         ], $statusCode);
     }

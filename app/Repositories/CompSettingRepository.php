@@ -7,18 +7,18 @@ use App\Traits\Functions;
 use Illuminate\Http\Request;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
-use App\Interfaces\CompanySettingRepositoryInterface;
-use App\Models\CompanySetting;
+use App\Interfaces\CompSettingRepositoryInterface;
+use App\Models\CompSetting;
 use Exception;
 use Override;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Class CompanySettingRepositoryEloquent.
+ * Class CompSettingRepositoryEloquent.
  *
  * @package namespace App\Repositories;
  */
-class CompanySettingRepository extends BaseRepository implements CompanySettingRepositoryInterface
+class CompSettingRepository extends BaseRepository implements CompSettingRepositoryInterface
 {
     use Functions;
 
@@ -28,7 +28,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
 
     public function __construct(CacheService $cacheService)
     {
-        $this->tag = CompanySetting::getTag();
+        $this->tag = CompSetting::getTag();
         
         $this->cacheService = $cacheService;
     }
@@ -51,7 +51,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                $settingsQuery = CompanySetting::search($request);
+                $settingsQuery = CompSetting::search($request);
                 return $settingsQuery->get();
             });
         } catch(Exception $ex) {
@@ -66,7 +66,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
 
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
-                return CompanySetting::findOrFail($id);
+                return CompSetting::findOrFail($id);
             });
         } catch(Exception $ex) {
             $this->logError($ex, 'getCompSetting error', ['id' => $id]);
@@ -80,7 +80,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             $cacheKey = $this->generateCacheKey($this->tag, $key);
 
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($key) {
-                return CompanySetting::where('key', '=', $key)->firstOrFail();
+                return CompSetting::where('key', '=', $key)->firstOrFail();
             });
         } catch(Exception $ex) {
             $this->logError($ex, 'getSettingByKey error', ['key' => $key]);
@@ -94,7 +94,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             $setting = null;
 
             DB::transaction(function() use($request, &$setting) {
-                $setting = CompanySetting::create($request->all());
+                $setting = CompSetting::create($request->all());
 
                 $this->createDefaultSettings($setting);
 
@@ -114,7 +114,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             $setting = null;
 
             DB::transaction(function() use($request, $id, &$setting) {
-                $setting = CompanySetting::lockForUpdate()->findOrFail($id);
+                $setting = CompSetting::lockForUpdate()->findOrFail($id);
                 $setting->update($request->all());
                 $setting->refresh();
 
@@ -140,7 +140,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             $deletedCount = 0;
 
             DB::transaction(function () use ($ids, &$deletedCount) {
-                $settings = CompanySetting::whereIn('id', $ids)->lockForUpdate()->get();
+                $settings = CompSetting::whereIn('id', $ids)->lockForUpdate()->get();
 
                 $deletedCount = $settings->each(function ($setting) {
                     $setting->delete();
@@ -162,7 +162,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
         try {
             $setting = null;
             DB::transaction(function() use($request, &$setting) {
-                $setting = CompanySetting::lockForUpdate()->findOrFail($request->id);
+                $setting = CompSetting::lockForUpdate()->findOrFail($request->id);
                 $setting->delete();
 
                 $this->cacheService->forgetAll($this->tag);
@@ -181,7 +181,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             $setting = null;
 
             DB::transaction(function() use($request, &$setting) {
-                $setting = CompanySetting::withTrashed()->lockForUpdate()->findOrFail($request->id);
+                $setting = CompSetting::withTrashed()->lockForUpdate()->findOrFail($request->id);
                 $setting->restore();
 
                 $this->cacheService->forgetAll($this->tag);
@@ -200,7 +200,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
             $setting = null;
 
             DB::transaction(function() use($request, &$setting) {
-                $setting = CompanySetting::withTrashed()->lockForUpdate()->findOrFail($request->id);
+                $setting = CompSetting::withTrashed()->lockForUpdate()->findOrFail($request->id);
                 $setting->forceDelete();
 
                 $this->cacheService->forgetAll($this->tag);
@@ -215,7 +215,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
         }
     }
 
-    private function createDefaultSettings(CompanySetting $setting): void
+    private function createDefaultSettings(CompSetting $setting): void
     {
         //
     }
@@ -227,7 +227,7 @@ class CompanySettingRepository extends BaseRepository implements CompanySettingR
      */
      public function model(): string
     {
-        return CompanySetting::class;
+        return CompSetting::class;
     }
 
     /**

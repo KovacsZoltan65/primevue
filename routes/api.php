@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\ApplicationSettingController;
+use App\Http\Controllers\AppSettingController;
 use App\Http\Controllers\Auth\PermissionController;
 use App\Http\Controllers\Auth\RoleController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CompanySettingController;
+use App\Http\Controllers\CompSettingController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\HierarchyController;
@@ -122,17 +122,17 @@ Route::middleware(['web', 'auth'])->group(function () {
      * SETTINGS
      * =====================================================
      */
-    Route::get('/application_settings', [ApplicationSettingController::class, 'getAppSettings']);
-    Route::get('/application_settings/{id}', [ApplicationSettingController::class, 'getApptSetting']);
-    Route::get('/application_settings/key/{key}', [ApplicationSettingController::class, 'getAppSettingByKey']);
-    Route::post('/application_settings', [ApplicationSettingController::class, 'createAppSetting']);
-    Route::put('/application_settings/{id}', [ApplicationSettingController::class, 'updateAppSetting']);
+    Route::get('/app_settings', [AppSettingController::class, 'getAppSettings']);
+    Route::get('/app_settings/{id}', [AppSettingController::class, 'getApptSetting']);
+    Route::get('/app_settings/key/{key}', [AppSettingController::class, 'getAppSettingByKey']);
+    Route::post('/app_settings', [AppSettingController::class, 'createAppSetting']);
+    Route::put('/app_settings/{id}', [AppSettingController::class, 'updateAppSetting']);
 
-    Route::get('/company_settings', [CompanySettingController::class, 'getCompSettings']);
-    Route::get('/company_settings/{id}', [CompanySettingController::class, 'getCompSetting']);
-    Route::get('/company_settings/key/{key}', [CompanySettingController::class, 'getCompSettingByKey']);
-    Route::post('/company_settings', [CompanySettingController::class, 'createCompSetting']);
-    Route::put('/company_settings/{id}', [CompanySettingController::class, 'updateCompSetting']);
+    Route::get('/comp_settings', [CompSettingController::class, 'getCompSettings']);
+    Route::get('/comp_settings/{id}', [CompSettingController::class, 'getCompSetting']);
+    Route::get('/comp_settings/key/{key}', [CompSettingController::class, 'getCompSettingByKey']);
+    Route::post('/comp_settings', [CompSettingController::class, 'createCompSetting']);
+    Route::put('/comp_settings/{id}', [CompSettingController::class, 'updateCompSetting']);
 
     /**
      * Hozzon létre új céget az API-n keresztül.

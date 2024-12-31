@@ -66,8 +66,8 @@ class MenuItemSeeder extends Seeder
         
         $system->children()->createMany([
             [ 'label' => 'subdomain_states', 'url' => '/subdomain_states', 'default_weight' => 2, ],
-            [ 'label' => 'application_settings', 'url' => '/application_settings', 'default_weight' => 3, ],
-            [ 'label' => 'company_settings', 'url' => '/company_settings', 'default_weight' => 4, ],
+            [ 'label' => 'app_settings', 'url' => '/app_settings', 'default_weight' => 3, ],
+            [ 'label' => 'comp_settings', 'url' => '/comp_settings', 'default_weight' => 4, ],
         ]);
         
         // Főmenü - Specimens

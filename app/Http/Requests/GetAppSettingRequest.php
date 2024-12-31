@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class GetApplicationSettingRequest extends FormRequest
+class GetAppSettingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,7 @@ class GetApplicationSettingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => ['required', 'integer', 'exists:application_settings,id'],
+            'id' => ['required', 'integer', 'exists:app_settings,id'],
         ];
     }
 }

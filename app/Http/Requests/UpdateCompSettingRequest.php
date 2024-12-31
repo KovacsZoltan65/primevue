@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class GetCompanySettingRequest extends FormRequest
+class UpdateCompSettingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,9 @@ class GetCompanySettingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => ['required', 'integer', 'exists:company_settings,id'],
+            'company_id' => 'required',
+            'key' => 'required',
+            'value' => 'required',
         ];
     }
 }

@@ -5,29 +5,28 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Override;
 use Illuminate\Http\Request;
+use Spatie\Activitylog\LogOptions;
+use Override;
+use Spatie\Activitylog\Traits\LogsActivity;
 
-class CompanySetting extends Model
+class AppSetting extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory,
+        LogsActivity;
 
-    protected $table = 'company_settings';
-    protected $fillable = ['company_id', 'key', 'value', 'active'];
+    protected $table = 'app_settings';
+    protected $fillable = ['key', 'value', 'active'];
 
     /*
      * ==============================================================
      * LOGOLÁS
      * ==============================================================
      */
-
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
-    protected static $logName = 'compSettings';
+    protected static $logName = 'appSettings';
 
     protected static $recordEvents = [
         'created',
@@ -56,11 +55,6 @@ class CompanySetting extends Model
     public function scopeActive(Builder $query, Request $request): Builder
     {
         return $query->where('active', 1);
-    }
-
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
     }
 
     #[Override]

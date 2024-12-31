@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\GetCompanySettingRequest;
-use App\Http\Requests\StoreCompanySettingRequest;
-use App\Http\Requests\UpdateCompanySettingRequest;
-use App\Models\CompanySetting;
-use App\Repositories\CompanySettingRepository;
+use App\Http\Requests\GetCompSettingRequest;
+use App\Http\Requests\StoreCompSettingRequest;
+use App\Http\Requests\UpdateCompSettingRequest;
+use App\Models\CompSetting;
+use App\Repositories\CompSettingRepository;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,32 +20,32 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-class CompanySettingController extends Controller
+class CompSettingController extends Controller
 {
     use AuthorizesRequests,
         Functions;
 
-    protected CompanySettingRepository $compSettingRepository;
-    
+    protected CompSettingRepository $compSettingRepository;
+
     protected string $tag = 'compSettings';
 
-    public function __construct(CompanySettingRepository $repository)
+    public function __construct(CompSettingRepository $repository)
     {
         $this->compSettingRepository = $repository;
 
-        $this->tag = CompanySetting::getTag();
-        
-        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getApplicationSettings', 'getApplicationSetting', 'getApplicatonSettingByName']]);
-        $this->middleware("can:{$this->tag} create", ['only' => ['createApplicationSetting']]);
-        $this->middleware("can:{$this->tag} edit", ['only' => ['updateApplicationSetting']]);
-        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteApplicationSetting', 'deleteApplicationSettings']]);
+        $this->tag = CompSetting::getTag();
+
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getAppSettings', 'getAppSetting', 'getAppSettingByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createAppSetting']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateAppSetting']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteAppSetting', 'deleteAppSettings']]);
     }
 
     public function index(Request $request): InertiaResponse
     {
         $roles = $this->getUserRoles($this->tag);
 
-        return Inertia::render('Settings/CompanySettings', [
+        return Inertia::render('Settings/CompSettings', [
             'search' => request('search'),
             'can' => $roles
         ]);
@@ -71,7 +71,7 @@ class CompanySettingController extends Controller
         }
     }
 
-    public function getCompSetting(GetCompanySettingRequest $request)
+    public function getCompSetting(GetCompSettingRequest $request)
     {
         try {
             $setting = $this->compSettingRepository->getCompSetting($request->id);
@@ -79,11 +79,11 @@ class CompanySettingController extends Controller
             return response()->json($setting, Response::HTTP_OK);
 
         } catch(ModelNotFoundException $ex) {
-            return $this->handleException($ex, 'getCompanySetting model not found error', Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'getCompSetting model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            return $this->handleException($ex, 'getCompanySetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'getCompSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            return $this->handleException($ex, 'getApplicationSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getAppSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -102,7 +102,7 @@ class CompanySettingController extends Controller
         }
     }
 
-    public function createCompSetting(StoreCompanySettingRequest $request): JsonResponse{
+    public function createCompSetting(StoreCompSettingRequest $request): JsonResponse{
         try{
             $setting = $this->compSettingRepository->createCompSetting($request);
 
@@ -114,7 +114,7 @@ class CompanySettingController extends Controller
         }
     }
 
-    public function updateCompSetting(UpdateCompanySettingRequest $request, int $id): JsonResponse {
+    public function updateCompSetting(UpdateCompSettingRequest $request, int $id): JsonResponse {
         try {
             $setting = $this->compSettingRepository->updateCompSetting($request, $id);
 
@@ -142,7 +142,7 @@ class CompanySettingController extends Controller
         }
     }
 
-    public function deleteCompSetting(GetCompanySettingRequest $request): JsonResponse
+    public function deleteCompSetting(GetCompSettingRequest $request): JsonResponse
     {
         try {
             $appSetting = $this->compSettingRepository->deleteCompSetting($request);
@@ -157,7 +157,7 @@ class CompanySettingController extends Controller
         }
     }
 
-    public function restoreCompSetting(GetCompanySettingRequest $request): JsonResponse {
+    public function restoreCompSetting(GetCompSettingRequest $request): JsonResponse {
         try {
             $appSetting = $this->compSettingRepository->restoreCompSetting($request);
 

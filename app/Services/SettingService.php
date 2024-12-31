@@ -2,20 +2,20 @@
 
 namespace App\Services;
 
-use App\Models\ApplicationSetting;
-use App\Models\CompanySetting;
+use App\Models\AppSetting;
+use App\Models\CompSetting;
 
 class SettingService
 {
     public function get($key, $companyId = null)
     {
         if ($companyId) {
-            $companySetting = CompanySetting::where('company_id', $companyId)->where('key', $key)->first();
-            if ($companySetting) {
-                return $companySetting->value;
+            $compSetting = CompSetting::where('company_id', $companyId)->where('key', $key)->first();
+            if ($compSetting) {
+                return $compSetting->value;
             }
         }
 
-        return ApplicationSetting::where('key', $key)->value('value');
+        return AppSetting::where('key', $key)->value('value');
     }
 }

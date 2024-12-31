@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\ApplicationSetting;
+use App\Models\AppSetting;
 use Illuminate\Support\Facades\Schema;
-use Spatie\Activitylog\Models\Activity;
+//use Spatie\Activitylog\Models\Activity;
 
-class ApplicationSettingSeeder extends Seeder
+class AppSettingSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,7 +15,7 @@ class ApplicationSettingSeeder extends Seeder
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
-        ApplicationSetting::truncate();
+        AppSetting::truncate();
         Schema::enableForeignKeyConstraints();
 
         // Logolás letiltása
@@ -27,7 +27,7 @@ class ApplicationSettingSeeder extends Seeder
         ];
 
         foreach($settings as $setting) {
-            ApplicationSetting::create($setting);
+            AppSetting::create($setting);
         }
 
         activity()->enableLogging();

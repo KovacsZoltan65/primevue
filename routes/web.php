@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\ApplicationSettingController;
+use App\Http\Controllers\AppSettingController;
 use App\Http\Controllers\Auth\PermissionController;
 use App\Http\Controllers\Auth\RoleController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CompanySettingController;
+use App\Http\Controllers\CompSettingController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\ErrorController;
@@ -42,23 +42,23 @@ Route::middleware('auth')->group(function () {
      * SETTINGS
      * =====================================================
      */
-    Route::get('/application_settings', [ApplicationSettingController::class, 'index'])->name('application_setting');
-    Route::get('/company_settings', [CompanySettingController::class, 'index'])->name('company_setting');
+    Route::get('/app_settings', [AppSettingController::class, 'index'])->name('app_settings');
+    Route::get('/comp_settings', [CompSettingController::class, 'index'])->name('comp_settings');
 
     /**
      * =====================================================
      * ERROR
      * =====================================================
-     * 
+     *
      */
     Route::get('/error_log', [ErrorController::class, 'index'])->name('error_log');
-    
+
     /**
      * =======================================================
      * HIERARCHIA
      * =======================================================
      */
-    
+
     /**
      * =====================================================
      * CÉGEK
@@ -160,14 +160,14 @@ Route::middleware('auth')->group(function () {
      * =======================================================
      */
     Route::get('/subdomain_states', [SubdomainStateController::class, 'index'])->name('subdomain_states');
-    
+
     /**
      * =======================================================
      * PERSONS
      * =======================================================
      */
     Route::get('/persons', [PersonController::class, 'index'])->name('persons');
-    
+
     /**
      * =======================================================
      * ENTITIES

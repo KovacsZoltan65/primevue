@@ -32,9 +32,19 @@ import FloatLabel from "primevue/floatlabel";
 import ErrorService from "@/service/ErrorService";
 import Message from "primevue/message";
 
+/**
+ * Szerver felöl jövő adatok
+ */
 const props = defineProps({
     can: { type: Object, default: () => {}, },
 });
+
+const getBools = () => {
+    return [
+        {label: trans("inactive"),value: 0,},
+        {label: trans("active"),value: 1,},
+    ];
+};
 
 const toast = useToast();
 const loading = ref(true);
@@ -42,7 +52,6 @@ const dt = ref();
 const filters = ref({});
 
 const app_settings = ref();
-
 const defaultSetting = {
     id: null,
     key: "",
@@ -56,8 +65,14 @@ const initialSetting = () => {
     return { ...defaultSetting };
 };
 
+/**
+ * Reaktív hivatkozás a beküldött (submit) állapotára.
+ *
+ * @type {ref<boolean>}
+ */
 const submitted = ref(false);
 
+// Szabályok
 const rules = {
     key: {
         required: helpers.withMessage(trans('validation.required'), required),
@@ -66,6 +81,13 @@ const rules = {
         required: helpers.withMessage(trans('validation.required'), required),
     },
 };
+
+/**
+ * Létrehozza a validációs példányt a validációs szabályok alapján.
+ *
+ * @type {Object}
+ */
+ const v$ = useVuelidate(rules, app_setting);
 
 const state = reactive({
     columns: {
@@ -81,14 +103,36 @@ watch(state.columns, (new_value, old_value) => {
     localStorage.setItem(local_storage_column_key, JSON.stringify(new_value));
 });
 
+/**
+ * Reaktív hivatkozás a kijelölt beállítások tárolására.
+ *
+ * @type {ref<Array>}
+ */
 const selectedSettings = ref([]);
-const settingDialog = ref(false);
+
+/**
+ * ===========================================
+ * DIALOGOK
+ * ===========================================
+ */
+// táblázat beállításai
 const settingsDialog = ref(false);
+// új beállítás készítéséhez, vagy meglevő szerkesztéshez
+const settingDialog = ref(false);
+// kiválasztott beállítások törléséhez
 const deleteSelectedSettingsDialog = ref(false);
+// beállítás törléséhez
 const deleteSettingDialog = ref(false);
+// ======================================================
 
-const v$ = useVuelidate(rules, app_setting);
-
+/**
+ * Lekéri a beállítások listáját az API-ból.
+ *
+ * Ez a funkció a beállítások listáját lekéri az API-ból.
+ * A beállítások listája az app_settings változóban lesz elmentve.
+ *
+ * @return {Promise} Ígéret, amely a válaszban szereplő  adatokkal megoldódik.
+ */
 const fetchItems = async () => {
     loading.value = true;
 
@@ -97,11 +141,11 @@ const fetchItems = async () => {
             app_settings.value = response.data;
         })
         .catch((error) => {
-            console.error("getCompSettings API Error:", error);
+            console.error("getSettings API Error:", error);
 
             ErrorService.logClientError(error, {
-                componentName: "Fetch CompSettings",
-                additionalInfo: "Failed to retrieve the company",
+                componentName: "Fetch AppSettings",
+                additionalInfo: "Failed to retrieve the app settings",
                 category: "Error",
                 priority: "high",
                 data: null,
@@ -112,6 +156,14 @@ const fetchItems = async () => {
         });
 };
 
+/**
+ * Eseménykezelő, amely a komponens létrejöttekor hívódik meg.
+ *
+ * Ez a funkció a beállítások listáját lekéri az API-ból, amikor a komponens létrejön.
+ * A beállítások listája az app_settings változóban lesz elmentve.
+ *
+ * @return {void}
+ */
 onMounted(() => {
     fetchItems();
 
@@ -301,9 +353,100 @@ const updateSetting = async () => {
         });
 };
 
-const deleteSelectedSettings = async () => {};
+const deleteSelectedSettings = async () => {
+    const originalAppSettings = [...app_settings.value];
 
-const deleteSetting = async () => {};
+    selectedSettings.value.forEach(selectedSetting => {
+        const index = app_settings.value.findIndex(setting => setting.id === selectedSetting.id);
+        if (index !== -1) {
+            app_settings.value.splice(index, 1);
+        }
+    });
+
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Deleting selected settings...",
+        life: 2000,
+    });
+
+    await AppSettingsService.deleteSettings(selectedSettings.value.map(setting => setting.id))
+        .then((response) => {
+
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Selected app settings deleted",
+                life: 3000,
+            });
+
+            selectedSettings.value = [];
+        })
+        .catch((error) => {
+            app_settings.value = originalAppSettings;
+
+            const errorMessage = error.response?.data?.error || "Failed to delete selected app settings";
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: errorMessage,
+                life: 3000,
+            });
+
+            ErrorService.logClientError(error, {
+                componentName: "DeleteCompaniesDialog",
+                additionalInfo: "Failed to delete app settings in the backend",
+                category: "Error",
+                priority: "low",
+                data: app_settings.value
+            });
+        });
+};
+
+const deleteSetting = async () => {
+    const index = findIndexById(app_setting.value.id);
+    if (index === -1) {
+        console.warn("No app setting found with the given id:", app_setting.value.id);
+        return;
+    }
+
+    const originalAppSetting = { ...app_settings.value[index] };
+    app_settings.value.splice(index, 1);
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "App Setting deletion in progress",
+        life: 2000,
+    });
+
+    await AppSettingsService.deleteSetting(app_setting.value.id)
+        .then((response) => {
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "App Setting Deleted",
+                life: 3000,
+            });
+        })
+        .catch((error) => {
+            app_settings.value.splice(index, 0, originalAppSetting);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to app setting company",
+            });
+
+            ErrorService.logClientError(error, {
+                componentName: "DeleteAppSettingDialog",
+                additionalInfo: "Failed to delete app setting in the backend",
+                category: "Error",
+                priority: "medium",
+                data: app_setting.value,
+            });
+        });
+};
 
 const confirmDeleteSelected = () => {
     deleteSelectedSettingsDialog.value = true;
@@ -314,6 +457,26 @@ const confirmDeleteSetting = (data) => {
     deleteSettingDialog.value = true;
 };
 
+const findIndexById = (id) => {
+    return app_settings.value.findIndex((setting) => setting.id === id);
+};
+
+const exportCSV = () => {
+    dt.value.exportCSV();
+};
+
+const getModalTitle = () => {
+    return app_setting.value.id
+        ? $t('edit_setting')
+        : $t('add_new_setting');
+};
+
+const getModalDetails = () => {
+    return app_setting.value.id
+        ? trans("app_settings_edit_details")
+        : trans("app_settings_new_details");
+};
+
 const onUpload = () => {
     toast.add({
         severity: 'info',
@@ -321,10 +484,6 @@ const onUpload = () => {
         detail: 'File Uploaded',
         life: 3000
     });
-};
-
-const exportCSV = () => {
-    dt.value.exportCSV();
 };
 
 const getStatusSeverity = (status) => {
@@ -367,11 +526,9 @@ const clearFilters = () => {
 
 initFilters();
 
-const getModalTitle = () => {
-    return app_setting.value.id
-        ? $t('edit_setting')
-        : $t('add_new_setting');
-};
+
+
+
 
 </script>
 

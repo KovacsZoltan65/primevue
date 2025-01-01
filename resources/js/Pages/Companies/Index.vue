@@ -42,11 +42,6 @@ const props = defineProps({
     can: { type: Object, default: () => {}, },
 });
 
-/**
- * Az állapotmező logikai értékeit adja vissza.
- *
- * @returns {Array<Object>} objektumok tömbje címke és érték tulajdonságokkal.
- */
 const getBools = () => {
     return [
         {label: trans("inactive"),value: 0,},
@@ -55,8 +50,9 @@ const getBools = () => {
 };
 
 const toast = useToast();
-
+const loading = ref(true);
 const dt = ref();
+const filters = ref({});
 
 const companies = ref();
 const defaultCompany = {
@@ -71,69 +67,18 @@ const defaultCompany = {
     active: 1,
 };
 
-//const company = ref({ ...defaultCompany });
 const company = ref({ ...defaultCompany });
 
 const initialCompany = () => {
-    return { ...defaultCompany }; // Mindig a defaultCompany értékeit adja vissza
+    return { ...defaultCompany };
 };
-
-watch(
-    () => company.value.name,
-    /**
-     * Visszahívás funkció a figyelés effektushoz.
-     *
-     * Ez a funkció frissíti a cég directory tulajdonságát a név változásai alapján.
-     * @param {string} newValue - A cég könyvtárának új értéke.
-     */
-    (newValue) => {
-        const trimmedValue = newValue?.trim() || ""; // Győződjön meg arról, hogy az érték létezik,
-                                                     // és le van vágva.
-
-        if (trimmedValue !== "") {
-            company.value.directory = trimmedValue
-                .toLowerCase() // Átalakítás kisbetűsre.
-                .replace(/\s+/g, "_") // Cserélje ki a szóközöket aláhúzásjelekkel.
-                .replace(/[^a-z0-9._-]/g, "") // Távolítsa el a nem engedélyezett karaktereket.
-                .replace(/_+/g, "_") // Több aláhúzás összevonása.
-                .replace(/^\_+|\_+$/g, ""); // Távolítsa el a bevezető vagy a záró aláhúzást.
-        } else {
-            company.value.directory = "";
-        }
-    }
-);
-
-/**
- * Reaktív hivatkozás a kijelölt cégek tárolására.
- *
- * @type {ref<Array>}
- */
-const selectedCompanies = ref([]);
-
-/**
- * ===========================================
- * DIALOGOK
- * ===========================================
- */
-const companyDialog = ref(false);
-const deleteSelectedCompaniesDialog = ref(false);
-const deleteCompanyDialog = ref(false);
-
-const loading = ref(true);
-
-/**
- * Reaktív hivatkozás a globális keresés szűrőinek tárolására az adattáblában.
- *
- * @type {Object}
- */
- const filters = ref({});
 
 /**
  * Reaktív hivatkozás a beküldött (submit) állapotára.
  *
  * @type {ref<boolean>}
  */
-const submitted = ref(false);
+ const submitted = ref(false);
 
 /**
  * A validációs szabályok tárolása.
@@ -143,7 +88,7 @@ const submitted = ref(false);
  *
  * @type {Object}
  */
-const rules = {
+ const rules = {
     name: {
         required: helpers.withMessage(trans("validate_name"), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
@@ -163,6 +108,13 @@ const rules = {
     },
 };
 
+/**
+ * Létrehozza a validációs példányt a validációs szabályok alapján.
+ *
+ * @type {Object}
+ */
+ const v$ = useVuelidate(rules, company);
+
 const state = reactive({
     columns: {
         'id': { field: 'id', is_visible: true, is_sortable: true, is_filterable: true },
@@ -181,14 +133,26 @@ watch(state.columns, (new_value, old_value) => {
     localStorage.setItem(local_storage_column_key, JSON.stringify(new_value));
 });
 
+/**
+ * Reaktív hivatkozás a kijelölt cégek tárolására.
+ *
+ * @type {ref<Array>}
+ */
+const selectedCompanies = ref([]);
 
 /**
- * Létrehozza a validációs példányt a validációs szabályok alapján.
- *
- * @type {Object}
+ * ===========================================
+ * DIALOGOK
+ * ===========================================
  */
-const v$ = useVuelidate(rules, company);
-
+// táblázat beállításai
+const settingsDialog = ref(false);
+// új cég készítéséhez, vagy meglevő szerkesztéshez
+const companyDialog = ref(false);
+// kiválasztott cégekek törléséhez
+const deleteSelectedCompaniesDialog = ref(false);
+// cég törléséhez
+const deleteCompanyDialog = ref(false);
 // ======================================================
 
 /**
@@ -247,30 +211,19 @@ onMounted(() => {
 });
 
 /**
- * Megerősítés a város törléséhez.
+ * Bezárja a dialógusablakot.
  *
- * Ez a funkció a company változóba másolja a kiválasztott város adatait,
- * és megnyitja a dialógusablakot a város törléséhez.
- *
- * @param {object} data - A kiválasztott város adatai.
- * @return {void}
+ * Ez a függvény a dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
+ * A v$.value.$reset() függvénnyel visszaállítja a validációs objektumot az alapértelmezett állapotába.
  */
- const confirmDeleteCompany = (data) => {
-    company.value = { ...data };
-    deleteCompanyDialog.value = true;
-};
+ const hideDialog = () => {
+    company.value = initialCompany(); // Visszaáll az alapértelmezett állapotra
+    companyDialog.value = false;
+    deleteCompanyDialog.value = false;
+    deleteSelectedCompaniesDialog.value = false;
+    submitted.value = false;
 
-/**
- * Megerősíti a kiválasztott termékek törlését.
- *
- * Ez a funkció akkor hívódik meg, ha a felhasználó törölni szeretné a kiválasztott termékeket.
- * A deleteCompanysDialog változó értékét igazra állítja, ami
- * megnyílik egy megerősítő párbeszédablak a kiválasztott termékek törléséhez.
- *
- * @return {void}
- */
-function confirmDeleteSelected() {
-    deleteSelectedCompaniesDialog.value = true;
+    v$.value.$reset();
 };
 
 /**
@@ -282,26 +235,10 @@ function confirmDeleteSelected() {
  *
  * @return {void}
  */
-function openNew() {
+ function openNew() {
     company.value = initialCompany();
     submitted.value = false;
     companyDialog.value = true;
-};
-
-/**
- * Bezárja a dialógusablakot.
- *
- * Ez a függvény a dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
- * A v$.value.$reset() függvénnyel visszaállítja a validációs objektumot az alapértelmezett állapotába.
- */
-const hideDialog = () => {
-    company.value = initialCompany(); // Visszaáll az alapértelmezett állapotra
-    companyDialog.value = false;
-    deleteCompanyDialog.value = false;
-    deleteSelectedCompaniesDialog.value = false;
-    submitted.value = false;
-
-    v$.value.$reset();
 };
 
 /**
@@ -604,6 +541,33 @@ const deleteCompany = async () => {
         });
 };
 
+/**
+ * Megerősítés a város törléséhez.
+ *
+ * Ez a funkció a company változóba másolja a kiválasztott város adatait,
+ * és megnyitja a dialógusablakot a város törléséhez.
+ *
+ * @param {object} data - A kiválasztott város adatai.
+ * @return {void}
+ */
+ const confirmDeleteCompany = (data) => {
+    company.value = { ...data };
+    deleteCompanyDialog.value = true;
+};
+
+/**
+ * Megerősíti a kiválasztott termékek törlését.
+ *
+ * Ez a funkció akkor hívódik meg, ha a felhasználó törölni szeretné a kiválasztott termékeket.
+ * A deleteCompanysDialog változó értékét igazra állítja, ami
+ * megnyílik egy megerősítő párbeszédablak a kiválasztott termékek törléséhez.
+ *
+ * @return {void}
+ */
+function confirmDeleteSelected() {
+    deleteSelectedCompaniesDialog.value = true;
+};
+
 const findIndexById = (id) => {
     return companies.value.findIndex((company) => company.id === id);
 };
@@ -657,6 +621,31 @@ initFilters();
 const throwError = () => {
     throw new Error('Test error');
 };
+
+watch(
+    () => company.value.name,
+    /**
+     * Visszahívás funkció a figyelés effektushoz.
+     *
+     * Ez a funkció frissíti a cég directory tulajdonságát a név változásai alapján.
+     * @param {string} newValue - A cég könyvtárának új értéke.
+     */
+    (newValue) => {
+        const trimmedValue = newValue?.trim() || ""; // Győződjön meg arról, hogy az érték létezik,
+                                                     // és le van vágva.
+
+        if (trimmedValue !== "") {
+            company.value.directory = trimmedValue
+                .toLowerCase() // Átalakítás kisbetűsre.
+                .replace(/\s+/g, "_") // Cserélje ki a szóközöket aláhúzásjelekkel.
+                .replace(/[^a-z0-9._-]/g, "") // Távolítsa el a nem engedélyezett karaktereket.
+                .replace(/_+/g, "_") // Több aláhúzás összevonása.
+                .replace(/^\_+|\_+$/g, ""); // Távolítsa el a bevezető vagy a záró aláhúzást.
+        } else {
+            company.value.directory = "";
+        }
+    }
+);
 
 </script>
 

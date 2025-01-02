@@ -25,12 +25,13 @@ import InputIcon from "primevue/inputicon";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Select from "primevue/select";
+import Message from "primevue/message";
 import Tag from "primevue/tag";
 import FileUpload from "primevue/fileupload";
+import Checkbox from "primevue/checkbox";
 import { createId } from "@/helpers/functions";
 import FloatLabel from "primevue/floatlabel";
 import ErrorService from "@/service/ErrorService";
-import Message from "primevue/message";
 
 /**
  * Szerver felöl jövő adatok
@@ -58,6 +59,10 @@ const defaultSetting = {
     value: "",
     active: 1,
 };
+
+// Tároló kulcsok
+const local_storage_column_key = 'ln_app_settings_grid_columns';
+const local_storage_app_settings = 'app_settings';
 
 const app_setting = ref({ ...defaultSetting });
 
@@ -87,7 +92,7 @@ const rules = {
  *
  * @type {Object}
  */
- const v$ = useVuelidate(rules, app_setting);
+const v$ = useVuelidate(rules, app_setting);
 
 const state = reactive({
     columns: {
@@ -98,10 +103,9 @@ const state = reactive({
     }
 });
 
-const local_storage_column_key = 'ln_app_settins_grid_columns';
 watch(state.columns, (new_value, old_value) => {
     localStorage.setItem(local_storage_column_key, JSON.stringify(new_value));
-});
+}, { deep: true });
 
 /**
  * Reaktív hivatkozás a kijelölt beállítások tárolására.
@@ -125,53 +129,49 @@ const deleteSelectedSettingsDialog = ref(false);
 const deleteSettingDialog = ref(false);
 // ======================================================
 
-/**
- * Lekéri a beállítások listáját az API-ból.
- *
- * Ez a funkció a beállítások listáját lekéri az API-ból.
- * A beállítások listája az app_settings változóban lesz elmentve.
- *
- * @return {Promise} Ígéret, amely a válaszban szereplő  adatokkal megoldódik.
- */
 const fetchItems = async () => {
     loading.value = true;
 
-    await AppSettingsService.getSettings()
-        .then((response) => {
-            app_settings.value = response.data;
-        })
-        .catch((error) => {
-            console.error("getSettings API Error:", error);
+    let _settings = localStorage.getItem(local_storage_app_settings);
+    if( _settings ) {
+        
+        app_settings.value = JSON.parse(_settings);
 
-            ErrorService.logClientError(error, {
-                componentName: "Fetch AppSettings",
-                additionalInfo: "Failed to retrieve the app settings",
-                category: "Error",
-                priority: "high",
-                data: null,
+        loading.value = false;
+    } else {
+        await AppSettingsService.getSettings()
+            .then((response) => {
+                app_settings.value = response.data;
+
+                localStorage.setItem(local_storage_app_settings, JSON.stringify(response.data));
+            })
+            .catch((error) => {
+                console.error("getSettings API Error:", error);
+
+                ErrorService.logClientError(error, {
+                    componentName: "Fetch AppSettings",
+                    additionalInfo: "Failed to retrieve the app settings",
+                    category: "Error",
+                    priority: "high",
+                    data: null,
+                });
+            })
+            .finally(() => {
+                loading.value = false;
             });
-        })
-        .finally(() => {
-            loading.value = false;
-        });
+    }
 };
 
-/**
- * Eseménykezelő, amely a komponens létrejöttekor hívódik meg.
- *
- * Ez a funkció a beállítások listáját lekéri az API-ból, amikor a komponens létrejön.
- * A beállítások listája az app_settings változóban lesz elmentve.
- *
- * @return {void}
- */
 onMounted(() => {
     fetchItems();
 
     let columns = localStorage.getItem(local_storage_column_key);
     if (columns) {
         columns = JSON.parse(columns);
-        for(const column_name in columns) {
-            state.columns[column_name] = columns[column_name];
+        for (const column_name in columns) {
+            if (state.columns[column_name]) {
+                state.columns[column_name] = columns[column_name];
+            }
         }
     }
 });
@@ -208,6 +208,8 @@ const saveSetting = async () => {
         } else {
             createSetting();
         }
+
+        localStorage.removeItem(local_storage_app_settings);
     } else {
         // Validációs hibák összegyűjtése
         const validationErrors = v$.value.$errors.map((error) => ({
@@ -457,6 +459,10 @@ const confirmDeleteSetting = (data) => {
     deleteSettingDialog.value = true;
 };
 
+const openSettingsDialog = () => {
+    settingsDialog.value = true;
+}
+
 const findIndexById = (id) => {
     return app_settings.value.findIndex((setting) => setting.id === id);
 };
@@ -487,16 +493,12 @@ const onUpload = () => {
 };
 
 const getStatusLabel = (setting) => {
-    console.log(typeof setting, setting.active);
     switch (setting.active) {
         case '0':
-            console.log('getStatusLabel 0');
             return "danger";
         case '1':
-            console.log('getStatusLabel 1');
             return "success";
         default:
-            console.log('getStatusLabel default');
             return "danger";
     }
 };
@@ -524,11 +526,6 @@ const clearFilters = () => {
 };
 
 initFilters();
-
-
-
-
-
 </script>
 
 <template>
@@ -538,7 +535,7 @@ initFilters();
         <Toast />
 
         {{ props.can }}<br/>
-        {{ state.columns.id }}
+        {{ state.columns }}
 
         <div class="card">
             <Toolbar class="md-6">
@@ -549,6 +546,7 @@ initFilters();
                         icon="pi pi-cog"
                         severity="secondary"
                         class="mr-2"
+                        @click="openSettingsDialog"
                     />
 
                     <!-- New Button -->
@@ -618,12 +616,12 @@ initFilters();
                             icon="pi pi-filter-slash"
                             :label="$t('clear')"
                             outlined
-                            @click="clearFilter()"
+                            @click="clearFilters()"
                         />
 
                         <!-- FELIRAT -->
                         <div class="font-semibold text-xl mb-1">
-                            {{ $t("appFilter_title") }}
+                            {{ $t("app_settings_title") }}
                         </div>
 
                         <!-- KERESÉS -->
@@ -665,12 +663,22 @@ initFilters();
                     :disabled="!props.can.appSettings_delete"
                 />
 
+                <!-- ID -->
+                <Column
+                    :field="state.columns.id.field"
+                    :header="$t(state.columns.id.field)"
+                    style="min-width: 16rem"
+                    :sortable="state.columns.id.is_sortable"
+                    :hidden="!state.columns.id.is_visible"
+                />
+
                 <!-- KEY -->
                 <Column
                     :field="state.columns.key.field"
                     :header="$t(state.columns.key.field)"
                     style="min-width: 16rem"
                     :sortable="state.columns.key.is_sortable"
+                    :hidden="!state.columns.key.is_visible"
                 />
 
                 <!-- VALUE -->
@@ -679,6 +687,7 @@ initFilters();
                     :header="$t(state.columns.value.field)"
                     style="min-width: 16rem"
                     :sortable="state.columns.value.is_sortable"
+                    :hidden="!state.columns.value.is_visible"
                 />
 
                 <!-- ACTIVE -->
@@ -687,6 +696,7 @@ initFilters();
                     :header="$t('active')"
                     style="min-width: 16rem"
                     :sortable="state.columns.active.is_sortable"
+                    :hidden="!state.columns.active.is_visible"
                 >
                     <template #body="slotProps">
                         <Tag
@@ -722,9 +732,9 @@ initFilters();
 
         </div>
 
-        <!-- SETTINGS DIALOG -->
+        <!-- SETTING DIALOG -->
         <Dialog
-            v-model:visible="settingsDialog"
+            v-model:visible="settingDialog"
             :style="{ width: '550px' }"
             :header="getModalTitle()"
             :modal="true"
@@ -732,7 +742,7 @@ initFilters();
             <div class="flex flex-col gap-6" style="margin-top: 17px;"></div>
         </Dialog>
 
-        <!-- SETTINGS -->
+        <!-- SETTINGS DIALOG -->
         <Dialog
             v-model:visible="settingsDialog"
             :style="{ width: '550px' }"
@@ -740,13 +750,23 @@ initFilters();
             :modal="true"
         >
             <div class="flex flex-col gap-6" style="margin-top: 17px;">
-                <div
-                    v-for="(sonfig, column) in state.columns" :key="column"
-                    class="d-flex align-items-center"
-                >
-                    <input v-model="config.is_visible"
-                        :id="column" class="me-3" type="checkbox" />
-                    <label :for="column">{{ $t(config.label) }}</label>
+            
+                <div class="flex flex-col gap-2">
+
+                    <div class="flex flex-wrap gap-4">
+                        <div
+                            v-for="(config, column) in state.columns" 
+                            :key="column"
+                            class="flex items-center gap-2">
+                            <Checkbox 
+                                v-model="config.is_visible" 
+                                :inputId="column" 
+                                :value="true" binary
+                            />
+                            <label :for="column">{{ column }}</label>
+                        </div>
+                    </div>
+
                 </div>
 
             </div>

@@ -31,6 +31,7 @@ import { createId } from "@/helpers/functions";
 import FloatLabel from "primevue/floatlabel";
 import ErrorService from "@/service/ErrorService";
 import Message from "primevue/message";
+import Checkbox from "primevue/checkbox";
 
 /**
  * Szerver felöl jövő adatok
@@ -66,6 +67,10 @@ const defaultCompany = {
     address: null,
     active: 1,
 };
+
+// Tároló kulcsok
+const local_storage_companies = 'companies';
+const local_storage_column_key = 'ln_companies_grid_columns';
 
 const company = ref({ ...defaultCompany });
 
@@ -128,10 +133,10 @@ const state = reactive({
         'active': { field: 'active', is_visible: true, is_sortable: true, is_filterable: true }
     }
 });
-const local_storage_column_key = 'ln_companies_grid_columns';
+
 watch(state.columns, (new_value, old_value) => {
     localStorage.setItem(local_storage_column_key, JSON.stringify(new_value));
-});
+}, { deep: true });
 
 /**
  * Reaktív hivatkozás a kijelölt cégek tárolására.
@@ -155,49 +160,41 @@ const deleteSelectedCompaniesDialog = ref(false);
 const deleteCompanyDialog = ref(false);
 // ======================================================
 
-/**
- * Lekéri a városok listáját az API-ból.
- *
- * Ez a funkció a városok listáját lekéri az API-ból.
- * A városok listája a companies változóban lesz elmentve.
- *
- * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
- */
 const fetchItems = async () => {
-    loading.value = true;
+    //loading.value = true;
 
-    //console.log(props);
+    let _companies = localStorage.getItem(local_storage_companies);
 
-    await CompanyService.getCompanies()
-        .then((response) => {
-            // A városok listája a companies változóban lesz elmentve
-            companies.value = response.data;
-        })
-        .catch((error) => {
-            // Jelenítse meg a hibaüzenetet a konzolon
-            console.error("getCompanies API Error:", error);
+    if ( _companies ) {
+        companies.value = JSON.parse(_companies);
 
-            ErrorService.logClientError(error, {
-                componentName: "Fetch Companies",
-                additionalInfo: "Failed to retrieve the company",
-                category: "Error",
-                priority: "high",
-                data: null,
+        loading.value = false;
+    } else {
+        await CompanyService.getCompanies()
+            .then((response) => {
+                // A városok listája a companies változóban lesz elmentve
+                companies.value = response.data;
+
+                localStorage.setItem(local_storage_companies, JSON.stringify(response.data));
+            })
+            .catch((error) => {
+                // Jelenítse meg a hibaüzenetet a konzolon
+                console.error("getCompanies API Error:", error);
+
+                ErrorService.logClientError(error, {
+                    componentName: "Fetch Companies",
+                    additionalInfo: "Failed to retrieve the company",
+                    category: "Error",
+                    priority: "high",
+                    data: null,
+                });
+
+            }).finally(() => {
+                loading.value = false;
             });
-
-        }).finally(() => {
-            loading.value = false;
-        });
+    }
 };
 
-/**
- * Eseménykezelő, amely a komponens létrejöttekor hívódik meg.
- *
- * Ez a funkció a városok listáját lekéri az API-ból, amikor a komponens létrejön.
- * A városok listája a companies változóban lesz elmentve.
- *
- * @return {void}
- */
 onMounted(() => {
     fetchItems();
 
@@ -210,14 +207,9 @@ onMounted(() => {
     }
 });
 
-/**
- * Bezárja a dialógusablakot.
- *
- * Ez a függvény a dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
- * A v$.value.$reset() függvénnyel visszaállítja a validációs objektumot az alapértelmezett állapotába.
- */
- const hideDialog = () => {
-    company.value = initialCompany(); // Visszaáll az alapértelmezett állapotra
+const hideDialog = () => {
+    company.value = initialCompany(); // Visszaáll az alapértelemezett állapotra
+    settingsDialog.value = false;
     companyDialog.value = false;
     deleteCompanyDialog.value = false;
     deleteSelectedCompaniesDialog.value = false;
@@ -226,30 +218,12 @@ onMounted(() => {
     v$.value.$reset();
 };
 
-/**
- * Megnyitja az új város dialógusablakot.
- *
- * Ez a függvény a company változó értékét alaphelyzetbe állítja,
- * a submitted változó értékét False-ra állítja, és a companyDialog változó
- * értékét igazra állítja, amely megnyitja az új város dialógusablakot.
- *
- * @return {void}
- */
- function openNew() {
+function openNew() {
     company.value = initialCompany();
     submitted.value = false;
     companyDialog.value = true;
 };
 
-/**
- * Szerkeszti a kiválasztott várost.
- *
- * Ez a funkció a kiválasztott város adatait másolja a company változóba,
- * és megnyitja a dialógusablakot a város szerkesztéséhez.
- *
- * @param {object} data - A kiválasztott város adatai.
- * @return {void}
- */
 const editCompany = (data) => {
     company.value = { ...data };
     companyDialog.value = true;
@@ -266,6 +240,8 @@ const saveCompany = async () => {
         } else {
             createCompany();
         }
+
+        localStorage.removeItem(local_storage_companies);
     } else {
         // Validációs hibák összegyűjtése
         const validationErrors = v$.value.$errors.map((error) => ({
@@ -541,31 +517,17 @@ const deleteCompany = async () => {
         });
 };
 
-/**
- * Megerősítés a város törléséhez.
- *
- * Ez a funkció a company változóba másolja a kiválasztott város adatait,
- * és megnyitja a dialógusablakot a város törléséhez.
- *
- * @param {object} data - A kiválasztott város adatai.
- * @return {void}
- */
- const confirmDeleteCompany = (data) => {
+const confirmDeleteCompany = (data) => {
     company.value = { ...data };
     deleteCompanyDialog.value = true;
 };
 
-/**
- * Megerősíti a kiválasztott termékek törlését.
- *
- * Ez a funkció akkor hívódik meg, ha a felhasználó törölni szeretné a kiválasztott termékeket.
- * A deleteCompanysDialog változó értékét igazra állítja, ami
- * megnyílik egy megerősítő párbeszédablak a kiválasztott termékek törléséhez.
- *
- * @return {void}
- */
 function confirmDeleteSelected() {
     deleteSelectedCompaniesDialog.value = true;
+};
+
+const openSettingsDialog = () => {
+    settingsDialog.value = true;
 };
 
 const findIndexById = (id) => {
@@ -655,10 +617,6 @@ watch(
 
         <Toast />
 
-        {{ props.can }}<br/>
-        {{ state.columns.name.field }}<br/>
-        {{ state.columns.directory.field }}<br/>
-
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
@@ -668,6 +626,7 @@ watch(
                         icon="pi pi-cog"
                         severity="secondary"
                         class="mr-2"
+                        @click="openSettingsDialog"
                     />
 
                     <!-- ERROR -->
@@ -793,11 +752,21 @@ watch(
                     :disabled="!props.can.companies_delete"
                 />
 
+                <!-- ID -->
+                <Column
+                    :field="state.columns.id.field"
+                    :header="$t(state.columns.id.field)"
+                    :sortable="state.columns.id.is_sortable"
+                    :hidden="!state.columns.id.is_visible"
+                    style="min-width: 16rem"
+                />
+
                 <!-- NAME -->
                 <Column
                     :field="state.columns.name.field"
-                    :header="$t('name')"
-                    sortable
+                    :header="$t(state.columns.name.field)"
+                    :sortable="state.columns.name.is_sortable"
+                    :hidden="!state.columns.name.is_visible"
                     style="min-width: 16rem"
                 >
                     <template #body="slotProps">
@@ -816,7 +785,8 @@ watch(
                 <Column
                     :field="state.columns.directory.field"
                     :header="$t('directory')"
-                    sortable
+                    :sortable="state.columns.directory.is_sortable"
+                    :hidden="!state.columns.directory.is_visible"
                     style="min-width: 16rem"
                 >
                     <template #body="slotProps">
@@ -835,7 +805,8 @@ watch(
                 <Column
                     :field="state.columns.country_id.filed"
                     :header="$t('country')"
-                    sortable
+                    :sortable="state.columns.country_id.is_sortable"
+                    :hidden="!state.columns.country_id.is_visible"
                     style="min-width: 16rem"
                 >
                     <template #body="slotProps">
@@ -847,7 +818,8 @@ watch(
                 <Column
                     :field="state.columns.city_id.field"
                     :header="$t('city')"
-                    sortable
+                    :sortable="state.columns.city_id.is_sortable"
+                    :hidden="!state.columns.city_id.is_visible"
                     style="min-width: 16rem"
                 >
                     <template #body="slotProps">
@@ -1157,5 +1129,36 @@ watch(
                 />
             </template>
         </Dialog>
+
+        <!-- SETTINGS DIALOG -->
+        <Dialog
+            v-model:visible="settingsDialog"
+            :style="{ width: '550px' }"
+            :header="$t('app_settings_title')"
+            :modal="true"
+        >
+            <div class="flex flex-col gap-6" style="margin-top: 17px;">
+            
+                <div class="flex flex-col gap-2">
+                    
+                    <div class="flex flex-wrap gap-4">
+                        <div
+                            v-for="(config, column) in state.columns" 
+                            :key="column"
+                            class="flex items-center gap-2">
+                            <Checkbox 
+                                v-model="config.is_visible" 
+                                :inputId="column" 
+                                :value="true" binary
+                            />
+                            <label :for="column">{{ column }}</label>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </Dialog>
+
     </AppLayout>
 </template>

@@ -91,10 +91,10 @@ const rules = {
 
 const state = reactive({
     columns: {
-        id: { field: 'id', is_visible: true, is_sortable: true, is_filterable: true },
-        key: { field: 'key', is_visible: true, is_sortable: true, is_filterable: true },
-        value: { field: 'value', is_visible: true, is_sortable: true, is_filterable: true },
-        active:  { field: 'active', is_visible: true, is_sortable: true, is_filterable: true },
+        'id': { field: 'id', is_visible: true, is_sortable: true, is_filterable: true },
+        'key': { field: 'key', is_visible: true, is_sortable: true, is_filterable: true },
+        'value': { field: 'value', is_visible: true, is_sortable: true, is_filterable: true },
+        'active':  { field: 'active', is_visible: true, is_sortable: true, is_filterable: true },
     }
 });
 
@@ -467,8 +467,8 @@ const exportCSV = () => {
 
 const getModalTitle = () => {
     return app_setting.value.id
-        ? $t('edit_setting')
-        : $t('add_new_setting');
+        ? trans('edit_setting')
+        : trans('add_new_setting');
 };
 
 const getModalDetails = () => {
@@ -486,31 +486,30 @@ const onUpload = () => {
     });
 };
 
-const getStatusSeverity = (status) => {
-
-    console.log('getStatusSeverity status', status);
-
-    switch (status) {
-        case 0:
+const getStatusLabel = (setting) => {
+    console.log(typeof setting, setting.active);
+    switch (setting.active) {
+        case '0':
+            console.log('getStatusLabel 0');
             return "danger";
-        case 1:
+        case '1':
+            console.log('getStatusLabel 1');
             return "success";
+        default:
+            console.log('getStatusLabel default');
+            return "danger";
     }
 };
 
-const getStatusValue = (status) => {
-
-    console.log('getStatusValue status', status);
-
-    //['', '', ''][] || 'pending';
-
-    switch (status) {
-        case 0:
-            return "INACTIVE";
-        case 1:
-            return "ACTIVE";
+const getStatusValue = (setting) => {
+    switch (setting.active) {
+        case '0':
+            return trans('inactive');
+        case '1':
+            return trans('active');
+        default:
+            return trans('unknown');
     }
-
 };
 
 const initFilters = () => {
@@ -684,15 +683,15 @@ initFilters();
 
                 <!-- ACTIVE -->
                 <Column
-                    :field="state.columns.active.field"
-                    :header="$t(state.columns.active.field)"
+                    field="active"
+                    :header="$t('active')"
                     style="min-width: 16rem"
                     :sortable="state.columns.active.is_sortable"
                 >
                     <template #body="slotProps">
                         <Tag
-                            :value="getStatusValue(slotProps.data.active)"
-                            :severity="getStatusSeverity(slotProps.data.active)"
+                            :value="getStatusValue(slotProps.data)"
+                            :severity="getStatusLabel(slotProps.data)"
                         />
                     </template>
                 </Column>

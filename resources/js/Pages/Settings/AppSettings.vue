@@ -132,18 +132,18 @@ const deleteSettingDialog = ref(false);
 const fetchItems = async () => {
     loading.value = true;
 
-    let _settings = localStorage.getItem(local_storage_app_settings);
-    if( _settings ) {
+    //let _settings = localStorage.getItem(local_storage_app_settings);
+    //if( _settings ) {
         
-        app_settings.value = JSON.parse(_settings);
+    //    app_settings.value = JSON.parse(_settings);
 
-        loading.value = false;
-    } else {
+    //    loading.value = false;
+    //} else {
         await AppSettingsService.getSettings()
             .then((response) => {
                 app_settings.value = response.data;
-
-                localStorage.setItem(local_storage_app_settings, JSON.stringify(response.data));
+console.log('app_settings.value: ', app_settings.value);
+                //localStorage.setItem(local_storage_app_settings, JSON.stringify(response.data));
             })
             .catch((error) => {
                 console.error("getSettings API Error:", error);
@@ -159,7 +159,7 @@ const fetchItems = async () => {
             .finally(() => {
                 loading.value = false;
             });
-    }
+    //}
 };
 
 onMounted(() => {
@@ -209,7 +209,7 @@ const saveSetting = async () => {
             createSetting();
         }
 
-        localStorage.removeItem(local_storage_app_settings);
+        //localStorage.removeItem(local_storage_app_settings);
     } else {
         // Validációs hibák összegyűjtése
         const validationErrors = v$.value.$errors.map((error) => ({
@@ -494,9 +494,9 @@ const onUpload = () => {
 
 const getStatusLabel = (setting) => {
     switch (setting.active) {
-        case '0':
+        case 0:
             return "danger";
-        case '1':
+        case 1:
             return "success";
         default:
             return "danger";
@@ -505,9 +505,9 @@ const getStatusLabel = (setting) => {
 
 const getStatusValue = (setting) => {
     switch (setting.active) {
-        case '0':
+        case 0:
             return trans('inactive');
-        case '1':
+        case 1:
             return trans('active');
         default:
             return trans('unknown');
@@ -533,9 +533,6 @@ initFilters();
         <Head :title="$t('application_settings')" />
 
         <Toast />
-
-        {{ props.can }}<br/>
-        {{ state.columns }}
 
         <div class="card">
             <Toolbar class="md-6">
@@ -709,6 +706,7 @@ initFilters();
                 <!-- ACTIONS -->
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
+
                         <Button
                             :disabled="!props.can.appSettings_edit"
                             icon="pi pi-pencil"
@@ -717,6 +715,7 @@ initFilters();
                             class="mr-2"
                             @click="editSetting(slotProps.data)"
                         />
+                    
                         <Button
                             icon="pi pi-trash"
                             outlined
@@ -725,6 +724,7 @@ initFilters();
                             @click="confirmDeleteSetting(slotProps.data)"
                             :disabled="!props.can.appSettings_delete"
                         />
+                    
                     </template>
                 </Column>
 
@@ -739,10 +739,75 @@ initFilters();
             :header="getModalTitle()"
             :modal="true"
         >
-            <div class="flex flex-col gap-6" style="margin-top: 17px;"></div>
+            <div class="flex flex-col gap-6" style="margin-top: 17px;">
+                {{ app_setting.active }}
+                <!-- KEY -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="key" class="block font-bold mb-3">
+                            {{ $t("key") }}
+                        </label>
+                        <InputText
+                            id="key"
+                            v-model="app_setting.key"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_key') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.key.$error">
+                        {{ $t(v$.key.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- VALUE -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="value" class="block font-bold mb-3">
+                            {{ $t("value") }}
+                        </label>
+                        <InputText
+                            id="value"
+                            v-model="app_setting.value"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_value') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.value.$error">
+                        {{ $t(v$.value.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- AKTÍV -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <Select
+                        id="active"
+                        name="active"
+                        v-model="app_setting.active"
+                        :options="getBools()"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Active"
+                    />
+                    <label for="active">active</label>
+                </div>
+            </div>
         </Dialog>
 
-        <!-- SETTINGS DIALOG -->
+        <!-- 
+            SETTINGS DIALOG táblázat
+         -->
         <Dialog
             v-model:visible="settingsDialog"
             :style="{ width: '550px' }"

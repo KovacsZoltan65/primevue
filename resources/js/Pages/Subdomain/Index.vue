@@ -306,6 +306,7 @@ const fetchItems = async () => {
     await SubdomainService.getSubdomains()
         .then((response) => {
             subdomains.value = response.data;
+            console.log('subdomains.value: ', subdomains.value);
         })
         .catch((error) => {
             console.error("getSubdomains API Error:", error);
@@ -942,6 +943,7 @@ const onUpload = () => {
             :modal="true"
         >
             <div class="flex flex-col gap-6">
+                {{ subdomain }}
                 <div class="flex flex-wrap gap-4">
                     <!-- Name -->
                     <div class="flex flex-col grow basis-0 gap-2">

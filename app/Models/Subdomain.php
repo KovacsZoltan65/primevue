@@ -32,7 +32,7 @@ class Subdomain extends Model
         'sso' => 'bool',
         'acs_id' => 'int',
         'last_export' => 'datetime',
-        'active' => 'integer',
+        'active' => 'int',
     ];
 
     protected $fillable = [

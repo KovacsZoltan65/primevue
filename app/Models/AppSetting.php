@@ -18,6 +18,10 @@ class AppSetting extends Model
     protected $table = 'app_settings';
     protected $fillable = ['key', 'value', 'active'];
 
+    protected $casts = [
+        'active' => 'int',
+    ];
+
     /*
      * ==============================================================
      * LOGOLÁS

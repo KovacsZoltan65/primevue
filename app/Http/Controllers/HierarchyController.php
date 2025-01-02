@@ -6,10 +6,13 @@ use App\Models\Entity;
 use App\Models\Hierarchy;
 use App\Repositories\HierarchyRepository;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response AS InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Routing\Controller;
@@ -38,7 +41,7 @@ class HierarchyController extends Controller
         $this->middleware("can:{$this->tag} restore", ['only' => ['restoreCompany']]);
     }
     
-    public function index(REquest $request)
+    public function index(Request $request): InertiaResponse
     {
         $roles = $this->getUserRoles($this->tag);
         
@@ -200,6 +203,7 @@ class HierarchyController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
     // Gyermek eltávolítása
     public function removeChild(Request $request, $parentId): JsonResponse
     {
@@ -866,7 +870,6 @@ class HierarchyController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
 
     private function getAllDescendants(Entity $entity): Collection
     {

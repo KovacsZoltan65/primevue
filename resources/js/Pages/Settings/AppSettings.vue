@@ -819,6 +819,20 @@ initFilters();
                     </small>
                 </div>
             </div>
+
+            <template #footer>
+                <Button
+                    :label="$t('cancel')"
+                    icon="pi pi-times"
+                    text
+                    @click="hideDialog"
+                />
+                <Button
+                    :label="$t('save')"
+                    icon="pi pi-check"
+                    @click="saveSetting"
+                />
+            </template>
         </Dialog>
 
         <!-- SETTINGS DIALOG táblázat -->
@@ -829,9 +843,7 @@ initFilters();
             :modal="true"
         >
             <div class="flex flex-col gap-6" style="margin-top: 17px;">
-            
                 <div class="flex flex-col gap-2">
-
                     <div class="flex flex-wrap gap-4">
                         <div
                             v-for="(config, column) in state.columns" 
@@ -845,9 +857,7 @@ initFilters();
                             <label :for="column">{{ column }}</label>
                         </div>
                     </div>
-
                 </div>
-
             </div>
         </Dialog>
 

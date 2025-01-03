@@ -85,6 +85,9 @@ const rules = {
     value: {
         required: helpers.withMessage(trans('validation.required'), required),
     },
+    active: {
+        required: helpers.withMessage(trans('validation.required'), required),
+    },
 };
 
 /**
@@ -142,7 +145,6 @@ const fetchItems = async () => {
         await AppSettingsService.getSettings()
             .then((response) => {
                 app_settings.value = response.data;
-console.log('app_settings.value: ', app_settings.value);
                 //localStorage.setItem(local_storage_app_settings, JSON.stringify(response.data));
             })
             .catch((error) => {
@@ -791,23 +793,35 @@ initFilters();
 
                 <!-- AKTÍV -->
                 <div class="flex flex-col grow basis-0 gap-2">
-                    <Select
-                        id="active"
-                        name="active"
-                        v-model="app_setting.active"
-                        :options="getBools()"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Active"
-                    />
-                    <label for="active">active</label>
+                    <FloatLabel>
+                        <label for="active" class="block font-bold mb-3">
+                            {{ $t("active") }}
+                        </label>
+                        <Select
+                            id="active"
+                            name="active"
+                            v-model="app_setting.active"
+                            :options="getBools()"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Active" fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_active') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.active.$error">
+                        {{ $t(v$.active.$errors[0].$message) }}
+                    </small>
                 </div>
             </div>
         </Dialog>
 
-        <!-- 
-            SETTINGS DIALOG táblázat
-         -->
+        <!-- SETTINGS DIALOG táblázat -->
         <Dialog
             v-model:visible="settingsDialog"
             :style="{ width: '550px' }"
@@ -835,6 +849,72 @@ initFilters();
                 </div>
 
             </div>
+        </Dialog>
+
+        <!-- CONFIRM SETTING DELETE -->
+        <Dialog
+            v-model:visible="deleteSettingDialog"
+            :style="{ width: '450px' }"
+            :header="$t('confirm')"
+            :modal="true"
+        >
+            <span class="text-surface-500 dark:text-surface-400 block mb-8">
+                {{ $t("setting_delete_title") }}
+            </span>
+
+            <div class="flex items-center gap-4">
+                <!-- A figyelmeztető ikon -->
+                <i class="pi pi-exclamation-triangle !text-3xl" />
+                <!-- A szöveg, amely megjelenik a párbeszédpanelen -->
+                <span v-if="app_setting">
+                    {{ $t("confirm_delete_2") }} <b>{{ app_setting.key }}</b
+                    >?
+                </span>
+            </div>
+
+            <template #footer>
+                <!-- A "Nem" gomb -->
+                <Button
+                    :label="$t('no')"
+                    icon="pi pi-times"
+                    @click="deleteSettingDialog = false"
+                    text
+                />
+                <!-- A "Igen" gomb, amely törli a céget -->
+                <Button
+                    :label="$t('yes')"
+                    icon="pi pi-check"
+                    @click="deleteSetting"
+                />
+            </template>
+        </Dialog>
+
+        <!-- CONFIRM SELECTED SETTINGS DELETE -->
+        <Dialog
+            v-model:visible="deleteSelectedSettingsDialog"
+            :style="{ width: '450px' }"
+            :header="$t('confirm')"
+            :modal="true"
+        >
+            <span class="text-surface-500 dark:text-surface-400 block mb-8">
+                {{ $t("settings_delete_title_2") }}
+            </span>
+
+            <template #footer>
+                <!-- "Mégsem" gomb -->
+                <Button
+                    :label="$t('no')"
+                    icon="pi pi-times"
+                    @click="deleteSelectedSettingsDialog = false"
+                    text
+                />
+                <!-- Megerősítés gomb -->
+                <Button
+                    :label="$t('yes')"
+                    icon="pi pi-check"
+                    @click="deleteSelectedSettings"
+                />
+            </template>
         </Dialog>
 
     </AppLayout>

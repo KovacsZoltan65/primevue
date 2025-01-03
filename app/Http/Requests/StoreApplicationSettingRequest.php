@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\SettingsMetadata;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreApplicationSettingRequest extends FormRequest
@@ -23,7 +24,7 @@ class StoreApplicationSettingRequest extends FormRequest
     {
         // Lekérdezzük a beállítás metaadatát
         $key = $this->route('key'); // Feltételezzük, hogy az útvonal tartalmazza a kulcsot
-        $metadata = SettingMetadata::where('key', $key)->first();
+        $metadata = SettingsMetadata::where('key', $key)->first();
         
         $rules = [
             'key' => 'required',

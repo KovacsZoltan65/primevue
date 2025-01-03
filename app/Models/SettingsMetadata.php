@@ -19,13 +19,13 @@ class SettingsMetadata extends Model
 
     /*
      * ==============================================================
-     * LOGOL¡S
+     * LOGOL√ÅS
      * ==============================================================
      */
 
-    // Ha szeretnÈd, hogy minden mezıt automatikusan naplÛzzon:
+    // Ha szeretn√©d, hogy minden mez≈ët automatikusan napl√≥zzon:
     protected static $logAttributes = ['*'];
-    protected static $logOnlyDirty = true; // Csak a v·ltoz·sokat naplÛzza
+    protected static $logOnlyDirty = true; // Csak a v√°ltoz√°sokat napl√≥zza
     protected static $logName = 'settingMetadata';
 
     protected static $recordEvents = [

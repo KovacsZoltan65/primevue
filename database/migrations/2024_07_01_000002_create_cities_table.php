@@ -24,7 +24,7 @@ return new class extends Migration
             $table->unsignedBigInteger('region_id')->comment('Régió azonosító. A kapcsolódó régió azonosítója.');
             //$table->unsignedBigInteger('city_id')->comment('Város azonosító. A kapcsolódó megye / régió azonosítója.');
 
-            $table->integer('active')->default(1)->index()->comment('Aktív. 0 érték esetén a város inaktív.');
+            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
 
             $table->foreign('country_id')->references('id')->on('countries')->cascadeOnDelete();
             $table->foreign('region_id')->references('id')->on('regions')->cascadeOnDelete();

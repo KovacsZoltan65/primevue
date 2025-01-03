@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\SettingsMetadata;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAppSettingRequest extends FormRequest
@@ -11,7 +12,7 @@ class UpdateAppSettingRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,9 +22,19 @@ class UpdateAppSettingRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        // Lekérdezzük a beállítás metaadatát
+        $key = $this->route('key'); // Feltételezzük, hogy az útvonal tartalmazza a kulcsot
+        $metadata = SettingsMetadata::where('key', $key)->first();
+        
+        $rules = [
             'key' => 'required',
             'value' => 'required',
         ];
+        
+        if ($metadata) {
+            $rules['value'] = json_decode($metadata->validation_rules, true) ?? [];
+        }
+        
+        return $rules;
     }
 }

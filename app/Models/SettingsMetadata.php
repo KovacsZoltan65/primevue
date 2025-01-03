@@ -10,7 +10,7 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Override;
 
-class SettingMetadata extends Model
+class SettingsMetadata extends Model
 {
     use HasFactory, LogsActivity;
 
@@ -19,13 +19,13 @@ class SettingMetadata extends Model
 
     /*
      * ==============================================================
-     * LOGOL√ÅS
+     * LOGOL¡S
      * ==============================================================
      */
 
-    // Ha szeretn√©d, hogy minden mez≈ët automatikusan napl√≥zzon:
+    // Ha szeretnÈd, hogy minden mezıt automatikusan naplÛzzon:
     protected static $logAttributes = ['*'];
-    protected static $logOnlyDirty = true; // Csak a v√°ltoz√°sokat napl√≥zza
+    protected static $logOnlyDirty = true; // Csak a v·ltoz·sokat naplÛzza
     protected static $logName = 'settingMetadata';
 
     protected static $recordEvents = [

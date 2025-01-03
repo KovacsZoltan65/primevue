@@ -31,12 +31,14 @@ class DatabaseSeeder extends Seeder
 
             MenuItemSeeder::class,
             MenuItemEntitiesSeeder::class,
-            
+
             RoleAndPermissionSeeder::class,
 
             AppSettingSeeder::class,
             
             EntitySeeder::class,
+            CompanySettingSeeder::class,
+            SettingsMetadataSeeder::class,
 
         ]);
 

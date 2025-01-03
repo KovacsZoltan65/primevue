@@ -14,6 +14,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegionController;
+use App\Http\Controllers\SettingsMetadataController;
 use App\Http\Controllers\SubdomainController;
 use App\Http\Controllers\SubdomainStateController;
 use Illuminate\Foundation\Application;
@@ -44,6 +45,7 @@ Route::middleware('auth')->group(function () {
      */
     Route::get('/app_settings', [AppSettingController::class, 'index'])->name('app_settings');
     Route::get('/comp_settings', [CompSettingController::class, 'index'])->name('comp_settings');
+    Route::get('/settings_metadata', [SettingsMetadataController::class, 'index'])->name('settings_metadata');
 
     /**
      * =====================================================

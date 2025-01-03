@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('app_settings', function (Blueprint $table) {
-            $table->id();
-            $table->string('key')->unique();
-            $table->text('value')->nullable();
-            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív állapot');
+            $table->id()->comment('Rekord azonosító');
+            $table->string('key')->unique()->comment('Kulcs');
+            $table->text('value')->nullable()->comment('Érték');
+            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
             $table->timestamps();
         });
     }

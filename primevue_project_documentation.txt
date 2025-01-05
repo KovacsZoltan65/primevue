@@ -1,0 +1,107 @@
+
+# PrimeVue Projekt Dokumentáció
+
+## Verziószám: 3.0.0
+
+## Projekt Leírása
+A project két alkalmazásból áll. 
+HQ egy vezérlő alkalmazás, mely a példányok menedzselését végzi. Új példány létrehozása, migrálása, seedelése, másolása, archiválása. Új cég létrehozása a példányon bellül.
+E-jelenlét egy beosztás-tervező alkalmazás, amelynek célja a munkavállalók, munkatervek és munkaidők egyszerű és hatékony kezelése. Az alkalmazás felhasználói közé tartoznak a cégek vezetői, HR-esek, és egyéb adminisztratív dolgozók.
+
+---
+
+## Technológiai Stack
+- **Frontend**: Vue.js (PrimeVue komponens könyvtár)
+- **Backend**: Laravel 11
+- **Adatbázis**: MySQL
+- **Csomagok**:
+  - **spatie/laravel-permission**: Jogosultságkezeléshez
+  - **spatie/laravel-activitylog**: Naplózás kezelése
+  - **inertiajs/inertia**: Frontend és backend integráció
+  - **phpunit/phpunit**: Egység tesztelés
+
+---
+## HQ fő funkciók
+1. **Példánykezelés**:
+   - Új példány adatbázis létrehozása
+   - Migráció és seed futtatása egy, vagy több példányon
+   - Cég létrehozása meglevő példányon
+   - Létrehozott cég adatainak kezelése
+2. **Felhasználókezelés**
+   - Bejelentkezés és regisztráció
+   - Alap jogosultságok automatikus hozzárendelése
+3. **Példányok felhasználókezelése**
+   - Új felhasználó létrehozása a kiválasztott példányon
+   - Létrehozott felhasználó adatainak kezelése
+   - Munkaválalói jogviszony létrehozása a kiválasztott cégen bellül
+   - Létrehozott jogviszony adatainak kezelése
+   - Jogviszony aktiválása / inaktivizálása
+   - Jogviszon adatainak törlése
+
+
+## E-jelenlét fő funkciók
+1. **Felhasználókezelés**:
+   - Bejelentkezés és regisztráció
+   - Alap jogosultságok automatikus hozzárendelése
+   - Adminok általi céghez rendelés
+
+2. **Beállítások Kezelése**:
+   - Alapértelmezett és cégspecifikus beállítások külön oldalakon
+   - Aktiválás/inaktiválás beállításokra és kapcsolatokra
+   - CRUD funkciók beállításokhoz
+
+3. **Hierarchia Kezelés**:
+   - Munkavállalók hierarchiájának kezelése az `entities` tábla és egy kapcsolótábla segítségével
+   - Szülő-gyermek kapcsolatok kezelése
+
+4. **Hibakezelés**:
+   - Frontend hibák naplózása az ErrorService.js segítségével
+   - Szerveroldali hibák kezelése strukturált naplózással
+
+5. **Munkaidő Kezelés**:
+   - Munkatervek naplózása, többszörös tervek támogatása entitásokra
+   - Összmunkaórák számítása `GROUP_CONCAT` segítségével
+
+---
+
+## Megoldott Problémák
+1. **Többszörös munkaterv kezelése**:
+   - Az egy entitáshoz tartozó több munkaterv figyelembevétele az `all_workhours` számítások során.
+
+2. **Beállítások strukturált kezelése**:
+   - Az alapértelmezett és cégspecifikus beállítások különválasztása modellek és kontrollerek segítségével.
+
+3. **Hibakezelés optimalizálása**:
+   - Frontend és backend hibák szinkronizált naplózása Spatie ActivityLog használatával.
+
+---
+
+## Folyamatban Lévő Feladatok
+- **Hierarchia implementációja**: Szülő-gyermek kapcsolatok kezelése a hierarchiatáblán keresztül.
+- **Optimista frissítések megvalósítása**: Az új cég létrehozására vonatkozóan a `createCompany` funkcióban.
+- **Beállítások inaktiválása**: Az `is_active` attribútum implementálása a `settings` és `company_setting_rel` táblákban.
+
+---
+
+## Következő Lépések (Általános)
+1. **Vizualizáció hozzáadása**:
+   - Hierarchiák vizuális megjelenítése a frontend oldalon.
+
+2. **További hibaanalízis**:
+   - Automatikus hibajavítási minták és vizualizációs eszközök fejlesztése.
+
+3. **Adatbázis optimalizálás**:
+   - Indexek és lekérdezések finomhangolása nagy mennyiségű adat kezelésére.
+
+4. **Dokumentáció frissítése**:
+   - Új funkciók és fejlesztések dokumentálása.
+   
+5. **Hibakezelés**:
+   - Adatbázisba mentett hibaüzenetek elemzése, minták keresése gépi tanulás segítségével.
+   
+6. **Egység tesztek**:
+   - Hogyan lehet a legkönnyebben létrehozni egység tesztet az új funkciókhoz?
+   - Hogyan lehet aktualizálni a már elkészült egység teszteket a módosításokat követően?
+   - A tesztek egyenlőre a teljes folyamatot hívja meg a route -ok meghívásával.
+     Későbbiekben ki kell dolgozni a függvények egyedi tesztelését.
+---

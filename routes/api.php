@@ -28,6 +28,14 @@ Route::get('/user', function (Request $request) {
 
 //Route::get('/items', function(){ \Log::info('API/GET'); });
 
+
+/**
+ * =======================================================
+ * TESZT FUTTÁSA
+ * ======================================================
+ */
+Route::post( '/test/companies', [CompanyController::class, 'createCompany'] )->name('api.post.companies');
+
 Route::middleware(['web', 'auth'])->group(function () {
 
     /**

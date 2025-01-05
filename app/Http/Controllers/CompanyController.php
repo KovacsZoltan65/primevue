@@ -40,15 +40,15 @@ class CompanyController extends Controller
               $companyRepository;
 
     protected string $tag = '';
-    
+
     public function __construct(CityRepository $cityRepository, CountryRepository $countryRepository, CompanyRepository $companyRepository)
-    {   
+    {
         $this->cityRepository = $cityRepository;
         $this->countryRepository = $countryRepository;
         $this->companyRepository = $companyRepository;
 
         $this->tag = Company::getTag();
-        
+
         $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
         $this->middleware("can:{$this->tag} create", ['only' => ['createCompany']]);
         $this->middleware("can:{$this->tag} edit", ['only' => ['updateCompany']]);
@@ -64,7 +64,7 @@ class CompanyController extends Controller
     public function index(Request $request): InertiaResponse
     {
         $roles = $this->getUserRoles($this->tag);
-        
+
         $cities = $this->cityRepository->getActiveCities();
         $countries = $this->countryRepository->getActiveCountries();
 

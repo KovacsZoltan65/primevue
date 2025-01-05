@@ -29,7 +29,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
     public function __construct(CacheService $cacheService)
     {
         $this->tag = Company::getTag();
-        
+
         $this->cacheService = $cacheService;
     }
 
@@ -92,6 +92,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
     {
         try{
             $company = null;
+
             DB::transaction(function() use($request, &$company) {
                 // 1. Cég létrehozása
                 $company = Company::create($request->all());
@@ -102,7 +103,6 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
                 // 3. Cache törlése, ha releváns
                 $this->cacheService->forgetAll($this->tag);
             });
-
             return $company;
         } catch(Exception $ex) {
             $this->logError($ex, 'createCompany error', ['request' => $request->all()]);

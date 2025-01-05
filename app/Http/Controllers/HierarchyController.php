@@ -25,7 +25,7 @@ class HierarchyController extends Controller
         Functions;
 
     protected HierarchyRepository $hierarchyRepository;
-    
+
     protected string $tag = 'hierarchy';
 
     public function __construct(HierarchyRepository $repository)
@@ -33,18 +33,18 @@ class HierarchyController extends Controller
         $this->hierarchyRepository = $repository;
 
         $this->tag = Hierarchy::getTag();
-        
+
         $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
         $this->middleware("can:{$this->tag} create", ['only' => ['createCompany']]);
         $this->middleware("can:{$this->tag} edit", ['only' => ['updateCompany']]);
         $this->middleware("can:{$this->tag} delete", ['only' => ['deleteCompany', 'deleteCompanies']]);
         $this->middleware("can:{$this->tag} restore", ['only' => ['restoreCompany']]);
     }
-    
+
     public function index(Request $request): InertiaResponse
     {
         $roles = $this->getUserRoles($this->tag);
-        
+
         return Inertia::render('Hierarchy/Index', [
             'can' => $roles,
         ]);
@@ -96,7 +96,7 @@ class HierarchyController extends Controller
      * @throws ModelNotFoundException Ha a szülő vagy a gyermek entitás nem található.
      * @throws Exception Bármilyen egyéb hiba esetén a folyamat során.
      */
-    public function addChild(Request $request, $parentId)
+    public function addChild(Request $request, $parentId): JsonResponse
     {
         try {
             $childId = $request->input('child_id');
@@ -203,7 +203,7 @@ class HierarchyController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     // Gyermek eltávolítása
     public function removeChild(Request $request, $parentId): JsonResponse
     {

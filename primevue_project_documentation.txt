@@ -4,7 +4,7 @@
 ## Verziószám: 3.0.0
 
 ## Projekt Leírása
-A project két alkalmazásból áll. 
+A project két alkalmazásból áll.
 HQ egy vezérlő alkalmazás, mely a példányok menedzselését végzi. Új példány létrehozása, migrálása, seedelése, másolása, archiválása. Új cég létrehozása a példányon bellül.
 E-jelenlét egy beosztás-tervező alkalmazás, amelynek célja a munkavállalók, munkatervek és munkaidők egyszerű és hatékony kezelése. Az alkalmazás felhasználói közé tartoznak a cégek vezetői, HR-esek, és egyéb adminisztratív dolgozók.
 
@@ -95,13 +95,90 @@ E-jelenlét egy beosztás-tervező alkalmazás, amelynek célja a munkavállaló
 
 4. **Dokumentáció frissítése**:
    - Új funkciók és fejlesztések dokumentálása.
-   
+
 5. **Hibakezelés**:
    - Adatbázisba mentett hibaüzenetek elemzése, minták keresése gépi tanulás segítségével.
-   
+
 6. **Egység tesztek**:
    - Hogyan lehet a legkönnyebben létrehozni egység tesztet az új funkciókhoz?
    - Hogyan lehet aktualizálni a már elkészült egység teszteket a módosításokat követően?
    - A tesztek egyenlőre a teljes folyamatot hívja meg a route -ok meghívásával.
      Későbbiekben ki kell dolgozni a függvények egyedi tesztelését.
 ---
+
+## Hibaüzenetek elemzése
+   Hibaüzenetek elemzése gépi tanulás segítségével hatékony módszer lehet a rendszer hibáinak megértésére, előrejelzésére és akár automatikus javítására. Nézzük, hogyan közelíthetnénk meg ezt a problémát:
+
+1. Hibaüzenetek gyűjtése és előkészítése
+   - Adatforrások:
+     - Backend naplók: Pl. Spatie ActivityLog által rögzített szerveroldali hibák.
+     - Frontend hibák: Az ErrorService.js által a szerverre küldött kliensoldali hibák.
+     - Egyéb források: HTTP válaszkódok, API hívások sikertelenségei.
+   - Adatok strukturálása:
+     - Dátum és időbélyeg.
+     - Hibakód (ha elérhető).
+     - Hiba szövege (pl. stack trace vagy rövid leírás).
+     - Felhasználói akciók a hiba előtt (ha releváns, pl. API hívások).
+     - Környezeti változók (pl. böngésző típusa, Laravel verzió).
+   - Adattisztítás:
+     - Általános zaj (például ismétlődő hibaüzenetek) szűrése.
+     - Nem releváns mezők eltávolítása.
+     - Tokenek, jelszavak vagy más érzékeny adatok eltávolítása.
+
+2. Gépi tanulási megközelítések
+    a. Klaszterezés
+       Ez egy felügyelt tanítás nélküli módszer, amely hasonló hibaüzeneteket csoportosít.
+
+        - Cél:
+            - Azonosítani a leggyakoribb hibákat.
+            - Csoportosítani azokat, hogy könnyebben találjunk mintázatokat.
+        - Algoritmusok:
+            - K-means: Hibaüzenetek kulcsszavaiból vagy jellemzőiből kiindulva csoportokat képez.
+            - DBSCAN: Ritkább hibák azonosítása.
+
+    b. Kategorizálás (felügyelt tanítás)
+       Előzetesen címkézett hibaadatok segítségével osztályozhatod a hibákat.
+
+        - Cél:
+            - Azonnali osztályozás hibakategóriák szerint (pl. adatbázis-probléma, jogosultsági hiba, API-hívás hiba).
+            - Automatikus riasztások generálása súlyos hibák esetén.
+        - Algoritmusok:
+            - Logisztikus regresszió vagy SVM egyszerűbb esetekhez.
+            - Neurális hálózatok összetettebb mintázatokhoz (pl. természetes nyelvfeldolgozás, ha a hibaüzenetek összetettek).
+    c. Előrejelzés
+       Az előzményadatok alapján megjósolhatók a potenciális hibák.
+        - Cél:
+            - Proaktív hibajavítás vagy riasztások generálása, mielőtt a hiba bekövetkezik.
+            - Terhelési minták és környezeti tényezők elemzése.
+        - Algoritmusok:
+            - Idősoros elemzés: Pl. ARIMA vagy LSTM a hibák időbeli előrejelzésére.
+            - Anomália detektálás: Az átlagostól eltérő hibák azonosítása.
+
+3. Gépi tanulási modell implementálása
+    - Adatbázis előkészítése:
+        - Egy MySQL táblába vagy NoSQL adatbázisba strukturálva tárolhatod a hibák metaadatait (pl. időbélyeg, kategória, hiba szövege).
+        - Alternatívaként JSON naplófájlokból közvetlenül is betöltheted az adatokat.
+    - Folyamat:
+        1. Adatok betöltése és előfeldolgozása: Tokenizáció, stop-szavak eltávolítása, stemmelés.
+        2. Funkciók kinyerése: Pl. TF-IDF vagy word embedding a szöveges adatokhoz.
+        3. Modelltanítás: Pl. Pythonban scikit-learn, TensorFlow vagy PyTorch segítségével.
+        4. Predikciók validálása: Pontosság, visszahívási arány (recall), F1-score.
+
+4. Eredmények vizualizálása
+   A mintázatok és előrejelzések értelmezéséhez vizualizációs eszközöket használhatsz:
+    - Grafikonok és diagramok:
+        - Hibaeloszlások.
+        - Gyakorisági minták időben.
+    - Hierarchia vagy csoportok ábrázolása:
+        - Hasonló hibák hálózati diagramja.
+    - Dashboard:
+        - Dinamikus adatok, pl. Grafana vagy Kibana integrációja.
+
+5. Automatikus hibakezelés
+   Miután azonosítottad a leggyakoribb hibákat, beállíthatsz automatizált válaszokat:
+    - Kisebb hibák automatikus javítása:
+        - Pl. adatbázis-kapcsolatok újrapróbálása.
+    - Riasztások:
+        - Súlyos hibák esetén az adminisztrátorok értesítése.
+    - Tanulási visszacsatolás:
+        - A gépi tanulási modell automatikus újratanítása a naplófájlok alapján.

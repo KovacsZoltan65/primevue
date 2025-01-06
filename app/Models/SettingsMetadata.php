@@ -14,7 +14,7 @@ class SettingsMetadata extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $table = 'setting_metadata';
+    protected $table = 'settings_metadata';
     protected $fillable = ['key', 'type', 'description', 'default_value', 'scope'];
 
     /*

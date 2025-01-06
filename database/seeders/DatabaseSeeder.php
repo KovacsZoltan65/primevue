@@ -35,9 +35,9 @@ class DatabaseSeeder extends Seeder
             RoleAndPermissionSeeder::class,
 
             AppSettingSeeder::class,
+            CompSettingSeeder::class,
             
             EntitySeeder::class,
-            CompanySettingSeeder::class,
             SettingsMetadataSeeder::class,
 
         ]);

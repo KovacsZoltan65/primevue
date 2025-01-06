@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CompanyControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    //use RefreshDatabase;
     use WithFaker;
 
     private $companyController;

@@ -313,7 +313,11 @@ const createSetting = async () => {
 };
 
 const updateSetting = async () => {
-    const index = findIndexById(company.value.id);
+    
+    console.log('updateSetting', app_setting.value);
+    console.log('updateSetting', app_setting.value.id);
+
+    const index = findIndexById(app_setting.value.id);
     if (index === -1) {
         console.error(`App Setting with id ${app_setting.value.id} not found`);
         return;
@@ -335,8 +339,11 @@ const updateSetting = async () => {
     });
 
     await AppSettingsService.updateSetting(app_setting.value.id, app_setting.value)
-        .then((response) => {})
+        .then((response) => {
+            console.log('updateSetting response', response);
+        })
         .catch((error) => {
+            console.log('error', error);
             // Sikertelen frissítés esetén az eredeti adat visszaállítása
             app_settings.value.splice(index, 1, originalAppSetting);
 
@@ -742,7 +749,7 @@ initFilters();
             :modal="true"
         >
             <div class="flex flex-col gap-6" style="margin-top: 17px;">
-                {{ app_setting.active }}
+                
                 <!-- KEY -->
                 <div class="flex flex-col grow basis-0 gap-2">
                     <FloatLabel>

@@ -22,6 +22,8 @@ class AppSettingsService extends BaseService {
     }
 
     updateSetting(id, data) {
+        console.log('id', id);
+        console.log('data', data);
         return this.put(`/app_settings/${id}`, data);
     }
 

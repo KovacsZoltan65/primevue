@@ -11,6 +11,7 @@ use App\Http\Controllers\CompSettingController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\ErrorController;
+use App\Http\Controllers\HierarchyController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PersonController;

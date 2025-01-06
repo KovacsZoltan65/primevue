@@ -362,7 +362,6 @@ const updateCompany = async () => {
 
     // Lokális frissítés az optimista visszacsatoláshoz
     companies.value.splice(index, 1, { ...company.value });
-    hideDialog();
 
     // "Frissítés folyamatban" visszajelzés
     toast.add({
@@ -377,6 +376,8 @@ const updateCompany = async () => {
         .then((response) => {
             // Sikeres válasz kezelése
             companies.value.splice(index, 1, response.data.data); // Frissített adat a válaszból
+
+            hideDialog();
 
             toast.add({
                 severity: "success",
@@ -1138,17 +1139,17 @@ watch(
             :modal="true"
         >
             <div class="flex flex-col gap-6" style="margin-top: 17px;">
-            
+
                 <div class="flex flex-col gap-2">
-                    
+
                     <div class="flex flex-wrap gap-4">
                         <div
-                            v-for="(config, column) in state.columns" 
+                            v-for="(config, column) in state.columns"
                             :key="column"
                             class="flex items-center gap-2">
-                            <Checkbox 
-                                v-model="config.is_visible" 
-                                :inputId="column" 
+                            <Checkbox
+                                v-model="config.is_visible"
+                                :inputId="column"
                                 :value="true" binary
                             />
                             <label :for="column">{{ column }}</label>

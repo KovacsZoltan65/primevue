@@ -137,7 +137,7 @@ const fetchItems = async () => {
 
     //let _settings = localStorage.getItem(local_storage_app_settings);
     //if( _settings ) {
-        
+
     //    app_settings.value = JSON.parse(_settings);
 
     //    loading.value = false;
@@ -196,6 +196,7 @@ const openNew = () => {
 
 const editSetting = (data) => {
     app_setting.value = {...data};
+
     settingDialog.value = true;
 }
 
@@ -313,9 +314,6 @@ const createSetting = async () => {
 };
 
 const updateSetting = async () => {
-    
-    console.log('updateSetting', app_setting.value);
-    console.log('updateSetting', app_setting.value.id);
 
     const index = findIndexById(app_setting.value.id);
     if (index === -1) {
@@ -328,7 +326,6 @@ const updateSetting = async () => {
 
     // Lokális frissítés az optimista visszacsatoláshoz
     app_settings.value.splice(index, 1, { ...app_setting.value });
-    hideDialog();
 
     // "Frissítés folyamatban" visszajelzés
     toast.add({
@@ -340,7 +337,18 @@ const updateSetting = async () => {
 
     await AppSettingsService.updateSetting(app_setting.value.id, app_setting.value)
         .then((response) => {
-            console.log('updateSetting response', response);
+            console.log('response', response.data);
+            // Sikeres válasz kezelése
+            app_settings.value.splice(index, 1, response.data); // Frissített adat a válaszból
+
+            hideDialog();
+
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "App Setting Updated",
+                life: 3000,
+            });
         })
         .catch((error) => {
             console.log('error', error);
@@ -724,7 +732,7 @@ initFilters();
                             class="mr-2"
                             @click="editSetting(slotProps.data)"
                         />
-                    
+
                         <Button
                             icon="pi pi-trash"
                             outlined
@@ -733,7 +741,7 @@ initFilters();
                             @click="confirmDeleteSetting(slotProps.data)"
                             :disabled="!props.can.appSettings_delete"
                         />
-                    
+
                     </template>
                 </Column>
 
@@ -749,7 +757,7 @@ initFilters();
             :modal="true"
         >
             <div class="flex flex-col gap-6" style="margin-top: 17px;">
-                
+
                 <!-- KEY -->
                 <div class="flex flex-col grow basis-0 gap-2">
                     <FloatLabel>
@@ -853,12 +861,12 @@ initFilters();
                 <div class="flex flex-col gap-2">
                     <div class="flex flex-wrap gap-4">
                         <div
-                            v-for="(config, column) in state.columns" 
+                            v-for="(config, column) in state.columns"
                             :key="column"
                             class="flex items-center gap-2">
-                            <Checkbox 
-                                v-model="config.is_visible" 
-                                :inputId="column" 
+                            <Checkbox
+                                v-model="config.is_visible"
+                                :inputId="column"
                                 :value="true" binary
                             />
                             <label :for="column">{{ column }}</label>

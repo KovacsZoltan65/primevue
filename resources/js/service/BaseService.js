@@ -102,11 +102,11 @@ class BaseService {
                             );
                             break;
                         /**
-                         * 
+                         *
                          */
                         case 422:
                             console.log(
-                                trans('error_422') + ': ', 
+                                trans('error_422') + ': ',
                                 error.response.data.message || 'Unprocessable entity'
                             );
                             break;

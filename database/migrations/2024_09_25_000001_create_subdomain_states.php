@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('subdomain_states', function (Blueprint $table) {
             $table->increments('id')->comment('Rekord azonosító');
             $table->string('name', 255)->index()->comment('Állapot neve');
-            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            
+            //$table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            $table->boolean('active')->default(1)->index()->comment('Aktív');
             
             $table->timestamps();
             $table->softDeletes();

@@ -32,7 +32,8 @@ class City extends Model
         'region_id' => 'int',
         'country_id' => 'int',
         'latitude' => 'float',
-        'longitude' => 'float'
+        'longitude' => 'float',
+        'active' => 'integer'
     ];
 
     /*

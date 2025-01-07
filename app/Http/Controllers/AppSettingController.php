@@ -103,7 +103,8 @@ class AppSettingController extends Controller
         }
     }
 
-    public function createAppSetting(StoreAppSettingRequest $request): JsonResponse{
+    public function createAppSetting(StoreAppSettingRequest $request): JsonResponse
+    {
         try{
             $setting = $this->appSettingRepository->createAppSetting($request);
 
@@ -115,7 +116,8 @@ class AppSettingController extends Controller
         }
     }
 
-    public function updateAppSetting(UpdateAppSettingRequest $request, int $id): JsonResponse {
+    public function updateAppSetting(UpdateAppSettingRequest $request, int $id): JsonResponse
+    {
         try {
             $setting = $this->appSettingRepository->updateAppSetting($request, $id);
 

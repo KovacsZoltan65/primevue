@@ -35,7 +35,8 @@ return new class extends Migration
             $table->unsignedBigInteger('acs_id')->default(0)->comment('Beléptető rendszer használata');
             //$table->foreign('acs_id')->references('id')->on('access_control_system')->cascadeOnDelete();
             
-            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            //$table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            $table->boolean('active')->default(1)->index()->comment('Aktív');
             
             $table->timestamp('last_export')->nullable()->comment('Utoldó export');
             

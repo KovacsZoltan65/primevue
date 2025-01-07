@@ -109,17 +109,13 @@ class AppSettingRepository extends BaseRepository implements AppSettingRepositor
 
     public function updateAppSetting(Request $request, int $id): AppSetting
     {
-
-        \Log::info('$request: ' . print_r($request->all(), true));
-        \Log::info('$id: ' . print_r($id, true));
-
         try {
             $setting = null;
             DB::transaction(function() use($request, $id, &$setting) {
                 $setting = AppSetting::lockForUpdate()->findOrFail($id);
                 $setting->update($request->all());
                 $setting->refresh();
-\Log::info('$setting: ' . print_r($setting, true));
+
                 $this->cacheService->forgetAll($this->tag);
             });
 

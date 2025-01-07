@@ -32,7 +32,7 @@ class Subdomain extends Model
         'sso' => 'bool',
         'acs_id' => 'int',
         'last_export' => 'datetime',
-        'active' => 'int',
+        'active' => 'integer',
     ];
 
     protected $fillable = [
@@ -41,24 +41,6 @@ class Subdomain extends Model
             'notification', 'state_id', 'is_mirror', 'sso',
             'acs_id', 'last_export'
     ];
-    /*
-    protected $attributes = [
-        'subdomain' => '',
-        'url' => '',
-        'name' => '',
-        'db_host' => 'localhost',
-        'db_port' => 3306,
-        'db_name' => '',
-        'db_user' => '',
-        'db_password' => '',
-        'notification' => 0,
-        'state_id' => 0,
-        'is_mirror' => 0,
-        'sso' => 0,
-        'acs_id' => 0,
-        'last_export' => '',
-    ];
-    */
 
     /*
      * ==============================================================

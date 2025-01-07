@@ -29,6 +29,9 @@ class Person extends Model
         'birthdate' => '',
         'active' => 1
     ];
+    protected $casts = [
+        'active' => 'integer',
+    ];
 
     /*
      * ==============================================================

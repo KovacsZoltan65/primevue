@@ -22,7 +22,8 @@ return new class extends Migration
             
             $table->unsignedBigInteger('company_id')->index()->comment('Cég azonosító.');
 
-            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív állapot');
+            //$table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            $table->boolean('active')->default(1)->index()->comment('Aktív');
 
             $table->timestamps();
             $table->softDeletes()->comment('Lágy törlés dátuma');

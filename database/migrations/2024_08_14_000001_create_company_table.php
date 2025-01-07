@@ -25,7 +25,8 @@ return new class extends Migration
             $table->unsignedSmallInteger('city_id')->index()->comment('Város azonosító. A kapcsolódó megye / régió azonosítója.');
             $table->string('address', 255)->collation('utf8mb3_unicode_ci')->comment('Cím');
 
-            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív állapot');
+            //$table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            $table->boolean('active')->default(1)->index()->comment('Aktív');
 
             $table->timestamps();
             $table->softDeletes()->comment('Lágy törlés dátuma');

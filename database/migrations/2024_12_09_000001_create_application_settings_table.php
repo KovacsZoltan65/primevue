@@ -15,7 +15,10 @@ return new class extends Migration
             $table->id()->comment('Rekord azonosító');
             $table->string('key')->unique()->comment('Kulcs');
             $table->text('value')->nullable()->comment('Érték');
-            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            
+            //$table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            $table->boolean('active')->default(1)->index()->comment('Aktív');
+            
             $table->timestamps();
         });
     }

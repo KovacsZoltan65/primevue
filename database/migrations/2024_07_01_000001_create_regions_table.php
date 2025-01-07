@@ -28,7 +28,8 @@ return new class extends Migration
 
             $table->unsignedBigInteger('country_id')->comment('Ország azonosító. A kapcsolódó ország azonosítója.');
 
-            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            //$table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            $table->boolean('active')->default(1)->index()->comment('Aktív');
 
             $table->foreign('country_id')->references('id')->on('countries')->cascadeOnDelete();
 

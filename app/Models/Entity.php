@@ -29,6 +29,9 @@ class Entity extends Model
         'company_id' => null,
         'active' => 1
     ];
+    protected $casts = [
+        'active' => 'integer',
+    ];
 
     /*
      * ==============================================================

@@ -22,9 +22,9 @@ class SubdomainState extends Model
 
     protected $fillable = ['name', 'active'];
 
-    //protected $casts = [
-    //    'active' => 'integer',
-    //];
+    protected $casts = [
+        'active' => 'integer',
+    ];
 
     /*
      * ==============================================================

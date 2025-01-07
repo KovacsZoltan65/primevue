@@ -24,6 +24,9 @@ class Company extends Model
         'city_id', 'directory', 'registration_number',
         'tax_id', 'address', 'active'
     ];
+    protected $casts = [
+        'active' => 'integer',
+    ];
 
     /*
      * ==============================================================

@@ -337,7 +337,7 @@ const updateSetting = async () => {
 
     await AppSettingsService.updateSetting(app_setting.value.id, app_setting.value)
         .then((response) => {
-            console.log('response', response.data);
+            console.log('sikeres mentés', response.data);
             // Sikeres válasz kezelése
             app_settings.value.splice(index, 1, response.data); // Frissített adat a válaszból
 

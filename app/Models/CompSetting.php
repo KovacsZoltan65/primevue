@@ -17,6 +17,9 @@ class CompSetting extends Model
 
     protected $table = 'comp_settings';
     protected $fillable = ['company_id', 'key', 'value', 'active'];
+    protected $casts = [
+        'active' => 'integer',
+    ];
 
     /*
      * ==============================================================

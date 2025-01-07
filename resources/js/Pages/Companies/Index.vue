@@ -291,6 +291,7 @@ const createCompany = async () => {
             if (index !== -1) {
                 companies.value.splice(index, 1, response.data);
             }
+            
             hideDialog();
 
             toast.add({
@@ -375,7 +376,8 @@ const updateCompany = async () => {
     await CompanyService.updateCompany(company.value.id, company.value)
         .then((response) => {
             // Sikeres válasz kezelése
-            companies.value.splice(index, 1, response.data.data); // Frissített adat a válaszból
+            // Frissített adat a válaszból
+            companies.value.splice(index, 1, response.data.data);
 
             hideDialog();
 

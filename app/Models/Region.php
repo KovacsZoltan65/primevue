@@ -34,7 +34,8 @@ class Region extends Model
     protected $table = 'regions';
 
     protected $casts = [
-        'country_id' => 'int'
+        'country_id' => 'integer',
+        'active' => 'integer',
     ];
 
     protected $fillable = [

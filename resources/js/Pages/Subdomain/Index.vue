@@ -306,7 +306,6 @@ const fetchItems = async () => {
     await SubdomainService.getSubdomains()
         .then((response) => {
             subdomains.value = response.data;
-            console.log('subdomains.value: ', subdomains.value);
         })
         .catch((error) => {
             console.error("getSubdomains API Error:", error);

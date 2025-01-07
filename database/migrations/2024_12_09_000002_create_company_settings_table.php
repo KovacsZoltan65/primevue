@@ -16,7 +16,10 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained()->onDelete('cascade')->comment('Cég azonosító');
             $table->string('key')->comment('Kulcs');
             $table->text('value')->nullable()->comment('Érték');
-            $table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            
+            //$table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
+            $table->boolean('active')->default(1)->index()->comment('Aktív');
+            
             $table->timestamps();
 
             $table->unique(['company_id', 'key']); // Egyedi cég + kulcs páros.

@@ -19,7 +19,7 @@ class AppSetting extends Model
     protected $fillable = ['key', 'value', 'active'];
 
     protected $casts = [
-        'active' => 'int',
+        'active' => 'integer',
     ];
 
     /*

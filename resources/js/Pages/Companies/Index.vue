@@ -161,15 +161,15 @@ const deleteCompanyDialog = ref(false);
 // ======================================================
 
 const fetchItems = async () => {
-    //loading.value = true;
+    loading.value = true;
 
-    let _companies = localStorage.getItem(local_storage_companies);
+    //let _companies = localStorage.getItem(local_storage_companies);
 
-    if ( _companies ) {
-        companies.value = JSON.parse(_companies);
+    //if ( _companies ) {
+    //    companies.value = JSON.parse(_companies);
 
-        loading.value = false;
-    } else {
+    //    loading.value = false;
+    //} else {
         await CompanyService.getCompanies()
             .then((response) => {
                 // A városok listája a companies változóban lesz elmentve
@@ -192,7 +192,7 @@ const fetchItems = async () => {
             }).finally(() => {
                 loading.value = false;
             });
-    }
+    //}
 };
 
 onMounted(() => {
@@ -377,7 +377,7 @@ const updateCompany = async () => {
         .then((response) => {
             // Sikeres válasz kezelése
             // Frissített adat a válaszból
-            companies.value.splice(index, 1, response.data.data);
+            companies.value.splice(index, 1, response.data);
 
             hideDialog();
 
@@ -864,7 +864,7 @@ watch(
             <div class="flex flex-col gap-6" style="margin-top: 17px;">
                 <!-- NAME -->
                 <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel>
+                    <FloatLabel variant="on">
                         <label for="name" class="block font-bold mb-3">
                             {{ $t("name") }}
                         </label>
@@ -888,7 +888,7 @@ watch(
 
                 <!-- DIRECTORY -->
                 <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel>
+                    <FloatLabel variant="on">
                         <label for="directory" class="block font-bold mb-3">
                             {{ $t("directory") }}
                         </label>
@@ -905,7 +905,7 @@ watch(
 
                 <!-- TAX ID -->
                 <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel>
+                    <FloatLabel variant="on">
                         <label for="tax_id" class="block font-bold mb-3">
                             {{ $t("tax_id") }}
                         </label>
@@ -931,7 +931,7 @@ watch(
 
                 <!-- REGISTRATION NUMBER -->
                 <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel>
+                    <FloatLabel variant="on">
                         <label for="registration_number" class="block font-bold mb-3">
                             {{ $t("registration_number") }}
                         </label>
@@ -1019,7 +1019,7 @@ watch(
 
                 <!-- ADDRESS -->
                 <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel>
+                    <FloatLabel variant="on">
                         <label for="address" class="block font-bold mb-3">
                             {{ $t("address") }}
                         </label>

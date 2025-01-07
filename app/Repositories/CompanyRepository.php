@@ -10,7 +10,7 @@ use App\Interfaces\CompanyRepositoryInterface;
 use App\Models\Company;
 use App\Services\CacheService;
 use App\Traits\Functions;
-use Override;
+//use Override;
 use Exception;
 
 /**
@@ -110,7 +110,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function updateCompany(Request $request, int $id)
+    public function updateCompany($request, int $id)
     {
         try {
             $company = null;
@@ -118,7 +118,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
                 $company = Company::lockForUpdate()->findOrFail($id);
                 $company->update($request->all());
                 $company->refresh();
-
+                
                 $this->cacheService->forgetAll($this->tag);
             });
 

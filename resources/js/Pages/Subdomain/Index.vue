@@ -26,6 +26,8 @@ import Select from "primevue/select";
 import Tag from "primevue/tag";
 //import { usePrimeVue } from "primevue/config";
 import FileUpload from "primevue/fileupload";
+import Message from "primevue/message";
+import FloatLabel from "primevue/floatlabel";
 
 const loading = ref(true);
 
@@ -68,25 +70,8 @@ const toast = useToast();
  */
 const dt = ref();
 
-/**
- * Reaktív hivatkozás a subdomainek listájára.
- *
- * A subdomains változóban lesznek tárolva a subdomainek,
- * amelyek a DataTable komponensben lesznek megjelenítve.
- *
- * @type {ref<Array>}
- */
-const subdomains = ref([]);
-
-/**
- * Reaktív hivatkozás a létrehozandó / módosítandó subdomain objektumra.
- *
- * A subdomain változóban lesz tárolva a létrehozandó / módosítandó subdomain,
- * amelyet a PrimeVue dialog komponensben lesz megjelenítve.
- *
- * @type {ref<Object>}
- */
-const subdomain = ref({
+const subdomains = ref();
+const defaultSubdomain = {
     id: null,
     subdomain: "",
     url: "",
@@ -103,10 +88,15 @@ const subdomain = ref({
     acs_id: 0,
     active: 1,
     last_export: null,
-});
+};
+
+const local_storage_companies = 'subdomains';
+const local_storage_column_key = 'ln_subdomains_grid_columns';
+
+const subdomain = ref({ ...defaultSubdomain });
 
 const initialSubdomain = () => {
-    return {...subdomain.value};
+    return {...defaultSubdomain};
 };
 
 /**
@@ -371,6 +361,7 @@ function openNew() {
  * @return {void}
  */
 const hideDialog = () => {
+    subdomain.value = initialSubdomain();
     subdomainDialog.value = false;
     submitted.value = false;
     v$.value.$reset();
@@ -650,6 +641,12 @@ const getActiveLabel = (subdomain) =>
 
 const getActiveValue = (subdomain) =>
     ["inactive", "active", "pending"][subdomain.active] || "pending";
+
+const getModalTitle = () => {
+    return subdomain.value.id
+        ? trans("subdomains_edit_title")
+        : trans("subdomains_new_title");
+}
 
 const fileupload = ref();
 
@@ -938,46 +935,80 @@ const onUpload = () => {
         <Dialog
             v-model:visible="subdomainDialog"
             :style="{ width: '550px' }"
-            :header="$t('countries_details')"
+            :header="getModalTitle()"
             :modal="true"
         >
-            <div class="flex flex-col gap-6">
-                {{ subdomain }}
-                <div class="flex flex-wrap gap-4">
-                    <!-- Name -->
-                    <div class="flex flex-col grow basis-0 gap-2">
-                        <label for="name" class="block font-bold mb-3">{{
-                            $t("name")
-                        }}</label>
+            <div class="flex flex-col gap-6" style="margin-top: 17px;">
+                <!-- NAME -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="name" class="block font-bold mb-3">
+                            {{ $t("name") }}
+                        </label>
                         <InputText
                             id="name"
                             v-model="subdomain.name"
-                            autofocus
                             fluid
                         />
-                        <small class="text-red-500" v-if="v$.name.$error">
-                            {{ $t(v$.name.$errors[0].$message) }}
-                        </small>
-                    </div>
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_name') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.name.$error">
+                        {{ $t(v$.name.$errors[0].$message) }}
+                    </small>
+                </div>
 
-                    <div class="flex flex-col grow basis-0 gap-2">
-                        <!-- Active -->
-                        <label
-                            for="active"
-                            class="block font-bold mb-3"
-                        >
-                            {{ $t("active") }}
+                <!-- SUBDOMAIN -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="subdomain" class="block font-bold mb-3">
+                            {{ $t("subdomain") }}
                         </label>
-                        <Select
-                            id="active"
-                            name="active"
-                            v-model="subdomain.active"
-                            :options="getBools()"
-                            optionLabel="label"
-                            optionValue="value"
-                            placeholder="Countries"
+                        <InputText
+                            id="subdomain"
+                            v-model="subdomain.subdomain"
+                            fluid
                         />
-                    </div>
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_subdomain') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.subdomain.$error">
+                        {{ $t(v$.subdomain.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- URL -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="url" class="block font-bold mb-3">
+                            {{ $t("url") }}
+                        </label>
+                        <InputText
+                            id="url"
+                            v-model="subdomain.url"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_url') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.url.$error">
+                        {{ $t(v$.url.$errors[0].$message) }}
+                    </small>
                 </div>
             </div>
 
@@ -991,7 +1022,7 @@ const onUpload = () => {
                 <Button
                     :label="$t('save')"
                     icon="pi pi-check"
-                    @click="saveCountry"
+                    @click="saveSubdomain"
                 />
             </template>
         </Dialog>

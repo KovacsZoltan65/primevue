@@ -45,7 +45,8 @@ class AppSettingController extends Controller
         $this->middleware("can:{$this->tag} restore", ['only' => ['restoreAppSetting']]);
     }
 
-    public function index(Request $request): InertiaResponse {
+    public function index(Request $request): InertiaResponse
+    {
         $roles = $this->getUserRoles($this->tag);
 
         return Inertia::render('Settings/AppSettings',[
@@ -54,13 +55,15 @@ class AppSettingController extends Controller
         ]);
     }
 
-    public function applySearch(Builder $query, string $search): Builder {
+    public function applySearch(Builder $query, string $search): Builder
+    {
         return $query->when($search, function ($query, string $search) {
             $query->where('key', 'like', "%{$search}%");
         });
     }
 
-    public function getAppSettings(Request $request): JsonResponse {
+    public function getAppSettings(Request $request): JsonResponse
+    {
         try {
             $settings = $this->appSettingRepository->getAppSettings($request);
 

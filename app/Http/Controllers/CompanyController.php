@@ -145,8 +145,8 @@ class CompanyController extends Controller
     public function updateCompany(UpdateCompanyRequest $request, int $id): JsonResponse
     {
         try{
-            $company = $this->updateCompany($request, $id);
-
+            $company = $this->companyRepository->updateCompany($request, $id);
+            
             return response()->json($company, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'updateCompany model not found error', Response::HTTP_NOT_FOUND);

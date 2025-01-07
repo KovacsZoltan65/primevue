@@ -39,7 +39,7 @@ class Subdomain extends Model
             'subdomain', 'url', 'name',
             'db_host', 'db_port', 'db_name', 'db_user', 'db_password',
             'notification', 'state_id', 'is_mirror', 'sso',
-            'acs_id', 'last_export'
+            'acs_id', 'last_export', 'active',
     ];
 
     /*

@@ -28,24 +28,11 @@ import Tag from "primevue/tag";
 import FileUpload from "primevue/fileupload";
 import Message from "primevue/message";
 import FloatLabel from "primevue/floatlabel";
-
-const loading = ref(true);
+import { watch } from "vue";
 
 const props = defineProps({
-    /**
-     * Országok adatai.
-     */
-    countries: {
-        type: Object,
-        default: () => {},
-    },
-    /**
-     * Régiók adatai.
-     */
-    regions: {
-        type: Object,
-        default: () => {},
-    },
+    countries: {type: Object, default: () => {},},
+    regions: {type: Object, default: () => {},},
 });
 
 const getBools = () => {
@@ -55,20 +42,10 @@ const getBools = () => {
     ];
 };
 
-
-/**
- * Reaktív hivatkozás a PrimeVue toast komponensre.
- *
- * @type {Object}
- */
 const toast = useToast();
-
-/**
- * Reaktív hivatkozás a PrimeVue DataTable komponensre.
- *
- * @type {Object}
- */
+const loading = ref(true);
 const dt = ref();
+const filters = ref({});
 
 const subdomains = ref();
 const defaultSubdomain = {
@@ -90,7 +67,8 @@ const defaultSubdomain = {
     last_export: null,
 };
 
-const local_storage_companies = 'subdomains';
+// Tároló kulcsok
+const local_storage_subdomains = 'subdomains';
 const local_storage_column_key = 'ln_subdomains_grid_columns';
 
 const subdomain = ref({ ...defaultSubdomain });
@@ -99,61 +77,6 @@ const initialSubdomain = () => {
     return {...defaultSubdomain};
 };
 
-/**
- * Reaktív hivatkozás a subdomain dialógus ablak állapotára.
- *
- * A subdomainDialog változóban lesz tárolva a subdomain dialógus ablak
- * megnyitott (true) vagy bezárt (false) állapota.
- *
- * @type {ref<boolean>}
- */
-const subdomainDialog = ref(false);
-
-/**
- * Reaktív hivatkozás a kiválasztott subdomainek törléséhez használt párbeszédpanel megnyitásához.
- *
- * A deleteSelectedSubdomainsDialog változóban lesz tárolva a kiválasztott subdomainek törléséhez használt párbeszédpanel
- * megnyitott (true) vagy bezárt (false) állapota.
- *
- * @type {ref<boolean>}
- */
-const deleteSelectedSubdomainsDialog = ref(false);
-
-/**
- * Reaktív hivatkozás a kiválasztott subdomain törléséhez használt párbeszédpanel megnyitásához.
- *
- * A deleteSubdomainDialog változóban lesz tárolva a kiválasztott subdomain törléséhez használt párbeszédpanel
- * megnyitott (true) vagy bezárt (false) állapota.
- *
- * @type {ref<boolean>}
- */
-const deleteSubdomainDialog = ref(false);
-
-/**
- * Reaktív hivatkozás a kiválasztott subdomainekre.
- *
- * A selectedSubdomains változóban lesz tárolva a kiválasztott subdomainek
- * listája, amelyet a DataTable komponensben lesz megjelenítve.
- *
- * @type {ref<Array>}
- */
-const selectedSubdomains = ref([]);
-
-/**
- * Reaktív hivatkozás a globális keresés szűrőinek tárolására az adattáblában.
- *
- * A filters változóban lesz tárolva a globális keresés szűrőinek
- * objektuma, amelyet a DataTable komponensben lesz megjelenítve.
- *
- * @type {Object}
- */
-const filters = ref({});
-
-/**
- * Reaktív hivatkozás a beküldött (submit) állapotára.
- *
- * @type {ref<boolean>}
- */
 const submitted = ref(false);
 
 /**
@@ -163,7 +86,7 @@ const submitted = ref(false);
  *
  * @type {Object}
  */
-const rules = {
+ const rules = {
     /**
      * A subdomain mező validációs szabálya.
      *
@@ -216,7 +139,151 @@ const rules = {
  *
  * @type {Object}
  */
-const v$ = useVuelidate(rules, subdomain);
+ const v$ = useVuelidate(rules, subdomain);
+
+const state = reactive({
+    columns: {
+        'subdomain': { field: 'subdomain', is_visible: true, is_sortable: true, is_filterable: true },
+        'url': { field: 'url', is_visible: true, is_sortable: true, is_filterable: true },
+        'name': { field: 'name', is_visible: true, is_sortable: true, is_filterable: true },
+        'db_host': { field: 'db_host', is_visible: true, is_sortable: true, is_filterable: true },
+        'db_port': { field: 'db_port', is_visible: true, is_sortable: true, is_filterable: true },
+        'db_name': { field: 'db_name', is_visible: true, is_sortable: true, is_filterable: true },
+        'db_user': { field: 'db_user', is_visible: true, is_sortable: true, is_filterable: true },
+        'db_password': { field: 'db_password', is_visible: true, is_sortable: true, is_filterable: true },
+        'notification': { field: 'notification', is_visible: true, is_sortable: true, is_filterable: true },
+        'state_id': { field: 'state_id', is_visible: true, is_sortable: true, is_filterable: true },
+        'is_mirror': { field: 'is_mirror', is_visible: true, is_sortable: true, is_filterable: true },
+        'sso': { field: 'sso', is_visible: true, is_sortable: true, is_filterable: true },
+        'acs_id': { field: 'acs_id', is_visible: true, is_sortable: true, is_filterable: true },
+        'last_export': { field: 'last_export', is_visible: true, is_sortable: true, is_filterable: true },
+        'active': { field: 'active', is_visible: true, is_sortable: true, is_filterable: true }
+    }
+});
+
+watch(state.columns, (new_value, old_value) => {
+    localStorage.setItem(local_storage_column_key, JSON.stringify(new_value));
+}, { deep: true });
+
+/**
+ * Reaktív hivatkozás a kiválasztott subdomainekre.
+ *
+ * A selectedSubdomains változóban lesz tárolva a kiválasztott subdomainek
+ * listája, amelyet a DataTable komponensben lesz megjelenítve.
+ *
+ * @type {ref<Array>}
+ */
+ const selectedSubdomains = ref([]);
+
+/**
+ * ===========================================
+ * DIALOGOK
+ * ===========================================
+ */
+// táblázat beállításai
+const settingsDialog = ref(false);
+/**
+ * Reaktív hivatkozás a subdomain dialógus ablak állapotára.
+ *
+ * A subdomainDialog változóban lesz tárolva a subdomain dialógus ablak
+ * megnyitott (true) vagy bezárt (false) állapota.
+ *
+ * @type {ref<boolean>}
+ */
+const subdomainDialog = ref(false);
+
+/**
+ * Reaktív hivatkozás a kiválasztott subdomainek törléséhez használt párbeszédpanel megnyitásához.
+ *
+ * A deleteSelectedSubdomainsDialog változóban lesz tárolva a kiválasztott subdomainek törléséhez használt párbeszédpanel
+ * megnyitott (true) vagy bezárt (false) állapota.
+ *
+ * @type {ref<boolean>}
+ */
+const deleteSelectedSubdomainsDialog = ref(false);
+
+/**
+ * Reaktív hivatkozás a kiválasztott subdomain törléséhez használt párbeszédpanel megnyitásához.
+ *
+ * A deleteSubdomainDialog változóban lesz tárolva a kiválasztott subdomain törléséhez használt párbeszédpanel
+ * megnyitott (true) vagy bezárt (false) állapota.
+ *
+ * @type {ref<boolean>}
+ */
+const deleteSubdomainDialog = ref(false);
+// ======================================================
+
+/**
+ * Lekéri a subdomainok listáját az API-ból.
+ *
+ * Ez a funkció a subdomainok listáját lekéri az API-ból.
+ * A subdomainok listája a subdomains változóban lesz elmentve.
+ *
+ * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
+ */
+ const fetchItems = async () => {
+    loading.value = true;
+
+    //let _subdomains = localStorage.getItem(local_storage_subdomains);
+
+    //if ( _subdomains ) {
+    //    subdomains.value = JSON.parse(_subdomains);
+    //    loading.value = false;
+    //} else {
+        await SubdomainService.getSubdomains()
+            .then((response) => {
+                subdomains.value = response.data;
+            })
+            .catch((error) => {
+                console.error("getSubdomains API Error:", error);
+
+                ErrorService.logClientError(error, {
+                    componentName: "Fetch Subdomain",
+                    additionalInfo: "Failed to retrieve the subdomain",
+                    category: "Error",
+                    priority: "high",
+                    data: null,
+                });
+            }).finally(() => {
+                loading.value = false;
+            });
+    //}
+};
+
+/**
+ * Lekéri a városok listáját az API-ból, amikor a komponens létrejön.
+ *
+ * Ez a funkció a subdomainek listáját lekéri az API-ból, amikor a komponens létrejön.
+ * A városok listája a subdomains változóban lesz elmentve.
+ *
+ * @return {void}
+ */
+ onMounted(() => {
+    fetchItems();
+
+    let columns = localStorage.getItem(local_storage_column_key);
+    if( columns ) {
+        columns = JSON.parse(columns);
+        for(const column_name in columns) {
+            state.columns[column_name] = columns[column_name];
+        }
+    }
+});
+
+/**
+ * Bezárja a dialógusablakot.
+ *
+ * Ez a függvény a dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
+ * A v$.value.$reset() függvénnyel visszaállítja a validációs objektumot az alapértelmezett állapotába.
+ *
+ * @return {void}
+ */
+ const hideDialog = () => {
+    subdomain.value = initialSubdomain();
+    subdomainDialog.value = false;
+    submitted.value = false;
+    v$.value.$reset();
+};
 
 /**
  * Beállítja az alapértelmezett értékeket a szűrő mezők számára.
@@ -282,47 +349,9 @@ const clearFilter = () => {
 
 initFilters();
 
-/**
- * Lekéri a subdomainok listáját az API-ból.
- *
- * Ez a funkció a subdomainok listáját lekéri az API-ból.
- * A subdomainok listája a subdomains változóban lesz elmentve.
- *
- * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
- */
-const fetchItems = async () => {
-    loading.value = true;
 
-    await SubdomainService.getSubdomains()
-        .then((response) => {
-            subdomains.value = response.data;
-        })
-        .catch((error) => {
-            console.error("getSubdomains API Error:", error);
 
-            ErrorService.logClientError(error, {
-                componentName: "Fetch Subdomain",
-                additionalInfo: "Failed to retrieve the subdomain",
-                category: "Error",
-                priority: "high",
-                data: null,
-            });
-        }).finally(() => {
-            loading.value = false;
-        });
-};
 
-/**
- * Lekéri a városok listáját az API-ból, amikor a komponens létrejön.
- *
- * Ez a funkció a subdomainek listáját lekéri az API-ból, amikor a komponens létrejön.
- * A városok listája a subdomains változóban lesz elmentve.
- *
- * @return {void}
- */
-onMounted(() => {
-    fetchItems();
-});
 
 /**
  * Megerősíti a kiválasztott termékek törlését.
@@ -347,25 +376,9 @@ function confirmDeleteSelected() {
  */
 function openNew() {
     subdomain.value = initialSubdomain();
-
     submitted.value = false;
     subdomainDialog.value = true;
 }
-
-/**
- * Bezárja a dialógusablakot.
- *
- * Ez a függvény a dialógusablakot bezárja, és a submitted változó értékét False-ra állítja.
- * A v$.value.$reset() függvénnyel visszaállítja a validációs objektumot az alapértelmezett állapotába.
- *
- * @return {void}
- */
-const hideDialog = () => {
-    subdomain.value = initialSubdomain();
-    subdomainDialog.value = false;
-    submitted.value = false;
-    v$.value.$reset();
-};
 
 /**
  * Szerkeszti a kiválasztott aldomainet.
@@ -382,20 +395,6 @@ const editSubdomain = (data) => {
 };
 
 /**
- * Megerősítés a subdomain törléséhez.
- *
- * Ez a funkció a kiválasztott subdomain adatait másolja a subdomain változóba,
- * és megnyitja a dialógusablakot a subdomain törléséhez.
- *
- * @param {object} data - A kiválasztott subdomain adatai.
- * @return {void}
- */
-const confirmDeleteSubdomain = (data) => {
-    subdomain.value = { ...data };
-
-    deleteSubdomainDialog.value = true;
-};
-/**
  * Mentse el a subdomaint.
  *
  * Ez a funkció ellenőrizni fogja a subdomain változóban lévő adatokat a validációs szabályoknak,
@@ -404,7 +403,7 @@ const confirmDeleteSubdomain = (data) => {
  *
  * @return {void}
  */
-const saveSubdomain = async () => {
+ const saveSubdomain = async () => {
     const result = await v$.value.$validate();
 
     if( result ) {
@@ -441,10 +440,11 @@ const saveSubdomain = async () => {
 
 const createSubdomain = async () => {
 
+    // Lokálisan hozzunk létre egy ideiglenes azonosítót az új céghez
     const newSubdomain = {...subdomain.value, id: createId() };
 
     subdomains.value.push(newSubdomain);
-
+    // Optimista visszajelzés a felhasználónak
     toast.add({
         severity: "success",
         summary: "Creating...",
@@ -452,12 +452,16 @@ const createSubdomain = async () => {
         life: 3000,
     });
 
-    await SubdomainService.createSubdomain(newSubdomain)
+    // Szerver kérés
+    await SubdomainService.createSubdomain(subdomain.value)
         .then((response) => {
+
+            // Lokális adat frissítése a szerver válasza alapján
             const index = findIndexById(newSubdomain.id);
             if (index !== -1) {
                 subdomains.value.splice(index, 1, response.data);
             }
+
             hideDialog();
 
             toast.add({
@@ -466,8 +470,10 @@ const createSubdomain = async () => {
                 detail: "Subdomain Created",
                 life: 3000,
             });
+
         })
         .catch((error) => {
+
             if( error.response && error.response.status === 422){
                 const validationErrors = error.response.data.details;
 
@@ -511,6 +517,7 @@ const createSubdomain = async () => {
                 });
 
             }
+
         });
 };
 
@@ -561,24 +568,32 @@ const updateSubdomain = async () => {
                 data: subdomain.value,
             });
         });
-
-    /*
-    const index = findIndexById(subdomain.value.id);
-    try {
-        const response = await SubdomainService.updateSubdomain(subdomain.value.id, subdomain.value);
-        subdomains.value.splice(index, 1, response.data);
-        hideDialog();
-        toast.add({
-            severity: "success",
-            summary: "Successful",
-            detail: "Subdomain Updated",
-            life: 3000,
-        });
-    } catch (error) {
-        console.error("updateSubdomain API Error:", error);
-    }
-    */
 };
+
+
+
+
+
+/**
+ * Megerősítés a subdomain törléséhez.
+ *
+ * Ez a funkció a kiválasztott subdomain adatait másolja a subdomain változóba,
+ * és megnyitja a dialógusablakot a subdomain törléséhez.
+ *
+ * @param {object} data - A kiválasztott subdomain adatai.
+ * @return {void}
+ */
+const confirmDeleteSubdomain = (data) => {
+    subdomain.value = { ...data };
+
+    deleteSubdomainDialog.value = true;
+};
+
+
+
+
+
+
 
 /**
  * Megkeresi a megadott azonosítójú aldomain indexét.
@@ -588,6 +603,62 @@ const updateSubdomain = async () => {
  */
 const findIndexById = (id) => {
     return subdomains.value.findIndex((subdomain) => subdomain.id === id);
+};
+
+const deleteSelectedSubdomains = async () => {
+    // Eredeti állapot mentése az összes kiválasztott céghez, hogy visszaállíthassuk hiba esetén
+    const originalSubdomains = [...subdomains.value];
+
+    // Optimista törlés: azonnal eltávolítjuk az összes kijelölt céget
+    selectedSubdomains.value.forEach(selectedSubdomain => {
+        const index = subdomains.value.findIndex(subdomain => subdomain.id === selectedSubdomain.id);
+        if (index !== -1) {
+            subdomains.value.splice(index, 1);
+        }
+    });
+
+    // Törlési értesítés optimista frissítés után
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Deleting selected subdomains...",
+        life: 2000,
+    });
+
+    await SubdomainService.deleteSubdomains(selectedSubdomains.value.map(subdomain => subdomain.id))
+        .then((response) => {
+            // Sikeres törlés esetén értesítés
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Selected subdomains deleted",
+                life: 3000,
+            });
+            // Törölt elemek eltávolítása a selectedSubdomains-ből
+            selectedSubdomains.value = [];
+        })
+        .error((error) => {
+            // Hiba esetén visszaállítjuk az eredeti állapotot
+            subdomains.value = originalSubdomains;
+
+            const errorMessage = error.response?.data?.error || "Failed to delete selected subdomains";
+
+            // Hibaüzenet megjelenítése a felhasználói felületen
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: errorMessage,
+                life: 3000,
+            });
+
+            ErrorService.logClientError(error, {
+                componentName: "DeleteSubdomainsDialog",
+                additionalInfo: "Failed to delete a subdomains in the backend",
+                category: "Error",
+                priority: "low",
+                data: subdomains.value
+            });
+        });
 };
 
 /**
@@ -624,9 +695,7 @@ const deleteSubdomain = () => {
         });
 };
 
-const deleteSelectedSubdomains = () => {
-    console.log(selectedSubdomains.value);
-};
+
 
 const exportCSV = () => {
     dt.value.exportCSV();

@@ -291,7 +291,7 @@ const createCompany = async () => {
             if (index !== -1) {
                 companies.value.splice(index, 1, response.data);
             }
-            
+
             hideDialog();
 
             toast.add({

@@ -19,6 +19,7 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import IconField from "primevue/iconfield";
 import InputText from "primevue/inputtext";
+import InputNumber from 'primevue/inputnumber';
 import InputIcon from "primevue/inputicon";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
@@ -33,6 +34,7 @@ import { watch } from "vue";
 const props = defineProps({
     countries: {type: Object, default: () => {},},
     regions: {type: Object, default: () => {},},
+    states: {type: Object, default: () => {},},
 });
 
 const getBools = () => {
@@ -1007,7 +1009,7 @@ const onUpload = () => {
             :header="getModalTitle()"
             :modal="true"
         >
-            <div class="flex flex-col gap-6" style="margin-top: 17px;">
+            <div class="flex flex-col gap-6" style="margin-top: 15px;">
                 <!-- NAME -->
                 <div class="flex flex-col grow basis-0 gap-2">
                     <FloatLabel variant="on">
@@ -1080,6 +1082,171 @@ const onUpload = () => {
                     </small>
                 </div>
             </div>
+
+            <div class="flex flex-wrap gap-8" style="margin-top: 15px;">
+                <!-- DB_HOST -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="db_host" class="block font-bold mb-3">
+                            {{ $t("db_host") }}
+                        </label>
+                        <InputText
+                            id="db_host"
+                            v-model="subdomain.db_host"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_db_host') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.db_host.$error">
+                        {{ $t(v$.db_host.$errors[0].$message) }}
+                    </small>
+                </div>
+                <!-- DB_PORT -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="db_port" class="block font-bold mb-3">
+                            {{ $t("db_port") }}
+                        </label>
+                        <InputText
+                            id="db_port"
+                            v-model="subdomain.db_port"
+                            fluid
+                            type="number"
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_db_port') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.db_port.$error">
+                        {{ $t(v$.db_port.$errors[0].$message) }}
+                    </small>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-8" style="margin-top: 20px;">
+                <!-- STATE_ID -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="state_id" class="block font-bold mb-3">
+                            {{ $t("state_id") }}
+                        </label>
+                        <Select
+                            id="state_id"
+                            v-model="subdomain.state_id"
+                            :options="props.states"
+                            optionLabel="name"
+                            optionValue="id"
+                            fluid />
+                    <!--
+                        <InputText
+                            id="state_id"
+                            v-model="subdomain.state_id"
+                            fluid
+                        />
+                    -->
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_state_id') }}
+                    </Message>
+                    <!--<small class="text-red-500" v-if="v$.state_id.$error">
+                        {{ $t(v$.state_id.$errors[0].$message) }}
+                    </small>-->
+                </div>
+                <!-- DB_NAME -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="db_name" class="block font-bold mb-3">
+                            {{ $t("db_name") }}
+                        </label>
+                        <InputText
+                            id="db_name"
+                            v-model="subdomain.db_name"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_db_name') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.db_name.$error">
+                        {{ $t(v$.db_name.$errors[0].$message) }}
+                    </small>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-8" style="margin-top: 15px;">
+                <!-- DB_USER -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="db_user" class="block font-bold mb-3">
+                            {{ $t("db_user") }}
+                        </label>
+                        <InputText
+                            id="db_password"
+                            v-model="subdomain.db_user"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_db_user') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.db_user.$error">
+                        {{ $t(v$.db_user.$errors[0].$message) }}
+                    </small>
+                </div>
+                <!-- DB_PASSWORD -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="db_password" class="block font-bold mb-3">
+                            {{ $t("db_password") }}
+                        </label>
+                        <InputText
+                            id="db_password"
+                            v-model="subdomain.db_password"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_db_password') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.db_password.$error">
+                        {{ $t(v$.db_password.$errors[0].$message) }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- NOTIFICATION -->
+            
+            <!-- IS_MIRROR -->
+            <!-- SSO -->
+            <!-- ACS_ID -->
+            <!-- LAST_EXPORT -->
+            <!-- ACTIVE -->
 
             <template #footer>
                 <Button

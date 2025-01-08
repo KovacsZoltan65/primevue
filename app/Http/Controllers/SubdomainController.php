@@ -7,11 +7,16 @@ use App\Http\Requests\StoreSubdomainRequest;
 use App\Http\Requests\UpdateCityRequest;
 use App\Http\Resources\SubdomainResource;
 use App\Models\Subdomain;
+use App\Models\SubdomainState;
 use App\Repositories\SubdomainRepository;
+use App\Repositories\SubdomainStateRepository;
+use App\Services\CacheService;
+use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\QueryException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\ValidationException;
@@ -19,9 +24,6 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use App\Services\CacheService;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use App\Traits\Functions;
 
 class SubdomainController extends Controller
 {
@@ -29,11 +31,14 @@ class SubdomainController extends Controller
         Functions;
 
     protected SubdomainRepository $subdomainRepository;
+    protected SubdomainStateRepository $stateRepository;
     
     protected string $tag = 'subdomains';
 
-    public function __construct(SubdomainRepository $subdomainRepository) {
+    public function __construct(SubdomainRepository $subdomainRepository, SubdomainStateRepository $states)
+    {
         $this->subdomainRepository = $subdomainRepository;
+        $this->stateRepository = $states;
         
         $this->tag = Subdomain::getTag();
         
@@ -48,8 +53,11 @@ class SubdomainController extends Controller
     {
         $roles = $this->getUserRoles($this->tag);
         
+        $stations = $this->stateRepository->getActiveStates();
+        
         return Inertia::render('Subdomain/Index', [
             'search' => $request->get('search'),
+            'states' => $stations,
             'can' => $roles,
         ]);
     }

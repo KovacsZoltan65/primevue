@@ -33,16 +33,16 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveCompanies()
+    public function getActiveStates()
     {
         $model = $this->model();
-        $companies = $model::query()
+        $states = $model::query()
             ->select('id', 'name')
             ->orderBy('name')
             ->where('active','=',1)
             ->get()->toArray();
 
-        return $companies;
+        return $states;
     }
 
     public function getSubdomainStates(Request $request)

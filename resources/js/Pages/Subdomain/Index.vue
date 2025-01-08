@@ -67,7 +67,6 @@ const defaultSubdomain = {
     sso: 0,
     acs_id: 0,
     active: 1,
-    last_export: null,
 };
 
 // Tároló kulcsok
@@ -159,7 +158,6 @@ const state = reactive({
         'is_mirror': { field: 'is_mirror', is_visible: true, is_sortable: true, is_filterable: true },
         'sso': { field: 'sso', is_visible: true, is_sortable: true, is_filterable: true },
         'acs_id': { field: 'acs_id', is_visible: true, is_sortable: true, is_filterable: true },
-        'last_export': { field: 'last_export', is_visible: true, is_sortable: true, is_filterable: true },
         'active': { field: 'active', is_visible: true, is_sortable: true, is_filterable: true }
     }
 });
@@ -282,7 +280,7 @@ const deleteSubdomainDialog = ref(false);
  *
  * @return {void}
  */
- const hideDialog = () => {
+const hideDialog = () => {
     subdomain.value = initialSubdomain();
     subdomainDialog.value = false;
     submitted.value = false;
@@ -296,51 +294,13 @@ const deleteSubdomainDialog = ref(false);
  */
 const initFilters = () => {
     filters.value = {
-        // Globális szűrő
-        global: {
-            value: null,
-            matchMode: FilterMatchMode.CONTAINS,
-        },
-        // Név szűrő
-        name: {
-            operator: FilterOperator.AND,
-            constraints: [
-                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
-            ],
-        },
-        // Alomain szűrő
-        subdomain: {
-            operator: FilterOperator.AND,
-            constraints: [
-                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
-            ],
-        },
-        // URL szűrő
-        url: {
-            operator: FilterOperator.AND,
-            constraints: [
-                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
-            ],
-        },
-        // db_name szűrő
-        db_name: {
-            operator: FilterOperator.AND,
-            constraints: [
-                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
-            ],
-        },
-        db_user: {
-            operator: FilterOperator.AND,
-            constraints: [
-                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
-            ],
-        },
-        active: {
-            operator: FilterOperator.AND,
-            constraints: [
-                { value: null, matchMode: FilterMatchMode.STARTS_WITH, },
-            ],
-        }
+        global: {value: null, matchMode: FilterMatchMode.CONTAINS,},
+        name: {operator: FilterOperator.AND, constraints: [ { value: null, matchMode: FilterMatchMode.STARTS_WITH, },],},
+        subdomain: {operator: FilterOperator.AND, constraints: [ { value: null, matchMode: FilterMatchMode.STARTS_WITH, }, ], },
+        url: {operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH, },],},
+        db_name: {operator: FilterOperator.AND,constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH, },],},
+        db_user: {operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH, },],},
+        active: {operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH, },],}
     }
 };
 
@@ -352,10 +312,6 @@ const clearFilter = () => {
 };
 
 initFilters();
-
-
-
-
 
 /**
  * Megerősíti a kiválasztott termékek törlését.
@@ -1136,7 +1092,7 @@ const onUpload = () => {
                     </small>
                 </div>
             </div>
-            
+
             <div class="flex flex-wrap gap-8" style="margin-top: 20px;">
                 <!-- STATE_ID -->
                 <div class="flex flex-col grow basis-0 gap-2">
@@ -1246,7 +1202,7 @@ const onUpload = () => {
                         <label for="notification" class="block font-bold mb-3">
                             {{ $t("notification") }}
                         </label>
-                        <Select 
+                        <Select
                             id="notification"
                             v-model="subdomain.notification"
                             :options="getBools()"
@@ -1270,7 +1226,7 @@ const onUpload = () => {
                         <label for="is_mirror" class="block font-bold mb-3">
                             {{ $t("is_mirror") }}
                         </label>
-                        <Select 
+                        <Select
                             id="is_mirror"
                             v-model="subdomain.is_mirror"
                             :options="getBools()"
@@ -1288,7 +1244,7 @@ const onUpload = () => {
                     </Message>
                 </div>
             </div>
-            
+
             <!-- SSO & ACS_ID -->
             <div class="flex flex-wrap gap-8" style="margin-top: 20px;">
                 <!-- SSO -->
@@ -1297,7 +1253,7 @@ const onUpload = () => {
                         <label for="sso" class="block font-bold mb-3">
                             {{ $t("sso") }}
                         </label>
-                        <Select 
+                        <Select
                             id="sso"
                             v-model="subdomain.sso"
                             :options="getBools()"
@@ -1317,11 +1273,11 @@ const onUpload = () => {
 
                 <!-- ACS_ID -->
                 <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel variant="on">
+                    <FloatLabel>
                         <label for="acs_id" class="block font-bold mb-3">
                             {{ $t("acs_id") }}
                         </label>
-                        <Select 
+                        <Select
                             id="sso"
                             v-model="subdomain.acs_id"
                             :options="getBools()"
@@ -1340,36 +1296,15 @@ const onUpload = () => {
                 </div>
             </div>
 
-            <!-- LAST_EXPORT & ACTIVE -->
+            <!-- ACTIVE -->
             <div class="flex flex-wrap gap-8" style="margin-top: 20px;">
-                <!-- LAST_EXPORT -->
-                 <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel>
-                        <label for="last_export" class="block font-bold mb-3">
-                            {{ $t("last_export") }}
-                        </label>
-                        <InputText
-                            id="last_export"
-                            v-model="subdomain.last_export"
-                            type="date"
-                            fluid
-                        />
-                    </FloatLabel>
-                    <Message
-                        size="small"
-                        severity="secondary"
-                        variant="simple"
-                    >
-                        {{ $t('enter_subdomain_last_export') }}
-                    </Message>
-                </div>
                 <!-- ACTIVE -->
                 <div class="flex flex-col grow basis-0 gap-2">
                     <FloatLabel>
                         <label for="active" class="block font-bold mb-3">
                             {{ $t("active") }}
                         </label>
-                        <Select 
+                        <Select
                             id="active"
                             v-model="subdomain.active"
                             :options="getBools()"
@@ -1387,10 +1322,10 @@ const onUpload = () => {
                     </Message>
                 </div>
             </div>
-        
-            
-            
-            
+
+
+
+
 
             <template #footer>
                 <Button

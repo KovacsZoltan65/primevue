@@ -25,21 +25,30 @@ class Subdomain extends Model
     protected $table = 'subdomains';
 
     protected $casts = [
-        'db_port' => 'int',
+        'db_port' => 'integer',
         'notification' => 'bool',
-        'state_id' => 'int',
+        'state_id' => 'integer',
         'is_mirror' => 'bool',
         'sso' => 'bool',
         'acs_id' => 'int',
-        'last_export' => 'datetime',
         'active' => 'integer',
     ];
 
     protected $fillable = [
-            'subdomain', 'url', 'name',
-            'db_host', 'db_port', 'db_name', 'db_user', 'db_password',
-            'notification', 'state_id', 'is_mirror', 'sso',
-            'acs_id', 'last_export', 'active',
+        'subdomain', 
+        'url', 
+        'name',
+        'db_host', 
+        'db_port', 
+        'db_name', 
+        'db_user', 
+        'db_password',
+        'notification', 
+        'state_id', 
+        'is_mirror', 
+        'sso',
+        'acs_id', 
+        'active',
     ];
 
     /*

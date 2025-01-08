@@ -38,7 +38,7 @@ return new class extends Migration
             //$table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
             $table->boolean('active')->default(1)->index()->comment('Aktív');
             
-            $table->timestamp('last_export')->nullable()->comment('Utoldó export');
+            //$table->timestamp('last_export')->nullable()->comment('Utoldó export');
             
             $table->timestamps();
             $table->softDeletes();

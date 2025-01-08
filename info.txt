@@ -97,3 +97,14 @@ php artisan make:factory EntityFactory
 php artisan make:resource EntityResource
 php artisan make:request StoreEntityRequest
 php artisan make:request UpdateEntityRequest
+
+
+php artisan make:model ACS
+php artisan make:controller ACSController
+php artisan make:repository ACS
+php artisan make:migration CreateACSTable
+php artisan make:seeder ACSSeeder
+php artisan make:factory ACSFactory
+php artisan make:resource ACSResource
+php artisan make:request StoreACSRequest
+php artisan make:request UpdateACSRequest

@@ -30,6 +30,7 @@ import FileUpload from "primevue/fileupload";
 import Message from "primevue/message";
 import FloatLabel from "primevue/floatlabel";
 import { watch } from "vue";
+import { Checkbox } from "primevue";
 
 const props = defineProps({
     countries: {type: Object, default: () => {},},
@@ -39,8 +40,8 @@ const props = defineProps({
 
 const getBools = () => {
     return [
-        { label: trans("inactive"), value: 0, },
-        { label: trans("active"), value: 1, },
+        { label: trans("no"), value: 0, },
+        { label: trans("yes"), value: 1, },
     ];
 };
 
@@ -234,6 +235,7 @@ const deleteSubdomainDialog = ref(false);
     //} else {
         await SubdomainService.getSubdomains()
             .then((response) => {
+
                 subdomains.value = response.data;
             })
             .catch((error) => {
@@ -1009,6 +1011,7 @@ const onUpload = () => {
             :header="getModalTitle()"
             :modal="true"
         >
+            <!-- NAME & SUBDOMAIN-->
             <div class="flex flex-col gap-6" style="margin-top: 15px;">
                 <!-- NAME -->
                 <div class="flex flex-col grow basis-0 gap-2">
@@ -1083,6 +1086,7 @@ const onUpload = () => {
                 </div>
             </div>
 
+            <!-- DB_HOST & DB_PORT -->
             <div class="flex flex-wrap gap-8" style="margin-top: 15px;">
                 <!-- DB_HOST -->
                 <div class="flex flex-col grow basis-0 gap-2">
@@ -1147,13 +1151,6 @@ const onUpload = () => {
                             optionLabel="name"
                             optionValue="id"
                             fluid />
-                    <!--
-                        <InputText
-                            id="state_id"
-                            v-model="subdomain.state_id"
-                            fluid
-                        />
-                    -->
                     </FloatLabel>
                     <Message
                         size="small"
@@ -1191,6 +1188,7 @@ const onUpload = () => {
                 </div>
             </div>
 
+            <!-- DB_USER & DB_PASSWORD -->
             <div class="flex flex-wrap gap-8" style="margin-top: 15px;">
                 <!-- DB_USER -->
                 <div class="flex flex-col grow basis-0 gap-2">
@@ -1240,13 +1238,159 @@ const onUpload = () => {
                 </div>
             </div>
 
-            <!-- NOTIFICATION -->
+            <!-- NOTIFICATION & IS_MIRROR -->
+            <div class="flex flex-wrap gap-8" style="margin-top: 20px;">
+                <!-- NOTIFICATION -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="notification" class="block font-bold mb-3">
+                            {{ $t("notification") }}
+                        </label>
+                        <Select 
+                            id="notification"
+                            v-model="subdomain.notification"
+                            :options="getBools()"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Notification" fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_notification') }}
+                    </Message>
+                </div>
+
+                <!-- IS_MIRROR -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="is_mirror" class="block font-bold mb-3">
+                            {{ $t("is_mirror") }}
+                        </label>
+                        <Select 
+                            id="is_mirror"
+                            v-model="subdomain.is_mirror"
+                            :options="getBools()"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Is Mirror" fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_is_mirror') }}
+                    </Message>
+                </div>
+            </div>
             
-            <!-- IS_MIRROR -->
-            <!-- SSO -->
-            <!-- ACS_ID -->
-            <!-- LAST_EXPORT -->
-            <!-- ACTIVE -->
+            <!-- SSO & ACS_ID -->
+            <div class="flex flex-wrap gap-8" style="margin-top: 20px;">
+                <!-- SSO -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="sso" class="block font-bold mb-3">
+                            {{ $t("sso") }}
+                        </label>
+                        <Select 
+                            id="sso"
+                            v-model="subdomain.sso"
+                            :options="getBools()"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="SSO" fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_sso') }}
+                    </Message>
+                </div>
+
+                <!-- ACS_ID -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="acs_id" class="block font-bold mb-3">
+                            {{ $t("acs_id") }}
+                        </label>
+                        <Select 
+                            id="sso"
+                            v-model="subdomain.acs_id"
+                            :options="getBools()"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="SSO" fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_acs_id') }}
+                    </Message>
+                </div>
+            </div>
+
+            <!-- LAST_EXPORT & ACTIVE -->
+            <div class="flex flex-wrap gap-8" style="margin-top: 20px;">
+                <!-- LAST_EXPORT -->
+                 <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="last_export" class="block font-bold mb-3">
+                            {{ $t("last_export") }}
+                        </label>
+                        <InputText
+                            id="last_export"
+                            v-model="subdomain.last_export"
+                            type="date"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_last_export') }}
+                    </Message>
+                </div>
+                <!-- ACTIVE -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="active" class="block font-bold mb-3">
+                            {{ $t("active") }}
+                        </label>
+                        <Select 
+                            id="active"
+                            v-model="subdomain.active"
+                            :options="getBools()"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Active" fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_subdomain_active') }}
+                    </Message>
+                </div>
+            </div>
+        
+            
+            
+            
 
             <template #footer>
                 <Button

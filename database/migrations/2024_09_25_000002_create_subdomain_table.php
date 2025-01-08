@@ -28,12 +28,14 @@ return new class extends Migration
             $table->unsignedInteger('state_id')->default(1)->comment('Állapot azonosító');
             $table->foreign('state_id')->references('id')->on('subdomain_states')->cascadeOnDelete();
             
-            $table->enum('is_mirror', ['0','1'])->default(0)->comment('Tükör adatbázis');
+            //$table->enum('is_mirror', ['0','1'])->default(0)->comment('Tükör adatbázis');
+            $table->boolean('is_mirror')->default(0)->comment('Tükör adatbázis');
             
-            $table->enum('sso', ['0','1'])->default(0)->comment('SSO');
+            //$table->enum('sso', ['0','1'])->default(0)->comment('SSO');
+            $table->boolean('sso')->default(0)->comment('SSO');
             
             $table->unsignedBigInteger('acs_id')->default(0)->comment('Beléptető rendszer használata');
-            //$table->foreign('acs_id')->references('id')->on('access_control_system')->cascadeOnDelete();
+            $table->foreign('acs_id')->references('id')->on('acs_systems')->cascadeOnDelete();
             
             //$table->enum('active', [0,1])->default(1)->index()->comment('Aktív');
             $table->boolean('active')->default(1)->index()->comment('Aktív');

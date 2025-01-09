@@ -2,16 +2,16 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\FormRequest;
 
-class StoreACSRequest extends BaseRequest
+class GetACSRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -22,12 +22,7 @@ class StoreACSRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'name' => [
-                'required','string',
-                "min:{$this->validationRules['minStringLength']}",
-                "max:{$this->validationRules['maxStringLength']}",
-                Rule::unique('companies', 'name')
-            ]
+            'id' => ['required', 'integer', 'exists:acs_systems,id']
         ];
     }
 }

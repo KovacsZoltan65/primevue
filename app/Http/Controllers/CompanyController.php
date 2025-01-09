@@ -4,20 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Builder;
+
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
+use Exception;
+
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Validation\ValidationException;
+
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Exception;
+
 use App\Http\Requests\GetCompanyRequest;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
+
 use App\Http\Resources\CompanyResource;
 use App\Repositories\CityRepository;
 use App\Repositories\CompanyRepository;

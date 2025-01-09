@@ -19,6 +19,7 @@ return new class extends Migration
             $table->boolean('active')->default(1)->index()->comment('Aktív');
 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -106,5 +106,6 @@ php artisan make:migration CreateACSTable
 php artisan make:seeder ACSSeeder
 php artisan make:factory ACSFactory
 php artisan make:resource ACSResource
+php artisan make:request GetACSRequest
 php artisan make:request StoreACSRequest
 php artisan make:request UpdateACSRequest

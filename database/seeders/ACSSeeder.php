@@ -20,7 +20,8 @@ class ACSSeeder extends Seeder
         activity()->disableLogging();
         
         $arr_acs = [
-            ['id' => 1, 'name' => 'WinAccess','active' => 1],
+            ['id' => 1, 'name' => 'Nincs','active' => 1],
+            ['id' => 2, 'name' => 'WinAccess','active' => 1],
         ];
         
         $count = count($arr_acs);
@@ -29,7 +30,7 @@ class ACSSeeder extends Seeder
         $this->command->getOutput()->progressStart($count);
         foreach($arr_acs as $acs)
         {
-            SubdomainState::factory()->create($acs);
+            ACS::factory()->create($acs);
             $this->command->getOutput()->progressAdvance();
         }
         

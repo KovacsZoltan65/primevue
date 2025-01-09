@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 class ACSRepository extends BaseRepository implements ACSRepositoryInterface
 {
     use Functions;
-    
+
     protected CacheService $cacheService;
 
     protected string $tag = 'acss';
@@ -32,7 +32,7 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
 
         $this->cacheService = $cacheService;
     }
-    
+
     public function getActiveACS()
     {
         $model = $this->model();
@@ -44,9 +44,10 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
 
         return $acss;
     }
-    
+
     public function getACSs(Request $request)
     {
+        dd('repo getACSs');
         try {
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
@@ -59,7 +60,7 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function getACS(int $id)
     {
         try {
@@ -73,7 +74,7 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function getACSByName(string $name)
     {
         try {
@@ -87,7 +88,7 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function createACS(Request $request)
     {
         try{
@@ -109,7 +110,7 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function updateACS($request, int $id)
     {
         try {
@@ -118,7 +119,7 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
                 $acs = ACS::lockForUpdate()->findOrFail($id);
                 $acs->update($request->all());
                 $acs->refresh();
-                
+
                 $this->cacheService->forgetAll($this->tag);
             });
 
@@ -128,7 +129,7 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function deleteACSs(Request $request)
     {
         try {
@@ -157,7 +158,7 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function deleteACS(Request $request)
     {
         try {
@@ -175,7 +176,7 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function restoreACS(Request $request): ACS
     {
         try {
@@ -193,7 +194,7 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
             throw $ex;
         }
     }
-    
+
     public function realDeleteACS(int $id): ACS
     {
         try {
@@ -212,12 +213,12 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
             throw $ex;
         }
     }
-    
+
     private function createDefaultSettings(ACS $acs): void
     {
         //
     }
-    
+
     /**
      * Specify Model class name
      *
@@ -237,5 +238,5 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
-    
+
 }

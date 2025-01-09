@@ -96,7 +96,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      * =======================================================
      * A cégek listájának lekérése az API-n keresztül.
      *
-     * @param CompanyController $companyController A cégvezérlő példány.
+     * @param \App\Http\Controllers\CompanyController $companyController A cégvezérlő példány.
      * @return JsonResponse A vállalatok listáját tartalmazó JSON-válasz.
      */
     //Route::get('/items', [CompanyController::class, 'getCompanies'])->name('api.get.companies');
@@ -104,9 +104,9 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/companies/{id}', [\App\Http\Controllers\CompanyController::class, 'getCompany'])->name('api.get.company')->where('id', '[0-9]+');
     Route::get('/companies/name/{name}', [\App\Http\Controllers\CompanyController::class, 'getCompanyByName'])->name('api.get.company_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
     Route::post( '/companies', [\App\Http\Controllers\CompanyController::class, 'createCompany'] )->name('api.post.companies');
-    
+
     Route::put('/companies/{id}', [\App\Http\Controllers\CompanyController::class, 'updateCompany'])->name('api.put.companies')->where('id', '[0-9]+');
-        
+
     Route::delete('/companies/{id}', [\App\Http\Controllers\CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
     Route::delete('/companies', [\App\Http\Controllers\CompanyController::class, 'deleteCompanies'])->name('api.delete.companies');
 
@@ -131,10 +131,10 @@ Route::middleware(['web', 'auth'])->group(function () {
      * Hozzon létre új céget az API-n keresztül.
      *
      * @param Request $request A vállalati adatokat tartalmazó HTTP kérési objektum.
-     * @param CompanyController $companyController A CompanyController példány.
+     * @param \App\Http\Controllers\CompanyController $companyController A CompanyController példány.
      * @return JsonResponse A létrehozott vállalatot tartalmazó JSON-válasz.
      */
-    Route::post('/items', [\App\Http\Controllers\CompanyController::class, 'createCompany'])->name('api.create.company');
+    //Route::post('/items', [\App\Http\Controllers\CompanyController::class, 'createCompany'])->name('api.create.company');
 
     /**
      * Frissítsen egy meglévő céget.
@@ -143,7 +143,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      * @param int $id A frissítendő cég azonosítója.
      * @return JsonResponse A frissített vállalatot tartalmazó JSON-válasz.
      */
-    Route::put('/items/{id}', [\App\Http\Controllers\CompanyController::class, 'updateCompany'])->name('api.update.company')->where('id', '[0-9]+');
+    //Route::put('/items/{id}', [\App\Http\Controllers\CompanyController::class, 'updateCompany'])->name('api.update.company')->where('id', '[0-9]+');
 
     /**
      * Töröljön egy meglévő céget.
@@ -151,7 +151,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      * @param int $id A törölni kívánt cég azonosítója.
      * @return JsonResponse A törölt vállalatot tartalmazó JSON-válasz.
      */
-    Route::delete('/items/{id}', [\App\Http\Controllers\CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
+    //Route::delete('/items/{id}', [\App\Http\Controllers\CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
 
     /**
      * =======================================================
@@ -301,13 +301,13 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/acs_systems/name/{name}', [App\Http\Controllers\ACSController::class, 'getACSByName'])->name('api.get.acs_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
     Route::post('/acs_systems', [App\Http\Controllers\ACSController::class, 'createACS'])->name('api.post.acs');
     Route::put('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'updateACS'])->name('api.put.acs')->where('id', '[0-9]+');
-    
+
     Route::delete('/companies/{id}', [\App\Http\Controllers\CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
     Route::delete('/companies', [\App\Http\Controllers\CompanyController::class, 'deleteCompanies'])->name('api.delete.companies');
-    
+
     Route::delete('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'deleteACS'])->name('api.delete.acs')->where('id', '[0-9]+');
     Route::delete('/acs_systems', [\App\Http\Controllers\ACSController::class, 'deleteACSs'])->name('api.delete.acss');
-    
+
     /**
      * =======================================================
      * PERSONS

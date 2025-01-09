@@ -28,23 +28,23 @@ class ACSController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    
+
     protected ACSRepository $acsRepository;
     protected string $tag = '';
-    
+
     public function __construct(ACSRepository $repository)
     {
         $this->acsRepository = $repository;
-        
+
         $this->tag = ACS::getTag();
-        
+
         $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getACSs', 'getACS', 'getACSByName']]);
         $this->middleware("can:{$this->tag} create", ['only' => ['createACS']]);
         $this->middleware("can:{$this->tag} edit", ['only' => ['updateACS']]);
         $this->middleware("can:{$this->tag} delete", ['only' => ['deleteACS', 'deleteACSs']]);
         $this->middleware("can:{$this->tag} restore", ['only' => ['restoreACS']]);
     }
-    
+
     public function index(Request $request): InertiaResponse
     {
         $roles = $this->getUserRoles($this->tag);
@@ -55,16 +55,17 @@ class ACSController extends Controller
             'can' => $roles,
         ]);
     }
-    
+
     public function applySearch(Builder $query, string $search): Builder
     {
         return $query->when($search, function ($query, string $search) {
             $query->where('name', 'like', "%{$search}%");
         });
     }
-    
+
     public function getACSs(Request $request): JsonResponse
     {
+        d('cont getACSs');
         try {
             $_acs = $this->acsRepository->getCompanies($request);
             $acs = ACSResource::collection($_acs);
@@ -77,7 +78,7 @@ class ACSController extends Controller
             return $this->handleException($ex, 'getACSs general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getACS(GetACSRequest $request): JsonResponse
     {
         try {
@@ -92,7 +93,7 @@ class ACSController extends Controller
             return $this->handleException($ex, 'getACS general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getACSByName(string $name): JsonResponse
     {
         try {
@@ -107,7 +108,7 @@ class ACSController extends Controller
             return $this->handleException($ex, 'getACSByName general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function createACS(StoreACSRequest $request): JsonResponse
     {
         try {
@@ -120,12 +121,12 @@ class ACSController extends Controller
             return $this->handleException($ex, 'createACS general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function updateACS(UpdateACSRequest $request, int $id): JsonResponse
     {
         try{
             $acs = $this->acsRepository->updateACS($request, $id);
-            
+
             return response()->json($acs, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'updateACS model not found error', Response::HTTP_NOT_FOUND);
@@ -135,7 +136,7 @@ class ACSController extends Controller
             return $this->handleException($ex, 'updateACS general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deleteACSs(Request $request): JsonResponse
     {
         try {
@@ -150,7 +151,7 @@ class ACSController extends Controller
             return $this->handleException($ex, 'deleteACSs general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function deleteACS(GetACSRequest $request): JsonResponse
     {
         try {
@@ -165,7 +166,7 @@ class ACSController extends Controller
             return $this->handleException($ex, 'deleteACS database error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function restoreACS(GetACSRequest $request): JsonResponse
     {
         try {
@@ -180,7 +181,7 @@ class ACSController extends Controller
             return $this->handleException($ex, 'restoreACS general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function realDeleteACS(GetACSRequest $request)
     {
         try {

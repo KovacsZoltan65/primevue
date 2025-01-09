@@ -115,6 +115,7 @@ const fetchItems = async () => {
 
     await ACSService.getACSs()
         .then((response) => {
+            console.log(response);
             acss.value = response.data;
 
             localStorage.setItem(local_storage_acs, JSON.stringify(response.data));

@@ -441,7 +441,7 @@ const deleteSelectedCompanies = async () => {
             // Törölt elemek eltávolítása a selectedCompanies-ből
             selectedCompanies.value = [];
         })
-        .error((error) => {
+        .catch((error) => {
             // Hiba esetén visszaállítjuk az eredeti állapotot
             companies.value = originalCompanies;
 

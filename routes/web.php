@@ -1,27 +1,10 @@
 <?php
 
-use App\Http\Controllers\AppSettingController;
-use App\Http\Controllers\Auth\PermissionController;
-use App\Http\Controllers\Auth\RoleController;
-use App\Http\Controllers\Auth\UserController;
-use App\Http\Controllers\CityController;
-use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CompSettingController;
-use App\Http\Controllers\CountryController;
-use App\Http\Controllers\EntityController;
-use App\Http\Controllers\ErrorController;
-use App\Http\Controllers\LanguageController;
-use App\Http\Controllers\PersonController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\RegionController;
-use App\Http\Controllers\SettingsMetadataController;
-use App\Http\Controllers\SubdomainController;
-use App\Http\Controllers\SubdomainStateController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::post('/language', [LanguageController::class, 'index'])->name('language');
+Route::post('/language', [App\Http\Controllers\LanguageController::class, 'index'])->name('language');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -43,9 +26,9 @@ Route::middleware('auth')->group(function () {
      * SETTINGS
      * =====================================================
      */
-    Route::get('/app_settings', [AppSettingController::class, 'index'])->name('app_settings');
-    Route::get('/comp_settings', [CompSettingController::class, 'index'])->name('comp_settings');
-    Route::get('/settings_metadata', [SettingsMetadataController::class, 'index'])->name('settings_metadata');
+    Route::get('/app_settings', [App\Http\Controllers\AppSettingController::class, 'index'])->name('app_settings');
+    Route::get('/comp_settings', [App\Http\Controllers\CompSettingController::class, 'index'])->name('comp_settings');
+    Route::get('/settings_metadata', [\App\Http\Controllers\SettingsMetadataController::class, 'index'])->name('settings_metadata');
 
     /**
      * =====================================================
@@ -53,7 +36,7 @@ Route::middleware('auth')->group(function () {
      * =====================================================
      *
      */
-    Route::get('/error_log', [ErrorController::class, 'index'])->name('error_log');
+    Route::get('/error_log', [App\Http\Controllers\ErrorController::class, 'index'])->name('error_log');
 
     /**
      * =======================================================
@@ -71,8 +54,9 @@ Route::middleware('auth')->group(function () {
      * CRUD műveletek. A testreszabáshoz a names metódust használjuk
      * az útvonalak nevei.
      */
-    //Route::get('/getCompanies', [CompanyController::class, 'getCompanies'])->name('getCompanies');
-    Route::resource('companies', CompanyController::class)->names([
+    Route::get('/getCompanies', [\App\Http\Controllers\CompanyController::class, 'getCompanies'])->name('getCompanies');
+    /*
+    Route::resource('companies', \App\Http\Controllers\CompanyController::class)->names([
         // Az index útvonal nevének beállítása „cégek”.
         'index' => 'companies',
         // The create route name is set to 'companies.create'.
@@ -84,6 +68,7 @@ Route::middleware('auth')->group(function () {
         // The destroy route name is set to 'companies.destroy'.
         'destroy' => 'companies.destroy',
     ]);
+    */
 
     /**
      * =====================================================
@@ -102,12 +87,12 @@ Route::middleware('auth')->group(function () {
     //    'update' => 'cities.update',
     //    'destroy' => 'cities.destroy',
     //]);
-    Route::get('/cities', [CityController::class, 'index'])->name('cities');
+    Route::get('/cities', [App\Http\Controllers\CityController::class, 'index'])->name('cities');
 
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
 
     /**
      * =====================================================
@@ -119,62 +104,69 @@ Route::middleware('auth')->group(function () {
      * CRUD műveletek. A testreszabáshoz a names metódust használjuk
      * az útvonalak nevei.
      */
-    Route::get('/countries', [CountryController::class, 'index'])->name('countries');
+    Route::get('/countries', [\App\Http\Controllers\CountryController::class, 'index'])->name('countries');
 
     /**
      * =====================================================
      * MEGYÉK
      * =====================================================
      */
-    Route::get('/regions', [RegionController::class, 'index'])->name('regions');
+    Route::get('/regions', [App\Http\Controllers\RegionController::class, 'index'])->name('regions');
 
     /**
      * =======================================================
      * FELHASZNÁLÓK
      * =======================================================
      */
-    Route::get('/users', [UserController::class, 'index'])->name('users');
+    Route::get('/users', [App\Http\Controllers\Auth\UserController::class, 'index'])->name('users');
 
     /**
      * =======================================================
      * SZEREPKÖRÖK
      * =======================================================
      */
-    Route::get('/roles', [RoleController::class, 'index'])->name('roles');
+    Route::get('/roles', [\App\Http\Controllers\Auth\RoleController::class, 'index'])->name('roles');
 
     /**
      * =======================================================
      * ENGEDÉLYEK
      * =======================================================
      */
-    Route::get('/permissions', [PermissionController::class, 'index'])->name('permissions');
+    Route::get('/permissions', [App\Http\Controllers\Auth\PermissionController::class, 'index'])->name('permissions');
 
     /**
      * =======================================================
      * SUBDOMAINS
      * =======================================================
      */
-    Route::get('/subdomains', [SubdomainController::class, 'index'])->name('subdomains');
+    Route::get('/subdomains', [\App\Http\Controllers\SubdomainController::class, 'index'])->name('subdomains');
 
     /**
      * =======================================================
      * SUBDOMAIN STATES
      * =======================================================
      */
-    Route::get('/subdomain_states', [SubdomainStateController::class, 'index'])->name('subdomain_states');
+    Route::get('/subdomain_states', [App\Http\Controllers\SubdomainStateController::class, 'index'])->name('subdomain_states');
 
+    /**
+     * =======================================================
+     * SUBDOMAIN STATES
+     * =======================================================
+     */
+    Route::get('', [App\Http\Controllers\ACSController::class, 'index'])->name('acs_systems');
+    
     /**
      * =======================================================
      * PERSONS
      * =======================================================
      */
-    Route::get('/persons', [PersonController::class, 'index'])->name('persons');
+    Route::get('/persons', [\App\Http\Controllers\PersonController::class, 'index'])->name('persons');
 
     /**
      * =======================================================
      * ENTITIES
      * =======================================================
      */
-    Route::get('/entities', [EntityController::class, 'index'])->name('entities');});
+    Route::get('/entities', [\App\Http\Controllers\EntityController::class, 'index'])->name('entities');});
 
 require __DIR__.'/auth.php';

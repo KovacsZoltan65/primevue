@@ -1,24 +1,5 @@
 <?php
 
-use App\Http\Controllers\AppSettingController;
-use App\Http\Controllers\Auth\PermissionController;
-use App\Http\Controllers\Auth\RoleController;
-use App\Http\Controllers\Auth\UserController;
-use App\Http\Controllers\CityController;
-use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CompanySettingController;
-use App\Http\Controllers\CompSettingController;
-use App\Http\Controllers\CountryController;
-use App\Http\Controllers\EntityController;
-use App\Http\Controllers\ErrorController;
-use App\Http\Controllers\HierarchyController;
-use App\Http\Controllers\LanguageController;
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\PersonController;
-use App\Http\Controllers\RegionController;
-use App\Http\Controllers\SettingsMetadataController;
-use App\Http\Controllers\SubdomainController;
-use App\Http\Controllers\SubdomainStateController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -35,7 +16,7 @@ Route::get('/user', function (Request $request) {
  * TESZT FUTTÁSA
  * ======================================================
  */
-Route::post( '/test/companies', [CompanyController::class, 'createCompany'] )->name('api.post.companies');
+Route::post( '/test/companies', [\App\Http\Controllers\CompanyController::class, 'createCompany'] )->name('api.post.companies');
 
 Route::middleware(['web', 'auth'])->group(function () {
 
@@ -44,18 +25,18 @@ Route::middleware(['web', 'auth'])->group(function () {
      * ERROR HANDLING
      * =======================================================
      */
-    Route::post('/client-errors', [ErrorController::class, 'logClientError']);
-    Route::post('/client_validation_errors', [ErrorController::class, 'logClientValidationError']);
+    Route::post('/client-errors', [App\Http\Controllers\ErrorController::class, 'logClientError']);
+    Route::post('/client_validation_errors', [App\Http\Controllers\ErrorController::class, 'logClientValidationError']);
 
-    Route::get('/server-errors/by_id/{errorId}', [ErrorController::class, 'getErrorById']);
-    Route::get('/server-errors/by_unique_id/{uniqueErrorId}', [ErrorController::class, 'getErrorByUniqueId']);
+    Route::get('/server-errors/by_id/{errorId}', [App\Http\Controllers\ErrorController::class, 'getErrorById']);
+    Route::get('/server-errors/by_unique_id/{uniqueErrorId}', [App\Http\Controllers\ErrorController::class, 'getErrorByUniqueId']);
 
     Route::prefix('error-logs')
         ->name('error-logs.')
         ->group(function() {
-            Route::get('/', [ErrorController::class, 'index'])->name('index');
-            Route::get('/{id}', [ErrorController::class, 'show'])->name('show')->where('id', '[0-9]+');
-            Route::delete('/{id}', [ErrorController::class, 'destroy'])->name('destroy')->where('id', '[0-9]+');
+            Route::get('/', [App\Http\Controllers\ErrorController::class, 'index'])->name('index');
+            Route::get('/{id}', [App\Http\Controllers\ErrorController::class, 'show'])->name('show')->where('id', '[0-9]+');
+            Route::delete('/{id}', [App\Http\Controllers\ErrorController::class, 'destroy'])->name('destroy')->where('id', '[0-9]+');
         });
 
     /**
@@ -63,7 +44,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      * LANGUAGES
      * =======================================================
      */
-    Route::get('/languages', [LanguageController::class, 'getLanguages'])->name('get.languages');
+    Route::get('/languages', [App\Http\Controllers\LanguageController::class, 'getLanguages'])->name('get.languages');
 
     /**
      * =======================================================
@@ -71,34 +52,34 @@ Route::middleware(['web', 'auth'])->group(function () {
      * =======================================================
      */
     // Szülö hozzáadása
-    Route::post('/entity-hierarchy/{childId}/add-parent', [HierarchyController::class, 'addParent']);
+    Route::post('/entity-hierarchy/{childId}/add-parent', [\App\Http\Controllers\HierarchyController::class, 'addParent']);
     // Gyermek hozzáadása
-    Route::post('/entity-hierarchy/{parentId}/add-child', [HierarchyController::class, 'addChild'])->name('addChild');
+    Route::post('/entity-hierarchy/{parentId}/add-child', [\App\Http\Controllers\HierarchyController::class, 'addChild'])->name('addChild');
     // Hierarchia lekérdezése
-    Route::get('/entity-hierarchy/{entityId}/hierarchy', [HierarchyController::class, 'getHierarchy']);
+    Route::get('/entity-hierarchy/{entityId}/hierarchy', [\App\Http\Controllers\HierarchyController::class, 'getHierarchy']);
     // Gyermek eltávolítása
-    Route::delete('/entity-hierarchy/{parentId}/remove-child', [HierarchyController::class, 'removeChild']);
+    Route::delete('/entity-hierarchy/{parentId}/remove-child', [\App\Http\Controllers\HierarchyController::class, 'removeChild']);
     // Nagyfőnök lekérése
-    Route::get('/entity-hierarchy/big-bosses', [HierarchyController::class, 'getBigBosses']);
+    Route::get('/entity-hierarchy/big-bosses', [\App\Http\Controllers\HierarchyController::class, 'getBigBosses']);
     // Hierarchia épségének ellenőrzése
-    Route::get('/entity-hierarchy/validate', [HierarchyController::class, 'validateHierarchy']);
+    Route::get('/entity-hierarchy/validate', [\App\Http\Controllers\HierarchyController::class, 'validateHierarchy']);
     // Izolált entitások keresése
-    Route::get('/entity-hierarchy/isolated-entities', [HierarchyController::class, 'checkIsolatedEntities']);
+    Route::get('/entity-hierarchy/isolated-entities', [\App\Http\Controllers\HierarchyController::class, 'checkIsolatedEntities']);
     // Egy vezető beosztottjainak áthelyezése egy másik vezető alá
-    Route::post('/entity-hierarchy/{fromManagerId}/transfer-subordinates', [HierarchyController::class, 'transferSubordinates']);
+    Route::post('/entity-hierarchy/{fromManagerId}/transfer-subordinates', [\App\Http\Controllers\HierarchyController::class, 'transferSubordinates']);
     // Két vezető beosztottjainak kicserélése
-    Route::post('/entity-hierarchy/swap-subordinates', [HierarchyController::class, 'swapSubordinates']);
+    Route::post('/entity-hierarchy/swap-subordinates', [\App\Http\Controllers\HierarchyController::class, 'swapSubordinates']);
     // Dolgozói szint megállapítása
-    Route::get('/employee/{id}/role', [HierarchyController::class, 'getEmployeeRole']);
+    Route::get('/employee/{id}/role', [\App\Http\Controllers\HierarchyController::class, 'getEmployeeRole']);
 
     /**
      * =======================================================
      * MENÜ
      * =======================================================
      */
-    Route::get('/menu-items', [MenuController::class, 'getSortedMenuItems'])->name('get.menu');
+    Route::get('/menu-items', [App\Http\Controllers\MenuController::class, 'getSortedMenuItems'])->name('get.menu');
 
-    Route::resource('menu-items', MenuController::class);
+    Route::resource('menu-items', App\Http\Controllers\MenuController::class);
 
     /*
     Route::prefix('admin/menu')->group(function () {
@@ -119,32 +100,32 @@ Route::middleware(['web', 'auth'])->group(function () {
      * @return JsonResponse A vállalatok listáját tartalmazó JSON-válasz.
      */
     //Route::get('/items', [CompanyController::class, 'getCompanies'])->name('api.get.companies');
-    Route::get('/companies', [CompanyController::class, 'getCompanies'])->name('api.get.companies');
-    Route::get('/companies/{id}', [CompanyController::class, 'getCompany'])->name('api.get.company')->where('id', '[0-9]+');
-    Route::get('/companies/name/{name}', [CompanyController::class, 'getCompanyByName'])->name('api.get.company_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post( '/companies', [CompanyController::class, 'createCompany'] )->name('api.post.companies');
+    Route::get('/companies', [\App\Http\Controllers\CompanyController::class, 'getCompanies'])->name('api.get.companies');
+    Route::get('/companies/{id}', [\App\Http\Controllers\CompanyController::class, 'getCompany'])->name('api.get.company')->where('id', '[0-9]+');
+    Route::get('/companies/name/{name}', [\App\Http\Controllers\CompanyController::class, 'getCompanyByName'])->name('api.get.company_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::post( '/companies', [\App\Http\Controllers\CompanyController::class, 'createCompany'] )->name('api.post.companies');
     
-    Route::put('/companies/{id}', [CompanyController::class, 'updateCompany'])->name('api.put.companies')->where('id', '[0-9]+');
+    Route::put('/companies/{id}', [\App\Http\Controllers\CompanyController::class, 'updateCompany'])->name('api.put.companies')->where('id', '[0-9]+');
         
-    Route::delete('/companies/{id}', [CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
-    Route::delete('/companies', [CompanyController::class, 'deleteCompanies'])->name('api.delete.companies');
+    Route::delete('/companies/{id}', [\App\Http\Controllers\CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
+    Route::delete('/companies', [\App\Http\Controllers\CompanyController::class, 'deleteCompanies'])->name('api.delete.companies');
 
     /**
      * =====================================================
      * SETTINGS
      * =====================================================
      */
-    Route::get('/app_settings', [AppSettingController::class, 'getAppSettings']);
-    Route::get('/app_settings/{id}', [AppSettingController::class, 'getApptSetting']);
-    Route::get('/app_settings/key/{key}', [AppSettingController::class, 'getAppSettingByKey']);
-    Route::post('/app_settings', [AppSettingController::class, 'createAppSetting']);
-    Route::put('/app_settings/{id}', [AppSettingController::class, 'updateAppSetting']);
+    Route::get('/app_settings', [App\Http\Controllers\AppSettingController::class, 'getAppSettings']);
+    Route::get('/app_settings/{id}', [App\Http\Controllers\AppSettingController::class, 'getApptSetting']);
+    Route::get('/app_settings/key/{key}', [App\Http\Controllers\AppSettingController::class, 'getAppSettingByKey']);
+    Route::post('/app_settings', [App\Http\Controllers\AppSettingController::class, 'createAppSetting']);
+    Route::put('/app_settings/{id}', [App\Http\Controllers\AppSettingController::class, 'updateAppSetting']);
 
-    Route::get('/comp_settings', [CompSettingController::class, 'getCompSettings']);
-    Route::get('/comp_settings/{id}', [CompSettingController::class, 'getCompSetting']);
-    Route::get('/comp_settings/key/{key}', [CompSettingController::class, 'getCompSettingByKey']);
-    Route::post('/comp_settings', [CompSettingController::class, 'createCompSetting']);
-    Route::put('/comp_settings/{id}', [CompSettingController::class, 'updateCompSetting']);
+    Route::get('/comp_settings', [App\Http\Controllers\CompSettingController::class, 'getCompSettings']);
+    Route::get('/comp_settings/{id}', [App\Http\Controllers\CompSettingController::class, 'getCompSetting']);
+    Route::get('/comp_settings/key/{key}', [App\Http\Controllers\CompSettingController::class, 'getCompSettingByKey']);
+    Route::post('/comp_settings', [App\Http\Controllers\CompSettingController::class, 'createCompSetting']);
+    Route::put('/comp_settings/{id}', [App\Http\Controllers\CompSettingController::class, 'updateCompSetting']);
 
     /**
      * Hozzon létre új céget az API-n keresztül.
@@ -153,7 +134,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      * @param CompanyController $companyController A CompanyController példány.
      * @return JsonResponse A létrehozott vállalatot tartalmazó JSON-válasz.
      */
-    Route::post('/items', [CompanyController::class, 'createCompany'])->name('api.create.company');
+    Route::post('/items', [\App\Http\Controllers\CompanyController::class, 'createCompany'])->name('api.create.company');
 
     /**
      * Frissítsen egy meglévő céget.
@@ -162,7 +143,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      * @param int $id A frissítendő cég azonosítója.
      * @return JsonResponse A frissített vállalatot tartalmazó JSON-válasz.
      */
-    Route::put('/items/{id}', [CompanyController::class, 'updateCompany'])->name('api.update.company')->where('id', '[0-9]+');
+    Route::put('/items/{id}', [\App\Http\Controllers\CompanyController::class, 'updateCompany'])->name('api.update.company')->where('id', '[0-9]+');
 
     /**
      * Töröljön egy meglévő céget.
@@ -170,7 +151,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      * @param int $id A törölni kívánt cég azonosítója.
      * @return JsonResponse A törölt vállalatot tartalmazó JSON-válasz.
      */
-    Route::delete('/items/{id}', [CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
+    Route::delete('/items/{id}', [\App\Http\Controllers\CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
 
     /**
      * =======================================================
@@ -183,7 +164,7 @@ Route::middleware(['web', 'auth'])->group(function () {
      * @param CityController $cityController A CityController példány.
      * @return JsonResponse A városok listáját tartalmazó JSON-válasz.
      */
-    Route::get('/cities', [CityController::class, 'getCities'])->name('api.get.cities');
+    Route::get('/cities', [App\Http\Controllers\CityController::class, 'getCities'])->name('api.get.cities');
 
     /**
      * Egy város lekérése azonosító alapján az API-n keresztül.
@@ -191,18 +172,18 @@ Route::middleware(['web', 'auth'])->group(function () {
      * @param int $id A lekérdezni kívánt város azonosítója.
      * @return JsonResponse A várost tartalmazó JSON-válasz.
      */
-    Route::get('/cities/{id}', [CityController::class, 'getCity'])->name('api.get.city_by_id')->where('id', '[0-9]+');
-    Route::get('/cities/name/{name}', [CityController::class, 'getCityByName'])->name('api.get.city_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::get('/cities/{id}', [App\Http\Controllers\CityController::class, 'getCity'])->name('api.get.city_by_id')->where('id', '[0-9]+');
+    Route::get('/cities/name/{name}', [App\Http\Controllers\CityController::class, 'getCityByName'])->name('api.get.city_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
 
-    Route::post('/cities', [CityController::class, 'createCity'])->name('api.post.cities');
-    Route::put('/cities/{id}', [CityController::class, 'updateCity'])->name('api.put.cities')->where('id', '[0-9]+');
-    Route::delete('/cities/{id}', [CityController::class, 'deleteCity'])->name('api.delete.cities')->where('id', '[0-9]+');
-    //Route::post('/cities', [CityController::class, 'createCity'])->name('apicities.create');
-    //Route::put('/cities/{id}', [CityController::class, 'updateCity'])->name('api.cities.update')->where('id', '[0-9]+');
-    //Route::delete('/cities/{id}', [CityController::class, 'deleteCity'])->name('api.cities.delete')->where('id', '[0-9]+');
+    Route::post('/cities', [App\Http\Controllers\CityController::class, 'createCity'])->name('api.post.cities');
+    Route::put('/cities/{id}', [App\Http\Controllers\CityController::class, 'updateCity'])->name('api.put.cities')->where('id', '[0-9]+');
+    Route::delete('/cities/{id}', [App\Http\Controllers\CityController::class, 'deleteCity'])->name('api.delete.cities')->where('id', '[0-9]+');
+    //Route::post('/cities', [App\Http\Controllers\CityController::class, 'createCity'])->name('apicities.create');
+    //Route::put('/cities/{id}', [App\Http\Controllers\CityController::class, 'updateCity'])->name('api.cities.update')->where('id', '[0-9]+');
+    //Route::delete('/cities/{id}', [App\Http\Controllers\CityController::class, 'deleteCity'])->name('api.cities.delete')->where('id', '[0-9]+');
 
     /*
-    Route::resource('/cities', CityController::class)->names([
+    Route::resource('/cities', App\Http\Controllers\CityController::class)->names([
             'index'   => 'api.cities',
             'create'  => 'api.cities.create',
             'store'   => 'api.cities.store',
@@ -216,122 +197,122 @@ Route::middleware(['web', 'auth'])->group(function () {
      * ORSZÁGOK
      * =======================================================
      */
-    Route::get('/countries', [CountryController::class, 'getCountries'])->name('api.get.countries');
+    Route::get('/countries', [\App\Http\Controllers\CountryController::class, 'getCountries'])->name('api.get.countries');
 
-    Route::get('/countries/{id}', [CountryController::class, 'getCountry'])->name('api.get.country_by_id')->where('id', '[0-9]+');
-    Route::get('/countries/name/{name}', [CountryController::class, 'getCountryByName'])->name('api.get.country_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::get('/countries/{id}', [\App\Http\Controllers\CountryController::class, 'getCountry'])->name('api.get.country_by_id')->where('id', '[0-9]+');
+    Route::get('/countries/name/{name}', [\App\Http\Controllers\CountryController::class, 'getCountryByName'])->name('api.get.country_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
 
-    Route::post('/countries', [CountryController::class, 'createCountry'])->name('api.post.countries');
-    Route::put('/countries/{id}', [CountryController::class, 'updateCountry'])->name('api.put.countries')->where('id', '[0-9]+');
-    Route::delete('/countries/{id}', [CountryController::class, 'deleteCountry'])->name('api.delete.countries')->where('id', '[0-9]+');
+    Route::post('/countries', [\App\Http\Controllers\CountryController::class, 'createCountry'])->name('api.post.countries');
+    Route::put('/countries/{id}', [\App\Http\Controllers\CountryController::class, 'updateCountry'])->name('api.put.countries')->where('id', '[0-9]+');
+    Route::delete('/countries/{id}', [\App\Http\Controllers\CountryController::class, 'deleteCountry'])->name('api.delete.countries')->where('id', '[0-9]+');
 
     /**
      * =======================================================
      * JOGI SZEMÉLYEK (legal entity)
      * =======================================================
      */
-    Route::get('/entities', [EntityController::class, 'getEntities'])->name('api.get.entities');
+    Route::get('/entities', [\App\Http\Controllers\EntityController::class, 'getEntities'])->name('api.get.entities');
 
-    Route::get('/entities/{id}', [EntityController::class, 'getEntity'])->name('api.get.entity_by_id')->where('id', '[0-9]+');
-    Route::get('/entities/name/{name}', [EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::get('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'getEntity'])->name('api.get.entity_by_id')->where('id', '[0-9]+');
+    Route::get('/entities/name/{name}', [\App\Http\Controllers\EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
 
-    Route::post('/entities', [EntityController::class, 'createEntity'])->name('api.post.entities');
-    Route::put('/entities/{id}', [EntityController::class, 'updateEntity'])->name('api.put.entities')->where('id', '[0-9]+');
-    Route::delete('/entities/{id}', [EntityController::class, 'deleteEntity'])->name('api.delete.entities')->where('id', '[0-9]+');
+    Route::post('/entities', [\App\Http\Controllers\EntityController::class, 'createEntity'])->name('api.post.entities');
+    Route::put('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'updateEntity'])->name('api.put.entities')->where('id', '[0-9]+');
+    Route::delete('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'deleteEntity'])->name('api.delete.entities')->where('id', '[0-9]+');
 
     /**
      * =======================================================
      * MEGYÉK
      * =======================================================
      */
-    Route::get('/regions', [RegionController::class, 'getRegions'])->name('api.get.regions');
-    Route::post('/regions', [RegionController::class, 'createRegion'])->name('api.post.regions');
-    Route::put('/regions/{id}', [RegionController::class, 'updateRegion'])->name('api.put.regions')->where('id', '[0-9]+');
-    Route::delete('/regions/{id}', [RegionController::class, 'deleteRegion'])->name('api.delete.regions')->where('id', '[0-9]+');
+    Route::get('/regions', [App\Http\Controllers\RegionController::class, 'getRegions'])->name('api.get.regions');
+    Route::post('/regions', [App\Http\Controllers\RegionController::class, 'createRegion'])->name('api.post.regions');
+    Route::put('/regions/{id}', [App\Http\Controllers\RegionController::class, 'updateRegion'])->name('api.put.regions')->where('id', '[0-9]+');
+    Route::delete('/regions/{id}', [App\Http\Controllers\RegionController::class, 'deleteRegion'])->name('api.delete.regions')->where('id', '[0-9]+');
 
     /**
      * =======================================================
      * FELHASZNÁLÓK
      * =======================================================
      */
-    Route::get('/users', [UserController::class, 'getUsers'])->name('api.get.users');
-    Route::get('/users/{id}', [UserController::class, 'getUser'])->name('api.get.user')->where('id', '[0-9]+');
-    Route::get('/users/name/{name}', [EntityController::class, 'getEntityByName'])->name('api.get.user_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post('/users', [UserController::class, 'createUsers'])->name('api.post.users');
-    Route::put('/users/{id}', [UserController::class, 'updateUsers'])->name('api.put.users')->where('id', '[0-9]+');
-    Route::put('/users/password/{id}', [UserController::class, 'updatePassword'])->name('api.put.password')->where('id', '[0-9]+');
-    Route::delete('/users/{id}', [UserController::class, 'deleteUsers'])->name('api.delete.users')->where('id', '[0-9]+');
+    Route::get('/users', [App\Http\Controllers\Auth\UserController::class, 'getUsers'])->name('api.get.users');
+    Route::get('/users/{id}', [App\Http\Controllers\Auth\UserController::class, 'getUser'])->name('api.get.user')->where('id', '[0-9]+');
+    Route::get('/users/name/{name}', [App\Http\Controllers\Auth\UserController::class, 'getUserByName'])->name('api.get.user_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::post('/users', [App\Http\Controllers\Auth\UserController::class, 'createUsers'])->name('api.post.users');
+    Route::put('/users/{id}', [App\Http\Controllers\Auth\UserController::class, 'updateUsers'])->name('api.put.users')->where('id', '[0-9]+');
+    Route::put('/users/password/{id}', [App\Http\Controllers\Auth\UserController::class, 'updatePassword'])->name('api.put.password')->where('id', '[0-9]+');
+    Route::delete('/users/{id}', [App\Http\Controllers\Auth\UserController::class, 'deleteUsers'])->name('api.delete.users')->where('id', '[0-9]+');
 
     /**
      * =======================================================
      * SEREPKÖRÖK (ROLES)
      * =======================================================
      */
-    Route::get('/roles', [RoleController::class, 'getRoles'])->name('api.get.roles');
-    Route::get('/roles/{id}', [RoleController::class, 'getRole'])->name('api.get.role')->where('id', '[0-9]+');
-    Route::get('/roles/name/{name}', [RoleController::class, 'getRolesByName'])->name('api.get.role_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post('/roles', [RoleController::class, 'createRole'])->name('api.post.roles');
-    Route::put('/roles/{id}', [RoleController::class, 'updateRoles'])->name('api.put.roles')->where('id', '[0-9]+');
-    Route::delete('/roles/{id}', [RoleController::class, 'deleteRoles'])->name('api.delete.roles')->where('id', '[0-9]+');
+    Route::get('/roles', [\App\Http\Controllers\Auth\RoleController::class, 'getRoles'])->name('api.get.roles');
+    Route::get('/roles/{id}', [\App\Http\Controllers\Auth\RoleController::class, 'getRole'])->name('api.get.role')->where('id', '[0-9]+');
+    Route::get('/roles/name/{name}', [\App\Http\Controllers\Auth\RoleController::class, 'getRolesByName'])->name('api.get.role_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::post('/roles', [\App\Http\Controllers\Auth\RoleController::class, 'createRole'])->name('api.post.roles');
+    Route::put('/roles/{id}', [\App\Http\Controllers\Auth\RoleController::class, 'updateRoles'])->name('api.put.roles')->where('id', '[0-9]+');
+    Route::delete('/roles/{id}', [\App\Http\Controllers\Auth\RoleController::class, 'deleteRoles'])->name('api.delete.roles')->where('id', '[0-9]+');
 
     /**
      * =======================================================
      * ENGEDÉLYEK (PERMISSIONS)
      * =======================================================
      */
-    Route::get('/permissions', [PermissionController::class, 'getPermissions'])->name('api.get.permissions');
-    Route::get('/permissions/{id}', [PermissionController::class, 'getPermission'])->name('api.get.permission')->where('id', '[0-9]+');
-    Route::get('/permissions/name/{name}', [PermissionController::class, 'getPermissionByName'])->name('api.get.permission_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post('/permissions', [PermissionController::class, 'createPermissions'])->name('api.post.permissions');
-    Route::put('/permissions/{id}', [PermissionController::class, 'updatePermissions'])->name('api.put.permissions')->where('id', '[0-9]+');
-    Route::delete('/permissions/{id}', [PermissionController::class, 'deletePermissions'])->name('api.delete.permissions')->where('id', '[0-9]+');
+    Route::get('/permissions', [App\Http\Controllers\Auth\PermissionController::class, 'getPermissions'])->name('api.get.permissions');
+    Route::get('/permissions/{id}', [App\Http\Controllers\Auth\PermissionController::class, 'getPermission'])->name('api.get.permission')->where('id', '[0-9]+');
+    Route::get('/permissions/name/{name}', [App\Http\Controllers\Auth\PermissionController::class, 'getPermissionByName'])->name('api.get.permission_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::post('/permissions', [App\Http\Controllers\Auth\PermissionController::class, 'createPermissions'])->name('api.post.permissions');
+    Route::put('/permissions/{id}', [App\Http\Controllers\Auth\PermissionController::class, 'updatePermissions'])->name('api.put.permissions')->where('id', '[0-9]+');
+    Route::delete('/permissions/{id}', [App\Http\Controllers\Auth\PermissionController::class, 'deletePermissions'])->name('api.delete.permissions')->where('id', '[0-9]+');
 
     /**
      * =======================================================
      * SUBDOMAINS
      * =======================================================
      */
-    Route::get('/subdomains', [SubdomainController::class, 'getSubdomains'])->name('api.get.subdomains');
-    Route::get('/subdomains/{id}', [SubdomainController::class, 'getSubdomain'])->name('api.get.subdomains')->where('id', '[0-9]+');
-    Route::get('/subdomains/name/{name}', [SubdomainController::class, 'getSubdomainByName'])->name('api.get.subdomain_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post('/subdomains', [SubdomainController::class, 'createSubdomains'])->name('api.post.subdomains');
-    Route::put('/subdomains/{id}', [SubdomainController::class, 'updateSubdomains'])->name('api.put.subdomains')->where('id', '[0-9]+');
-    Route::delete('/subdomains/{id}', [SubdomainController::class, 'deleteSubdomains'])->name('api.delete.subdomains')->where('id', '[0-9]+');
+    Route::get('/subdomains', [\App\Http\Controllers\SubdomainController::class, 'getSubdomains'])->name('api.get.subdomains');
+    Route::get('/subdomains/{id}', [\App\Http\Controllers\SubdomainController::class, 'getSubdomain'])->name('api.get.subdomains')->where('id', '[0-9]+');
+    Route::get('/subdomains/name/{name}', [\App\Http\Controllers\SubdomainController::class, 'getSubdomainByName'])->name('api.get.subdomain_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::post('/subdomains', [\App\Http\Controllers\SubdomainController::class, 'createSubdomains'])->name('api.post.subdomains');
+    Route::put('/subdomains/{id}', [\App\Http\Controllers\SubdomainController::class, 'updateSubdomains'])->name('api.put.subdomains')->where('id', '[0-9]+');
+    Route::delete('/subdomains/{id}', [\App\Http\Controllers\SubdomainController::class, 'deleteSubdomains'])->name('api.delete.subdomains')->where('id', '[0-9]+');
 
     /**
      * =======================================================
      * SUBDOMAIN STATES
      * =======================================================
      */
-    Route::get('/subdomain_states', [SubdomainStateController::class, 'getSubdomainStates'])->name('api.get.subdomain_states');
-    Route::get('/subdomain_states/{id}', [SubdomainStateController::class, 'getSubdomainState'])->name('api.get.subdomain_state')->where('id', '[0-9]+');
-    Route::get('/subdomain_states/name/{name}', [SubdomainStateController::class, 'getSubdomainStateByName'])->name('api.get.subdomain_state_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post('/subdomain_states', [SubdomainStateController::class, 'createSubdomainStates'])->name('api.post.subdomain_states');
-    Route::put('/subdomain_states/{id}', [SubdomainStateController::class, 'updateSubdomainState'])->name('api.put.subdomain_states')->where('id', '[0-9]+');
-    Route::delete('/subdomain_states/{id}', [SubdomainStateController::class, 'deleteSubdomainStates'])->name('api.delete.subdomain_states')->where('id', '[0-9]+');
+    Route::get('/subdomain_states', [App\Http\Controllers\SubdomainStateController::class, 'getSubdomainStates'])->name('api.get.subdomain_states');
+    Route::get('/subdomain_states/{id}', [App\Http\Controllers\SubdomainStateController::class, 'getSubdomainState'])->name('api.get.subdomain_state')->where('id', '[0-9]+');
+    Route::get('/subdomain_states/name/{name}', [App\Http\Controllers\SubdomainStateController::class, 'getSubdomainStateByName'])->name('api.get.subdomain_state_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::post('/subdomain_states', [App\Http\Controllers\SubdomainStateController::class, 'createSubdomainStates'])->name('api.post.subdomain_states');
+    Route::put('/subdomain_states/{id}', [App\Http\Controllers\SubdomainStateController::class, 'updateSubdomainState'])->name('api.put.subdomain_states')->where('id', '[0-9]+');
+    Route::delete('/subdomain_states/{id}', [App\Http\Controllers\SubdomainStateController::class, 'deleteSubdomainStates'])->name('api.delete.subdomain_states')->where('id', '[0-9]+');
 
     /**
      * =======================================================
      * PERSONS
      * =======================================================
      */
-    Route::get('/persons', [PersonController::class, 'getPersons'])->name('api.get.persons');
-    Route::get('/persons/{id}', [PersonController::class, 'getPerson'])->name('api.get.person')->where('id', '[0-9]+');
-    Route::get('/persons/name/{name}', [PersonController::class, 'getPersonByName'])->name('api.get.person_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post('/persons', [PersonController::class, 'createPersons'])->name('api.post.persons');
-    Route::put('/persons/{id}', [PersonController::class, 'updatePersons'])->name('api.put.persons')->where('id', '[0-9]+');
-    Route::delete('/persons/{id}', [PersonController::class, 'deletePersons'])->name('api.delete.persons')->where('id', '[0-9]+');
+    Route::get('/persons', [\App\Http\Controllers\PersonController::class, 'getPersons'])->name('api.get.persons');
+    Route::get('/persons/{id}', [\App\Http\Controllers\PersonController::class, 'getPerson'])->name('api.get.person')->where('id', '[0-9]+');
+    Route::get('/persons/name/{name}', [\App\Http\Controllers\PersonController::class, 'getPersonByName'])->name('api.get.person_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::post('/persons', [\App\Http\Controllers\PersonController::class, 'createPersons'])->name('api.post.persons');
+    Route::put('/persons/{id}', [\App\Http\Controllers\PersonController::class, 'updatePersons'])->name('api.put.persons')->where('id', '[0-9]+');
+    Route::delete('/persons/{id}', [\App\Http\Controllers\PersonController::class, 'deletePersons'])->name('api.delete.persons')->where('id', '[0-9]+');
 
     /**
      * =======================================================
      * ENTITIES
      * =======================================================
      */
-    Route::get('/entities', [EntityController::class, 'getEntities'])->name('api.get.entities');
-    Route::get('/entities/{id}', [EntityController::class, 'getEntity'])->name('api.get.entity')->where('id', '[0-9]+');
-    Route::get('/entities/name/{name}', [EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post('/entities', [EntityController::class, 'createEntities'])->name('api.post.entities');
-    Route::put('/entities/{id}', [EntityController::class, 'updateEntities'])->name('api.put.entities')->where('id', '[0-9]+');
-    Route::delete('/entities/{id}', [EntityController::class, 'deleteEntities'])->name('api.delete.entities')->where('id', '[0-9]+');
+    Route::get('/entities', [\App\Http\Controllers\EntityController::class, 'getEntities'])->name('api.get.entities');
+    Route::get('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'getEntity'])->name('api.get.entity')->where('id', '[0-9]+');
+    Route::get('/entities/name/{name}', [\App\Http\Controllers\EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::post('/entities', [\App\Http\Controllers\EntityController::class, 'createEntities'])->name('api.post.entities');
+    Route::put('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'updateEntities'])->name('api.put.entities')->where('id', '[0-9]+');
+    Route::delete('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'deleteEntities'])->name('api.delete.entities')->where('id', '[0-9]+');
 
 });

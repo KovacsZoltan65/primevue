@@ -109,3 +109,12 @@ php artisan make:resource ACSResource
 php artisan make:request GetACSRequest
 php artisan make:request StoreACSRequest
 php artisan make:request UpdateACSRequest
+
+
+@import probléma:
+    npm install -g sass-migrator
+    sass-migrator module --migrate-deps your-entrypoint.scss
+
+    sass-migrator module --migrate-deps F:\wamp64\www\softc\primevue\resources\css\demo.scss
+    sass-migrator module --migrate-deps F:\wamp64\www\softc\primevue\resources\css\styles.scss
+    sass-migrator module --migrate-deps F:\wamp64\www\softc\primevue\resources\css\layout\layout.scss

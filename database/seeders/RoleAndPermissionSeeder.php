@@ -37,6 +37,8 @@ class RoleAndPermissionSeeder extends Seeder
 
             \App\Models\Subdomain::getTag(),
             \App\Models\SubdomainState::getTag(),
+            
+            \App\Models\ACS::getTag(),
 
             \App\Models\Hierarchy::getTag(),
 

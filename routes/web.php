@@ -55,6 +55,7 @@ Route::middleware('auth')->group(function () {
      * az útvonalak nevei.
      */
     Route::get('/getCompanies', [\App\Http\Controllers\CompanyController::class, 'getCompanies'])->name('getCompanies');
+    Route::get('/companies', [\App\Http\Controllers\CompanyController::class, 'index'])->name('');
     /*
     Route::resource('companies', \App\Http\Controllers\CompanyController::class)->names([
         // Az index útvonal nevének beállítása „cégek”.
@@ -89,7 +90,11 @@ Route::middleware('auth')->group(function () {
     //]);
     Route::get('/cities', [App\Http\Controllers\CityController::class, 'index'])->name('cities');
 
-
+    /**
+     * =====================================================
+     * PROFIL
+     * =====================================================
+     */
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -150,10 +155,10 @@ Route::middleware('auth')->group(function () {
 
     /**
      * =======================================================
-     * SUBDOMAIN STATES
+     * ACCESS CONTROLL SYSTEMS (ACS)
      * =======================================================
      */
-    Route::get('', [App\Http\Controllers\ACSController::class, 'index'])->name('acs_systems');
+    Route::get('/acs_systems', [App\Http\Controllers\ACSController::class, 'index'])->name('acs_systems');
     
     /**
      * =======================================================

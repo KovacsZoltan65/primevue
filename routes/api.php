@@ -293,6 +293,23 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     /**
      * =======================================================
+     * ACCESS CONTROLL SYSTEMS (ACS)
+     * =======================================================
+     */
+    Route::get('/acs_systems', [App\Http\Controllers\ACSController::class, 'getACSs'])->name('api.get.acss');
+    Route::get('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'getACS'])->name('api.get.acs')->where('id', '[0-9]+');
+    Route::get('/acs_systems/name/{name}', [App\Http\Controllers\ACSController::class, 'getACSByName'])->name('api.get.acs_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::post('/acs_systems', [App\Http\Controllers\ACSController::class, 'createACS'])->name('api.post.acs');
+    Route::put('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'updateACS'])->name('api.put.acs')->where('id', '[0-9]+');
+    
+    Route::delete('/companies/{id}', [\App\Http\Controllers\CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
+    Route::delete('/companies', [\App\Http\Controllers\CompanyController::class, 'deleteCompanies'])->name('api.delete.companies');
+    
+    Route::delete('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'deleteACS'])->name('api.delete.acs')->where('id', '[0-9]+');
+    Route::delete('/acs_systems', [\App\Http\Controllers\ACSController::class, 'deleteACSs'])->name('api.delete.acss');
+    
+    /**
+     * =======================================================
      * PERSONS
      * =======================================================
      */

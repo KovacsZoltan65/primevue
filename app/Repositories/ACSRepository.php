@@ -33,21 +33,25 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveACS()
+    public function getActiveACSs()
     {
-        $model = $this->model();
-        $acss = $model::query()
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->where('active','=',1)
-            ->get()->toArray();
+        try {
+            $model = $this->model();
+            $acss = $model::query()
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->where('active','=',1)
+                ->get()->toArray();
 
-        return $acss;
+            return $acss;
+        } catch (Exception $ex) {
+            $this->logError($ex, 'getActiveACSs error', []);
+            throw $ex;
+        }
     }
 
     public function getACSs(Request $request)
     {
-        dd('repo getACSs');
         try {
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 

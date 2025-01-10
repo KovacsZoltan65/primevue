@@ -473,6 +473,12 @@ const clearFilter = () => {
 
 initFilters();
 
+const getActiveLabel = (subdomain) =>
+    ["danger", "success", "warning"][subdomain.active || 2];
+
+const getActiveValue = (subdomain) =>
+    ["inactive", "active", "pending"][subdomain.active] || "pending";
+
 </script>
 
 <template>

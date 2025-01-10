@@ -19,7 +19,7 @@ class RegionsTableSeeder extends Seeder
         Region::truncate();
         Schema::enableForeignKeyConstraints();
 
-        //activity()->disableLogging();
+        activity()->disableLogging();
         
         $regions = [
             ['id' => 1538,'name' => 'Komárom-Esztergom',     'code' => '12','country_id' => 92,'active' => 1,],
@@ -64,7 +64,7 @@ class RegionsTableSeeder extends Seeder
         
         $this->command->info(PHP_EOL . __('migration_created_regions'));
         
-        //activity()->enableLogging();
+        activity()->enableLogging();
         
         /*
         \DB::table('regions')->insert([
@@ -1578,9 +1578,9 @@ class RegionsTableSeeder extends Seeder
             ['id' => 1500,'name' => 'Cortes','code' => '06','country_id' => 89,'active' => 0,],
         ]);
         */
-
+        /*
         \DB::table('regions')->insert([
-            /*
+            
             ['id' => 1501,'name' => 'Yoro','code' => '18','country_id' => 89,'active' => 0,],
             ['id' => 1502,'name' => 'Atlantida','code' => '01','country_id' => 89,'active' => 0,],
             ['id' => 1503,'name' => 'Intibuca','code' => '10','country_id' => 89,'active' => 0,],
@@ -1618,8 +1618,6 @@ class RegionsTableSeeder extends Seeder
             ['id' => 1535,'name' => 'Nord-Est','code' => '10','country_id' => 91,'active' => 0,],
             ['id' => 1536,'name' => 'Sud-Est','code' => '13','country_id' => 91,'active' => 0,],
             ['id' => 1537,'name' => 'Artibonite','code' => '06','country_id' => 91,'active' => 0,],
-            */
-            /*
             ['id' => 1538,'name' => 'Komárom-Esztergom',     'code' => '12','country_id' => 92,'active' => 1,],
             ['id' => 1539,'name' => 'Fejér',                 'code' => '08','country_id' => 92,'active' => 1,],
             ['id' => 1540,'name' => 'Jász-Nagykun-Szolnok',  'code' => '20','country_id' => 92,'active' => 1,],
@@ -1645,8 +1643,6 @@ class RegionsTableSeeder extends Seeder
             ['id' => 1560,'name' => 'Szeged',                'code' => '19','country_id' => 92,'active' => 1,],
             ['id' => 1561,'name' => 'Pécs',                  'code' => '15','country_id' => 92,'active' => 1,],
             ['id' => 1562,'name' => 'Győr',                  'code' => '25','country_id' => 92,'active' => 1,],
-             */
-            /*
             ['id' => 1563,'name' => 'Jawa Timur','code' => '08','country_id' => 93,'active' => 0,],
             ['id' => 1564,'name' => '','code' => '09','country_id' => 93,'active' => 0,],
             ['id' => 1565,'name' => 'Sulawesi Tenggara','code' => '22','country_id' => 93,'active' => 0,],
@@ -2085,8 +2081,8 @@ class RegionsTableSeeder extends Seeder
             ['id' => 1998,'name' => 'North Central','code' => '30','country_id' => 119,'active' => 0,],
             ['id' => 1999,'name' => '','code' => '31','country_id' => 119,'active' => 0,],
             ['id' => 2000,'name' => 'Western','code' => '36','country_id' => 119,'active' => 0,],
-            */
         ]);
+        */
         /*
         \DB::table('regions')->insert([
             ['id' => 2001,'name' => 'Uva','code' => '35','country_id' => 119,'active' => 0,],

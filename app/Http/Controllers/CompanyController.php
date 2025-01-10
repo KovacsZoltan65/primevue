@@ -90,6 +90,19 @@ class CompanyController extends Controller
         });
     }
 
+    public function getActiveCompanies()
+    {
+        try {
+            $companies = $this->companyRepository->getActiveCompanies();
+            
+            return $companies;
+        } catch (QueryException $ex) {
+            return $this->handleException($ex, 'getActiveCompanies query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (Exception $ex) {
+            return $this->handleException($ex, 'getActiveCompanies general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
     public function getCompanies(Request $request): JsonResponse
     {
         try {

@@ -48,32 +48,6 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     /**
      * =======================================================
-     * HIERARCHIA
-     * =======================================================
-     */
-    // Szülö hozzáadása
-    Route::post('/entity-hierarchy/{childId}/add-parent', [\App\Http\Controllers\HierarchyController::class, 'addParent']);
-    // Gyermek hozzáadása
-    Route::post('/entity-hierarchy/{parentId}/add-child', [\App\Http\Controllers\HierarchyController::class, 'addChild'])->name('addChild');
-    // Hierarchia lekérdezése
-    Route::get('/entity-hierarchy/{entityId}/hierarchy', [\App\Http\Controllers\HierarchyController::class, 'getHierarchy']);
-    // Gyermek eltávolítása
-    Route::delete('/entity-hierarchy/{parentId}/remove-child', [\App\Http\Controllers\HierarchyController::class, 'removeChild']);
-    // Nagyfőnök lekérése
-    Route::get('/entity-hierarchy/big-bosses', [\App\Http\Controllers\HierarchyController::class, 'getBigBosses']);
-    // Hierarchia épségének ellenőrzése
-    Route::get('/entity-hierarchy/validate', [\App\Http\Controllers\HierarchyController::class, 'validateHierarchy']);
-    // Izolált entitások keresése
-    Route::get('/entity-hierarchy/isolated-entities', [\App\Http\Controllers\HierarchyController::class, 'checkIsolatedEntities']);
-    // Egy vezető beosztottjainak áthelyezése egy másik vezető alá
-    Route::post('/entity-hierarchy/{fromManagerId}/transfer-subordinates', [\App\Http\Controllers\HierarchyController::class, 'transferSubordinates']);
-    // Két vezető beosztottjainak kicserélése
-    Route::post('/entity-hierarchy/swap-subordinates', [\App\Http\Controllers\HierarchyController::class, 'swapSubordinates']);
-    // Dolgozói szint megállapítása
-    Route::get('/employee/{id}/role', [\App\Http\Controllers\HierarchyController::class, 'getEmployeeRole']);
-
-    /**
-     * =======================================================
      * MENÜ
      * =======================================================
      */
@@ -81,6 +55,20 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     Route::resource('menu-items', App\Http\Controllers\MenuController::class);
 
+    /**
+     * =======================================================
+     * ACCESS CONTROLL SYSTEMS (ACS)
+     * =======================================================
+     */
+    Route::get('/acs_systems', [App\Http\Controllers\ACSController::class, 'getACSs'])->name('api.get.acss');
+    Route::get('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'getACS'])->name('api.get.acs')->where('id', '[0-9]+');
+    Route::get('/acs_systems/name/{name}', [App\Http\Controllers\ACSController::class, 'getACSByName'])->name('api.get.acs_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::post('/acs_systems', [App\Http\Controllers\ACSController::class, 'createACS'])->name('api.post.acs');
+    Route::put('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'updateACS'])->name('api.put.acs')->where('id', '[0-9]+');
+
+    Route::delete('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'deleteACS'])->name('api.delete.acs')->where('id', '[0-9]+');
+    Route::delete('/acs_systems', [\App\Http\Controllers\ACSController::class, 'deleteACSs'])->name('api.delete.acss');
+    
     /*
     Route::prefix('admin/menu')->group(function () {
         Route::get('/', [MenuController::class, 'index'])->name('menu.index'); // Menüpontok listázása
@@ -293,23 +281,6 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     /**
      * =======================================================
-     * ACCESS CONTROLL SYSTEMS (ACS)
-     * =======================================================
-     */
-    Route::get('/acs_systems', [App\Http\Controllers\ACSController::class, 'getACSs'])->name('api.get.acss');
-    Route::get('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'getACS'])->name('api.get.acs')->where('id', '[0-9]+');
-    Route::get('/acs_systems/name/{name}', [App\Http\Controllers\ACSController::class, 'getACSByName'])->name('api.get.acs_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post('/acs_systems', [App\Http\Controllers\ACSController::class, 'createACS'])->name('api.post.acs');
-    Route::put('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'updateACS'])->name('api.put.acs')->where('id', '[0-9]+');
-
-    Route::delete('/companies/{id}', [\App\Http\Controllers\CompanyController::class, 'deleteCompany'])->name('api.delete.company')->where('id', '[0-9]+');
-    Route::delete('/companies', [\App\Http\Controllers\CompanyController::class, 'deleteCompanies'])->name('api.delete.companies');
-
-    Route::delete('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'deleteACS'])->name('api.delete.acs')->where('id', '[0-9]+');
-    Route::delete('/acs_systems', [\App\Http\Controllers\ACSController::class, 'deleteACSs'])->name('api.delete.acss');
-
-    /**
-     * =======================================================
      * PERSONS
      * =======================================================
      */
@@ -331,5 +302,31 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/entities', [\App\Http\Controllers\EntityController::class, 'createEntities'])->name('api.post.entities');
     Route::put('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'updateEntities'])->name('api.put.entities')->where('id', '[0-9]+');
     Route::delete('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'deleteEntities'])->name('api.delete.entities')->where('id', '[0-9]+');
+    
+    /**
+     * =======================================================
+     * HIERARCHIA
+     * =======================================================
+     */
+    // Szülö hozzáadása
+    Route::post('/entity-hierarchy/{childId}/add-parent', [\App\Http\Controllers\HierarchyController::class, 'addParent']);
+    // Gyermek hozzáadása
+    Route::post('/entity-hierarchy/{parentId}/add-child', [\App\Http\Controllers\HierarchyController::class, 'addChild'])->name('addChild');
+    // Hierarchia lekérdezése
+    Route::get('/entity-hierarchy/{entityId}/hierarchy', [\App\Http\Controllers\HierarchyController::class, 'getHierarchy']);
+    // Gyermek eltávolítása
+    Route::delete('/entity-hierarchy/{parentId}/remove-child', [\App\Http\Controllers\HierarchyController::class, 'removeChild']);
+    // Nagyfőnök lekérése
+    Route::get('/entity-hierarchy/big-bosses', [\App\Http\Controllers\HierarchyController::class, 'getBigBosses']);
+    // Hierarchia épségének ellenőrzése
+    Route::get('/entity-hierarchy/validate', [\App\Http\Controllers\HierarchyController::class, 'validateHierarchy']);
+    // Izolált entitások keresése
+    Route::get('/entity-hierarchy/isolated-entities', [\App\Http\Controllers\HierarchyController::class, 'checkIsolatedEntities']);
+    // Egy vezető beosztottjainak áthelyezése egy másik vezető alá
+    Route::post('/entity-hierarchy/{fromManagerId}/transfer-subordinates', [\App\Http\Controllers\HierarchyController::class, 'transferSubordinates']);
+    // Két vezető beosztottjainak kicserélése
+    Route::post('/entity-hierarchy/swap-subordinates', [\App\Http\Controllers\HierarchyController::class, 'swapSubordinates']);
+    // Dolgozói szint megállapítása
+    Route::get('/employee/{id}/role', [\App\Http\Controllers\HierarchyController::class, 'getEmployeeRole']);
 
 });

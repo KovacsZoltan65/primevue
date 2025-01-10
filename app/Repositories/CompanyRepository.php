@@ -35,14 +35,19 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
 
     public function getActiveCompanies()
     {
-        $model = $this->model();
-        $companies = $model::query()
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->where('active','=',1)
-            ->get()->toArray();
+        try {
+            $model = $this->model();
+            $companies = $model::query()
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->where('active','=',1)
+                ->get()->toArray();
 
-        return $companies;
+            return $companies;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'getActiveCompanies error', []);
+            throw $ex;
+        }
     }
 
     public function getCompanies(Request $request)

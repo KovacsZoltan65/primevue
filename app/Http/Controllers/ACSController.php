@@ -63,14 +63,26 @@ class ACSController extends Controller
         });
     }
 
+    public function getActiveACSs()
+    {
+        try {
+            $active_acss = [['id' => 0, 'name' => 'Nincs'], ...$this->acsRepository->getActiveACSs()];
+            
+            return $active_acss;
+        } catch (QueryException $ex) {
+            return $this->handleException($ex, 'getActiveACS query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (Exception $ex) {
+            return $this->handleException($ex, 'getActiveACS general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
     public function getACSs(Request $request): JsonResponse
     {
-        d('cont getACSs');
         try {
-            $_acs = $this->acsRepository->getCompanies($request);
-            $acs = ACSResource::collection($_acs);
-
-            return response()->json($acs, Response::HTTP_OK);
+            $_acss = $this->acsRepository->getACSs($request);
+            $acss = ACSResource::collection($_acss);
+            
+            return response()->json($acss, Response::HTTP_OK);
 
         } catch (QueryException $ex) {
             return $this->handleException($ex, 'getACSs query error', Response::HTTP_UNPROCESSABLE_ENTITY);

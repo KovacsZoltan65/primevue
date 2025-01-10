@@ -65,7 +65,7 @@ class ApplicationSettingController extends Controller
 
             return response()->json($settings, Response::HTTP_OK);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'DB_ERROR_APPLICATION_SETTINGS',
                 'route' => $request->path(),
             ]);
@@ -75,7 +75,7 @@ class ApplicationSettingController extends Controller
                 'error' => 'Database error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getApplicationSettings general error',
                 'route' => $request->path(),
             ]);
@@ -99,7 +99,7 @@ class ApplicationSettingController extends Controller
             return response()->json($setting, Response::HTTP_OK);
             
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getApplicationSetting error',
                 'route' => request()->path(),
             ]);
@@ -109,7 +109,7 @@ class ApplicationSettingController extends Controller
                 'error' => 'Application Setting not found'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'DB_ERROR_APPLICATION_SETTING',
                 'route' => request()->path(),
             ]);
@@ -119,7 +119,7 @@ class ApplicationSettingController extends Controller
                 'error' => 'Database error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getApplicationSetting general error',
                 'route' => request()->path(),
             ]);
@@ -150,7 +150,7 @@ class ApplicationSettingController extends Controller
             return response()->json($setting, Response::HTTP_OK);
 
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'DB_ERROR_SETTING_BY_KEY',
                 'route' => request()->path(),
             ]);
@@ -161,7 +161,7 @@ class ApplicationSettingController extends Controller
                 'details' => $ex->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getSettingByKey general error',
                 'route' => request()->path(),
             ]);
@@ -183,7 +183,7 @@ class ApplicationSettingController extends Controller
 
             return response()->json($setting, Response::HTTP_CREATED);
         }catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'CREATE_APPLICATION_SETING_DATABASE_ERROR',
                 'route' => request()->path(),
             ]);
@@ -194,7 +194,7 @@ class ApplicationSettingController extends Controller
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'createApplicationSetting general error',
                 'route' => request()->path(),
             ]);
@@ -219,7 +219,7 @@ class ApplicationSettingController extends Controller
             return response()->json($setting, Response::HTTP_OK);
 
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'DB_ERROR_UPDATE_APPLICATION_SETTING',
                 'route' => request()->path(),
             ]);
@@ -230,7 +230,7 @@ class ApplicationSettingController extends Controller
                 'details' => $ex->getMessage(),
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'DB_ERROR_APPLICATION_SETTING',
                 'route' => request()->path(),
             ]);
@@ -241,7 +241,7 @@ class ApplicationSettingController extends Controller
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'updateApplicationSetting general error',
                 'route' => request()->path(),
             ]);

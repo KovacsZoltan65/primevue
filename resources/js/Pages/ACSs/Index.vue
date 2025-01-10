@@ -486,7 +486,7 @@ const getActiveValue = (subdomain) =>
         <Head :title="$t('acs_systems')" />
 
         <Toast />
-
+{{ $page.props }}
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
@@ -506,7 +506,7 @@ const getActiveValue = (subdomain) =>
                         severity="secondary"
                         class="mr-2"
                         @click="openNew"
-                        :disabled="!props.can.companies_create"
+                        :disabled="!props.can.acs_systems_create"
                     />
 
                     <!-- Delete Selected Button -->
@@ -516,7 +516,7 @@ const getActiveValue = (subdomain) =>
                         severity="secondary"
                         class="mr-2"
                         @click="confirmDeleteSelected"
-                        :disabled="!props.can.companies_delete ||
+                        :disabled="!props.can.acs_systems_delete ||
                             !selectedCompanies ||
                             !selectedCompanies.length"
                     />
@@ -608,6 +608,7 @@ const getActiveValue = (subdomain) =>
                     selectionMode="multiple"
                     style="min-width: 3rem"
                     :exportable="false"
+                    :disabled="!props.can.acss_systems_delete"
                 />
 
                 <Column
@@ -661,6 +662,36 @@ const getActiveValue = (subdomain) =>
                     </template>
                 </Column>
             </DataTable>
+
+            <!-- SETTINGS DIALOG -->
+        <Dialog
+            v-model:visible="settingsDialog"
+            :style="{ width: '550px' }"
+            :header="$t('app_settings_title')"
+            :modal="true"
+        >
+            <div class="flex flex-col gap-6" style="margin-top: 17px;">
+
+                <div class="flex flex-col gap-2">
+
+                    <div class="flex flex-wrap gap-4">
+                        <div
+                            v-for="(config, column) in state.columns"
+                            :key="column"
+                            class="flex items-center gap-2">
+                            <Checkbox
+                                v-model="config.is_visible"
+                                :inputId="column"
+                                :value="true" binary
+                            />
+                            <label :for="column">{{ column }}</label>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </Dialog>
 
         </div>
     </AppLayout>

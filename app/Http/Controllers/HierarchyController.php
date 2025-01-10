@@ -112,7 +112,7 @@ class HierarchyController extends Controller
                 'parent' => $parent->load('children'),
             ], Response::HTTP_OK);
         } catch (ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'addChild model not found error',
                 'params' => ['request' => $request->all()],
                 'route' => request()->path(),
@@ -126,7 +126,7 @@ class HierarchyController extends Controller
                 'error' => 'addChild model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'addChild query error',
                 'params' => ['id' => $request->id],
                 'route' => request()->path(),
@@ -140,7 +140,7 @@ class HierarchyController extends Controller
                 'error' => 'addChild query error'
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'addChild general error',
                 'params' => ['id' => $request->id],
                 'route' => request()->path(),
@@ -163,7 +163,7 @@ class HierarchyController extends Controller
 
             return response()->json($entity);
         } catch (ModelNotFoundException $e) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getHierarchy model not found error',
                 'params' => ['entityId' => $entityId],
                 'route' => request()->path(),
@@ -176,7 +176,7 @@ class HierarchyController extends Controller
                 'error' => 'getHierarchy model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getHierarchy query error',
                 'params' => ['entityId' => $entityId],
                 'route' => request()->path(),
@@ -189,7 +189,7 @@ class HierarchyController extends Controller
                 'error' => 'getHierarchy query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getHierarchy general error',
                 'params' => ['entityId' => $entityId],
                 'route' => request()->path(),
@@ -220,7 +220,7 @@ class HierarchyController extends Controller
                 'parent' => $parent->load('children'),
             ]);
         } catch (ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'removeChild model not found error',
                 'params' => ['request' => $request->all()],
                 'route' => request()->path(),
@@ -233,7 +233,7 @@ class HierarchyController extends Controller
                 'error' => 'removeChild model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'removeChild query error',
                 'params' => ['id' => $request->id],
                 'route' => request()->path(),
@@ -246,7 +246,7 @@ class HierarchyController extends Controller
                 'error' => 'removeChild query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'removeChild general error',
                 'params' => ['request' => $request->all(), 'parentId' => $parentId],
                 'route' => request()->path(),
@@ -278,7 +278,7 @@ class HierarchyController extends Controller
                 'big_bosses' => $bigBosses,
             ]);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getBigBosses model not found error',
                 'params' => [],
                 'route' => request()->path(),
@@ -291,7 +291,7 @@ class HierarchyController extends Controller
                 'error' => 'getBigBosses model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getBigBosses query error',
                 'params' => [],
                 'route' => request()->path(),
@@ -304,7 +304,7 @@ class HierarchyController extends Controller
                 'error' => 'getBigBosses query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getBigBosses general error',
                 'params' => [],
                 'route' => request()->path(),
@@ -344,7 +344,7 @@ class HierarchyController extends Controller
                 'subordinates' => $subordinates,
             ]);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'transferSubordinates model not found error',
                 'params' => ['request' => $request->all()],
                 'route' => request()->path(),
@@ -357,7 +357,7 @@ class HierarchyController extends Controller
                 'error' => 'transferSubordinates model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'transferSubordinates query error',
                 'params' => ['id' => $request->id],
                 'route' => request()->path(),
@@ -370,7 +370,7 @@ class HierarchyController extends Controller
                 'error' => 'transferSubordinates query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'transferSubordinates general error',
                 'params' => ['request' => $request->all()],
                 'route' => request()->path(),
@@ -420,7 +420,7 @@ class HierarchyController extends Controller
                 'manager_b_new_subordinates' => $subordinatesA,
             ]);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'swapSubordinates model not found error',
                 'params' => ['request' => $request->all()],
                 'route' => request()->path(),
@@ -433,7 +433,7 @@ class HierarchyController extends Controller
                 'error' => 'swapSubordinates model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'swapSubordinates query error',
                 'params' => ['request' => $request->all()],
                 'route' => request()->path(),
@@ -446,7 +446,7 @@ class HierarchyController extends Controller
                 'error' => 'swapSubordinates query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'swapSubordinates general error',
                 'params' => ['request' => $request->all()],
                 'route' => request()->path(),
@@ -494,7 +494,7 @@ class HierarchyController extends Controller
                 'message' => 'Hierarchy is valid.',
             ]);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getCompany model not found error',
                 'params' => [],
                 'route' => request()->path(),
@@ -507,7 +507,7 @@ class HierarchyController extends Controller
                 'error' => 'validateHierarchy model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'validateHierarchy query error',
                 'params' => [],
                 'route' => request()->path(),
@@ -520,7 +520,7 @@ class HierarchyController extends Controller
                 'error' => 'getCompany query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'validateHierarchy general error',
                 'params' => [],
                 'route' => request()->path(),
@@ -587,7 +587,7 @@ class HierarchyController extends Controller
                 'message' => 'No isolated entities found.',
             ]);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkIsolatedEntities model not found error',
                 'params' => [],
                 'route' => request()->path(),
@@ -600,7 +600,7 @@ class HierarchyController extends Controller
                 'error' => 'checkIsolatedEntities model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkIsolatedEntities query error',
                 'params' => [],
                 'route' => request()->path(),
@@ -613,7 +613,7 @@ class HierarchyController extends Controller
                 'error' => 'checkIsolatedEntities query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkIsolatedEntities general error',
                 'params' => [],
                 'route' => request()->path(),
@@ -665,7 +665,7 @@ class HierarchyController extends Controller
                 'roles' => $roles,
             ]);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getEmployeesRoles model not found error',
                 'params' => ['$employeeIds' => $employeeIds],
                 'route' => request()->path(),
@@ -678,7 +678,7 @@ class HierarchyController extends Controller
                 'error' => 'getEmployeesRoles model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getEmployeesRoles query error',
                 'params' => ['$employeeIds' => $employeeIds],
                 'route' => request()->path(),
@@ -691,7 +691,7 @@ class HierarchyController extends Controller
                 'error' => 'getEmployeesRoles query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getEmployeesRoles general error',
                 'params' => ['$employeeIds' => $employeeIds],
                 'route' => request()->path(),
@@ -737,7 +737,7 @@ class HierarchyController extends Controller
                 'role' => $role,
             ]);
         } catch (ModelNotFoundException $e) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getEmployeeRole model not found error',
                 'params' => ['employeeId' => $employeeId],
                 'route' => request()->path(),
@@ -750,7 +750,7 @@ class HierarchyController extends Controller
                 'error' => 'getEmployeeRole model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getEmployeeRole query error',
                 'params' => ['employeeId' => $employeeId],
                 'route' => request()->path(),
@@ -763,7 +763,7 @@ class HierarchyController extends Controller
                 'error' => 'getEmployeeRole query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getEmployeeRole general error',
                 'params' => ['employeeId' => $employeeId],
                 'route' => request()->path(),
@@ -830,7 +830,7 @@ class HierarchyController extends Controller
                 'message' => 'Multiple roots integrity check passed.',
             ]);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkMultipleRootsIntegrity model not found error',
                 'params' => [],
                 'route' => request()->path(),
@@ -843,7 +843,7 @@ class HierarchyController extends Controller
                 'error' => 'checkMultipleRootsIntegrity model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkMultipleRootsIntegrity query error',
                 'params' => [],
                 'route' => request()->path(),
@@ -856,7 +856,7 @@ class HierarchyController extends Controller
                 'error' => 'checkMultipleRootsIntegrity query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkMultipleRootsIntegrity general error',
                 'params' => [],
                 'route' => request()->path(),
@@ -956,7 +956,7 @@ class HierarchyController extends Controller
                 'message' => 'No orphaned entities found.',
             ]);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkOrphanedEntities model not found error',
                 'params' => [],
                 'route' => request()->path(),
@@ -969,7 +969,7 @@ class HierarchyController extends Controller
                 'error' => 'checkOrphanedEntities model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkOrphanedEntities query error',
                 'params' => [],
                 'route' => request()->path(),
@@ -982,7 +982,7 @@ class HierarchyController extends Controller
                 'error' => 'checkOrphanedEntities query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkOrphanedEntities general error',
                 'params' => [],
                 'route' => request()->path(),
@@ -1023,7 +1023,7 @@ class HierarchyController extends Controller
                 'message' => 'Company integrity validated successfully.',
             ]);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'validateCompanyIntegrity model not found error',
                 'params' => ['parentId' => $parentId, 'childId' => $childId],
                 'route' => request()->path(),
@@ -1036,7 +1036,7 @@ class HierarchyController extends Controller
                 'error' => 'validateCompanyIntegrity model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch (ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'validateCompanyIntegrity query error',
                 'params' => ['parentId' => $parentId, 'childId' => $childId],
                 'route' => request()->path(),
@@ -1049,7 +1049,7 @@ class HierarchyController extends Controller
                 'error' => 'validateCompanyIntegrity query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'validateCompanyIntegrity general error',
                 'params' => ['parentId' => $parentId, 'childId' => $childId],
                 'route' => request()->path(),
@@ -1094,7 +1094,7 @@ class HierarchyController extends Controller
                 'message' => 'All hierarchy levels are consistent.',
             ]);
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkHierarchyLevels model not found error',
                 'params' => [],
                 'route' => request()->path(),
@@ -1107,7 +1107,7 @@ class HierarchyController extends Controller
                 'error' => 'checkHierarchyLevels model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkHierarchyLevels query error',
                 'params' => [],
                 'route' => request()->path(),
@@ -1120,7 +1120,7 @@ class HierarchyController extends Controller
                 'error' => 'checkHierarchyLevels query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'checkHierarchyLevels general error',
                 'params' => [],
                 'route' => request()->path(),
@@ -1158,7 +1158,7 @@ class HierarchyController extends Controller
 
             return true;
         } catch (ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'validateTemporalConsistency model not found error',
                 'params' => ['parentId' => $parentId, 'childId' => $childId],
                 'route' => request()->path(),
@@ -1171,7 +1171,7 @@ class HierarchyController extends Controller
                 'error' => 'validateTemporalConsistency model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'validateTemporalConsistency query error',
                 'params' => ['parentId' => $parentId, 'childId' => $childId],
                 'route' => request()->path(),
@@ -1184,7 +1184,7 @@ class HierarchyController extends Controller
                 'error' => 'validateTemporalConsistency query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'validateTemporalConsistency general error',
                 'params' => ['parentId' => $parentId, 'childId' => $childId],
                 'route' => request()->path(),
@@ -1220,7 +1220,7 @@ class HierarchyController extends Controller
 
             return true;
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'validateUniqueRelationship model not found error',
                 'params' => ['parentId' => $parentId, 'childId' => $childId],
                 'route' => request()->path(),
@@ -1233,7 +1233,7 @@ class HierarchyController extends Controller
                 'error' => 'validateUniqueRelationship model not found error'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'validateUniqueRelationship query error',
                 'params' => ['parentId' => $parentId, 'childId' => $childId],
                 'route' => request()->path(),
@@ -1246,7 +1246,7 @@ class HierarchyController extends Controller
                 'error' => 'validateUniqueRelationship query error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'validateUniqueRelationship general error',
                 'params' => ['parentId' => $parentId, 'childId' => $childId],
                 'route' => request()->path(),

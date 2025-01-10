@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\ErrorController;
+use App\Http\Controllers\ActivityController;
 use App\Http\Requests\GetRoleRequest;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Resources\Auth\RoleResource;

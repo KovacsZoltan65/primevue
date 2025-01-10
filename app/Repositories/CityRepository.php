@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Http\Controllers\ErrorController;
+use App\Http\Controllers\ActivityController;
 use App\Models\City;
 use App\Services\CacheService;
 use Exception;

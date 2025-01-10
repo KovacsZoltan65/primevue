@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Http\Controllers\ErrorController;
+use App\Http\Controllers\ActivityController;
 use Illuminate\Support\Facades\Auth;
 use Exception;
 
@@ -48,7 +48,7 @@ trait Functions
 
     public function logError(Exception $ex, string $context, array $params):void
     {
-        ErrorController::logServerError($ex, [
+        ActivityController::logServerError($ex, [
             'context' => $context,
             'params' => $params,
             'route' => request()->path(),

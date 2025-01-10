@@ -66,7 +66,10 @@ class ACSController extends Controller
     public function getActiveACSs()
     {
         try {
-            $active_acss = [['id' => 0, 'name' => 'Nincs'], ...$this->acsRepository->getActiveACSs()];
+            $active_acss = [
+                ['id' => 0, 'name' => 'Nincs'], 
+                ...$this->acsRepository->getActiveACSs()
+            ];
             
             return $active_acss;
         } catch (QueryException $ex) {

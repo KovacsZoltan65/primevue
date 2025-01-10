@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 //use Illuminate\Http\Request;
 
 use App\Http\Controllers\HierarchyController;
-use App\Http\Controllers\ErrorController;
+use App\Http\Controllers\ActivityController;
 use App\Models\Entity;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;

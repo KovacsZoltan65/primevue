@@ -225,31 +225,24 @@ const deleteSubdomainDialog = ref(false);
  const fetchItems = async () => {
     loading.value = true;
 
-    //let _subdomains = localStorage.getItem(local_storage_subdomains);
+    await SubdomainService.getSubdomains()
+        .then((response) => {
+console.log(response.data);
+            subdomains.value = response.data;
+        })
+        .catch((error) => {
+            console.error("getSubdomains API Error:", error);
 
-    //if ( _subdomains ) {
-    //    subdomains.value = JSON.parse(_subdomains);
-    //    loading.value = false;
-    //} else {
-        await SubdomainService.getSubdomains()
-            .then((response) => {
-
-                subdomains.value = response.data;
-            })
-            .catch((error) => {
-                console.error("getSubdomains API Error:", error);
-
-                ErrorService.logClientError(error, {
-                    componentName: "Fetch Subdomain",
-                    additionalInfo: "Failed to retrieve the subdomain",
-                    category: "Error",
-                    priority: "high",
-                    data: null,
-                });
-            }).finally(() => {
-                loading.value = false;
+            ErrorService.logClientError(error, {
+                componentName: "Fetch Subdomain",
+                additionalInfo: "Failed to retrieve the subdomain",
+                category: "Error",
+                priority: "high",
+                data: null,
             });
-    //}
+        }).finally(() => {
+            loading.value = false;
+        });
 };
 
 /**
@@ -699,19 +692,31 @@ const onUpload = () => {
     });
 };
 
+const openSettingsDialog = () => {
+    //settingsDialog.value = true;
+};
+
 </script>
 
 <template>
     <AppLayout>
         <Head :title="$t('subdomains')" />
 
-        {{ $page.props.available_locales }}
-        {{ $page.props.supported_locales }}
-        {{ $page.props.locale }}
+        {{ props.can }}
 
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
+
+                    <!-- Settings -->
+                    <Button
+                        icon="pi pi-cog"
+                        severity="secondary"
+                        class="mr-2"
+                        @click="openSettingsDialog"
+                    />
+
+                    <!-- New Button -->
                     <Button
                         :label="$t('new')"
                         icon="pi pi-plus"
@@ -719,12 +724,14 @@ const onUpload = () => {
                         class="mr-2"
                         @click="openNew"
                     />
+
+                    <!-- Delete Selected Button -->
                     <Button
                         :label="$t('delete')"
                         icon="pi pi-trash"
                         severity="secondary"
                         @click="confirmDeleteSelected"
-                        :disabled="
+                        :disabled=" 
                             !selectedSubdomains || !selectedSubdomains.length
                         "
                     />

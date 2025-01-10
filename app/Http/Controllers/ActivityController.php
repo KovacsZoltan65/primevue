@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GetActivityRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,9 +13,36 @@ use Inertia\Response as InertiaResponse;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
+use function auth;
+use function GuzzleHttp\json_encode;
+use function inertia;
+use function redirect;
+use function response;
+use function Symfony\Component\Clock\now;
 
-class ErrorController extends Controller
+class ActivityController extends Controller
 {
+    public function index(Request $request): InertiaResponse
+    {
+        $errors = Activity::select('id', 'description', 'properties', 'occurrence_count', 'updated_at')
+            ->orderBy('occurrence_count', 'desc')
+            ->paginate(20);
+
+        return Inertia::render('ErrorLogs/Index', [
+            'errors' => $errors,
+        ]);
+    }
+
+    public function getActivities(Request $request): JsonResponse
+    {
+        //
+    }
+    
+    public function getActivity(GetActivityRequest $request): JsonResponse
+    {
+        //
+    }
+    
     /**
      * ==========================================
      * 1. Hibák listázása dátumszűrővel:
@@ -184,17 +212,6 @@ class ErrorController extends Controller
 
             return response()->json(['success' => true, 'message' => 'Error logged']);
         }
-    }
-
-    public function index()
-    {
-        $errors = Activity::select('id', 'description', 'properties', 'occurrence_count', 'created_at')
-            ->orderBy('occurrence_count', 'desc')
-            ->paginate(20);
-
-        return Inertia::render('ErrorLogs/Index', [
-            'errors' => $errors,
-        ]);
     }
 
     /**

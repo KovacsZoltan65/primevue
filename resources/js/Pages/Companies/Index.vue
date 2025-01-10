@@ -175,7 +175,7 @@ const fetchItems = async () => {
                 // A városok listája a companies változóban lesz elmentve
                 companies.value = response.data;
 
-                localStorage.setItem(local_storage_companies, JSON.stringify(response.data));
+                //localStorage.setItem(local_storage_companies, JSON.stringify(response.data));
             })
             .catch((error) => {
                 // Jelenítse meg a hibaüzenetet a konzolon
@@ -241,7 +241,7 @@ const saveCompany = async () => {
             createCompany();
         }
 
-        localStorage.removeItem(local_storage_companies);
+        //localStorage.removeItem(local_storage_companies);
     } else {
         // Validációs hibák összegyűjtése
         const validationErrors = v$.value.$errors.map((error) => ({
@@ -619,6 +619,8 @@ watch(
         <Head :title="$t('companies')" />
 
         <Toast />
+
+        {{ $page.props }}
 
         <div class="card">
             <Toolbar class="md-6">

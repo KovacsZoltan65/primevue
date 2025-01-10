@@ -24,6 +24,6 @@ class Handler extends ExceptionHandler
 
     protected function logValidationError(ValidationException $exception, Request $request)
     {
-        \App\Http\Controllers\ErrorController::logServerValidationError($exception, $request);
+        \App\Http\Controllers\ActivityController::logServerValidationError($exception, $request);
     }
 }

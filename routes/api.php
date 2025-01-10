@@ -25,18 +25,18 @@ Route::middleware(['web', 'auth'])->group(function () {
      * ERROR HANDLING
      * =======================================================
      */
-    Route::post('/client-errors', [App\Http\Controllers\ErrorController::class, 'logClientError']);
-    Route::post('/client_validation_errors', [App\Http\Controllers\ErrorController::class, 'logClientValidationError']);
+    Route::post('/client-errors', [App\Http\Controllers\ActivityController::class, 'logClientError']);
+    Route::post('/client_validation_errors', [App\Http\Controllers\ActivityController::class, 'logClientValidationError']);
 
-    Route::get('/server-errors/by_id/{errorId}', [App\Http\Controllers\ErrorController::class, 'getErrorById']);
-    Route::get('/server-errors/by_unique_id/{uniqueErrorId}', [App\Http\Controllers\ErrorController::class, 'getErrorByUniqueId']);
+    Route::get('/server-errors/by_id/{errorId}', [App\Http\Controllers\ActivityController::class, 'getErrorById']);
+    Route::get('/server-errors/by_unique_id/{uniqueErrorId}', [App\Http\Controllers\ActivityController::class, 'getErrorByUniqueId']);
 
     Route::prefix('error-logs')
         ->name('error-logs.')
         ->group(function() {
-            Route::get('/', [App\Http\Controllers\ErrorController::class, 'index'])->name('index');
-            Route::get('/{id}', [App\Http\Controllers\ErrorController::class, 'show'])->name('show')->where('id', '[0-9]+');
-            Route::delete('/{id}', [App\Http\Controllers\ErrorController::class, 'destroy'])->name('destroy')->where('id', '[0-9]+');
+            Route::get('/', [App\Http\Controllers\ActivityController::class, 'index'])->name('index');
+            Route::get('/{id}', [App\Http\Controllers\ActivityController::class, 'show'])->name('show')->where('id', '[0-9]+');
+            Route::delete('/{id}', [App\Http\Controllers\ActivityController::class, 'destroy'])->name('destroy')->where('id', '[0-9]+');
         });
 
     /**

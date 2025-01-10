@@ -65,7 +65,7 @@ class CompanySettingController extends Controller
 
             return response()->json($settings, Response::HTTP_OK);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'DB_ERROR_COMPANY_SETTINGS',
                 'route' => $request->path(),
             ]);
@@ -75,7 +75,7 @@ class CompanySettingController extends Controller
                 'error' => 'Database error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getApplicationSettings general error',
                 'route' => $request->path(),
             ]);
@@ -99,7 +99,7 @@ class CompanySettingController extends Controller
             return response()->json($setting, Response::HTTP_OK);
             
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getCompanySetting error',
                 'route' => request()->path(),
             ]);
@@ -109,7 +109,7 @@ class CompanySettingController extends Controller
                 'error' => 'Company Setting not found'
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'DB_ERROR_COMPANY_SETTING',
                 'route' => request()->path(),
             ]);
@@ -119,7 +119,7 @@ class CompanySettingController extends Controller
                 'error' => 'Database error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getApplicationSetting general error',
                 'route' => request()->path(),
             ]);
@@ -150,7 +150,7 @@ class CompanySettingController extends Controller
             return response()->json($setting, Response::HTTP_OK);
 
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'DB_ERROR_SETTING_BY_KEY',
                 'route' => request()->path(),
             ]);
@@ -161,7 +161,7 @@ class CompanySettingController extends Controller
                 'details' => $ex->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'getSettingByKey general error',
                 'route' => request()->path(),
             ]);
@@ -210,7 +210,7 @@ class CompanySettingController extends Controller
 
             return response()->json($setting, Response::HTTP_CREATED);
         }catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'CREATE_COMPANY_SETING_DATABASE_ERROR',
                 'route' => request()->path(),
             ]);
@@ -221,7 +221,7 @@ class CompanySettingController extends Controller
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'createCompanySetting general error',
                 'route' => request()->path(),
             ]);
@@ -268,7 +268,7 @@ class CompanySettingController extends Controller
             return response()->json($setting, Response::HTTP_OK);
 
         } catch(ModelNotFoundException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'DB_ERROR_UPDATE_COMPANY_SETTING',
                 'route' => request()->path(),
             ]);
@@ -279,7 +279,7 @@ class CompanySettingController extends Controller
                 'details' => $ex->getMessage(),
             ], Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'DB_ERROR_COMPANY_SETTING',
                 'route' => request()->path(),
             ]);
@@ -290,7 +290,7 @@ class CompanySettingController extends Controller
                 'details' => $ex->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            ErrorController::logServerError($ex, [
+            ActivityController::logServerError($ex, [
                 'context' => 'updateCompanySetting general error',
                 'route' => request()->path(),
             ]);

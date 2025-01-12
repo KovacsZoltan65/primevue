@@ -24,14 +24,49 @@ class ActivityRepository extends BaseRepository implements ErrorRepositoryInterf
         $this->cacheService = $cacheService;
     }
     
-    public function getActivities(Request $request) {
+    public function getActivities(Request $request)
+    {
         //
     }
     
-    public function getActivity(int $id) {
+    public function getActivity(int $id)
+    {
         //
     }
     
+    public static function logServerError(Throwable $error, array $additionalData = []): JsonResponse
+    {
+        //
+    }
+    
+    public function logClientError(Request $request): JsonResponse
+    {
+        //
+    }
+    
+    public static function logClientValidationError(Request $request): JsonResponse
+    {
+        //
+    }
+    
+    public static function logServerValidationError(ValidationException $ex, Request $request): JsonResponse
+    {
+        //
+    }
+    
+    public function getErrorById(string $errorId): JsonResponse
+    {
+        //
+    }
+    
+    public function getErrorByUniqueId(string $uniqueErrorId): JsonResponse
+    {
+        try {
+            //
+        } catch(Exception $ex) {
+            //
+        }
+    }
     
     public function model()
     {

@@ -110,7 +110,6 @@ class CompanyController extends Controller
             $companies = CompanyResource::collection($_companies);
 
             return response()->json($companies, Response::HTTP_OK);
-
         } catch (QueryException $ex) {
             return $this->handleException($ex, 'getCompanies query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {

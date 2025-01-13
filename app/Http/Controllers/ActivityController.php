@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GetActivityRequest;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,12 +36,12 @@ class ActivityController extends Controller
 
     public function getActivities(Request $request): JsonResponse
     {
-        //
+        return response()->json([], Response::HTTP_OK);
     }
     
     public function getActivity(GetActivityRequest $request): JsonResponse
     {
-        //
+        return response()->json([], Response::HTTP_OK);
     }
     
     /**
@@ -62,7 +63,7 @@ class ActivityController extends Controller
             'stack' => $error->getTraceAsString(),
             'file' => $error->getFile(),
             'line' => $error->getLine(),
-            'time' => now()->toISOString(),
+            'time' => Carbon::now()->toISOString(),
             'uniqueErrorId' => $additionalData['uniqueErrorId'] ?? Str::uuid()->toString(),
             'type' => $additionalData['type'] ?? 'GeneralError',
             'severity' => $additionalData['severity'] ?? 'error',
@@ -169,7 +170,7 @@ class ActivityController extends Controller
 
         $data = array_merge($data, [
             'errorId' => $errorId,
-            'timestamp' => now()->toDateTimeString(),
+            'timestamp' => Carbon::now()->toDateTimeString(),
         ]);
         $batch_uuid = Str::uuid()->toString();
 

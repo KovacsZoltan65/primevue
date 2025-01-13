@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Prettus\Repository\Eloquent\BaseRepository;
 use App\Interfaces\ErrorRepositoryInterface;
 use Spatie\Activitylog\Models\Activity;
@@ -34,32 +35,32 @@ class ActivityRepository extends BaseRepository implements ErrorRepositoryInterf
         //
     }
     
-    public static function logServerError(Throwable $error, array $additionalData = []): JsonResponse
+    public static function logServerError(\Throwable $error, array $additionalData = [])
     {
         //
     }
     
-    public function logClientError(Request $request): JsonResponse
+    public function logClientError(Request $request)
     {
         //
     }
     
-    public static function logClientValidationError(Request $request): JsonResponse
+    public static function logClientValidationError(Request $request)
     {
         //
     }
     
-    public static function logServerValidationError(ValidationException $ex, Request $request): JsonResponse
+    public static function logServerValidationError(ValidationException $ex, Request $request)
     {
         //
     }
     
-    public function getErrorById(string $errorId): JsonResponse
+    public function getErrorById(string $errorId)
     {
         //
     }
     
-    public function getErrorByUniqueId(string $uniqueErrorId): JsonResponse
+    public function getErrorByUniqueId(string $uniqueErrorId)
     {
         try {
             //

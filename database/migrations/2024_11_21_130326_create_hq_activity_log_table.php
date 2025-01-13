@@ -4,18 +4,17 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateActivityLogTable extends Migration
+class CreateHQActivityLogTable extends Migration
 {
     public function up()
     {
-        Schema::connection(config('activitylog.database_connection'))->create(config('activitylog.table_name'), function (Blueprint $table) {
+        Schema::connection(config('activitylog.database_connection'))->create('hq_activity_log', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('log_name')->nullable();
             $table->text('description');
             $table->nullableMorphs('subject', 'subject');
             $table->nullableMorphs('causer', 'causer');
             $table->json('properties')->nullable();
-            // batch_uuid
             $table->unsignedInteger('occurrence_count')->default(1);
             $table->timestamps();
             $table->index('log_name');
@@ -25,6 +24,6 @@ class CreateActivityLogTable extends Migration
     public function down()
     {
         Schema::connection(config('activitylog.database_connection'))
-            ->dropIfExists(config('activitylog.table_name'));
+            ->dropIfExists('hq_activity_log');
     }
 }

@@ -94,7 +94,7 @@ class CompanyController extends Controller
     {
         try {
             $companies = $this->companyRepository->getActiveCompanies();
-            
+
             return $companies;
         } catch (QueryException $ex) {
             return $this->handleException($ex, 'getActiveCompanies query error', Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -102,7 +102,7 @@ class CompanyController extends Controller
             return $this->handleException($ex, 'getActiveCompanies general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getCompanies(Request $request): JsonResponse
     {
         try {
@@ -164,7 +164,7 @@ class CompanyController extends Controller
     {
         try{
             $company = $this->companyRepository->updateCompany($request, $id);
-            
+
             return response()->json($company, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'updateCompany model not found error', Response::HTTP_NOT_FOUND);

@@ -43,6 +43,7 @@ trait Functions
         return response()->json([
             'success' => APP_FALSE,
             'error' => $defaultMessage,
+            'details' => $ex->getMessage(), // Opcionális részletek
         ], $statusCode);
     }
 

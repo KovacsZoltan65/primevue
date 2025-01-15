@@ -8,6 +8,8 @@ use App\Models\Activity;
 use App\Repositories\ActivityRepository;
 use App\Traits\Functions;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +20,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-use Spatie\Activitylog\Models\Activity;
+//use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\HttpFoundation\Response;
 use TheSeer\Tokenizer\Exception;
 use Throwable;
@@ -47,8 +49,10 @@ class ActivityController extends Controller
     
     public function index(Request $request): InertiaResponse
     {
-        return Inertia::render('ErrorLogs/Index', [
-            'search' => $request->input('search'),
+        $roles = $this->getUserRoles($this->tag);
+
+        return Inertia::render('Activities/Index', [
+           'search' => $request->input('search'),
             'can' => $roles,
         ]);
     }
@@ -77,7 +81,7 @@ class ActivityController extends Controller
     public function getActivity(GetActivityRequest $request): JsonResponse
     {
         try {
-            $activity = self::activityRepository->getActivity($request->id);
+            $activity = self::$activityRepository->getActivity($request->id);
             
             return response()->json($activity, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

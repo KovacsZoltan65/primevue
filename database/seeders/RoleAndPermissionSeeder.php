@@ -30,7 +30,7 @@ class RoleAndPermissionSeeder extends Seeder
 
         activity()->disableLogging();
 
-        $classes = [
+        $classes_01 = [
             \App\Models\Company::getTag(),
             \App\Models\Auth\Role::getTag(),
             \App\Models\Auth\Permission::getTag(),
@@ -44,35 +44,37 @@ class RoleAndPermissionSeeder extends Seeder
 
             \App\Models\Person::getTag(),
             \App\Models\Entity::getTag(),
+            
+            \App\Models\Activity::getTag(),
         ];
 
-        $permissions = [
+        $permissions_01 = [
             'list', 'create', 'edit', 'delete', 'restore'
         ];
 
         $admin = Role::create(['name' => 'admin']);
 
-        foreach($classes as $class)
+        foreach($classes_01 as $class)
         {
-            foreach($permissions as $permission)
+            foreach($permissions_01 as $permission)
             {
                 Permission::create(['name' => "{$class} {$permission}"]);
                 $admin->givePermissionTo(["{$class} {$permission}"]);
             }
         }
 
-        $classes = [
+        $classes_02 = [
             AppSetting::getTag(),
             CompSetting::getTag(),
         ];
 
-        $permissions = [
+        $permissions_02 = [
             'list', 'create', 'edit', 'delete'
         ];
 
-        foreach($classes as $class)
+        foreach($classes_02 as $class)
         {
-            foreach($permissions as $permission)
+            foreach($permissions_02 as $permission)
             {
                 Permission::create(['name' => "{$class} {$permission}"]);
                 $admin->givePermissionTo(["{$class} {$permission}"]);

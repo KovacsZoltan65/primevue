@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
      * =====================================================
      *
      */
-    Route::get('/error_log', [App\Http\Controllers\ActivityController::class, 'index'])->name('error_log');
+    Route::get('/activities', [App\Http\Controllers\ActivityController::class, 'index'])->name('error_log');
 
     /**
      * =======================================================

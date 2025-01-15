@@ -111,83 +111,16 @@ class ActivityController extends Controller
         return response()->json($return_array, Response::HTTP_OK);
     }
 
-    public function logClientError(Request $request): JsonResponse
+    public static function logClientError(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'message' => 'required|string',
-            'stack' => 'nullable|string',
-            'component' => 'nullable|string',
-            'info' => 'nullable|string',
-            'time' => 'nullable|date',
-            'route' => 'nullable|string',
-            'url' => 'nullable|string',
-            'userAgent' => 'nullable|string',
-            'uniqueErrorId' => 'nullable|string',
-        ]);
-
-        $return_array = [];
-
-        $errorId = md5($validated['message'] . $validated['component'] . $validated['route']);
-        $existingError = Activity::where('properties->errorId', $errorId)->first();
-
-        if( $existingError ) {
-            $existingError->increment('occurrence_count');
-            $return_array = ['success' => true, 'message' => 'Error occurrence updated.'];
-        } else {
-            $validated = array_merge($validated, ['errorId' => $errorId]);
-
-            $batch_uuid = Str::uuid()->toString();
-
-            activity()
-                ->tap(function($activity) use($batch_uuid) {
-                    $activity->batch_uuid = $batch_uuid;
-                })
-                ->causedBy(auth()->user())
-                ->withProperties( $validated )
-                ->log('Client-side error reported.');
-
-            $return_array = ['success' => true, 'message' => 'Error logged.'];
-        }
+        $return_array = self::logClientError($request);
 
         return response()->json($return_array, Response::HTTP_OK);
     }
 
     public static function logClientValidationError(Request $request): JsonResponse
     {
-        $data = [
-            'componentName' => $request->input('component', 'UnknownComponent'),
-            'priority' => $request->input('priority', 'medium'),
-            'additionalInfo' => $request->input('additionalInfo', ''),
-            'validationErrors' => $request->input('validationErrors', []),
-        ];
-
-        // Validációs hibák azonosítója (összesített kulcs a hibák alapján)
-        $errorId = md5(json_encode($data['validationErrors']) . $data['componentName']);
-        $existingError = Activity::where('properties->errorId', $errorId)->first();
-
-        if ($existingError) {
-            $existingError->increment('occurrence_count');
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Error occurrence updated.',
-                'errorId' => $errorId,
-            ], Response::HTTP_OK);
-        }
-
-        $data = array_merge($data, [
-            'errorId' => $errorId,
-            'timestamp' => Carbon::now()->toDateTimeString(),
-        ]);
-        $batch_uuid = Str::uuid()->toString();
-
-        activity()
-            ->tap(function ($activity) use ($batch_uuid) {
-                $activity->batch_uuid = $batch_uuid;
-            })
-            ->causedBy(auth()->user())
-            ->withProperties($data)
-            ->log('Client-side Validation error reported.');
+        $errorId = self::logClientValidationError($request);
 
         return response()->json([
             'success' => true,
@@ -198,28 +131,9 @@ class ActivityController extends Controller
 
     public static function logServerValidationError(ValidationException $ex, Request $request): JsonResponse
     {
-        $errors = $ex->errors();
-        $data = [
-            'componentName' => $request->route()->getName() ?? 'UnknownRoute',
-            'priority' => 'medium',
-            'additionalInfo' => 'Server-side validation failed',
-            'validationErrors' => $errors,
-        ];
-        $errorId = md5(json_encode($errors) . $data['componentName']);
-        $existingError = Activity::where('properties->errorId', $errorId)->first();
-
-        if($existingError) {
-            $existingError->increment('occurrence_count');
-
-            return response()->json(['success' => true, 'message' => 'Error occurrence updated']);
-        } else {
-            activity()
-                ->causedBy(auth()->user() ?? null)
-                ->withProperties(array_merge($data, ['errorId' => $errorId]))
-                ->log('Server-side validation error.');
-
-            return response()->json(['success' => true, 'message' => 'Error logged']);
-        }
+        $result = self::$activityRepository->logServerValidationError($ex, $request);
+        
+        return response()->json($result);
     }
 
     /**
@@ -271,61 +185,15 @@ class ActivityController extends Controller
 
     public function getErrorById(string $errorId): JsonResponse
     {
-        $success = true;
-        $message = '';
-        $data = [];
-        $response = Response::HTTP_OK;
-
-        $error = Activity::where('properties->errorId', $errorId)->first();
-
-        if( !$error ) {
-            $success = false;
-            $message = __('error_not_found');
-            $response = Response::HTTP_NOT_FOUND;
-        } else {
-            $data = [
-                'message' => $error->description,
-                'properties' => $error->properties,
-                'occurrence_count' => $error->occurrence_count,
-                'created_at' => $error->created_at,
-                'updated_at' => $error->updated_at,
-            ];
-        }
-
-        return response()->json([
-            'success' => $success,
-            'message' => $message,
-            'data' => $data,
-        ], $response);
+        $result = self::$activityRepository->getErrorById($errorId);
+        
+        return response()->json($result['array'], $result['response']);
     }
 
     public function getErrorByUniqueId(string $uniqueErrorId): JsonResponse
     {
-        $success = true;
-        $message = '';
-        $data = [];
-        $response = Response::HTTP_OK;
-
-        $error = Activity::where('properties->uniqueErrorId', $uniqueErrorId)->first();
-
-        if( !$error ) {
-            $success = false;
-            $message = __('error_not_found');
-            $response = Response::HTTP_NOT_FOUND;
-        } else {
-            $data = [
-                'message' => $error->description,
-                'properties' => $error->properties,
-                'occurrence_count' => $error->occurrence_count,
-                'created_at' => $error->created_at,
-                'updated_at' => $error->updated_at,
-            ];
-        }
-
-        return response()->json([
-            'success' => $success,
-            'message' => $message,
-            'data' => $data,
-        ], $response);
+        $result = self::$activityRepository->getErrorById($uniqueErrorId);
+        
+        return response()->json($result['array'], $result['response']);
     }
 }

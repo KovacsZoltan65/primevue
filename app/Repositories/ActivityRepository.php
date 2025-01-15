@@ -6,35 +6,27 @@ namespace App\Repositories;
 
 use App\Interfaces\ErrorRepositoryInterface;
 use App\Models\Activity;
-use App\Services\CacheService;
 use App\Traits\Functions;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Eloquent\BaseRepository;
-use Spatie\Activitylog\Models\Activity AS SpatieActivity;
+use Str;
+use Symfony\Component\HttpFoundation\Response;
 
 class ActivityRepository extends BaseRepository implements ErrorRepositoryInterface
 {
     use Functions;
 
-    protected CacheService $cacheService;
-    
-    public function __construct(CacheService $cacheService)
-    {
-        $this->cacheService = $cacheService;
-    }
+    public function __construct(){}
     
     public function getActivities(Request $request)
     {
         try {
-            $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
-
-            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                $companyQuery = Activity::search($request);
-                return $companyQuery->get();
-            });
+            $companyQuery = Activity::search($request);
+            return $companyQuery->get();
         } catch( Exception $ex ) {
             $this->logError($ex, 'getActivities error', ['request' => $request->all()]);
             throw $ex;
@@ -44,11 +36,7 @@ class ActivityRepository extends BaseRepository implements ErrorRepositoryInterf
     public function getActivity(int $id)
     {
         try {
-            $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
-
-            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
-                return Activity::findOrFail($id);
-            });
+            return Activity::findOrFail($id);
         } catch(Exception $ex) {
            $this->logError($ex, 'getActivity error', ['id' => $id]);
            throw $ex;
@@ -104,33 +92,179 @@ class ActivityRepository extends BaseRepository implements ErrorRepositoryInterf
         return $return_array;
     }
     
-    public function logClientError(Request $request)
+    public static function logClientError(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'message' => 'required|string',
+            'stack' => 'nullable|string',
+            'component' => 'nullable|string',
+            'info' => 'nullable|string',
+            'time' => 'nullable|date',
+            'route' => 'nullable|string',
+            'url' => 'nullable|string',
+            'userAgent' => 'nullable|string',
+            'uniqueErrorId' => 'nullable|string',
+        ]);
+
+        $return_array = [];
+
+        $errorId = md5($validated['message'] . $validated['component'] . $validated['route']);
+        $existingError = Activity::where('properties->errorId', $errorId)->first();
+
+        if( $existingError ) {
+            $existingError->increment('occurrence_count');
+            $return_array = ['success' => true, 'message' => 'Error occurrence updated.'];
+        } else {
+            $validated = array_merge($validated, ['errorId' => $errorId]);
+
+            $batch_uuid = Str::uuid()->toString();
+
+            activity()
+                ->tap(function($activity) use($batch_uuid) {
+                    $activity->batch_uuid = $batch_uuid;
+                })
+                ->causedBy(auth()->user())
+                ->withProperties( $validated )
+                ->log('Client-side error reported.');
+
+            $return_array = ['success' => true, 'message' => 'Error logged.'];
+        }
+        
+        return $return_array;
     }
     
     public static function logClientValidationError(Request $request)
     {
-        //
+        $data = [
+            'componentName' => $request->input('component', 'UnknownComponent'),
+            'priority' => $request->input('priority', 'medium'),
+            'additionalInfo' => $request->input('additionalInfo', ''),
+            'validationErrors' => $request->input('validationErrors', []),
+        ];
+
+        // Validációs hibák azonosítója (összesített kulcs a hibák alapján)
+        $errorId = md5(json_encode($data['validationErrors']) . $data['componentName']);
+        $existingError = Activity::where('properties->errorId', $errorId)->first();
+
+        if ($existingError) {
+            $existingError->increment('occurrence_count');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Error occurrence updated.',
+                'errorId' => $errorId,
+            ], Response::HTTP_OK);
+        }
+
+        $data = array_merge($data, [
+            'errorId' => $errorId,
+            'timestamp' => Carbon::now()->toDateTimeString(),
+        ]);
+        $batch_uuid = Str::uuid()->toString();
+
+        activity()
+            ->tap(function ($activity) use ($batch_uuid) {
+                $activity->batch_uuid = $batch_uuid;
+            })
+            ->causedBy(auth()->user())
+            ->withProperties($data)
+            ->log('Client-side Validation error reported.');
+            
+        return $errorId;
     }
     
     public static function logServerValidationError(ValidationException $ex, Request $request)
     {
-        //
+        $errors = $ex->errors();
+        $data = [
+            'componentName' => $request->route()->getName() ?? 'UnknownRoute',
+            'priority' => 'medium',
+            'additionalInfo' => 'Server-side validation failed',
+            'validationErrors' => $errors,
+        ];
+        $errorId = md5(json_encode($errors) . $data['componentName']);
+        $existingError = Activity::where('properties->errorId', $errorId)->first();
+
+        if($existingError) {
+            $existingError->increment('occurrence_count');
+
+            return ['success' => true, 'message' => 'Error occurrence updated'];
+        } else {
+            activity()
+                ->causedBy(auth()->user() ?? null)
+                ->withProperties(array_merge($data, ['errorId' => $errorId]))
+                ->log('Server-side validation error.');
+
+            return ['success' => true, 'message' => 'Error logged'];
+        }
     }
     
-    public function getErrorById(string $errorId)
+    public static function getErrorById(string $errorId)
     {
-        //
+        $success = true;
+        $message = '';
+        $data = [];
+        $response = Response::HTTP_OK;
+
+        $error = Activity::where('properties->errorId', $errorId)->first();
+
+        if( !$error ) {
+            $success = false;
+            $message = __('error_not_found');
+            $response = Response::HTTP_NOT_FOUND;
+        } else {
+            $data = [
+                'message' => $error->description,
+                'properties' => $error->properties,
+                'occurrence_count' => $error->occurrence_count,
+                'created_at' => $error->created_at,
+                'updated_at' => $error->updated_at,
+            ];
+        }
+
+        return [
+            'array' => [
+                'success' => $success,
+                'message' => $message,
+                'data' => $data,
+            ],
+            'response' => $response
+        ];
     }
     
     public function getErrorByUniqueId(string $uniqueErrorId)
     {
-        try {
-            //
-        } catch(Exception $ex) {
-            //
+        $success = true;
+        $message = '';
+        $data = [];
+        $response = Response::HTTP_OK;
+
+        $error = Activity::where('properties->uniqueErrorId', $uniqueErrorId)->first();
+
+        if( !$error ) {
+            $success = false;
+            $message = __('error_not_found');
+            $response = Response::HTTP_NOT_FOUND;
+        } else {
+            $data = [
+                'message' => $error->description,
+                'properties' => $error->properties,
+                'occurrence_count' => $error->occurrence_count,
+                'created_at' => $error->created_at,
+                'updated_at' => $error->updated_at,
+            ];
         }
+
+        $result = [
+            'array' => [
+                'success' => $success,
+                'message' => $message,
+                'data' => $data,
+            ],
+            'response' => $response,
+        ];
+        
+        return $result;
     }
     
     public function model()

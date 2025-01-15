@@ -39,6 +39,8 @@ Route::middleware(['web', 'auth'])->group(function () {
             Route::delete('/{id}', [App\Http\Controllers\ActivityController::class, 'destroy'])->name('destroy')->where('id', '[0-9]+');
         });
 
+    Route::get('/activities', ['', '']);
+        
     /**
      * =======================================================
      * LANGUAGES

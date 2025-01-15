@@ -43,7 +43,7 @@ class MenuItemSeeder extends Seeder
                 [ 'label' => 'users', 'url' => '/users', 'default_weight' => 1, ],
                 [ 'label' => 'roles', 'url' => '/roles', 'default_weight' => 2, ],
                 [ 'label' => 'permissions', 'url' => '/permissions', 'default_weight' => 3, ],
-                [ 'label' => 'error_log', 'url' => '/error_log', 'default_weight' => 4, ]
+                [ 'label' => 'activities', 'url' => '/activities', 'default_weight' => 4, ]
             ]
         );
         

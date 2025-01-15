@@ -139,7 +139,8 @@ class Company extends Model
     }
 
     #[Override]
-    public function getActivitylogOptions(): LogOptions {
+    public function getActivitylogOptions(): LogOptions
+    {
         return LogOptions::defaults()
             ->logFillable();
     }

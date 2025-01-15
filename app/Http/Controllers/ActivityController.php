@@ -3,45 +3,90 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GetActivityRequest;
+use App\Http\Resources\ActivityResource;
+use App\Models\Activity;
+use App\Repositories\ActivityRepository;
+use App\Traits\Functions;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\HttpFoundation\Response;
+use TheSeer\Tokenizer\Exception;
 use Throwable;
-use function auth;
-use function GuzzleHttp\json_encode;
-use function inertia;
-use function redirect;
-use function response;
-use function Symfony\Component\Clock\now;
 
 class ActivityController extends Controller
 {
+    use AuthorizesRequests,
+        Functions;
+    
+    protected static ActivityRepository $activityRepository;
+    
+    protected string $tag = '';
+    
+    public function __construct(ActivityRepository $repository)
+    {
+        self::$activityRepository = $repository;
+        
+        $this->tag = Activity::getTag();
+        
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createCompany']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateCompany']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteCompany', 'deleteCompanies']]);
+        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreCompany']]);
+    }
+    
     public function index(Request $request): InertiaResponse
     {
-        $errors = Activity::select('id', 'description', 'properties', 'occurrence_count', 'updated_at')
-            ->orderBy('occurrence_count', 'desc')
-            ->paginate(20);
-
         return Inertia::render('ErrorLogs/Index', [
-            'errors' => $errors,
+            'search' => $request->input('search'),
+            'can' => $roles,
         ]);
+    }
+    
+    public function applySearch(Builder $query, string $search): Builder
+    {
+        return $query->when($search, function ($query, string $search) {
+            $query->where('name', 'like', "%{$search}%");
+        });
     }
 
     public function getActivities(Request $request): JsonResponse
     {
-        return response()->json([], Response::HTTP_OK);
+        try {
+            $_activities = self::$activityRepository->getActivities($request);
+            $activities = ActivityResource::collection($_activities);
+            
+            return response()->json($activities, Response::HTTP_OK);
+        } catch (QueryException $ex) {
+            return $this->handleException($ex, 'getActivities query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (Exception $ex) {
+            return $this->handleException($ex, 'getActivities general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
     
     public function getActivity(GetActivityRequest $request): JsonResponse
     {
-        return response()->json([], Response::HTTP_OK);
+        try {
+            $activity = self::activityRepository->getActivity($request->id);
+            
+            return response()->json($activity, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'getActivity model not found error', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'getActivity query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'getActivity general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
     
     /**
@@ -57,49 +102,7 @@ class ActivityController extends Controller
 
     public static function logServerError(Throwable $error, array $additionalData = []): JsonResponse
     {
-        // Hiba alapinformációinak kinyerése
-        $errorData = [
-            'message' => $error->getMessage(),
-            'stack' => $error->getTraceAsString(),
-            'file' => $error->getFile(),
-            'line' => $error->getLine(),
-            'time' => Carbon::now()->toISOString(),
-            'uniqueErrorId' => $additionalData['uniqueErrorId'] ?? Str::uuid()->toString(),
-            'type' => $additionalData['type'] ?? 'GeneralError',
-            'severity' => $additionalData['severity'] ?? 'error',
-        ];
-
-        // Extra adatok hozzáadása (ha van)
-        $errorData = array_merge($errorData, $additionalData);
-
-        $errorId = md5($errorData['message'] . $errorData['file'] . $errorData['line']);
-        $existingError = Activity::where('properties->errorId', $errorId)->first();
-
-        $return_array = [];
-
-        if( $existingError )
-        {
-            // Ha létezik, növeljük az előfordulások számát
-            $existingError->increment('occurrence_count');
-
-            $return_array = ['success' => true, 'message' => 'Error occurrence updated.'];
-        }
-        else
-        {
-            $errorData = array_merge($errorData, ['errorId' => $errorId]);
-            $batch_uuid = Str::uuid()->toString();
-
-            // Új hiba létrehozása
-            activity()
-                ->tap(function ($activity) use($batch_uuid) {
-                    $activity->batch_uuid = $batch_uuid;
-                })
-                ->causedBy(auth()->user())
-                ->withProperties( $errorData )
-                ->log('Server-side error reported.');
-
-            $return_array = ['success' => true, 'message' => 'Error logged.'];
-        }
+        $return_array = self::$activityRepository->logServerError($error, $additionalData);
 
         return response()->json($return_array, Response::HTTP_OK);
     }

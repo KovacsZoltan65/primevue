@@ -29,10 +29,9 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
     public function __construct(CacheService $cacheService)
     {
         $this->tag = CompSetting::getTag();
-        
         $this->cacheService = $cacheService;
     }
-    
+
     public function getActiveCompSettings()
     {
         $model = $this->model();

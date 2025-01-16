@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Eloquent\BaseRepository;
+use Spatie\Activitylog\Models\Activity as SpatieActivity;
 use Str;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -25,12 +26,24 @@ class ActivityRepository extends BaseRepository implements ErrorRepositoryInterf
     public function getActivities(Request $request)
     {
         try {
-            $companyQuery = Activity::search($request);
-            return $companyQuery->get();
+            $_activityQuery = Activity::search($request);
+            return $_activityQuery->get();
         } catch( Exception $ex ) {
             $this->logError($ex, 'getActivities error', ['request' => $request->all()]);
             throw $ex;
         }
+        /*
+\Log::info('repository getActivities');
+        try {
+            $activityQuery = Activity::search($request);
+            $ret_val = $activityQuery->get();
+\Log::info('$ret_val: ' . print_r($ret_val, true));
+            return $ret_val;
+        } catch( Exception $ex ) {
+            $this->logError($ex, 'getActivities error', ['request' => $request->all()]);
+            throw $ex;
+        }
+        */
     }
     
     public function getActivity(int $id)

@@ -36,15 +36,16 @@ class ActivityController extends Controller
     
     public function __construct(ActivityRepository $repository)
     {
+\Log::info('construct');
         self::$activityRepository = $repository;
         
         $this->tag = Activity::getTag();
         
-        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getCompanies', 'getCompany', 'getCompanyByName']]);
-        $this->middleware("can:{$this->tag} create", ['only' => ['createCompany']]);
-        $this->middleware("can:{$this->tag} edit", ['only' => ['updateCompany']]);
-        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteCompany', 'deleteCompanies']]);
-        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreCompany']]);
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getActivities', 'getActivity']]);
+        //$this->middleware("can:{$this->tag} create", ['only' => ['createActivity']]);
+        //$this->middleware("can:{$this->tag} edit", ['only' => ['updateActivity']]);
+        //$this->middleware("can:{$this->tag} delete", ['only' => ['deleteActivity', 'deleteActivities']]);
+        //$this->middleware("can:{$this->tag} restore", ['only' => ['restoreActivity']]);
     }
     
     public function index(Request $request): InertiaResponse
@@ -66,10 +67,11 @@ class ActivityController extends Controller
 
     public function getActivities(Request $request): JsonResponse
     {
+\Log::info('controller getActivities');
         try {
             $_activities = self::$activityRepository->getActivities($request);
             $activities = ActivityResource::collection($_activities);
-            
+\Log::info('getActivities $activities: ' . print_r($activities, true));
             return response()->json($activities, Response::HTTP_OK);
         } catch (QueryException $ex) {
             return $this->handleException($ex, 'getActivities query error', Response::HTTP_UNPROCESSABLE_ENTITY);

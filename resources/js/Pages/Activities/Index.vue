@@ -57,11 +57,16 @@ const defaultActivity = {
     occurrence_count: 0
 };
 
-const activity = ref({ ...defaultActivity });
+// Tároló kulcsok
+const local_storage_companies = 'activities';
+const local_storage_column_key = 'ln_activities_grid_columns';
 
 const initialActivity= () => {
     return { ...defaultActivity };
 };
+
+//const activity = ref({ ...defaultActivity });
+const activity = ref(initialActivity());
 
 const submitted = ref(false);
 
@@ -102,9 +107,19 @@ const fetchItems = async () => {
 
     await ActivityService.getActivities()
         .then((response) => {
-            console.log(response);
+            activities.value = response.data;
         })
-        .catch((error) => {})
+        .catch((error) => {
+            console.error("getActivities API Error:", error);
+
+            ErrorService.logClientError(error, {
+                componentName: "Fetch Activities",
+                additionalInfo: "Failed to retrieve the activity",
+                category: "Error",
+                priority: "high",
+                data: null,
+            });
+        })
         .finally(() => {
             loading.value = false;
     });
@@ -119,6 +134,14 @@ const getBools = () => {
 
 onMounted(() => {
     fetchItems();
+
+    let columns = localStorage.getItem(local_storage_column_key);
+    if( columns ) {
+        columns = JSON.parse(columns);
+        for(const column_name in columns) {
+            state.columns[column_name] = columns[column_name];
+        }
+    }
 })
 
 const exportCSV = () => {

@@ -17,12 +17,12 @@
     "system": "System",
     "geo": "Geo",
     "regions": "Regions",
-    
+
     "add_new": "Add New",
     "delete_selected": "Delete Selected",
 
     "directory": "Directory",
-    
+
     "cities": "Cities",
     "cities_title": "Manage Cities",
     "cities_details": "City Details",
@@ -67,6 +67,9 @@
     "longitude": "Longitute",
     "latitude": "Latitude",
     "clear": "Clear",
+    "key": "Key",
+    "value": "Value",
+    "id": "#",
 
     "loader": "Loading customers data. Please wait.",
     "data_not_found": "No :data found.",
@@ -179,5 +182,9 @@
     "command_company_created": "Company created successfully with provided data: ID :id",
     "command_company_updated": "",
     "command_company_not_found_with_id": "No companies found with the provided ID(s).",
-    "command_company_": ""
+    "command_company_": "",
+
+    "app_settings_title": "Application Settings",
+
+    "comp_settings_title": "Company Settings"
 }

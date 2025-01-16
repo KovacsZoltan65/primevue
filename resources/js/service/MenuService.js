@@ -4,28 +4,31 @@ class MenuService extends BaseService {
     constructor() {
         super();
     }
+
+    url = '/menu-items';
+
     getMenuItems() {
-        return this.get("/menu-items");
+        return this.get(this.url);
     }
 
     getMenuItem(id) {
-        return this.get(`/menu-items/${id}`);
+        return this.get(this.url + `/${id}`);
     }
 
     createMenuItem(data) {
-        return this.post("/menu-items", data);
+        return this.post(this.url, data);
     }
 
     updateMenuItem(id, data) {
-        return this.put(`/menu-items/${id}`, data);
+        return this.put(this.url + `/${id}`, data);
     }
 
     deleteMenuItem(id) {
-        return this.delete(`/menu-items/${id}`);
+        return this.delete(this.url + `/${id}`);
     }
 
     updateMenuUsage(id) {
-        return this.put(`/menu-items/${id}/usage`);
+        return this.put(this.url + `/${id}/usage`);
     }
 }
 

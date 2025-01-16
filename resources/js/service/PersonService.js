@@ -16,13 +16,15 @@ class PersonService extends BaseService {
         super();
     }
 
+    url = '/persons';
+
     /**
      * Lekérdezi az összes személyt az API-ból.
      *
      * @returns {Promise<AxiosResponse<Person[]>>} 
      */
     getPersons() {
-        return this.get("/persons");
+        return this.get(this.url);
     }
 
     /**
@@ -32,7 +34,7 @@ class PersonService extends BaseService {
      * @returns {Promise<AxiosResponse<Person>>} Ígéret az API válaszával.
      */
     getPerson(id) {
-        return this.get(`/persons/${id}`);
+        return this.get(this.url + `/${id}`);
     }
 
     /**
@@ -42,7 +44,7 @@ class PersonService extends BaseService {
      * @returns {Promise<AxiosResponse<Person>>} Ígéret az API válaszával.
      */
     getPersonByName(name) {
-        return this.get(`/persons/name/${name}`);
+        return this.get(this.url + `/name/${name}`);
     }
 
     /**
@@ -55,7 +57,7 @@ class PersonService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     createPerson(data) {
-        return this.post("/persons", data);
+        return this.post(this.url, data);
     }
 
     /**
@@ -69,7 +71,7 @@ class PersonService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     updatePerson(id, data) {
-        return this.put(`/persons/${id}`, data);
+        return this.put(this.url + `/${id}`, data);
     }
 
     /**
@@ -82,7 +84,7 @@ class PersonService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     deletePerson(id) {
-        return this.delete(`/persons/${id}`);
+        return this.delete(this.url + `/${id}`);
     }
 }
 

@@ -9,13 +9,15 @@ class CompanyService extends BaseService {
         super();
     }
 
+    url = '/companies';
+
     /**
      * Szerezd meg az összes céget
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
 
     getCompanies() {
-        return this.get("/companies");
+        return this.get(this.url);
     }
 
     /**
@@ -24,7 +26,7 @@ class CompanyService extends BaseService {
      * @return {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     getCompany(id) {
-        return this.get(`/companies/${id}`);
+        return this.get(this.url + `/${id}`);
     }
 
     /**
@@ -33,7 +35,7 @@ class CompanyService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     getCompanyByName(name) {
-        return this.get(`/companies/name/${name}`);
+        return this.get(this.url + `/name/${name}`);
     }
 
     /**
@@ -50,7 +52,7 @@ class CompanyService extends BaseService {
         //const rawData = toRaw(data); // Ciklusmentes, sima JS objektumot készít
         //console.log('Raw Data:', rawData);
 
-        return this.post(`/companies`, data);
+        return this.post(this.url, data);
     }
 
     /**
@@ -62,7 +64,7 @@ class CompanyService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     updateCompany(id, data) {
-        return this.put(`/companies/${id}`, data);
+        return this.put(this.url + `/${id}`, data);
     }
 
     /**
@@ -74,7 +76,7 @@ class CompanyService extends BaseService {
      */
     deleteCompanies(ids) {
         const query = ids.map(id => `ids[]=${id}`).join('&');
-        return this.delete(`/companies?${query}`);
+        return this.delete(this.url + `?${query}`);
     }
 
     /**
@@ -85,7 +87,7 @@ class CompanyService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     deleteCompany(id) {
-        return this.delete(`/companies/${id}`);
+        return this.delete(this.url + `/${id}`);
     }
 }
 

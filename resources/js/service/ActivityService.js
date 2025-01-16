@@ -8,8 +8,15 @@ class ActivityService extends BaseService {
     url = '/activities';
 
     getActivities() {
-        console.log(this.url);
         return this.get(this.url);
+    }
+
+    getActivity(id) {
+        return this.get(this.url + `/${id}`);
+    }
+
+    getActivityByLogName(name) {
+        return this.get(this.url + `/name/${name}`);
     }
 };
 

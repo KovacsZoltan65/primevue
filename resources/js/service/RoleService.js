@@ -6,28 +6,30 @@ class RoleService extends BaseService {
         super();
     }
 
+    url = '/roles';
+
     getRoles() {
-        return this.get(`/roles`);
+        return this.get(this.url);
     }
 
     getRole(id) {
-        return this.get(`/roles/${id}`);
+        return this.get(this.url + `/${id}`);
     }
 
     getRoleByName(name) {
-        return this.get(`/roles/name/${name}`);
+        return this.get(this.url + `/name/${name}`);
     }
 
     createRole(data) {
-        return this.post(`/roles`, data);
+        return this.post(this.url, data);
     }
 
     updateRole(id, data) {
-        return this.put(`/roles/${id}`, data);
+        return this.put(this.url + `/${id}`, data);
     }
 
     deleteRole(id) {
-        return this.delete(`/roles/${id}`);
+        return this.delete(this.url + `/${id}`);
     }
 }
 

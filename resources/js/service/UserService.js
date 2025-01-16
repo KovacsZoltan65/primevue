@@ -15,13 +15,15 @@ class UserService extends BaseService {
         super();
     }
 
+    url = "/users";
+
     /**
      * Szerezd meg az összes felhasználót az API-ból.
      *
      * @returns {Promise<AxiosResponse<User[]>>} Ígéret az API válaszával.
      */
     getUsers() {
-        return this.get("/users");
+        return this.get(this.url);
     }
 
     /**
@@ -31,7 +33,7 @@ class UserService extends BaseService {
      * @returns {Promise<AxiosResponse<User>>} Ígéret az API válaszával.
      */
     getUser(id) {
-        return this.get(`/users/${id}`);
+        return this.get(this.url + `/${id}`);
     }
 
     /**
@@ -41,7 +43,7 @@ class UserService extends BaseService {
      * @returns {Promise<AxiosResponse<User>>} Ígéret az API válaszával.
      */
     getUserByName(name) {
-        return this.get(`/users/name/${name}`);
+        return this.get(this.url + `/name/${name}`);
     }
 
     /**
@@ -54,7 +56,7 @@ class UserService extends BaseService {
      * @return {Promise<AxiosResponse<any>>}
      */
     createUser(data) {
-        return this.post("/users", data);
+        return this.post(this.url, data);
     }
 
     /**
@@ -68,7 +70,7 @@ class UserService extends BaseService {
      * @return {Promise<AxiosResponse<any>>}
      */
     updateUser(id, data) {
-        return this.put(`/users/${id}`, data);
+        return this.put(this.url + `/${id}`, data);
     }
 
     /**
@@ -97,7 +99,7 @@ class UserService extends BaseService {
      * @return {Promise<AxiosResponse<any>>}
      */
     deleteUser(id) {
-        return this.delete(`/users/${id}`);
+        return this.delete(this.url + `/${id}`);
     }
 }
 

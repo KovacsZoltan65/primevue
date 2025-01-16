@@ -5,33 +5,35 @@ class PermissionService extends BaseService {
         super();
     }
 
+    url = '/permissions';
+
     getPermissions() {
-        return this.get("/permissions");
+        return this.get(this.url);
     }
 
     getPermission(id) {
-        return this.get(`/permissions/${id}`);
+        return this.get(this.url + `/${id}`);
     }
 
     getPermissionByName(name) {
-        return this.get(`/permissions/name/${name}`);
+        return this.get(this.url + `/name/${name}`);
     }
 
     createPermission(data) {
-        return this.post(`/permissions`, data);
+        return this.post(this.url, data);
     }
 
     updatePermission(id, data) {
-        return this.put(`/permissions/${id}`, data);
+        return this.put(this.url + `/${id}`, data);
     }
 
     deletePermission(ids) {
         const query = ids.map(id => `ids[]=${id}`).join('&');
-        return this.delete(`/permissions?${query}`);
+        return this.delete(this.url + `?${query}`);
     }
 
     deletePermission(id) {
-        return this.delete(`/permissions/${id}`);
+        return this.delete(this.url + `/${id}`);
     }
 };
 

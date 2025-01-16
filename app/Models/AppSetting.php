@@ -12,8 +12,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class AppSetting extends Model
 {
-    use HasFactory,
-        LogsActivity;
+    use HasFactory, LogsActivity;
 
     protected $table = 'app_settings';
     protected $fillable = ['key', 'value', 'active'];

@@ -13,13 +13,16 @@ class CityService extends BaseService {
          */
         super();
     }
+
+    url = '/cities';
+
     /**
      * Szerezd meg az összes várost
      *
      * @returns {Promise<AxiosResponse<City[]>>}
      */
     getCities() {
-        return this.get("/cities");
+        return this.get(this.url);
     }
 
     /**
@@ -29,7 +32,7 @@ class CityService extends BaseService {
      * @return {Promise<AxiosResponse<City>>}
      */
     getCity(id) {
-        return this.get(`/cities/${id}`);
+        return this.get(this.url + `/${id}`);
     }
 
     /**
@@ -39,7 +42,7 @@ class CityService extends BaseService {
      * @returns {Promise<AxiosResponse<City>>}
      */
     getCityByName(name) {
-        return this.get(`/cities/name/${name}`);
+        return this.get(this.url + `/name/${name}`);
     }
     /**
      * Hozzon létre új várost az API-ban.
@@ -51,7 +54,7 @@ class CityService extends BaseService {
      * @return {Promise<AxiosResponse<City>>}
      */
     createCity(data) {
-        return this.post("/cities", data);
+        return this.post(this.url, data);
     }
 
     /**
@@ -65,7 +68,7 @@ class CityService extends BaseService {
      * @return {Promise<AxiosResponse<City>>}
      */
     updateCity(id, data) {
-        return this.put(`/cities/${id}`, data);
+        return this.put(this.url + `/${id}`, data);
     }
 
     /**
@@ -78,7 +81,7 @@ class CityService extends BaseService {
      * @return {Promise<AxiosResponse<any>>}
      */
     deleteCity(id) {
-        return this.delete(`/cities/${id}`);
+        return this.delete(this.url + `/${id}`);
     }
 }
 export default new CityService();

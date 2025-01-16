@@ -9,12 +9,14 @@ class CountryService extends BaseService {
         super();
     }
 
+    url = '/countries';
+
     /**
      * Szerezd meg az összes országot.
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     getCountries() {
-        return this.get("/countries");
+        return this.get(this.url);
     }
 
     /**
@@ -23,7 +25,7 @@ class CountryService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>}
      */
     getCountry(id) {
-        return this.get(`/countries/${id}`);
+        return this.get(this.url + `/${id}`);
     }
 
     /**
@@ -32,7 +34,7 @@ class CountryService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>}
      */
     getCountryByName(name) {
-        return this.get(`/countries/name/${name}`);
+        return this.get(this.url + `/name/${name}`);
     }
 
     /**
@@ -41,7 +43,7 @@ class CountryService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>}
      */
     createCountry(data) {
-        return this.post("/countries", data);
+        return this.post(this.url, data);
     }
 
     /**
@@ -51,7 +53,7 @@ class CountryService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>}
      */
     updateCountry(id, data) {
-        return this.put(`countries/${id}`, data);
+        return this.put(this.url + `/${id}`, data);
     }
 
     /**
@@ -60,7 +62,7 @@ class CountryService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>}
      */
     deleteCountry(id) {
-        return this.delete(`countries/${id}`);
+        return this.delete(this.url + `/${id}`);
     }
 }
 

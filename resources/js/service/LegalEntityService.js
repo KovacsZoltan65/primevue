@@ -11,8 +11,10 @@ class LegalEntityService extends BaseService {
         super();
     }
 
+    url = "/entities";
+
     getEntities() {
-        return this.get("/api/entities");
+        return this.get(this.url);
     }
 
     getEntity($id) {
@@ -20,19 +22,19 @@ class LegalEntityService extends BaseService {
     }
 
     getEntityByName($name) {
-        return this.get(`/api/entities/name/${$name}`);
+        return this.get(this.url + `/name/${$name}`);
     }
 
     createEntity($data) {
-        return this.post("/api/entities", $data);
+        return this.post(this.url, $data);
     }
 
     updateEntity($id, $data) {
-        return this.put(`/api/entities/${$id}`, $data);
+        return this.put(this.url + `/${$id}`, $data);
     }
 
     deleteEntity($id) {
-        return this.delete(`/api/entities/${$id}`);
+        return this.delete(this.url + `/${$id}`);
     }
 }
 export default new LegalEntityService();

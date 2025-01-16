@@ -5,33 +5,35 @@ class AppSettingsService extends BaseService {
         super();
     }
 
+    url = '/app_settings';
+
     getSettings() {
-        return this.get('app_settings');
+        return this.get(this.url);
     }
 
     getSetting(id) {
-        return this.get(`/app_settings/${id}`);
+        return this.get(this.url + `/${id}`);
     }
 
     getSettingByKey(key) {
-        return this.get(`/app_settings/key/${key}`);
+        return this.get(this.url + `/key/${key}`);
     }
 
     createSetting(data) {
-        return this.post(`/app_settings`, data);
+        return this.post(this.url, data);
     }
 
     updateSetting(id, data) {
-        return this.put(`/app_settings/${id}`, data);
+        return this.put(this.url + `/${id}`, data);
     }
 
     deleteSettings(ids) {
         const query = ids.map(id => `ids[]=${id}`).join('&');
-        return this.delete(`/app_settings?${query}`);
+        return this.delete(this.url + `?${query}`);
     }
 
     deleteSetting(id) {
-        return this.delete(`/app_settings/${id}`);
+        return this.delete(this.url + `/${id}`);
     }
 }
 

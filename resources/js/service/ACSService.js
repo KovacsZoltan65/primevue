@@ -5,33 +5,35 @@ class ACSService extends BaseService {
         super();
     }
 
+    url = '/acs_systems';
+
     getACSs() {
-        return this.get("/acs_systems");
+        return this.get(this.url);
     }
 
     getACS(id) {
-        return this.get(`/acs_systems/${id}`);
+        return this.get(this.url + `/${id}`);
     }
 
     getACSByName(name) {
-        return this.get(`/acs_systems/name/${name}`);
+        return this.get(this.url + `/name/${name}`);
     }
 
     createACS(data) {
-        return this.post(`/acs_systems`, data);
+        return this.post(this.url, data);
     }
 
     updateACS(id, data) {
-        return this.put(`/acs_systems/${id}`, data);
+        return this.put(this.url + `/${id}`, data);
     }
 
     deleteACSs(ids) {
         const query = ids.map(id => `ids[]=${id}`).join('&');
-        return this.delete(`/acs_systems?${query}`);
+        return this.delete(this.url + `?${query}`);
     }
 
     deleteACS() {
-        return this.delete(`/acs_system/${id}`);
+        return this.delete(this.url + `/${id}`);
     }
 }
 

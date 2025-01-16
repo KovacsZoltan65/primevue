@@ -5,8 +5,10 @@ class LanguageService extends BaseService {
         super();
     }
 
+    url = '/languages';
+
     getLanguages() {
-        return this.get("/languages");
+        return this.get(this.url);
     }
 }
 export default new LanguageService();

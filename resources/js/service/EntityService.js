@@ -11,13 +11,14 @@ class EntityService extends BaseService {
         super();
     }
 
+    url = "/entities";
     /**
      * Szerezd meg az összes entitást.
      *
      * @returns {Promise<AxiosResponse<Entity[]>>} Ígéret az API válaszával.
      */
     getEntities() {
-        return this.get("/entities");
+        return this.get(this.url);
     }
 
 
@@ -29,7 +30,7 @@ class EntityService extends BaseService {
      * @returns {Promise<AxiosResponse<Entity>>} Ígéret az API válaszával.
      */
     getEntity(id) {
-        return this.get(`/entities/${id}`);
+        return this.get(this.url + `/${id}`);
     }
 
 
@@ -41,7 +42,7 @@ class EntityService extends BaseService {
      * @returns {Promise<AxiosResponse<Entity>>} Ígéret az API válaszával.
      */
     getEntityByName(name) {
-        return this.get(`/entities/name/${name}`);
+        return this.get(this.url + `/name/${name}`);
     }
 
 
@@ -56,7 +57,7 @@ class EntityService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     createEntity(data) {
-        return this.post("/entities", data);
+        return this.post(this.url, data);
     }
 
     /**
@@ -70,7 +71,7 @@ class EntityService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     updateEntity(id, data) {
-        return this.put(`/entities/${id}`, data);
+        return this.put(this.url + `/${id}`, data);
     }
 
     /**
@@ -83,7 +84,7 @@ class EntityService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     deleteEntity(id) {
-        return this.delete(`/entities/${id}`);
+        return this.delete(this.url`/${id}`);
     }
 }
 

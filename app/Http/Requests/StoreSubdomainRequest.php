@@ -11,7 +11,7 @@ class StoreSubdomainRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,14 @@ class StoreSubdomainRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'subdomain' => ['required'],
+            'url' => ['required'],
+            'name' => ['required'],
+            'db_host' => ['required'],
+            'db_port' => ['required'],
+            'db_name' => ['required'],
+            'db_user' => ['required'],
+            'db_password' => ['required'],
         ];
     }
 }

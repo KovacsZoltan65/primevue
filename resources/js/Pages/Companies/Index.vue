@@ -83,7 +83,7 @@ const initialCompany = () => {
  *
  * @type {ref<boolean>}
  */
- const submitted = ref(false);
+const submitted = ref(false);
 
 /**
  * A validációs szabályok tárolása.
@@ -93,7 +93,7 @@ const initialCompany = () => {
  *
  * @type {Object}
  */
- const rules = {
+const rules = {
     name: {
         required: helpers.withMessage(trans("validate_name"), required),
         minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
@@ -635,6 +635,7 @@ watch(
                     />
 
                     <!-- ERROR -->
+                <!--
                     <Button
                         label="ERROR"
                         icon="pi pi-plus"
@@ -642,7 +643,7 @@ watch(
                         class="mr-2"
                         @click="throwError"
                     />
-
+                -->
                     <!-- New Button -->
                     <Button
                         :label="$t('add_new')"
@@ -1144,25 +1145,23 @@ watch(
             :modal="true"
         >
             <div class="flex flex-col gap-6" style="margin-top: 17px;">
-
                 <div class="flex flex-col gap-2">
-
                     <div class="flex flex-wrap gap-4">
                         <div
                             v-for="(config, column) in state.columns"
                             :key="column"
                             class="flex items-center gap-2">
+
                             <Checkbox
                                 v-model="config.is_visible"
                                 :inputId="column"
                                 :value="true" binary
                             />
                             <label :for="column">{{ column }}</label>
+
                         </div>
                     </div>
-
                 </div>
-
             </div>
         </Dialog>
 

@@ -90,7 +90,7 @@ class SubdomainRepository extends BaseRepository implements SubdomainRepositoryI
     public function createSubdomain(Request $request){
         try {
             $subdomain = Subdomain::create($request->all());
-
+dd($subdomain);
             $this->cacheService->forgetAll($this->tag);
 
             return $subdomain;

@@ -36,7 +36,6 @@ class ActivityController extends Controller
     
     public function __construct(ActivityRepository $repository)
     {
-\Log::info('construct');
         self::$activityRepository = $repository;
         
         $this->tag = Activity::getTag();
@@ -67,11 +66,10 @@ class ActivityController extends Controller
 
     public function getActivities(Request $request): JsonResponse
     {
-\Log::info('controller getActivities');
         try {
             $_activities = self::$activityRepository->getActivities($request);
             $activities = ActivityResource::collection($_activities);
-\Log::info('getActivities $activities: ' . print_r($activities, true));
+            
             return response()->json($activities, Response::HTTP_OK);
         } catch (QueryException $ex) {
             return $this->handleException($ex, 'getActivities query error', Response::HTTP_UNPROCESSABLE_ENTITY);

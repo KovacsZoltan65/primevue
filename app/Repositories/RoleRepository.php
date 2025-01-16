@@ -2,17 +2,17 @@
 
 namespace App\Repositories;
 
-use App\Interfaces\Auth\RoleRepositoryInterface;
+use App\Interfaces\RoleRepositoryInterface;
 use App\Models\Auth\Permission;
 use App\Models\Auth\Role;
 use App\Services\CacheService;
 use App\Traits\Functions;
+use Exception;
+use Illuminate\Support\Facades\DB;
+use Override;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Symfony\Component\HttpFoundation\Request;
-use Exception;
-use Override;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Class RoleRepositoryEloquent.

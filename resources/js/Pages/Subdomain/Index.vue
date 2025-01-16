@@ -88,7 +88,7 @@ const submitted = ref(false);
  *
  * @type {Object}
  */
- const rules = {
+const rules = {
     /**
      * A subdomain mező validációs szabálya.
      *
@@ -222,12 +222,11 @@ const deleteSubdomainDialog = ref(false);
  *
  * @return {Promise} Ígéret, amely a válaszban szerepl  adatokkal megoldódik.
  */
- const fetchItems = async () => {
+const fetchItems = async () => {
     loading.value = true;
 
     await SubdomainService.getSubdomains()
         .then((response) => {
-console.log(response.data);
             subdomains.value = response.data;
         })
         .catch((error) => {
@@ -253,7 +252,7 @@ console.log(response.data);
  *
  * @return {void}
  */
- onMounted(() => {
+onMounted(() => {
     fetchItems();
 
     let columns = localStorage.getItem(local_storage_column_key);
@@ -356,7 +355,7 @@ const editSubdomain = (data) => {
  *
  * @return {void}
  */
- const saveSubdomain = async () => {
+const saveSubdomain = async () => {
     const result = await v$.value.$validate();
 
     if( result ) {
@@ -523,10 +522,6 @@ const updateSubdomain = async () => {
         });
 };
 
-
-
-
-
 /**
  * Megerősítés a subdomain törléséhez.
  *
@@ -541,12 +536,6 @@ const confirmDeleteSubdomain = (data) => {
 
     deleteSubdomainDialog.value = true;
 };
-
-
-
-
-
-
 
 /**
  * Megkeresi a megadott azonosítójú aldomain indexét.
@@ -648,8 +637,6 @@ const deleteSubdomain = () => {
         });
 };
 
-
-
 const exportCSV = () => {
     dt.value.exportCSV();
 };
@@ -693,7 +680,7 @@ const onUpload = () => {
 };
 
 const openSettingsDialog = () => {
-    //settingsDialog.value = true;
+    settingsDialog.value = true;
 };
 
 </script>
@@ -826,12 +813,13 @@ const openSettingsDialog = () => {
                     :exportable="false"
                 />
 
-                <!-- Nev -->
+                <!-- NAME -->
                 <Column
-                    field="name"
-                    :header="$t('name')"
+                    :field="state.columns.name.field"
+                    :header="$t(state.columns.name.field)"
+                    :sortable="state.columns.name.is_sortable"
+                    :hidden="!state.columns.name.is_visible"
                     style="min-width: 12rem"
-                    sortable
                 >
                     <template #body="{ data }">
                         {{ data.name }}
@@ -845,12 +833,13 @@ const openSettingsDialog = () => {
                     </template>
                 </Column>
 
-                <!-- Subdomain -->
+                <!-- SUBDOMAIN -->
                 <Column
-                    field="subdomain"
-                    :header="$t('subdomain')"
+                    :field="state.columns.subdomain.field"
+                    :header="$t(state.columns.subdomain.field)"
+                    :sortable="state.columns.subdomain.is_sortable"
+                    :hidden="!state.columns.subdomain.is_visible"
                     style="min-width: 12rem"
-                    sortable
                 >
                     <template #body="{ data }">
                         {{ data.subdomain }}
@@ -864,12 +853,13 @@ const openSettingsDialog = () => {
                     </template>
                 </Column>
 
-                <!-- url -->
+                <!-- URL -->
                 <Column
-                    field="url"
-                    :header="$t('url')"
+                    :field="state.columns.url.field"
+                    :header="$t(state.columns.url.field)"
+                    :sortable="state.columns.url.is_sortable"
+                    :hidden="!state.columns.url.is_visible"
                     style="min-width: 16rem"
-                    sortable
                 >
                     <template #body="{ data }">{{ data.url }}</template>
                     <template #filter="{ filterModel }">
@@ -881,12 +871,13 @@ const openSettingsDialog = () => {
                     </template>
                 </Column>
 
-                <!-- db_name -->
+                <!-- DB_NAME -->
                 <Column
-                    field="db_name"
-                    :header="$t('db_name')"
+                    :field="state.columns.db_name.field"
+                    :header="$t(state.columns.db_name.field)"
+                    :sortable="state.columns.db_name.is_sortable"
+                    :hidden="!state.columns.db_name.is_visible"
                     style="min-width: 16rem"
-                    sortable
                 >
                     <template #body="{ data }">{{ data.db_name }}</template>
                     <template #filter="{ filterModel }">
@@ -898,12 +889,13 @@ const openSettingsDialog = () => {
                     </template>
                 </Column>
 
-                <!-- db_user -->
+                <!-- DB_USER -->
                 <Column
-                    field="db_user"
-                    :header="$t('db_user')"
+                    :field="state.columns.db_user.field"
+                    :header="$t(state.columns.db_user.field)"
+                    :sortable="state.columns.db_user.is_sortable"
+                    :hidden="!state.columns.db_user.is_visible"
                     style="min-width: 16rem"
-                    sortable
                 >
                     <template #body="{ data }">{{ data.db_user }}</template>
                     <template #filter="{ filterModel }">
@@ -914,26 +906,22 @@ const openSettingsDialog = () => {
                         />
                     </template>
                 </Column>
-                <!--<Column
-                    field="db_user"
-                    :header="$t('db_user')"
-                    style="min-width: 16rem"
-                    sortable
-                />-->
 
-                <!-- db_password -->
+                <!-- DB_PASSWORD -->
                 <Column
-                    field="db_password"
-                    :header="$t('db_password')"
+                    :field="state.columns.db_password.field"
+                    :header="$t(state.columns.db_password.field)"
+                    :sortable="state.columns.db_password.is_sortable"
+                    :hidden="!state.columns.db_password.is_visible"
                     style="min-width: 16rem"
-                    sortable
                 />
 
-                <!-- Active -->
+                <!-- ACTIVE -->
                 <Column
-                    field="active"
-                    :header="$t('active')"
-                    sortable
+                    :field="state.columns.active.field"
+                    :header="$t(state.columns.active.field)"
+                    :sortable="state.columns.active.is_sortable"
+                    :hidden="!state.columns.active.is_visible"
                     style="min-width: 6rem"
                 >
                     <template #body="slotProps">
@@ -944,7 +932,7 @@ const openSettingsDialog = () => {
                     </template>
                 </Column>
 
-                <!-- Actions -->
+                <!-- ACTIONS -->
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
                         <Button
@@ -1330,18 +1318,28 @@ const openSettingsDialog = () => {
                 </div>
             </div>
 
-
-
-
-
             <template #footer>
-                <Button
+                <!--
+                <div class="flex items-center gap-2" style="margin-top: 10px;">
+                    <Checkbox 
+                        v-model="pizza" 
+                        inputId="ingredient1" 
+                        name="pizza" 
+                        value="Cheese"
+                    />
+                    <label 
+                        for="ingredient1"
+                    >{{$t('create_db')}}</label>
+                </div>
+                -->
+
+                <Button class="mt-4"
                     :label="$t('cancel')"
                     icon="pi pi-times"
                     text
                     @click="hideDialog"
                 />
-                <Button
+                <Button style="margin-top: 10px;"
                     :label="$t('save')"
                     icon="pi pi-check"
                     @click="saveSubdomain"
@@ -1415,5 +1413,32 @@ const openSettingsDialog = () => {
                 />
             </template>
         </Dialog>
+
+        <!-- SETTINGS DIALOG -->
+        <Dialog
+            v-model:visible="settingsDialog"
+            :style="{ width: '450px' }"
+            :header="$t('app_settings_title')"
+            :modal="true"
+        >
+            <div class="flex flex-col gap-6" style="margin-top: 17px;">
+                <div class="flex flex-col gap-2">
+                    <div class="flex flex-wrap gap-4">
+                        <div
+                            v-for="(config, column) in state.columns" :key="column"
+                            class="flex items-center gap-2"
+                        >
+                            <Checkbox
+                                v-model="config.is_visible" 
+                                :inputId="column"
+                                :value="true" binary
+                            />
+                            <label :for="column">{{ $t(column) }}</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Dialog>
+
     </AppLayout>
 </template>

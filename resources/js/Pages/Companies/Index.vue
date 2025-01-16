@@ -1060,6 +1060,11 @@ watch(
                     icon="pi pi-check"
                     @click="saveCompany"
                 />
+                <Button
+                    :label="$t('save_and_new_db')"
+                    icon="pi pi-check"
+                    @click="saveCompany"
+                />
             </template>
         </Dialog>
 

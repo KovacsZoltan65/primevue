@@ -17,7 +17,12 @@
     "system": "System",
     "geo": "Geo",
     "regions": "Regions",
+    
+    "add_new": "Add New",
+    "delete_selected": "Delete Selected",
 
+    "directory": "Directory",
+    
     "cities": "Cities",
     "cities_title": "Manage Cities",
     "cities_details": "City Details",

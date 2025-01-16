@@ -17,6 +17,11 @@
     "system": "Rendszer",
     "geo": "Geo",
     "regions": "Megyék",
+    
+    "add_new": "Új hozzáadása",
+    "delete_selected": "Kijelöltek törlése",
+    
+    "directory": "Könyvtár",
 
     "cities": "Városok",
     "cities_title": "Városok kezelése",

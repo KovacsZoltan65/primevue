@@ -30,7 +30,7 @@ class EntityService extends BaseService {
      * @returns {Promise<AxiosResponse<Entity>>} Ígéret az API válaszával.
      */
     getEntity(id) {
-        return this.get(this.url + `/${id}`);
+        return this.get(`${this.url}/${id}`);
     }
 
 
@@ -42,7 +42,7 @@ class EntityService extends BaseService {
      * @returns {Promise<AxiosResponse<Entity>>} Ígéret az API válaszával.
      */
     getEntityByName(name) {
-        return this.get(this.url + `/name/${name}`);
+        return this.get(`${this.url}/name/${name}`);
     }
 
 
@@ -71,7 +71,7 @@ class EntityService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     updateEntity(id, data) {
-        return this.put(this.url + `/${id}`, data);
+        return this.put(`${this.url}/${id}`, data);
     }
 
     /**
@@ -84,7 +84,7 @@ class EntityService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     deleteEntity(id) {
-        return this.delete(this.url`/${id}`);
+        return this.delete(`${this.url}/${id}`);
     }
 }
 

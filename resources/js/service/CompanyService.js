@@ -26,7 +26,7 @@ class CompanyService extends BaseService {
      * @return {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     getCompany(id) {
-        return this.get(this.url + `/${id}`);
+        return this.get(`${this.url}/${id}`);
     }
 
     /**
@@ -35,7 +35,7 @@ class CompanyService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     getCompanyByName(name) {
-        return this.get(this.url + `/name/${name}`);
+        return this.get(`${this.url}/name/${name}`);
     }
 
     /**
@@ -64,7 +64,7 @@ class CompanyService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
      */
     updateCompany(id, data) {
-        return this.put(this.url + `/${id}`, data);
+        return this.put(`${this.url}/${id}`, data);
     }
 
     /**
@@ -76,7 +76,7 @@ class CompanyService extends BaseService {
      */
     deleteCompanies(ids) {
         const query = ids.map(id => `ids[]=${id}`).join('&');
-        return this.delete(this.url + `?${query}`);
+        return this.delete(`${this.url}?${query}`);
     }
 
     /**

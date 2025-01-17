@@ -25,7 +25,7 @@ class CountryService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>}
      */
     getCountry(id) {
-        return this.get(this.url + `/${id}`);
+        return this.get(`${this.url}/${id}`);
     }
 
     /**
@@ -34,7 +34,7 @@ class CountryService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>}
      */
     getCountryByName(name) {
-        return this.get(this.url + `/name/${name}`);
+        return this.get(`${this.url}/name/${name}`);
     }
 
     /**
@@ -53,7 +53,7 @@ class CountryService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>}
      */
     updateCountry(id, data) {
-        return this.put(this.url + `/${id}`, data);
+        return this.put(`${this.url}/${id}`, data);
     }
 
     /**
@@ -62,7 +62,7 @@ class CountryService extends BaseService {
      * @returns {Promise<AxiosResponse<any>>}
      */
     deleteCountry(id) {
-        return this.delete(this.url + `/${id}`);
+        return this.delete(`${this.url}/${id}`);
     }
 }
 

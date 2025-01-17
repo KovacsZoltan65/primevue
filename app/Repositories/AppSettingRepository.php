@@ -4,12 +4,13 @@ namespace App\Repositories;
 
 use App\Services\CacheService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Collection;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Interfaces\AppSettingRepositoryInterface;
 use App\Models\AppSetting;
 use App\Traits\Functions;
-use Illuminate\Support\Facades\DB;
 use Override;
 use \Exception;
 
@@ -44,12 +45,12 @@ class AppSettingRepository extends BaseRepository implements AppSettingRepositor
         return $settings;
     }
 
-    public function getAppSettings(Request $request)
+    public function getAppSettings(Request $request): Collection
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
-            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use($request) {
                 $appSettingQuery = AppSetting::search($request);
                 return $appSettingQuery->get();
             });
@@ -126,7 +127,7 @@ class AppSettingRepository extends BaseRepository implements AppSettingRepositor
         }
     }
 
-    public function deleteAppSettings(Request $request)
+    public function deleteAppSettings(Request $request): int
     {
         try {
             $validated = $request->validate([
@@ -154,10 +155,10 @@ class AppSettingRepository extends BaseRepository implements AppSettingRepositor
         }
     }
 
-    public function deleteAppSetting(Request $request)
+    public function deleteAppSetting(Request $request): ?AppSetting
     {
         try {
-            $appSetting = AppSetting::findOrFail($request->id);
+            $appSetting = AppSetting::lockForUpdate()->findOrFail($request->id);
             $appSetting->delete();
 
             $this->cacheService->forgetAll($this->tag);
@@ -169,7 +170,7 @@ class AppSettingRepository extends BaseRepository implements AppSettingRepositor
         }
     }
 
-    public function restoreAppSettings(Request $request)
+    public function restoreAppSettings(Request $request): ?AppSetting
     {
         try {
             $appSetting = AppSetting::withTrashed()->findOrFail($request->id);
@@ -180,6 +181,25 @@ class AppSettingRepository extends BaseRepository implements AppSettingRepositor
             return $appSetting;
         } catch(Exception $ex) {
             $this->logError($ex, 'restoreAppSettings error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    public function realDeleteSetting(Request $request)
+    {
+        try {
+            $setting = null;
+
+            DB::transaction(function() use($request, &$setting) {
+                $setting = AppSetting::withTrashed()->lockForUpdate()->findOrFail($request->id);
+                $setting->forceDelete();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
+
+            return $setting;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'realDeleteSetting error', ['request' => $request->all()]);
             throw $ex;
         }
     }

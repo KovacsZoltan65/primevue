@@ -49,7 +49,7 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
         try {
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
-            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use($request) {
                 $settingsQuery = CompSetting::search($request);
                 return $settingsQuery->get();
             });
@@ -59,7 +59,7 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
         }
     }
 
-    public function getCompSetting(int $id)
+    public function getCompSetting(int $id): CompSetting
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
@@ -73,7 +73,7 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
         }
     }
 
-    public function getCompSettingByKey(string $key)
+    public function getCompSettingByKey(string $key): CompSetting
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, $key);
@@ -87,7 +87,7 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
         }
     }
 
-    public function createCompSetting(Request $request)
+    public function createCompSetting(Request $request): CompSetting
     {
         try {
             $setting = null;
@@ -107,7 +107,7 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
         }
     }
 
-    public function updateCompSetting(Request $request, int $id)
+    public function updateCompSetting(Request $request, int $id): CompSetting
     {
         try {
             $setting = null;
@@ -127,7 +127,7 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
         }
     }
 
-    public function deleteCompSettings(Request $request)
+    public function deleteCompSettings(Request $request): int
     {
         try {
             $validated = $request->validate([
@@ -156,7 +156,7 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
         }
     }
 
-    public function deleteCompSetting(Request $request)
+    public function deleteCompSetting(Request $request): ?CompSetting
     {
         try {
             $setting = null;
@@ -174,7 +174,7 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
         }
     }
 
-    public function restoreCompSetting(Request $request)
+    public function restoreCompSetting(Request $request): ?CompSetting
     {
         try {
             $setting = null;
@@ -193,7 +193,7 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
         }
     }
 
-    public function realDeleteSetting(Request $request)
+    public function realDeleteSetting(Request $request): ?CompSetting
     {
         try {
             $setting = null;
@@ -204,8 +204,6 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
 
                 $this->cacheService->forgetAll($this->tag);
             });
-
-
 
             return $setting;
         } catch(Exception $ex) {
@@ -224,6 +222,7 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
      *
      * @return string
      */
+    #[Override]
      public function model(): string
     {
         return CompSetting::class;
@@ -232,6 +231,7 @@ class CompSettingRepository extends BaseRepository implements CompSettingReposit
     /**
      * Boot up the repository, pushing criteria
      */
+    #[Override]
      public function boot()
     {
         $this->pushCriteria(app(RequestCriteria::class));

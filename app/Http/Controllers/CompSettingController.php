@@ -35,10 +35,11 @@ class CompSettingController extends Controller
 
         $this->tag = CompSetting::getTag();
 
-        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getAppSettings', 'getAppSetting', 'getAppSettingByName']]);
-        $this->middleware("can:{$this->tag} create", ['only' => ['createAppSetting']]);
-        $this->middleware("can:{$this->tag} edit", ['only' => ['updateAppSetting']]);
-        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteAppSetting', 'deleteAppSettings']]);
+        $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getCompSettings', 'getCompSetting', 'getCompSettingByName']]);
+        $this->middleware("can:{$this->tag} create", ['only' => ['createCompSetting']]);
+        $this->middleware("can:{$this->tag} edit", ['only' => ['updateCompSetting']]);
+        $this->middleware("can:{$this->tag} delete", ['only' => ['deleteCompSetting', 'deleteCompSettings']]);
+        $this->middleware("can:{$this->tag} restore", ['only' => ['restoreCompSetting']]);
     }
 
     public function index(Request $request): InertiaResponse
@@ -159,15 +160,30 @@ class CompSettingController extends Controller
 
     public function restoreCompSetting(GetCompSettingRequest $request): JsonResponse {
         try {
-            $appSetting = $this->compSettingRepository->restoreCompSetting($request);
+            $compSetting = $this->compSettingRepository->restoreCompSetting($request);
 
-            return response()->json($appSetting, Response::HTTP_OK);
+            return response()->json($compSetting, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'restoreCompSetting model not found exception', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             return $this->handleException($ex, 'restoreCompSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             return $this->handleException($ex, 'restoreCompSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function realDeleteCompSetting(Request $request): JsonResponse
+    {
+        try {
+            $compSetting = $this->compSettingRepository->realDeleteSetting($request);
+            
+            return response()->json($compSetting, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'realDeleteSetting model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'realDeleteSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'realDeleteSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

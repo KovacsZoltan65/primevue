@@ -663,6 +663,8 @@ const upload = () => {
     fileupload.value.upload();
 };
 
+const migration = () => {};
+
 /**
  * A fájl feltöltését kezeli.
  *
@@ -717,11 +719,21 @@ const openSettingsDialog = () => {
                         :label="$t('delete')"
                         icon="pi pi-trash"
                         severity="secondary"
+                        class="mr-2"
                         @click="confirmDeleteSelected"
                         :disabled=" 
                             !selectedSubdomains || !selectedSubdomains.length
                         "
                     />
+
+                    <!-- MIGRATION -->
+                    <Button
+                        :label="$t('migration')"
+                        icon="pi pi-database"
+                        severity="secondary"
+                        @click="migration"
+                    />
+
                 </template>
 
                 <template #end>

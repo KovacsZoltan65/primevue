@@ -40,15 +40,22 @@ const toast = useToast();
 const loading = ref(true);
 const dt = ref();
 const filters = ref({});
-const company_settings = ref();
-const company_setting = ref({
+const comp_settings = ref();
+const defaultSetting = ref({
     id: null,
     company_id: null,
     key: "",
     value: "",
     active: 1,
 });
+
+const comp_setting = ref({ ...defaultSetting });
+
 const submitted = ref(false);
+
+const initialSetting = () => {
+    return { ...defaultSetting };
+};
 
 const rules = {
     company_id: {
@@ -62,23 +69,30 @@ const rules = {
     },
 };
 
-const initialSetting = () => {
-    return {...company_setting.value};
-};
+
 
 const selectedSettings = ref([]);
 const settingDialog = ref(false);
 const deleteSelectedSettingsDialog = ref(false);
 const deleteSettingDialog = ref(false);
 
-const v$ = useVuelidate(rules, company_setting);
+const v$ = useVuelidate(rules, comp_setting);
+
+const state = reactive({
+    columns: {
+        'id': { field: 'id', is_visible: true, is_sortable: true, is_filterable: true },
+        'key': { field: 'key', is_visible: true, is_sortable: true, is_filterable: true },
+        'value': { field: 'value', is_visible: true, is_sortable: true, is_filterable: true },
+        'active':  { field: 'active', is_visible: true, is_sortable: true, is_filterable: true },
+    }
+});
 
 const fetchItems = async () => {
     loading.value = true;
 
     await CompSettingsService.getSettings()
         .then((response) => {
-            company_settings.value = response.data;
+            comp_settings.value = response.data;
         })
         .catch((error) => {
             console.error("getCompSettings API Error:", error);
@@ -104,10 +118,63 @@ onMounted(() => {
 
 <template>
     <AppLayout>
-        <Head :title="$t('company_settings')" />
+        <Head :title="$t('comp_settings')" />
 
         <Toast />
 
-        {{ company_settings }}
+        <div class="card">
+            <Toolbar class="md-6"></Toolbar>
+
+            <DataTable
+                ref="dt"
+                v-model:selection="selectedSettings"
+                v-model:filters="filters"
+                filterDisplay="menu"
+                :value="comp_settings"
+                dataKey="id"
+                :paginator="true" :rows="10" sortMode="multiple"
+                :loading="loading" stripedRows removableSort
+                :globalFilterFields="['name']"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                :rowsPerPageOptions="[5, 10, 25]"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+            >
+                <!-- SELECTION -->
+                <Column
+                    selectionMode="multiple"
+                    style="width: 3rem"
+                    :exportable="false"
+                    :disabled="!props.can.appSettings_delete"
+                />
+
+                <!-- ID -->
+                <Column
+                    :field="state.columns.id.field"
+                    :header="$t(state.columns.id.field)"
+                    style="min-width: 16rem"
+                    :sortable="state.columns.id.is_sortable"
+                    :hidden="!state.columns.id.is_visible"
+                />
+
+                <!-- KEY -->
+                <Column
+                    :field="state.columns.key.field"
+                    :header="$t(state.columns.key.field)"
+                    style="min-width: 16rem"
+                    :sortable="state.columns.key.is_sortable"
+                    :hidden="!state.columns.key.is_visible"
+                />
+
+                <!-- VALUE -->
+                <Column
+                    :field="state.columns.value.field"
+                    :header="$t(state.columns.value.field)"
+                    style="min-width: 16rem"
+                    :sortable="state.columns.value.is_sortable"
+                    :hidden="!state.columns.value.is_visible"
+                />
+            </DataTable>
+        </div>
+
     </AppLayout>
 </template>

@@ -16,7 +16,7 @@ class ACSService extends BaseService {
     }
 
     getACSByName(name) {
-        return this.get(this.url + `/name/${name}`);
+        return this.get(`${this.url}/name/${name}`);
     }
 
     createACS(data) {
@@ -24,16 +24,16 @@ class ACSService extends BaseService {
     }
 
     updateACS(id, data) {
-        return this.put(this.url + `/${id}`, data);
+        return this.put(`${this.url}/${id}`, data);
     }
 
     deleteACSs(ids) {
         const query = ids.map(id => `ids[]=${id}`).join('&');
-        return this.delete(this.url + `?${query}`);
+        return this.delete(`${this.url}?${query}`);
     }
 
     deleteACS() {
-        return this.delete(this.url + `/${id}`);
+        return this.delete(`${this.url}/${id}`);
     }
 }
 

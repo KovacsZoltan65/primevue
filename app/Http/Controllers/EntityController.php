@@ -67,8 +67,8 @@ class EntityController extends Controller
     public function getEntities(Request $request): JsonResponse
     {
         try {
-            $entities = $this->entityRepository->getEntities($request);
-            $entities = EntityResource::collection($entities);
+            $_entities = $this->entityRepository->getEntities($request);
+            $entities = EntityResource::collection($_entities);
 
             return response()->json($entities, Response::HTTP_OK);
 

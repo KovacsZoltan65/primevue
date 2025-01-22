@@ -12,11 +12,11 @@ class AppSettingsService extends BaseService {
     }
 
     getSetting(id) {
-        return this.get(this.url + `/${id}`);
+        return this.get(`${this.url}/${id}`);
     }
 
     getSettingByKey(key) {
-        return this.get(this.url + `/key/${key}`);
+        return this.get(`${this.url}/key/${key}`);
     }
 
     createSetting(data) {
@@ -24,16 +24,16 @@ class AppSettingsService extends BaseService {
     }
 
     updateSetting(id, data) {
-        return this.put(this.url + `/${id}`, data);
+        return this.put(`${this.url}/${id}`, data);
     }
 
     deleteSettings(ids) {
         const query = ids.map(id => `ids[]=${id}`).join('&');
-        return this.delete(this.url + `?${query}`);
+        return this.delete(`${this.url}?${query}`);
     }
 
     deleteSetting(id) {
-        return this.delete(this.url + `/${id}`);
+        return this.delete(`${this.url}/${id}`);
     }
 }
 

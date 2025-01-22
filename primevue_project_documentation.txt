@@ -80,7 +80,7 @@ E-jelenlét egy beosztás-tervező alkalmazás, amelynek célja a munkavállaló
 - **Hierarchia implementációja**: Szülő-gyermek kapcsolatok kezelése a hierarchiatáblán keresztül.
 - **Optimista frissítések megvalósítása**: Az új cég létrehozására vonatkozóan a `createCompany` funkcióban.
 - **Beállítások inaktiválása**: Az `is_active` attribútum implementálása a `settings` és `company_setting_rel` táblákban.
-
+- **Futtatott Seed fájlnevek tárolása adatbázisban: A migrációhoz hasonlóan a seed fájlok neveit is adatbázisban tárolása. Seed futtatásakor csak az új akat kell futtatni.
 ---
 
 ## Következő Lépések (Általános)

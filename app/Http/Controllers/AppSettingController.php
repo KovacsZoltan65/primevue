@@ -21,7 +21,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use App\Traits\Functions;
 use Exception;
-use Illuminate\Support\Facades\DB;
 
 class AppSettingController extends Controller
 {
@@ -175,6 +174,21 @@ class AppSettingController extends Controller
             return $this->handleException($ex, 'restoreAppSettings query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             return $this->handleException($ex, 'restoreAppSettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function realDeleteCompSetting(Request $request): JsonResponse
+    {
+        try {
+            $appSetting = $this->appSettingRepository->realDeleteSetting($request);
+            
+            return response()->json($appSetting, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'realDeleteSetting model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'realDeleteSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'realDeleteSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

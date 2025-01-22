@@ -32,7 +32,7 @@ class CityService extends BaseService {
      * @return {Promise<AxiosResponse<City>>}
      */
     getCity(id) {
-        return this.get(this.url + `/${id}`);
+        return this.get(`${this.url}/${id}`);
     }
 
     /**
@@ -42,7 +42,7 @@ class CityService extends BaseService {
      * @returns {Promise<AxiosResponse<City>>}
      */
     getCityByName(name) {
-        return this.get(this.url + `/name/${name}`);
+        return this.get(`${this.url}/name/${name}`);
     }
     /**
      * Hozzon létre új várost az API-ban.
@@ -68,9 +68,13 @@ class CityService extends BaseService {
      * @return {Promise<AxiosResponse<City>>}
      */
     updateCity(id, data) {
-        return this.put(this.url + `/${id}`, data);
+        return this.put(`${this.url}/${id}`, data);
     }
 
+    deleteCities(ids) {
+        const query = ids.map(id => `ids[]=${id}`).join('&');
+        return this.delete(`${this.url}?${query}`);
+    }
     /**
      * Töröljön egy várost az azonosítója alapján az API-ból.
      *
@@ -81,7 +85,7 @@ class CityService extends BaseService {
      * @return {Promise<AxiosResponse<any>>}
      */
     deleteCity(id) {
-        return this.delete(this.url + `/${id}`);
+        return this.delete(`${this.url}/${id}`);
     }
 }
 export default new CityService();

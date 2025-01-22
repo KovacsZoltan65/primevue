@@ -12,11 +12,11 @@ class ActivityService extends BaseService {
     }
 
     getActivity(id) {
-        return this.get(this.url + `/${id}`);
+        return this.get(`${this.url}/${id}`);
     }
 
     getActivityByLogName(name) {
-        return this.get(this.url + `/name/${name}`);
+        return this.get(`${this.url}/name/${name}`);
     }
 };
 

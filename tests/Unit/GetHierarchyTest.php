@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Unit;
+
 //use Illuminate\Database\QueryException;
 //use Symfony\Component\HttpFoundation\Response;
 //use Tests\TestCase;

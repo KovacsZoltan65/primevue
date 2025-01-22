@@ -4,7 +4,7 @@
  * ./vendor/bin/phpunit tests/Unit/UserTest.php
  */
 
-namespace Tests\Feature;
+ namespace Tests\Unit;
 
 use App\Models\User;
 use Tests\TestCase;

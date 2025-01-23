@@ -23,10 +23,11 @@ class SubdomainStateSeeder extends Seeder
         activity()->disableLogging();
 
         $arr_subdomain_states = [
-            ['id' => 1, 'name' => 'Aktív',              'active' => 1],
-            ['id' => 2, 'name' => 'Felfüggesztve',      'active' => 1],
-            ['id' => 3, 'name' => 'Leállítva(HQ)',      'active' => 1],
-            ['id' => 4, 'name' => 'Leállítva(példány)', 'active' => 1],
+            ['id' => 1, 'name' => 'Nan',                'active' => 1],
+            ['id' => 2, 'name' => 'Aktív',              'active' => 1],
+            ['id' => 3, 'name' => 'Felfüggesztve',      'active' => 1],
+            ['id' => 4, 'name' => 'Leállítva(HQ)',      'active' => 1],
+            ['id' => 5, 'name' => 'Leállítva(példány)', 'active' => 1],
         ];
         $count = count($arr_subdomain_states);
         

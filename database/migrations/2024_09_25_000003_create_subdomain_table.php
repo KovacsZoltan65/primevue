@@ -28,7 +28,7 @@ return new class extends Migration
             $table->unsignedInteger('state_id')->default(1)->comment('Állapot azonosító');
             $table->foreign('state_id')->references('id')->on('subdomain_states')->cascadeOnDelete();
             
-            $table->unsignedInteger('acs_id')->default(0)->comment('Beléptető rendszer használata');
+            $table->unsignedInteger('acs_id')->default(1)->comment('Beléptető rendszer használata');
             $table->foreign('acs_id')->references('id')->on('acs_systems')->cascadeOnDelete();
             
             //$table->enum('is_mirror', ['0','1'])->default(0)->comment('Tükör adatbázis');

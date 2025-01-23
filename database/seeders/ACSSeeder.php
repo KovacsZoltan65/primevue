@@ -20,11 +20,12 @@ class ACSSeeder extends Seeder
         activity()->disableLogging();
         
         $arr_acs = [
-            ['id' => 1, 'name' => 'WinAccess','active' => 1],
-            ['id' => 2, 'name' => 'Enviromux','active' => 1],
-            ['id' => 3, 'name' => 'Siport','active' => 1],
-            ['id' => 4, 'name' => 'WinAccess (WC)','active' => 1],
-            ['id' => 5, 'name' => 'GenerallyACS','active' => 1],
+            ['id' => 1, 'name' => 'N','active' => 1],
+            ['id' => 2, 'name' => 'WinAccess','active' => 1],
+            ['id' => 3, 'name' => 'Enviromux','active' => 1],
+            ['id' => 4, 'name' => 'Siport','active' => 1],
+            ['id' => 5, 'name' => 'WinAccess (WC)','active' => 1],
+            ['id' => 6, 'name' => 'GenerallyACS','active' => 1],
         ];
         
         $count = count($arr_acs);

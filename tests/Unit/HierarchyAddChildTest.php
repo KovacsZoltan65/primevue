@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Unit;
+
 use App\Models\Hierarchy;
 //use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

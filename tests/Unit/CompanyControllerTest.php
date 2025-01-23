@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Unit;
+
 use App\Http\Controllers\CompanyController;
 use App\Http\Requests\GetCompanyRequest;
 use App\Http\Requests\StoreCompanyRequest;

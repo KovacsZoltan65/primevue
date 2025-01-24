@@ -881,7 +881,11 @@ const openSettingsDialog = () => {
                     :hidden="!state.columns.url.is_visible"
                     style="min-width: 16rem"
                 >
-                    <template #body="{ data }">{{ data.url }}</template>
+                    <template #body="{ data }">
+                        <a :href="data.url" target="_blank" rel="noopener noreferrer">
+                            {{ data.url }}
+                        </a>
+                    </template>
                     <template #filter="{ filterModel }">
                         <InputText
                             v-model="filterModel.value"

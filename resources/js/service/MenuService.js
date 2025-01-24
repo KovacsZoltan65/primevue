@@ -12,7 +12,7 @@ class MenuService extends BaseService {
     }
 
     getMenuItem(id) {
-        return this.get(this.url + `/${id}`);
+        return this.get(`${this.url}/${id}`);
     }
 
     createMenuItem(data) {
@@ -20,15 +20,15 @@ class MenuService extends BaseService {
     }
 
     updateMenuItem(id, data) {
-        return this.put(this.url + `/${id}`, data);
+        return this.put(`${this.url}/${id}`, data);
     }
 
     deleteMenuItem(id) {
-        return this.delete(this.url + `/${id}`);
+        return this.delete(`${this.url}/${id}`);
     }
 
     updateMenuUsage(id) {
-        return this.put(this.url + `/${id}/usage`);
+        return this.put(`${this.url}/${id}/usage`);
     }
 }
 

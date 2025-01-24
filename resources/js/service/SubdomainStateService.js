@@ -32,7 +32,7 @@ class SubdomainStateService extends BaseService {
      * @return {Promise<AxiosResponse<SubdomainState>>}
      */
     getSubdomainState(id) {
-        return this.get(this.url + `/${id}`);
+        return this.get(`${this.url}/${id}`);
     }
 
     /**
@@ -42,7 +42,7 @@ class SubdomainStateService extends BaseService {
      * @returns {Promise<AxiosResponse<SubdomainState>>}
      */
     getSubdomainStateByName(name) {
-        return this.get(this.url + `/name/${name}`);
+        return this.get(`${this.url}/name/${name}`);
     }
     /**
      * Hozzon létre új várost az API-ban.
@@ -68,7 +68,7 @@ class SubdomainStateService extends BaseService {
      * @return {Promise<AxiosResponse<SubdomainState>>}
      */
     updateSubdomainState(id, data) {
-        return this.put(this.url + `/${id}`, data);
+        return this.put(`${this.url}/${id}`, data);
     }
 
     /**
@@ -81,7 +81,7 @@ class SubdomainStateService extends BaseService {
      * @return {Promise<AxiosResponse<any>>}
      */
     deleteSubdomainState(id) {
-        return this.delete(this.url + `/${id}`);
+        return this.delete(`${this.url}/${id}`);
     }
 }
 export default new SubdomainStateService();

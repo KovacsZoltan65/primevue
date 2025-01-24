@@ -13,11 +13,11 @@ class RoleService extends BaseService {
     }
 
     getRole(id) {
-        return this.get(this.url + `/${id}`);
+        return this.get(`${this.url}/${id}`);
     }
 
     getRoleByName(name) {
-        return this.get(this.url + `/name/${name}`);
+        return this.get(`${this.url}/name/${name}`);
     }
 
     createRole(data) {
@@ -25,11 +25,11 @@ class RoleService extends BaseService {
     }
 
     updateRole(id, data) {
-        return this.put(this.url + `/${id}`, data);
+        return this.put(`${this.url}/${id}`, data);
     }
 
     deleteRole(id) {
-        return this.delete(this.url + `/${id}`);
+        return this.delete(`${this.url}/${id}`);
     }
 }
 

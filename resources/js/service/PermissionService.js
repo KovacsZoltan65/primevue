@@ -12,11 +12,11 @@ class PermissionService extends BaseService {
     }
 
     getPermission(id) {
-        return this.get(this.url + `/${id}`);
+        return this.get(`${this.url}/${id}`);
     }
 
     getPermissionByName(name) {
-        return this.get(this.url + `/name/${name}`);
+        return this.get(`${this.url}/name/${name}`);
     }
 
     createPermission(data) {
@@ -24,16 +24,16 @@ class PermissionService extends BaseService {
     }
 
     updatePermission(id, data) {
-        return this.put(this.url + `/${id}`, data);
+        return this.put(`${this.url}/${id}`, data);
     }
 
     deletePermission(ids) {
         const query = ids.map(id => `ids[]=${id}`).join('&');
-        return this.delete(this.url + `?${query}`);
+        return this.delete(`${this.url}?${query}`);
     }
 
     deletePermission(id) {
-        return this.delete(this.url + `/${id}`);
+        return this.delete(`${this.url}/${id}`);
     }
 };
 

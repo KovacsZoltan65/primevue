@@ -603,6 +603,13 @@ const deleteSelectedSubdomains = async () => {
         });
 };
 
+const migration = async () => {
+    await SubdomainService.migration(selectedSubdomains.value.map(subdomain => subdomain.id))
+        .then((response) => {})
+        .catch((error) => {})
+        .finally(() => {});
+};
+
 /**
  * Törli a kiválasztott aldomaint.
  *
@@ -662,8 +669,6 @@ const fileupload = ref();
 const upload = () => {
     fileupload.value.upload();
 };
-
-const migration = () => {};
 
 /**
  * A fájl feltöltését kezeli.
@@ -732,6 +737,9 @@ const openSettingsDialog = () => {
                         icon="pi pi-database"
                         severity="secondary"
                         @click="migration"
+                        :disabled=" 
+                            !selectedSubdomains || !selectedSubdomains.length
+                        "
                     />
 
                 </template>

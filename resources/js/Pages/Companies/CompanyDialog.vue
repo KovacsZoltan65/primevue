@@ -11,7 +11,7 @@ const props = defineProps({
     v$: Object
 });
 
-const emit = defineEmits(['hide-dialog', 'company-saved', 'update:visible']);
+const emit = defineEmits(['hide-dialog', 'save-company', 'update:visible']);
 
 // Local copy of the `visible` prop
 const localVisible = ref(props.visible);
@@ -44,14 +44,14 @@ watch(
 );
 
 const saveCompany = () => {
-    emit('company-saved', localCompany.value);
+    emit('save-company', localCompany.value);
     emit('hide-dialog');
 };
 
-const saveCompanyAndNew = () => {
-    emit('company-saved', localCompany.value);
-    localCompany.value = {};
-};
+//const saveCompanyAndNew = () => {
+//    emit('company-saved', localCompany.value);
+//    localCompany.value = {};
+//};
 
 </script>
 
@@ -72,7 +72,7 @@ const saveCompanyAndNew = () => {
                     </label>
                     <InputText
                         id="name"
-                        v-model="company.name"
+                        v-model="localCompany.name"
                         fluid
                     />
                 </FloatLabel>
@@ -93,7 +93,7 @@ const saveCompanyAndNew = () => {
                     </label>
                     <InputText
                         id="directory"
-                        v-model="company.directory"
+                        v-model="localCompany.directory"
                         fluid disabled
                     />
                 </FloatLabel>
@@ -108,7 +108,7 @@ const saveCompanyAndNew = () => {
                     </label>
                     <InputText
                         id="tax_id"
-                        v-model="company.tax_id"
+                        v-model="localCompany.tax_id"
                         fluid
                     />
                 </FloatLabel>
@@ -129,7 +129,7 @@ const saveCompanyAndNew = () => {
                     </label>
                     <InputText
                         id="registration_number"
-                        v-model="company.registration_number"
+                        v-model="localCompany.registration_number"
                         fluid
                     />
                 </FloatLabel>
@@ -152,7 +152,7 @@ const saveCompanyAndNew = () => {
                         </label>
                         <Select
                             id="country_id"
-                            v-model="company.country_id"
+                            v-model="localCompany.country_id"
                             :options="props.countries"
                             optionLabel="name"
                             optionValue="id"
@@ -177,7 +177,7 @@ const saveCompanyAndNew = () => {
                         </label>
                         <Select
                             id="city_id"
-                            v-model="company.city_id"
+                            v-model="localCompany.city_id"
                             :options="cities"
                             optionLabel="name"
                             optionValue="id"
@@ -203,7 +203,7 @@ const saveCompanyAndNew = () => {
                     </label>
                     <InputText
                         id="address"
-                        v-model="company.address"
+                        v-model="localCompany.address"
                         fluid
                     />
                 </FloatLabel>
@@ -228,7 +228,7 @@ const saveCompanyAndNew = () => {
             <Button
                 :label="$t('save')"
                 icon="pi pi-check"
-                @click="$emit('save-company')"
+                @click="saveCompany"
             />
         </template>
         

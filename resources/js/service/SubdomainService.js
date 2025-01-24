@@ -68,7 +68,7 @@ class SubdomainService extends BaseService {
      * @return {Promise<AxiosResponse<Subdomain>>}
      */
     getSubdomain(id) {
-        return this.get(this.url + `/${id}`);
+        return this.get(`${this.url}/${id}`);
     }
 
     /**
@@ -78,7 +78,7 @@ class SubdomainService extends BaseService {
      * @returns {Promise<AxiosResponse<Subdomain>>}
      */
     getSubdomainByName(name) {
-        return this.get(this.url + `/name/${name}`);
+        return this.get(`${this.url}/name/${name}`);
     }
     /**
      * Hozzon létre új várost az API-ban.
@@ -104,7 +104,12 @@ class SubdomainService extends BaseService {
      * @return {Promise<AxiosResponse<Subdomain>>}
      */
     updateSubdomain(id, data) {
-        return this.put(this.url + `/${id}`, data);
+        return this.put(`${this.url}/${id}`, data);
+    }
+
+    deleteSubdomains(ids) {
+        const query = ids.map(id => `ids[]=${id}`).join('&');
+        return this.delete(`${this.url}?${query}`);
     }
 
     /**
@@ -117,7 +122,9 @@ class SubdomainService extends BaseService {
      * @return {Promise<AxiosResponse<any>>}
      */
     deleteSubdomain(id) {
-        return this.delete(this.url + `/${id}`);
+        return this.delete(`${this.url}/${id}`);
     }
+
+    migration() {};
 }
 export default new SubdomainService();

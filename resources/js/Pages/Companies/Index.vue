@@ -15,6 +15,7 @@ import { useToast } from "primevue/usetoast";
 import Toast from 'primevue/toast';
 
 import CompanyService from "@/service/CompanyService";
+import { createId } from "@/helpers/functions";
 
 import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
@@ -27,7 +28,6 @@ import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
 import FileUpload from "primevue/fileupload";
-import { createId } from "@/helpers/functions";
 import FloatLabel from "primevue/floatlabel";
 import ErrorService from "@/service/ErrorService";
 import Message from "primevue/message";

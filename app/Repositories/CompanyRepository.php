@@ -57,7 +57,8 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
 
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $companyQuery = Company::search($request);
-                return $companyQuery->get();
+                //return $companyQuery->get();
+                return $companyQuery->paginate(10);
             });
         } catch (Exception $ex) {
             $this->logError($ex, 'getCompanies error', ['request' => $request->all()]);

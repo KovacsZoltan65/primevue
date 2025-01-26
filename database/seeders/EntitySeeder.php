@@ -17,7 +17,6 @@ class EntitySeeder extends Seeder
      */
     public function run(): void
     {
-        echo 'EntitySeeder' . PHP_EOL;
         Schema::disableForeignKeyConstraints();
         Entity::truncate();
         Schema::enableForeignKeyConstraints();
@@ -33,7 +32,6 @@ class EntitySeeder extends Seeder
             return [
                 'id' => $i,
                 'name' => "Entity_" . ($i < 10) ? "0{$i}" : $i,
-                'email' => "entity_{$i}@company.com",
                 'email' => 'entity_' . ($i < 10) ? "0{$i}" : $i . '@company.com',
                 'company_id' => $faker->randomElement($company_ids),
                 'start_date' => $faker->dateTimeBetween('-10 year', 'now'),

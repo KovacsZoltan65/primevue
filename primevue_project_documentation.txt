@@ -14,6 +14,7 @@ E-jelenlét egy beosztás-tervező alkalmazás, amelynek célja a munkavállaló
 - **Frontend**: Vue.js (PrimeVue komponens könyvtár)
 - **Backend**: Laravel 11
 - **Adatbázis**: MySQL
+- **Fejlesztés alatt használt operációs rendszer: Windows 10
 - **Csomagok**:
   - **spatie/laravel-permission**: Jogosultságkezeléshez
   - **spatie/laravel-activitylog**: Naplózás kezelése

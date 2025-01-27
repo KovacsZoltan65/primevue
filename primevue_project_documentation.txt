@@ -9,6 +9,10 @@ HQ egy vezérlő alkalmazás, mely a példányok menedzselését végzi. Új pé
 E-jelenlét egy beosztás-tervező alkalmazás, amelynek célja a munkavállalók, munkatervek és munkaidők egyszerű és hatékony kezelése. Az alkalmazás felhasználói közé tartoznak a cégek vezetői, HR-esek, és egyéb adminisztratív dolgozók.
 
 ---
+## Fontos!
+- **Törekedek a "Tiszta kód" szabályainak betartására!
+
+---
 
 ## Technológiai Stack
 - **Frontend**: Vue.js (PrimeVue komponens könyvtár)

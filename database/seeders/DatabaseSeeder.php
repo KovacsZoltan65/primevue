@@ -20,15 +20,16 @@ class DatabaseSeeder extends Seeder
             RegionsTableSeeder::class,          // - Ne változtasd meg a sorrendet!!
             CitySeeder::class,                  // - Ne változtasd meg a sorrendet!!
 
-            //CompanySeeder::class,             // - Ne változtasd meg a sorrendet!!
+            CompanySeeder::class,             // - Ne változtasd meg a sorrendet!!
 
             SubdomainStateSeeder::class,        // - Ne változtasd meg a sorrendet!!
             ACSSeeder::class,                   // - Ne változtasd meg a sorrendet!!
             SubdomainsSeeder::class,            // - Ne változtasd meg a sorrendet!!
 
-            //PersonSeeder::class,              // - Ne változtasd meg a sorrendet!!
-            //EntitySeeder::class,              // - Ne változtasd meg a sorrendet!!
+            PersonSeeder::class,              // - Ne változtasd meg a sorrendet!!
+            EntitySeeder::class,              // - Ne változtasd meg a sorrendet!!
             PersonCompanyEntitySeeder::class,
+            HierarchySeeder::class,
 
             MenuItemSeeder::class,
             MenuItemEntitiesSeeder::class,
@@ -37,8 +38,7 @@ class DatabaseSeeder extends Seeder
 
             AppSettingSeeder::class,
             CompSettingSeeder::class,
-            
-            EntitySeeder::class,
+
             SettingsMetadataSeeder::class,
 
         ]);

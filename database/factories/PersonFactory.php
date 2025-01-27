@@ -18,12 +18,12 @@ class PersonFactory extends Factory
     public function definition(): array
     {
         $gender = fake()->randomFloat(null, 0, 1) == 1 ? 'male' : 'female';
-        
+
         return [
-            'name' => fake()->name($gender), 
-            'email' => fake()->email(), 
-            'password' => fake()->password(6, 8), 
-            'language' => 'hu', 
+            'name' => fake()->name($gender),
+            'email' => fake()->unique()->safeEmail(),
+            'password' => fake()->password(6, 8),
+            'language' => 'hu',
             'birthdate' => fake()->date('Y-m-d', '-25 year'),
             // 'birthdate' => fake()->dateTimeBetween('1960-01-01', '2000-12-31')
             'active' => 1

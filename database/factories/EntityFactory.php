@@ -23,7 +23,7 @@ class EntityFactory extends Factory
     {
         return [
             'name' => $this->faker->company, // vagy bármilyen releváns adat az 'Entity' modellhez
-            'email' => $this->faker->unique()->safeEmail,
+            'email' => $this->faker->unique()->safeEmail(),
             'start_date' => $this->faker->date(),
             'end_date' => $this->faker->date(),
             'last_export' => $this->faker->dateTimeBetween('-1 years', 'now'),

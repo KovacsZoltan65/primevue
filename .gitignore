@@ -21,3 +21,4 @@ yarn-error.log
 /nbproject/
 composer.lock
 package-lock.json
+vite.config.js.timestamp-*

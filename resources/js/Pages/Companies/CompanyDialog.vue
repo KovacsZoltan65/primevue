@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, reactive } from "vue";
 import { Button, Dialog, FloatLabel, InputText, Message } from "primevue";
 
 // i18n
@@ -16,66 +16,70 @@ const props = defineProps({
     company: { type: Object, required: true },
 });
 
-const localVisible = ref(props.visible);
+//const localVisible = ref(props.visible);
 // Helyi másolat a cég adataiból, hogy a validáció megfelelően működjön
-const defaultCompany = { name: "" };
-const localCompany = ref({ ...defaultCompany });
+//const defaultCompany = { name: "" };
+//const localCompany = ref({ ...defaultCompany });
 
 const emit = defineEmits(['save-company', 'update:visible']);
+
+// Alapértelmezett üres objektum
+const defaultCompany = {
+    id: null,
+    name: "",
+    directory: "",
+    country_id: null,
+    city_id: null,
+    registration_number: null,
+    tax_id: null,
+    address: null,
+    active: 1,
+};
+
+// Helyi másolat a cég adataiból, hogy a validáció megfelelően működjön
+const localCompany = reactive({ ...defaultCompany });
 
 // Figyeljük a props.company változását és frissítjük a localCompany-t
 watch(
     () => props.company,
     (newCompany) => {
-        Object.assign(localCompany, newCompany);
-    }
+        Object.assign(localCompany, newCompany?.id ? newCompany : { ...defaultCompany });
+    },
+    { deep: true, immediate: true }
 );
 
-// Figyeljük a visible változást, és alaphelyzetbe állítjuk a formot új elem esetén
+// Figyeljük a visible változást, ha új elem, akkor reseteljük az adatokat
 watch(
     () => props.visible,
     (newVisible) => {
-        if (newVisible) {
-            Object.assign(
-                localCompany, 
-                props.company?.id ? props.company : defaultCompany
-            );
+        if (newVisible && !props.company?.id) {
+            Object.assign(localCompany, { ...defaultCompany });
         }
     }
 );
 
-// Validációs szabályok helyes beállítása
+// Validációs szabályok beállítása
 const rules = {
-    name: {
-        required: helpers.withMessage(trans("validate_name"), required),
-    },
+    name: { required },
 };
 
 const v$ = useVuelidate(rules, localCompany);
 
 const saveCompany = async () => {
-
     v$.value.$touch();
-    if( v$.value.$invalid ) {
+    if (v$.value.$invalid) {
         console.log("Validation failed");
         return;
-    } else {
-        console.log("CompanyDialog.vue saveCompany");
-
-        emit("save-company", props.company); // Emit the save event with the company data
-        emit("update:visible", false); // Close the dialog after saving
     }
-    
+
+    console.log("CompanyDialog.vue saveCompany");
+    emit("save-company", { ...localCompany });
+    emit("update:visible", false);
 };
 
 const onClose = () => {
     console.log("onClose");
-    v$.value.$reset();
-    emit("update:visible", false); // Ensure the dialog closes
-};
-
-const onHide = () => {
-    console.log("onHide");
+    emit("update:visible", false);
 };
 
 </script>
@@ -86,7 +90,7 @@ const onHide = () => {
         :style="{ width: '550px' }"
         :header="dialogTitle"
         :modal="true"
-        @hide="onHide"
+        @hide="onClose"
     >
         <div class="flex flex-col gap-6" style="margin-top: 17px;">
             <!-- NAME -->
@@ -102,16 +106,10 @@ const onHide = () => {
                         :class="{'p-invalid': v$.name.$error}"
                     />
                 </FloatLabel>
-                <Message 
-                    v-if="v$.name.$error" 
-                    size="small" 
-                    severity="error" 
-                    variant="simple"
-                >
+                <Message v-if="v$.name.$error" size="small" severity="error" variant="simple">
                     {{ $t('validation.required') }}
                 </Message>
             </div>
-
         </div>
 
         <template #footer>
@@ -127,7 +125,6 @@ const onHide = () => {
                 @click="saveCompany"
             />
         </template>
-
     </Dialog>
 </template>
 

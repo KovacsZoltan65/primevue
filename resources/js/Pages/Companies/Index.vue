@@ -82,7 +82,11 @@ const saveCompany = (company) => {
 
         <Toolbar>
             <template #start>
-                <Button label="Add Company" icon="pi pi-plus" @click="openDialog" />
+                <Button 
+                    label="Add Company" 
+                    icon="pi pi-plus" 
+                    @click="openDialog"
+                />
             </template>
         </Toolbar>
 

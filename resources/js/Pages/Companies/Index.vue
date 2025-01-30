@@ -183,7 +183,7 @@ watch(
                     :exportable="false"
                     :disabled="!props.can.companies_delete"
                 />
-                
+
                 <Column field="name" header="Name" />
                 <Column header="Actions">
                     <template #body="{ data }">
@@ -192,9 +192,6 @@ watch(
                 </Column>
             </DataTable>
         </div>
-        
-        
-        
     </AppLayout>
 </template>
 

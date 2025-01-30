@@ -6,11 +6,17 @@ import Column from "primevue/column";
 import Button from "primevue/button";
 import CompanyDialog from "./CompanyDialog.vue";
 import CompanyService from "@/service/CompanyService";
+import AppLayout from "@/Layouts/AppLayout.vue";
+import { Toast } from "primevue";
+import { Head } from "@inertiajs/vue3";
+import { FilterMatchMode } from "@primevue/core/api";
 
 const companies = ref([]);
+const selectedCompany = ref({});
 const isDialogVisible = ref(false);
 const dialogTitle = ref("");
 const loading = ref(false);
+const filters = ref({});
 
 // Alapértelmezett cégobjektum
 const defaultCompany = {
@@ -25,7 +31,7 @@ const defaultCompany = {
     active: 1,
 };
 
-const selectedCompany = ref({ ...defaultCompany });
+const selectedCompanies = ref({ ...defaultCompany });
 
 const initialCompany = () => {
     return { ...defaultCompany };
@@ -37,6 +43,17 @@ const props = defineProps({
     search: { type: Object, default: () => {}, },
     can: { type: Object, default: () => {}, },
 });
+
+const initFilters = () => {
+    filters.value = {
+        global: {value: null, matchMode: FilterMatchMode.CONTAINS},
+        name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+    }
+};
+
+const clearFilters = () => {
+    initFilters();
+};
 
 const fetchItems = () => {
     loading.value = true;
@@ -51,6 +68,8 @@ const fetchItems = () => {
             loading.value = false;
         });
 };
+
+initFilters();
 
 onMounted(() => {
     fetchItems();
@@ -105,36 +124,78 @@ watch(
 </script>
 
 <template>
-    <div>
-        <CompanyDialog
-            v-model:visible="isDialogVisible"
-            :header="dialogTitle"
-            :company="selectedCompany"
-            :countries="countries"
-            :cities="cities"
-            @save-company="saveCompany"
-            @hide-dialog="isDialogVisible = false"
-        />
+    <AppLayout>
+        <Head :title="$t('companies')" />
+        <Toast />
 
-        <Toolbar>
-            <template #start>
-                <Button
-                    label="Add Company"
-                    icon="pi pi-plus"
-                    @click="openDialog"
-                />
-            </template>
-        </Toolbar>
+        <div class="card">
+            <CompanyDialog
+                v-model:visible="isDialogVisible"
+                :header="dialogTitle"
+                :company="selectedCompany"
+                :countries="countries"
+                :cities="cities"
+                @save-company="saveCompany"
+                @hide-dialog="isDialogVisible = false"
+            />
 
-        <DataTable :value="companies" ref="dt">
-            <Column field="name" header="Name" />
-            <Column header="Actions">
-                <template #body="{ data }">
-                <Button icon="pi pi-pencil" @click="editCompany(data)" />
+            <Toolbar class="md-6">
+                <template #start>
+                    <Button
+                        label="Add Company"
+                        icon="pi pi-plus"
+                        @click="openDialog"
+                    />
                 </template>
-            </Column>
-        </DataTable>
-    </div>
+            </Toolbar>
+
+            <DataTable
+                ref="dt"
+                v-model:selection="selectedCompanies"
+                v-model:filters="filters"
+                filterDisplay="menu"
+                :value="companies"
+                dataKey="id"
+                :paginator="true" :rows="10" sortMode="multiple"
+                :loading="loading" stripedRows removableSort
+                :globalFilterFields="['name']"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                :rowsPerPageOptions="[5, 10, 25]"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+            >
+                <template #header>
+                    <div class="flex flex-wrap gap-2 items-center justify-between">
+                        <!-- SZŰRÉS TÖRLÉSE -->
+                        <Button
+                            type="button"
+                            icon="pi pi-filter-slash"
+                            :label="$t('clear')"
+                            outlined
+                            @click="clearFilter()"
+                        />
+                    </div>
+                </template>
+
+                <!-- SELECTION -->
+                <Column
+                    selectionMode="multiple"
+                    style="width: 3rem"
+                    :exportable="false"
+                    :disabled="!props.can.companies_delete"
+                />
+                
+                <Column field="name" header="Name" />
+                <Column header="Actions">
+                    <template #body="{ data }">
+                    <Button icon="pi pi-pencil" @click="editCompany(data)" />
+                    </template>
+                </Column>
+            </DataTable>
+        </div>
+        
+        
+        
+    </AppLayout>
 </template>
 
 <style scoped>

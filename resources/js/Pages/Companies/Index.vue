@@ -4,7 +4,10 @@ import Toolbar from "primevue/toolbar";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Button from "primevue/button";
+
 import CompanyDialog from "./CompanyDialog.vue";
+import CompanyDeleteDialog from "./CompanyDeleteDialog.vue";
+
 import CompanyService from "@/service/CompanyService";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { Toast } from "primevue";
@@ -14,6 +17,7 @@ import { FilterMatchMode } from "@primevue/core/api";
 const companies = ref([]);
 const selectedCompany = ref({});
 const isDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
 const dialogTitle = ref("");
 const loading = ref(false);
 const filters = ref({});
@@ -82,6 +86,21 @@ const openDialog = () => {
     isDialogVisible.value = true;
 };
 
+const openDeleteDialog = (company) => {
+    selectedCompany.value = company;
+    isDeleteDialogVisible.value = true;
+};
+
+const closeDeleteDialog = () => {
+    isDeleteDialogVisible.value = false;
+    selectedCompany.value = null;
+};
+
+const onCompanyDeleted = () => {
+    companies.value = companies.value.filter(c => c.id !== selectedCompany.value.id);
+    isDeleteDialogVisible.value = false;
+};
+
 const editCompany = (company) => {
     console.log("editCompany");
     selectedCompany.value = { ...company }; // Meglévő adat átmásolása
@@ -126,9 +145,11 @@ watch(
 <template>
     <AppLayout>
         <Head :title="$t('companies')" />
+
         <Toast />
 
         <div class="card">
+
             <CompanyDialog
                 v-model:visible="isDialogVisible"
                 :header="dialogTitle"
@@ -137,6 +158,13 @@ watch(
                 :cities="cities"
                 @save-company="saveCompany"
                 @hide-dialog="isDialogVisible = false"
+            />
+
+            <CompanyDeleteDialog 
+                v-model:visible="isDeleteDialogVisible" 
+                :selectedCompany="selectedCompany" 
+                @deleted="onCompanyDeleted" 
+                @close="closeDeleteDialog"
             />
 
             <Toolbar class="md-6">
@@ -187,7 +215,12 @@ watch(
                 <Column field="name" header="Name" />
                 <Column header="Actions">
                     <template #body="{ data }">
-                    <Button icon="pi pi-pencil" @click="editCompany(data)" />
+                        <Button 
+                            icon="pi pi-pencil" @click="editCompany(data)" class="mr-2"
+                        />
+                        <Button 
+                            icon="pi pi-trash" severity="danger" @click="openDeleteDialog(data)"
+                        />
                     </template>
                 </Column>
             </DataTable>

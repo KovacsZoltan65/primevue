@@ -104,6 +104,7 @@ const onClose = () => {
         :header="dialogTitle"
         :modal="true"
         @hide="onClose"
+        :closable="false"
     >
         <div class="flex flex-col gap-6" style="margin-top: 17px;">
 

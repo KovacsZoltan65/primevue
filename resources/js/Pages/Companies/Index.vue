@@ -160,10 +160,10 @@ watch(
                 @hide-dialog="isDialogVisible = false"
             />
 
-            <CompanyDeleteDialog 
-                v-model:visible="isDeleteDialogVisible" 
-                :selectedCompany="selectedCompany" 
-                @deleted="onCompanyDeleted" 
+            <CompanyDeleteDialog
+                v-model:visible="isDeleteDialogVisible"
+                :company="selectedCompany"
+                @deleted="onCompanyDeleted"
                 @close="closeDeleteDialog"
             />
 
@@ -215,11 +215,15 @@ watch(
                 <Column field="name" header="Name" />
                 <Column header="Actions">
                     <template #body="{ data }">
-                        <Button 
-                            icon="pi pi-pencil" @click="editCompany(data)" class="mr-2"
+                        <Button
+                            icon="pi pi-pencil"
+                            @click="editCompany(data)"
+                            class="mr-2"
                         />
-                        <Button 
-                            icon="pi pi-trash" severity="danger" @click="openDeleteDialog(data)"
+                        <Button
+                            icon="pi pi-trash"
+                            severity="danger"
+                            @click="openDeleteDialog(data)"
                         />
                     </template>
                 </Column>

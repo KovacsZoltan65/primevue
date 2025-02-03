@@ -121,9 +121,9 @@ const onClose = () => {
                         :class="{'p-invalid': v$.name.$error}"
                     />
                 </FloatLabel>
-                <Message 
-                    size="small" 
-                    severity="secondary" 
+                <Message
+                    size="small"
+                    severity="secondary"
                     variant="simple"
                 >
                     {{ $t('enter_company_name') }}
@@ -146,9 +146,9 @@ const onClose = () => {
                         :class="{'p-invalid': v$.directory.$error}"
                     />
                 </FloatLabel>
-                <Message 
-                    size="small" 
-                    severity="secondary" 
+                <Message
+                    size="small"
+                    severity="secondary"
                     variant="simple"
                 >
                     {{ $t('enter_directory') }}

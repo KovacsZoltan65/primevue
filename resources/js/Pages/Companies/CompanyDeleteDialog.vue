@@ -1,67 +1,84 @@
 <script setup>
-import { ref, watch } from 'vue';
-import { useToast } from 'primevue/usetoast';
 import { Button, Dialog } from 'primevue';
 
+// i18n
+import { trans } from "laravel-vue-i18n";
+import { reactive, watch } from 'vue';
+
+const emit = defineEmits(['delete-company', 'update:visible']);
+
 const props = defineProps({
-    entityName: String, // Az entitás megnevezése (pl. "cég")
-    deleteEndpoint: String, // Az API végpont az entitás törléséhez
-    selectedCompany: { type: Object, default: () => null } // Alapértelmezett érték null
+    visible: { type: Boolean, required: true },
+    dialogTitle: { type: String, default: "" },
+    company: { type: Object, required: true }
 });
 
-const emit = defineEmits(['deleted', 'close']);
+const defaultCompany = {
+    id: null,
+    name: "",
+    directory: "",
+    country_id: null,
+    city_id: null,
+    registration_number: null,
+    tax_id: null,
+    address: null,
+    active: 1,
+};
 
-const toast = useToast();
-const isDeleting = ref(false);
-const isDialogVisible = ref(false);
+const localCompany = reactive({ ...defaultCompany });
 
 watch(
-    () => props.selectedCompany,
-    (newValue) => {
-        isDialogVisible.value = !!newValue;
+    () => props.company,
+    (newCompany) => {
+        Object.assign(localCompany, newCompany?.id ? newCompany : { ...defaultCompany });
     },
-    { immediate: true }
+    { deep: true, immediate: true }
 );
 
-const closeDialog = () => {
-    isDialogVisible.value = false;
-    emit('close', null); // Null értéket küldünk, hogy az Index.vue kezelni tudja
+watch(
+    () => props.visible,
+    (newVisible) => {
+        if (newVisible && !props.company?.id) {
+            Object.assign(localCompany, { ...defaultCompany });
+        }
+    },
+    { deep: true, immediate: true }
+);
+
+const deleteCompany = () => {};
+
+const onClose = () => {
+    console.log('CompanyDeleteDialog onClose');
+
+    emit('update:visible', false);
 };
 
-const deleteCompany = async () => {
-    if (!props.selectedCompany) return;
-    isDeleting.value = true;
-    try {
-        // await axios.delete(`/api/companies/${props.selectedCompany.id}`);
-        toast.add({
-            severity: 'success',
-            summary: 'Sikeres törlés',
-            detail: `A(z) ${props.selectedCompany.name} cég törölve lett.`,
-            life: 3000
-        });
-        emit('deleted');
-    } catch (error) {
-        toast.add({
-            severity: 'error',
-            summary: 'Hiba történt',
-            detail: `Nem sikerült törölni a(z) ${props.selectedCompany.name} céget.`,
-            life: 3000
-        });
-    } finally {
-        isDeleting.value = false;
-        closeDialog();
-    }
-};
 </script>
 
 <template>
-    <Dialog v-model:visible="isDialogVisible" header="Cég törlése" modal>
-        <p v-if="selectedCompany">
-            Biztosan törölni szeretnéd a(z) <strong>{{ selectedCompany.name }}</strong> céget?
+    <Dialog
+        v-model:visible="props.visible"
+        header="Cég törlése" modal
+    >
+        <p>
+            Biztosan törölni akarod?
         </p>
         <template #footer>
-            <Button label="Mégse" icon="pi pi-times" @click="closeDialog" />
-            <Button label="Törlés" icon="pi pi-check" severity="danger" :loading="isDeleting" @click="deleteCompany" />
+
+            <!-- CANCEL -->
+            <Button
+                label="Mégse"
+                icon="pi pi-times"
+                @click="onClose"
+            />
+
+            <!-- DELETE -->
+            <Button
+                label="Törlés"
+                icon="pi pi-check"
+                @click="deleteCompany"
+            />
+
         </template>
     </Dialog>
 </template>

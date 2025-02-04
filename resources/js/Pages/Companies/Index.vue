@@ -79,6 +79,7 @@ onMounted(() => {
     fetchItems();
 });
 
+// Szerkesztés Dialog megnyitása
 const openDialog = () => {
     console.log("Index openDialog");
     selectedCompany.value = { ...defaultCompany }; // Üres objektum létrehozása új elemhez
@@ -86,16 +87,24 @@ const openDialog = () => {
     isDialogVisible.value = true;
 };
 
+const closeDialog = () => {
+    console.log("Index closeDialog");
+    isDialogVisible.value = false;
+};
+
+// Törlés Dialog megnyitása
 const openDeleteDialog = (company) => {
     selectedCompany.value = company;
     isDeleteDialogVisible.value = true;
 };
 
+// Törlés Dialog bezárása
 const closeDeleteDialog = () => {
     isDeleteDialogVisible.value = false;
     selectedCompany.value = null;
 };
 
+// Törlés eseménykezelő
 const onCompanyDeleted = () => {
     companies.value = companies.value.filter(c => c.id !== selectedCompany.value.id);
     isDeleteDialogVisible.value = false;
@@ -150,6 +159,7 @@ watch(
 
         <div class="card">
 
+            <!-- Cégszerkesztés Dialog -->
             <CompanyDialog
                 v-model:visible="isDialogVisible"
                 :header="dialogTitle"
@@ -157,9 +167,10 @@ watch(
                 :countries="countries"
                 :cities="cities"
                 @save-company="saveCompany"
-                @hide-dialog="isDialogVisible = false"
+                @hide-dialog="closeDialog"
             />
 
+            <!-- Törlés Dialog -->
             <CompanyDeleteDialog
                 v-model:visible="isDeleteDialogVisible"
                 :company="selectedCompany"

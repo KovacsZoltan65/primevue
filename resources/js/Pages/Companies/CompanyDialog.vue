@@ -9,11 +9,14 @@ import { trans } from "laravel-vue-i18n";
 import useVuelidate from "@vuelidate/core";
 import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
 import validationRules from '@/Validation/ValidationRules.json';
+import ErrorService from "@/service/ErrorService";
 
 const props = defineProps({
     visible: { type: Boolean, required: true },
     dialogTitle: { type: String, default: "" },
     company: { type: Object, required: true },
+    cities: { type: Array, required: true },
+    countries: { type: Array, required: true },
 });
 
 //const localVisible = ref(props.visible);
@@ -58,6 +61,25 @@ watch(
     }
 );
 
+watch(
+    () => localCompany.name,
+    (newValue) => {
+        const trimmedValue = newValue.trim() || ""; // Győződjön meg arról, hogy az érték létezik,
+                                                    // és le van vágva.
+
+        if( trimmedValue !== "" ) {
+            localCompany.directory = trimmedValue
+                .toLowerCase()                  // Átalakítás kisbetűsre.
+                .replace(/\s+/g, "_")           // Cserélje ki a szóközöket aláhúzásjelekkel.
+                .replace(/[^a-z0-9._-]/g, "")   // Távolítsa el a nem engedélyezett karaktereket.
+                .replace(/_+/g, "_")            // Több aláhúzás összevonása.
+                .replace(/^\_+|\_+$/g, "");     // Távolítsa el a bevezető vagy a záró aláhúzást.
+        } else {
+            localCompany.directory = "";
+        }
+    }
+);
+
 // Validációs szabályok beállítása
 const rules = {
     name: {
@@ -75,11 +97,35 @@ const rules = {
 
 const v$ = useVuelidate(rules, localCompany);
 
-const saveCompany = async () => {
+const saveCompany = () => {
     v$.value.$touch();
     if (v$.value.$invalid) {
         console.log("Validation failed");
+
+        // Validációs hibák összegyűjtése
+        const validationErrors = v$.value.$errors.map((error) => ({
+                field: error.$property,
+                message: trans(error.$message),
+            }));
+
+        // Adatok előkészítése logoláshoz
+        const data = {
+            componentName: "saveCompany",
+            additionalInfo: "Client-side validation failed during company update",
+            category: "Validation Error",
+            priority: "low",
+            validationErrors: validationErrors,
+        };
+        // Validációs hibák logolása
+        ErrorService.logValidationError(new Error('Client-side validation error'), data);
+
         return;
+    } else {
+        if(  localCompany.id ) {
+            createCompany();
+        } else {
+            updateCompany();
+        }
     }
 
     console.log("CompanyDialog.vue saveCompany");
@@ -87,8 +133,16 @@ const saveCompany = async () => {
     emit("update:visible", false);
 };
 
+const createCompany = () => {
+    console.log("CompanyDialog createCompany");
+};
+
+const updateCompany = () => {
+    console.log("CompanyDialog updateCompany");
+};
+
 const onClose = () => {
-    console.log("onClose");
+    console.log("CompanyDialog onClose");
 
     v$.value.$reset();
 
@@ -129,7 +183,7 @@ const onClose = () => {
                     {{ $t('enter_company_name') }}
                 </Message>
                 <small class="text-red-500" v-if="v$.name.$error">
-                    {{ v$.name.$errors[0].$message }}
+                    {{ $t(v$.name.$errors[0].$message) }}
                 </small>
             </div>
 
@@ -142,10 +196,11 @@ const onClose = () => {
                     <InputText
                         id="directory"
                         v-model="localCompany.directory"
-                        fluid
+                        fluid disabled
                         :class="{'p-invalid': v$.directory.$error}"
                     />
                 </FloatLabel>
+            <!--
                 <Message
                     size="small"
                     severity="secondary"
@@ -156,6 +211,7 @@ const onClose = () => {
                 <small class="text-red-500" v-if="v$.directory.$error">
                     {{ v$.directory.$errors[0].$message }}
                 </small>
+            -->
             </div>
 
             <!-- TAX ID & REG NO -->

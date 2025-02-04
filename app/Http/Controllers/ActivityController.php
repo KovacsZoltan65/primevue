@@ -113,14 +113,14 @@ class ActivityController extends Controller
 
     public static function logClientError(Request $request): JsonResponse
     {
-        $return_array = self::logClientError($request);
+        $return_array = self::$activityRepository->logClientError($request);
 
         return response()->json($return_array, Response::HTTP_OK);
     }
 
     public static function logClientValidationError(Request $request): JsonResponse
     {
-        $errorId = self::logClientValidationError($request);
+        $errorId = self::$activityRepository->logClientValidationError($request);
 
         return response()->json([
             'success' => true,

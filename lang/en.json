@@ -94,6 +94,7 @@
     "errors_name_required": "Name is required.",
 
     "select_country": "Select a Country",
+    "select_city": "Select a City",
 
     "specimens": "Specimens",
 
@@ -119,6 +120,16 @@
     "companies_delete_details": "Confirm Deletion",
     "companies_delete_title_2": "Companies Deletion",
     "companies_delete_details_2": "Confirm Deletion",
+
+    "enter_company_name": "Enter Company Name",
+    "enter_company_email": "Enter Company Email",
+    "enter_company_code": "Enter Company Code",
+    "enter_company_region": "Enter Company Region",
+    "enter_company_country": "Enter Company Country",
+    "enter_company_city": "Enter Company City",
+    "enter_address": "Enter the address",
+    "enter_registration_number": "Enter the registration number",
+    "enter_tax_id": "Enter your tax number",
 
     "subdomains": "Subdomains",
 
@@ -146,6 +157,7 @@
     "validate_boolean": "This field must be true or false.",
     "validate_string": "This field must be a string.",
     "validate_same_as": "the two fields are not the same.",
+    "validate_tax_id": "Tax ID number is required.",
 
     "error_400": "Bad Request",
     "error_401": "Unauthorized! Redirecting to login...",

@@ -4,6 +4,7 @@ import { Button, Dialog } from 'primevue';
 // i18n
 import { trans } from "laravel-vue-i18n";
 import { reactive, watch } from 'vue';
+import CompanyService from '@/service/CompanyService';
 
 const emit = defineEmits(['delete-company', 'update:visible']);
 
@@ -45,7 +46,20 @@ watch(
     { deep: true, immediate: true }
 );
 
-const deleteCompany = () => {};
+const deleteCompany = () => {
+    console.log("CompanyDialog.vue deleteCompany");
+
+    const originalCompany = { ...props.company };
+
+    CompanyService.deleteCompany(props.company.id)
+    .then((response) => {
+        emit("delete-company", { ...props.company });
+        emit("update:visible", false);
+    })
+    .catch((error) => {
+        //
+    });
+};
 
 const onClose = () => {
     console.log('CompanyDeleteDialog onClose');
@@ -59,17 +73,18 @@ const onClose = () => {
     <Dialog
         v-model:visible="props.visible"
         header="Cég törlése" modal
+        :closable="false"
     >
-        <p>
-            Biztosan törölni akarod?
+        <p v-if="company">
+            Biztosan törölni szeretnéd a(z) <strong>{{ company.name }}</strong> céget?
         </p>
         <template #footer>
 
             <!-- CANCEL -->
             <Button
-                label="Mégse"
+                label="Mégsem"
                 icon="pi pi-times"
-                @click="onClose"
+                @click="onClose" text
             />
 
             <!-- DELETE -->

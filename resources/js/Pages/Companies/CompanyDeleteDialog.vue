@@ -6,14 +6,17 @@ import { trans } from "laravel-vue-i18n";
 import { reactive, watch } from 'vue';
 import CompanyService from '@/service/CompanyService';
 
+// Eseményekezelők
 const emit = defineEmits(['delete-company', 'update:visible']);
 
+// Props
 const props = defineProps({
     visible: { type: Boolean, required: true },
     dialogTitle: { type: String, default: "" },
     company: { type: Object, required: true }
 });
 
+// Cégobjektum
 const defaultCompany = {
     id: null,
     name: "",
@@ -26,8 +29,10 @@ const defaultCompany = {
     active: 1,
 };
 
+// Lokális cégobjektum
 const localCompany = reactive({ ...defaultCompany });
 
+// Figyelők
 watch(
     () => props.company,
     (newCompany) => {
@@ -46,6 +51,7 @@ watch(
     { deep: true, immediate: true }
 );
 
+// Cég törlése
 const deleteCompany = () => {
     console.log("CompanyDialog.vue deleteCompany");
 
@@ -61,6 +67,7 @@ const deleteCompany = () => {
     });
 };
 
+// Dialógus bezárása
 const onClose = () => {
     console.log('CompanyDeleteDialog onClose');
 

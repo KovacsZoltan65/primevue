@@ -14,6 +14,8 @@ import { Toast } from "primevue";
 import { Head } from "@inertiajs/vue3";
 import { FilterMatchMode } from "@primevue/core/api";
 
+import { createId } from "@/helpers/functions";
+
 const companies = ref([]);
 const selectedCompany = ref({});
 const isDialogVisible = ref(false);
@@ -41,6 +43,15 @@ const initialCompany = () => {
     return { ...defaultCompany };
 };
 
+/**
+ * Az alkatrésznek átadott kellékek.
+ *
+ * @typedef {Object} Props
+ * @property {Object} countries - Országok objektum.
+ * @property {Object} cities - Városok objektum.
+ * @property {Object} search - Kereső beviteli mezők.
+ * @property {Object} can - Jogosultságok.
+ */
 const props = defineProps({
     countries: { type: Object, default: () => {}, },
     cities: { type: Object, default: () => {}, },
@@ -48,6 +59,9 @@ const props = defineProps({
     can: { type: Object, default: () => {}, },
 });
 
+/**
+ * Beállítja az alapértelmezett értékeket a szürőmezők számára.
+ */
 const initFilters = () => {
     filters.value = {
         global: {value: null, matchMode: FilterMatchMode.CONTAINS},
@@ -55,10 +69,19 @@ const initFilters = () => {
     }
 };
 
+/**
+ * Beállítja az alapértelmezett értékeket a szürőmezők számára.
+ */
 const clearFilters = () => {
     initFilters();
 };
 
+/**
+ * Lekéri a cégeket a szerverről, és elmenti a companies változóban.
+ * A folyamat során a loading változóban eltárolja a folyamat állapotát.
+ *
+ * @async
+ */
 const fetchItems = () => {
     loading.value = true;
     CompanyService.getCompanies()
@@ -73,8 +96,13 @@ const fetchItems = () => {
         });
 };
 
+// Beállítja az alapértelmezett értékeket a szürőmezők számára.
 initFilters();
 
+/**
+ * Az alkatrész életciklus-kampója, amelyet az alkatrész felszerelésekor hívnak meg.
+ * Lekéri a cégek listáját a szerverről.
+ */
 onMounted(() => {
     fetchItems();
 });
@@ -82,46 +110,75 @@ onMounted(() => {
 // Szerkesztés Dialog megnyitása
 const openDialog = () => {
     console.log("Index openDialog");
-    selectedCompany.value = { ...defaultCompany }; // Üres objektum létrehozása új elemhez
+    // Üres objektum létrehozása új elemhez
+    selectedCompany.value = { ...defaultCompany };
     dialogTitle.value = "Add Company";
     isDialogVisible.value = true;
 };
 
+/**
+ * Bezárja a vállalati párbeszédpanelt a láthatóságának false értékre állításával.
+ */
 const closeDialog = () => {
     console.log("Index closeDialog");
     isDialogVisible.value = false;
 };
 
-// Törlés Dialog megnyitása
+/**
+ * Megnyitja egy cég törlési párbeszédpanelt.
+ *
+ * @param {Object} company - Törlendő cég
+ */
 const openDeleteDialog = (company) => {
     selectedCompany.value = company;
     isDeleteDialogVisible.value = true;
 };
 
-// Törlés Dialog bezárása
+/**
+ * Bezárja a cég törlési párbeszédpanelt 
+ * a láthatóságának false értékre állításával 
+ * és a kiválasztott cég nullázásával.
+ */
 const closeDeleteDialog = () => {
     isDeleteDialogVisible.value = false;
     selectedCompany.value = null;
 };
 
-// Törlés eseménykezelő
+/**
+ * Frissíti a cégek listáját a törlés után.
+ * A törlött cég eltávolítása a listából,
+ * és a törlési párbeszédpanel zárása.
+ */
 const onCompanyDeleted = () => {
     companies.value = companies.value.filter(c => c.id !== selectedCompany.value.id);
     isDeleteDialogVisible.value = false;
 };
 
+/**
+ * Megnyitja a cég szerkesztési párbeszédpanelt.
+ *
+ * @param {Object} company - A szerkesztendő cég
+ */
 const editCompany = (company) => {
     console.log("editCompany");
-    selectedCompany.value = { ...company }; // Meglévő adat átmásolása
+    selectedCompany.value = { ...company };
     dialogTitle.value = "Edit Company";
     isDialogVisible.value = true;
 };
 
+/**
+ * Vállalat mentése a cégek listájára.
+ * Ha a cégnek nincs azonosítója, generál egy azonosítót, és hozzáadja a céget a listához.
+ * Ha a cég már szerepel a listában, frissíti a meglévő céget.
+ * Mentés után bezárja a vállalati párbeszédpanelt.
+ *
+ * @param {Object} company - Az elmentendő cég
+ */
 const saveCompany = (company) => {
     console.log("Index.vue saveCompany");
 
     if (!company.id) {
-        company.id = Date.now(); // Ideiglenes ID generálása
+        company.id = Date.now();
         companies.value.push(company);
     } else {
         const index = companies.value.findIndex(c => c.id === company.id);

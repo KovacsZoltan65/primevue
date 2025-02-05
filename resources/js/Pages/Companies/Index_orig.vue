@@ -17,21 +17,10 @@ import Toast from 'primevue/toast';
 import CompanyService from "@/service/CompanyService";
 import { createId } from "@/helpers/functions";
 
-import Toolbar from "primevue/toolbar";
-import DataTable from "primevue/datatable";
-import Column from "primevue/column";
-import IconField from "primevue/iconfield";
-import InputText from "primevue/inputtext";
-import InputIcon from "primevue/inputicon";
-import Button from "primevue/button";
-import Dialog from "primevue/dialog";
-import Select from "primevue/select";
-import Tag from "primevue/tag";
-import FileUpload from "primevue/fileupload";
-import FloatLabel from "primevue/floatlabel";
-import ErrorService from "@/service/ErrorService";
-import Message from "primevue/message";
-import Checkbox from "primevue/checkbox";
+import {Toolbar,DataTable,Column,IconField,
+    InputText,InputIcon,Button,Dialog,
+    Select,Tag,FileUpload,FloatLabel,
+    ErrorService,Message,Checkbox} from "primevue";
 
 /**
  * Szerver felöl jövő adatok
@@ -118,8 +107,15 @@ const rules = {
  *
  * @type {Object}
  */
- const v$ = useVuelidate(rules, company);
+const v$ = useVuelidate(rules, company);
 
+/**
+ * Reaktív állapot a DataTable oszlopkonfigurációjának kezeléséhez.
+ *
+ * Minden oszlop rendelkezik olyan tulajdonságokkal, amelyek meghatározzák láthatóságát, rendezhetőségét és szűrhetőségét.
+ * Az állapot dinamikusan szabályozza, hogy mely oszlopok jelenjenek meg vagy rejtsenek el,
+ * és hogy rendezhetők-e vagy szűrhetők-e a felhasználói felületen.
+ */
 const state = reactive({
     columns: {
         'id': { field: 'id', is_visible: true, is_sortable: true, is_filterable: true },

@@ -15,12 +15,13 @@ import { useToast } from "primevue/usetoast";
 import Toast from 'primevue/toast';
 
 import CompanyService from "@/service/CompanyService";
+import ErrorService from "@/service/ErrorService";
 import { createId } from "@/helpers/functions";
 
 import {Toolbar,DataTable,Column,IconField,
     InputText,InputIcon,Button,Dialog,
     Select,Tag,FileUpload,FloatLabel,
-    ErrorService,Message,Checkbox} from "primevue";
+    Message,Checkbox} from "primevue";
 
 /**
  * Szerver felöl jövő adatok

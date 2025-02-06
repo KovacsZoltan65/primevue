@@ -101,18 +101,59 @@ const selectedEntities = ref([]);
 const settingsDialog = ref(false);
 const entityDialog = ref(false);
 const deleteSelectedEntitiesDialog = ref(false);
-const deleteSelectedEntityDialog = ref(false);
+const deleteEntityDialog = ref(false);
 
 const fetchItems = async () => {
     loading.value = true;
 
     await EntityService.getEntities()
-        .then(() => {})
-        .catch(() => {})
-        .finally(() => {
+        .then((response) => {
+            entities.value = response.data;
+        }).catch((error) => {
+            console.log('getEntities API Error:', error);
+
+            ErrorService.logClientError(error, {
+                componentName: "Fetch Entities",
+                additionalInfo: "Failed to receive the entities",
+                category: "Error",
+                priority: "high",
+                data: null,
+            })
+        }).finally(() => {
             loading.value = false;
         });
 };
+
+onMounted(() => {
+    fetchItems();
+
+    let columns = localStorage.getItem(local_storage_column_key);
+    if( columns ) {
+        columns = JSON.parse(columns);
+        for( const column_name in columns ) {
+            state.columns[column_name] = columns[column_name];
+        }
+    }
+});
+
+const hideDialog = () => {
+    entitiy.value = initialEntity();
+    settingsDialog.value = false;
+    entityDialog.value = false;
+    deleteSelectedEntityDialog.value = false;
+    deleteEntityDialog.value = false;
+    submitted.value = false;
+
+    v$.value.$reset();
+};
+
+const openNew = () => {
+    entity.value = initialEntity();
+    submitted.value = false;
+    entityDialog.value = true;
+}
+
+
 
 </script>
 

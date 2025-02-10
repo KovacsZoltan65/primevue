@@ -88,7 +88,7 @@ class City extends Model
      */
     public function scopeActive(Builder $query)
     {
-        return $query->where('active', 1);
+        return $query->where('active', '=', 1);
     }
 
     /**

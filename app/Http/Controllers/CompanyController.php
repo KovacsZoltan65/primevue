@@ -201,7 +201,7 @@ class CompanyController extends Controller
         } catch(QueryException $ex) {
             return $this->handleException($ex, 'deleteCompany database error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
-            return $this->handleException($ex, 'deleteCompany database error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'deleteCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

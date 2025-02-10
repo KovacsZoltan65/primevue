@@ -47,6 +47,11 @@ class Hierarchy extends Model
         return self::$logName;
     }
 
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', '=', 1);
+    }
+    
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Entity::class, 'parent_id');

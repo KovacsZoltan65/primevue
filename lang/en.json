@@ -192,6 +192,9 @@
     "migration_creating_subdomain_states": "Creating Subdomain States ...",
     "migration_created_subdomain_states": "Subdomain States Created",
 
+    "migration_creating_shift_types": "Creating technical types...",
+    "migration_created_shift_types": "Shift types created",
+
     "command_company_description": "Create, update, or delete a company with provided data or random values.",
     "command_company_actions": "create, update, delete or list a company",
     "command_company_data": "Data in JSON format for the company",

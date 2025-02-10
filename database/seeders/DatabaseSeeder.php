@@ -43,6 +43,11 @@ class DatabaseSeeder extends Seeder
 
             SettingsMetadataSeeder::class,
 
+            // Műszak típusok
+            ShiftTypeSeeder::class,
+            // Műszakok
+            EntityShiftSeeder::class,
+
         ]);
 
         // User::factory(10)->create();

@@ -28,4 +28,9 @@ class Activity extends SpatieActivity
             });
         });
     }
+    
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', '=', 1);
+    }
 }

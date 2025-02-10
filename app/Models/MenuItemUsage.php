@@ -42,6 +42,11 @@ class MenuItemUsage extends Model
         return self::$logName;
     }
 
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', '=', 1);
+    }
+    
     /**
      * Szerezze be a rekordhoz tartozó menüpontot.
      *

@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\DB;
 use App\Interfaces\EntityShiftRepositoryInterface;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Eloquent\BaseRepository;
-use Prettus\Repository\Criteria\RequestCriteria;
 use App\Models\EntityShift;
 use App\Services\CacheService;
 use App\Traits\Functions;
@@ -21,18 +20,18 @@ use Exception;
 class EntityShiftRepository extends BaseRepository implements EntityShiftRepositoryInterface
 {
     use Functions;
-    
+
     protected CacheService $cacheService;
-    
+
     protected string $tag = 'entities_shifts';
-    
+
     public function __construct(CacheService $cacheService)
     {
-        $this->tag = \App\Models\EntityShift::getTag();
-        
+        $this->tag = EntityShift::getTag();
+
         $this->cacheService = $cacheService;
     }
-    
+
     public function getActiveEntityShifts()
     {
         try {
@@ -42,14 +41,14 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
                 ->orderBy('name')
                 ->where('active', '=', 1)
                 ->get()->toArray();
-            
+
             return $entity_shifts;
         } catch( Exception $ex ) {
             $this->logError($ex, 'getActiveEntityShifts error', []);
             throw $ex;
         }
     }
-    
+
     public function getEntitiesShifts(Request $request)
     {
         try {
@@ -64,7 +63,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
             throw $ex;
         }
     }
-    
+
     public function getEntityShift(int $id)
     {
         try {
@@ -78,7 +77,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
             throw $ex;
         }
     }
-    
+
     public function getEntityShiftByName(string $name)
     {
         try {
@@ -92,7 +91,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
             throw $ex;
         }
     }
-    
+
     public function createEntityShift(Request $request)
     {
         try{
@@ -114,7 +113,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
             throw $ex;
         }
     }
-    
+
     public function updateEntityShift($request, int $id)
     {
         try {
@@ -123,7 +122,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
                 $company = EntityShift::lockForUpdate()->findOrFail($id);
                 $company->update($request->all());
                 $company->refresh();
-                
+
                 $this->cacheService->forgetAll($this->tag);
             });
 
@@ -133,7 +132,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
             throw $ex;
         }
     }
-    
+
     public function deleteEntitiesShifts(Request $request)
     {
         try {
@@ -162,7 +161,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
             throw $ex;
         }
     }
-    
+
     public function deleteEntityShift(Request $request)
     {
         try {
@@ -180,7 +179,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
             throw $ex;
         }
     }
-    
+
     public function restoreEntityShift(Request $request): EntityShift
     {
         try {
@@ -198,7 +197,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
             throw $ex;
         }
     }
-    
+
     public function realDeleteEntityShift(int $id): EntityShift
     {
         try {
@@ -217,12 +216,12 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
             throw $ex;
         }
     }
-    
-    private function createDefaultSettings(Company $company): void
+
+    private function createDefaultSettings(EntityShift $entityShift): void
     {
         //
     }
-    
+
     /**
      * Specify Model class name
      *

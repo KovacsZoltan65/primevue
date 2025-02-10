@@ -139,7 +139,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         try {
             $validated = $request->validate([
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
-                'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
+                'ids.*' => 'integer|exists:companies,id', // Az id-k egész számok és létező cégek legyenek
             ]);
 
             $ids = $validated['ids'];

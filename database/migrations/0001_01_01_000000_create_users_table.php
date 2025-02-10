@@ -18,12 +18,14 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable()->comment('Email ellenőrizve ekkor');
             $table->string('password')->comment('Jelszó');
             $table->string('language', 5)->default('hu')->comment('Nyelv');
+            $table->date('birthdate')->nullable()->comment('Születési dátum');
             $table->rememberToken()->comment('Emlékeztető');
+            $table->boolean('active')->default(1)->comment('Aktív jelző');
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
-            
+
             $table->timestamps();
-            $table->softDeletes();
+            $table->softDeletes()->comment('Lágy törlés dátuma');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

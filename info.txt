@@ -7,6 +7,9 @@ https://github.com/primefaces/sakai-vue
 https://sakai.primevue.org/pages/crud
 https://github.com/Laravel-Lang/lang/tree/main
 
+rider nyelvi ellenőrzés kikapcsolása:
+    File | Settings | Editor | Inspection Settings | Inspection Severity | Other Languages -> Proofreading -> Typo
+
 package.json
 dependencies:
     npm install primevue

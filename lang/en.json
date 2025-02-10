@@ -27,6 +27,8 @@
     "cities_title": "Manage Cities",
     "cities_details": "City Details",
     "city": "City",
+    "registration_number": "Reg. Num.",
+    "tax_id": "Tax ID,",
 
     "countries": "Countries",
     "countries_title": "",
@@ -70,6 +72,13 @@
     "key": "Key",
     "value": "Value",
     "id": "#",
+    "url": "URL",
+    "address": "Address",
+
+    "db_name": "DB Name",
+    "db_user": "DB User",
+    "db_password": "DB Password",
+    "subdomain": "Subdomain",
 
     "loader": "Loading customers data. Please wait.",
     "data_not_found": "No :data found.",
@@ -158,6 +167,8 @@
     "validate_string": "This field must be a string.",
     "validate_same_as": "the two fields are not the same.",
     "validate_tax_id": "Tax ID number is required.",
+    "validate_directory": "Directory is required",
+    "validate_registration_number": "Reg. No. is required",
 
     "error_400": "Bad Request",
     "error_401": "Unauthorized! Redirecting to login...",

@@ -11,31 +11,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('person_company', function(Blueprint $table) {
+        Schema::create('user_company_rel', function(Blueprint $table) {
             $table->id()->comment('Rekord azonosító');
-            
-            $table->unsignedBigInteger('person_id')->index()->comment('Személy azonosító. A kapcsolódó Persons azonosítója.');
-            $table->unsignedBigInteger('company_id')->index()->comment('Cég azonosító. A kapcsolódó Companies azonosítója.');
-            
-            // Egyedi kulcs a párosításokra
-            $table->unique(['person_id', 'company_id'], 'person_company_unique');
 
-            $table->foreign('person_id')->references('id')->on('persons')->cascadeOnDelete();
+            $table->unsignedBigInteger('user_id')->index()->comment('Személy azonosító. A kapcsolódó Persons azonosítója.');
+            $table->unsignedBigInteger('company_id')->index()->comment('Cég azonosító. A kapcsolódó Companies azonosítója.');
+
+            // Egyedi kulcs a párosításokra
+            $table->unique(['user_id', 'company_id'], 'user_company_unique');
+
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->foreign('company_id')->references('id')->on('companies')->cascadeOnDelete();
-            
+
             $table->timestamps();
             $table->softDeletes()->comment('Lágy törlés dátuma');
         });
-        
+
         //Schema::create('company_entity', function(Blueprint $table) {
         //    $table->id()->comment('Rekord azonosító');
-            
+
         //    $table->unsignedBigInteger('company_id')->comment('Cég azonosító. A kapcsolódó Companies azonosítója.');
         //    $table->unsignedBigInteger('entity_id')->unique()->comment('Entitás azonosító. A kapcsolódó Entities azonosítója.');
-            
+
         //    $table->foreign('company_id')->references('id')->on('companies')->cascadeOnDelete();
         //    $table->foreign('entity_id')->references('id')->on('entities')->cascadeOnDelete();
-            
+
         //    $table->timestamps();
         //    $table->softDeletes();
         //});
@@ -46,7 +46,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('person_company');
-        Schema::dropIfExists('company_entity');
+        Schema::dropIfExists('user_company_rel');
+        //Schema::dropIfExists('company_entity');
     }
 };

@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\Company;
 use App\Models\Entity;
 use App\Models\Hierarchy;
-use App\Models\Person;
+use App\Models\User;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
@@ -26,13 +26,15 @@ class EntitySeeder extends Seeder
 
         $faker = Factory::create();
         $company_ids = Company::pluck('id')->toArray();
-        $person_ids = Person::pluck('id')->toArray();
+        //$person_ids = Person::pluck('id')->toArray();
+        $user_ids = User::pluck('id')->toArray();
 
-        $arr_entities = array_map(function ($i) use ($faker, $company_ids, $person_ids): array {
+        $arr_entities = array_map(function ($i) use ($faker, $company_ids, $user_ids): array {
             return [
                 'id' => $i,
                 'name' => "Entity_" . ($i < 10) ? "0{$i}" : $i,
                 'email' => 'entity_' . ($i < 10) ? "0{$i}" : $i . '@company.com',
+                'user_id' => $faker->randomElement($user_ids),
                 'company_id' => $faker->randomElement($company_ids),
                 'start_date' => $faker->dateTimeBetween('-10 year', 'now'),
                 'end_date' => $faker->dateTimeBetween('now', '+10 year'),

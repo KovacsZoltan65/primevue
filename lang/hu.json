@@ -27,6 +27,8 @@
     "cities_title": "Városok kezelése",
     "cities_details": "Város részletei",
     "city": "Város",
+    "registration_number": "Reg. Szám",
+    "tax_id": "Adószám",
 
     "countries": "Országok",
     "countries_title": "Országok kezelése",
@@ -69,6 +71,13 @@
     "key": "Kulcs",
     "value": "Érték",
     "id": "#",
+    "url": "URL",
+    "address": "Cím",
+
+    "db_name": "DB Név",
+    "db_user": "DB User",
+    "db_password": "DB Jelszó",
+    "subdomain": "Aldomain",
 
     "loader": ":data adatok betöltése. Kérjük, várjon.",
     "data_not_found": "Nem található :data.",
@@ -155,6 +164,8 @@
     "validate_string": "Ennek a mezőnek karakterláncnak kell lennie.",
     "validate_same_as": "A két mező nem egyforma.",
     "validate_tax_id": "Az adószám megadása kötelező",
+    "validate_directory": "A könyvtár megadása kötelező",
+    "validate_registration_number": "A reg.no megadása kötelező",
 
     "error_400": "Rossz kérés",
     "error_401": "Jogosulatlan! Átirányítás a bejelentkezéshez...",

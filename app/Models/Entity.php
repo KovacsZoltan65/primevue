@@ -19,13 +19,19 @@ class Entity extends Model
         LogsActivity;
 
     protected $table = 'entities';
-    protected $fillable = ['name', 'email', 'start_date', 'end_date', 'last_export', 'company_id', 'active'];
+    protected $fillable = [
+        'name', 'email',
+        'start_date', 'end_date',
+        'last_export', 'user_id',
+        'company_id', 'active'
+    ];
     protected $attributes = [
         'name' => '',
         'email' => '',
         'start_date' => null,
         'end_date' => null,
         'last_export' => null,
+        'user_id' => null,
         'company_id' => null,
         'active' => 1
     ];

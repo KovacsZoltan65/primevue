@@ -26,9 +26,11 @@ class DatabaseSeeder extends Seeder
             ACSSeeder::class,                   // - Ne változtasd meg a sorrendet!!
             SubdomainsSeeder::class,            // - Ne változtasd meg a sorrendet!!
 
-            PersonSeeder::class,              // - Ne változtasd meg a sorrendet!!
+            // Összevonva az users -el
+            //PersonSeeder::class,              // - Ne változtasd meg a sorrendet!!
+
             EntitySeeder::class,              // - Ne változtasd meg a sorrendet!!
-            PersonCompanyEntitySeeder::class,
+            CompanyEntitySeeder::class,
             HierarchySeeder::class,
 
             MenuItemSeeder::class,

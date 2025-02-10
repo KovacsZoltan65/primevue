@@ -14,6 +14,7 @@ use Spatie\Permission\Traits\HasRoles;
 use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -96,6 +97,57 @@ class User extends Authenticatable
                 $query->where('name', 'like', "%{$request->search}%");
             });
         });
+        */
+    }
+
+    /**
+     * =========================================================
+     * Azok a cégek, amelyekhez az adott személy tartozik.
+     * =========================================================
+     * $user = User::find(1);
+     * $companies = $user->companies;
+     * foreach ($companies as $company) {
+     *     echo $company->name;
+     * }
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function companies(): BelongsToMany
+    {
+        return $this->belongsToMany(Company::class, 'user_company_rel');
+    }
+
+    /**
+     * =========================================================
+     * Azok az entitások, amelyekhez az adott személy a cégén keresztül tartozik.
+     * =========================================================
+     * $person = Person::find(1);
+     * $entities = $person->entities;
+     * foreach ($entities as $entity) {
+     *     echo $entity->name;
+     * }
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function entities(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Entity::class,  // Cél tábla
+            Company::class, // Közvetítő tábla
+            'id',           // A `companies` idegen kulcsa a `person_company`-ban
+            'company_id',   // Az `entities` idegen kulcsa
+            'id',           // A `users` kulcsa
+            'id'            // A `companies` kulcsa
+        );
+
+        /*
+        return $this->hasManyThrough(
+            Entity::class,      // Cél tábla
+            Company::class,     // Közvetítő tábla
+            'person_company',
+            'company_id',
+            'id',
+            'id'
+        );
         */
     }
 

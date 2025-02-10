@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Company;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Entity>
@@ -28,6 +29,7 @@ class EntityFactory extends Factory
             'end_date' => $this->faker->date(),
             'last_export' => $this->faker->dateTimeBetween('-1 years', 'now'),
             'active' => 1,
+            'user_id' => User::factory(),
             'company_id' => Company::factory(), // Alapértelmezett esetben egy új céget hoz létre, ha nincs megadva.
         ];
     }

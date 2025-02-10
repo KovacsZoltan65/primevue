@@ -131,16 +131,16 @@ php artisan make:request GetEntityCalendarRequest
 php artisan make:request StoreEntityCalendarRequest
 php artisan make:request UpdateEntityCalendarRequest
 
-php artisan make:model Shift
-php artisan make:controller ShiftController
-php artisan make:repository Shift
-php artisan make:migration CreateShiftTable
-php artisan make:seeder ShiftSeeder
-php artisan make:factory ShiftFactory
-php artisan make:resource ShiftResource
-php artisan make:request GetShiftRequest
-php artisan make:request StoreShiftRequest
-php artisan make:request UpdateShiftRequest
+php artisan make:model EntityShift
+php artisan make:controller EntityShiftController
+php artisan make:repository EntityShift
+php artisan make:migration CreateEntityShiftTable
+php artisan make:seeder EntityShiftSeeder
+php artisan make:factory EntityShiftFactory
+php artisan make:resource EntityShiftResource
+php artisan make:request GetEntityShiftRequest
+php artisan make:request StoreEntityShiftRequest
+php artisan make:request UpdateEntityShiftRequest
 
 php artisan make:model ShiftType
 php artisan make:controller ShiftTypeController

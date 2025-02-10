@@ -17,7 +17,14 @@ class ShiftTypeFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'company_id' => '',
+            'code' => '',
+            'name' => '',
+            'trunk_time_start' => '',
+            'trunk_time_end' => '',
+            'edge_time_start' => '',
+            'edge_time_end' => '',
+            'active' => '',
         ];
     }
 }

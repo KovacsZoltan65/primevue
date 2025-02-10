@@ -65,6 +65,11 @@ class Person extends Model
             });
     }
 
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', '=', 1);
+    }
+    
     /**
      * =========================================================
      * Azok a cégek, amelyekhez az adott személy tartozik.

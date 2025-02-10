@@ -86,6 +86,11 @@ class Subdomain extends Model
         });
     }
 
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', '=', 1);
+    }
+    
     /**
      * Aldomaint keres az azonosítója alapján.
      *

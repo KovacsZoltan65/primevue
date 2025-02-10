@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreShiftRequest extends FormRequest
+class StoreEntityShiftRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

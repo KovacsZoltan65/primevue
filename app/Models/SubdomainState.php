@@ -52,6 +52,11 @@ class SubdomainState extends Model
         return self::$logName;
     }
 
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', '=', 1);
+    }
+    
     /**
      * Határozza meg a lekérdezést, hogy a keresési kifejezésnek megfelelő névvel rendelkező aldomain állapotokat is tartalmazzon.
      *

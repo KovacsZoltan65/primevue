@@ -2,23 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Override;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
-class Hierarchy extends Model
+class EntityShift extends Model
 {
     use HasFactory,
+        SoftDeletes,
         LogsActivity;
 
-    protected $table = 'hierarchy';
-
-    protected $fillable = [
-        'parent_id',
-        'child_id',
+    protected $table = 'entities_shifts';
+    protected $fillable = [];
+    protected $casts = [
+        'active' => 'integer',
     ];
 
     /*
@@ -30,7 +26,7 @@ class Hierarchy extends Model
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
     protected static $logAttributes = ['*'];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
-    protected static $logName = 'hierarchy';
+    protected static $logName = 'entities_shifts';
 
     protected static $recordEvents = [
         'created',
@@ -51,20 +47,10 @@ class Hierarchy extends Model
     {
         return $query->where('active', '=', 1);
     }
-    
-    public function parent(): BelongsTo
-    {
-        return $this->belongsTo(Entity::class, 'parent_id');
-    }
-
-    public function child(): BelongsTo
-    {
-        return $this->belongsTo(Entity::class, 'child_id');
-    }
 
     #[Override]
-    public function getActivitylogOptions(): LogOptions {
-        return LogOptions::defaults()
-            ->logFillable();
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logFillable();
     }
 }

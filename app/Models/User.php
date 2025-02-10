@@ -99,6 +99,11 @@ class User extends Authenticatable
         */
     }
 
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', '=', 1);
+    }
+    
     #[Override]
     public function getActivitylogOptions(): LogOptions {
         return LogOptions::defaults()

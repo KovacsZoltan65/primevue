@@ -153,6 +153,17 @@ php artisan make:request GetShiftTypeRequest
 php artisan make:request StoreShiftTypeRequest
 php artisan make:request UpdateShiftTypeRequest
 
+php artisan make:model Workplan
+php artisan make:controller WorkplanController
+php artisan make:repository Workplan
+php artisan make:migration CreateWorkplanTable
+php artisan make:seeder WorkplanSeeder
+php artisan make:factory WorkplanFactory
+php artisan make:resource WorkplanResource
+php artisan make:request GetWorkplanRequest
+php artisan make:request StoreWorkplanRequest
+php artisan make:request UpdateWorkplanRequest
+
 @import probléma:
     npm install -g sass-migrator
     sass-migrator module --migrate-deps your-entrypoint.scss

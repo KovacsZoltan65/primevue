@@ -98,7 +98,6 @@ php artisan make:resource EntityResource
 php artisan make:request StoreEntityRequest
 php artisan make:request UpdateEntityRequest
 
-
 php artisan make:model ACS
 php artisan make:controller ACSController
 php artisan make:repository ACS
@@ -110,6 +109,49 @@ php artisan make:request GetACSRequest
 php artisan make:request StoreACSRequest
 php artisan make:request UpdateACSRequest
 
+php artisan make:model Calendar
+php artisan make:controller CalendarController
+php artisan make:repository Calendar
+php artisan make:migration CreateCalendarTable
+php artisan make:seeder CalendarSeeder
+php artisan make:factory CalendarFactory
+php artisan make:resource CalendarResource
+php artisan make:request GetCalendarRequest
+php artisan make:request StoreCalendarRequest
+php artisan make:request UpdateCalendarRequest
+
+php artisan make:model EntityCalendar
+php artisan make:controller EntityCalendarController
+php artisan make:repository EntityCalendar
+php artisan make:migration EntityCreateCalendarTable
+php artisan make:seeder EntityCalendarSeeder
+php artisan make:factory EntityCalendarFactory
+php artisan make:resource EntityCalendarResource
+php artisan make:request GetEntityCalendarRequest
+php artisan make:request StoreEntityCalendarRequest
+php artisan make:request UpdateEntityCalendarRequest
+
+php artisan make:model Shift
+php artisan make:controller ShiftController
+php artisan make:repository Shift
+php artisan make:migration CreateShiftTable
+php artisan make:seeder ShiftSeeder
+php artisan make:factory ShiftFactory
+php artisan make:resource ShiftResource
+php artisan make:request GetShiftRequest
+php artisan make:request StoreShiftRequest
+php artisan make:request UpdateShiftRequest
+
+php artisan make:model ShiftType
+php artisan make:controller ShiftTypeController
+php artisan make:repository ShiftType
+php artisan make:migration CreateShiftTypeTable
+php artisan make:seeder ShiftTypeSeeder
+php artisan make:factory ShiftTypeFactory
+php artisan make:resource ShiftTypeResource
+php artisan make:request GetShiftTypeRequest
+php artisan make:request StoreShiftTypeRequest
+php artisan make:request UpdateShiftTypeRequest
 
 @import probléma:
     npm install -g sass-migrator

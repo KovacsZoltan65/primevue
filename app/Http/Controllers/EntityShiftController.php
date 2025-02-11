@@ -16,6 +16,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,6 +30,15 @@ class EntityShiftController extends Controller
     protected EntityShiftRepository $entityShiftRepository;
     protected string $tag = '';
     
+    /**
+     * EntityShiftController konstruktor.
+     *
+     * @param EntityShiftRepository $entityShiftRepository
+     * 
+     * Inicializálja az entitás műszak adattárat, és beállítja a köztes szoftvert
+     * Entitásváltással kapcsolatos engedélyalapú műveletekhez, például listázáshoz,
+     * létrehozása, szerkesztése, törlése és visszaállítása.
+     */
     public function __construct(EntityShiftRepository $entityShiftRepository) {
         $this->entityShiftRepository = $entityShiftRepository;
         
@@ -41,6 +51,15 @@ class EntityShiftController extends Controller
         $this->middleware("can:{$this->tag} restore", ['only' => ['restoreEntityShift']]);
     }
     
+    /**
+     * Jelenítse meg az entitás műszakok listáját.
+     *
+     * A függvény megjeleníti az entitás műszakok listáját, amelyekben szerepel
+     * a keresési feltételeknek megfelelő entitás műszakok.
+     *
+     * @param Request $request
+     * @return InertiaResponse
+     */
     public function index(Request $request): InertiaResponse
     {
         $roles = $this->getUserRoles($this->tag);
@@ -51,6 +70,17 @@ class EntityShiftController extends Controller
         ]);
     }
     
+    /**
+     * Módosítja a lekérdezést, hogy tartalmazza a keresési paramétert.
+     *
+     * Ha a keresési paraméter nem üres, a lekérdezés módosul, hogy tartalmazza
+     * az a feltétel, hogy az entitásváltás nevének tartalmaznia kell a keresést
+     * paraméter.
+     *
+     * @param Builder $query
+     * @param string $search
+     * @return Builder
+     */
     public function applySearch(Builder $query, string $search): Builder
     {
         return $query->when($search, function ($query, string $search) {
@@ -58,6 +88,14 @@ class EntityShiftController extends Controller
         });
     }
     
+    /**
+     * Jeleníti meg az aktív entitás műszakokat.
+     *
+     * A függvény lekérdezi az összes aktív entitás műszakot, és visszaadja az
+     * eredményt.
+     *
+     * @return array
+     */
     public function getActiveEntityShifts()
     {
         try {
@@ -71,6 +109,15 @@ class EntityShiftController extends Controller
         }
     }
     
+    /**
+     * Lekérdezi az entitás műszakok listáját.
+     *
+     * A függvény lekérdezi az entitás műszakok listáját, amelyekben szerepel
+     * a keresési feltételeknek megfelelő entitás műszakok.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function getEntitiesShifts(Request $request): JsonResponse
     {
         try {
@@ -147,6 +194,7 @@ class EntityShiftController extends Controller
     {
         try {
             $deletedCount = $this->entityShiftRepository->deleteEntitiesShifts($request);
+            
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ValidationException $ex) {
             return $this->handleException($ex, 'deleteEntitiesShifts validation error', Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -160,15 +208,45 @@ class EntityShiftController extends Controller
     public function deleteEntityShift(GetEntityShiftRequest $request): JsonResponse
     {
         try {
-            $company = $this->companyRepository($request);
+            $entityShift = $this->entityShiftRepository->deleteEntityShift($request);
 
-            return response()->json($company, Response::HTTP_OK);
+            return response()->json($entityShift, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'deleteEntityShift model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
             return $this->handleException($ex, 'deleteEntityShift database error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             return $this->handleException($ex, 'deleteEntityShift general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public function restoreEntityShift(GetEntityShiftRequest $request): JsonResponse
+    {
+        try {
+            $entityShift = $this->entityShiftRepository->restoreEntityShift($request);
+
+            return response()->json($entityShift, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'restoreEntityShift model not found error', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'restoreEntityShift database error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'restoreEntityShift general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public function realDeleteEntityShift(GetEntityShiftRequest $request): JsonResponse
+    {
+        try {
+            $entityShift = $this->entityShiftRepository->realDeleteEntityShift($request->id);
+
+            return response()->json($entityShift, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'realDeleteEntityShift model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'realDeleteEntityShift query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'realDeleteEntityShift general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

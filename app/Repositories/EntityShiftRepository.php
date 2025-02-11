@@ -184,6 +184,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
     {
         try {
             $entityShift = new EntityShift();
+            
             DB::transaction(function() use($request, &$entityShift) {
                 $entityShift = EntityShift::withTrashed()->lockForUpdate()->findOrFail($request->id);
                 $entityShift->restore();
@@ -208,7 +209,6 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
 
                 $this->cacheService->forgetAll($this->tag);
             });
-
 
             return $entityShift;
         } catch(Exception $ex) {

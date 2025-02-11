@@ -3,10 +3,13 @@
 namespace App\Repositories;
 
 use App\Interfaces\ShiftTypeRepositoryInterface;
+use App\Services\CacheService;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Models\ShiftType;
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class ShiftTypeRepositoryEloquent.
@@ -170,7 +173,7 @@ class ShiftTypeRepository extends BaseRepository implements ShiftTypeRepositoryI
                 $this->cacheService->forgetAll($this->tag);
             });
 
-            return $company;
+            return $shiftType;
         } catch( Exception $ex ) {
             $this->logError($ex, 'deleteShiftType error', ['request' => $request->all()]);
             throw $ex;
@@ -188,7 +191,7 @@ class ShiftTypeRepository extends BaseRepository implements ShiftTypeRepositoryI
                 $this->cacheService->forgetAll($this->tag);
             });
 
-            return $company;
+            return $shiftType;
         } catch( Exception $ex ) {
             $this->logError($ex, 'restoreShiftType error', ['request' => $request->all()]);
             throw $ex;
@@ -207,7 +210,7 @@ class ShiftTypeRepository extends BaseRepository implements ShiftTypeRepositoryI
             });
 
 
-            return $company;
+            return $shiftType;
         } catch( Exception $ex ) {
             $this->logError($ex, 'realDeleteShiftType error', ['id' => $id]);
             throw $ex;
@@ -216,11 +219,7 @@ class ShiftTypeRepository extends BaseRepository implements ShiftTypeRepositoryI
     
     private function createDefaultSettings(ShiftType $shiftType): void
     {
-        try {
-            //
-        } catch( Exception $ex ) {
-            //
-        }
+        //
     }
     
     /**

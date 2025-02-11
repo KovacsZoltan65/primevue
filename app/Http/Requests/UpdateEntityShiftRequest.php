@@ -2,16 +2,16 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class UpdateEntityShiftRequest extends FormRequest
+class UpdateEntityShiftRequest extends BaseRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,12 @@ class UpdateEntityShiftRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => [
+                'required','string',
+                "min:{$this->validationRules['minStringLength']}",
+                "max:{$this->validationRules['maxStringLength']}",
+                Rule::unique('entities_shifts', 'name')->ignore($this->id),
+            ],
         ];
     }
 }

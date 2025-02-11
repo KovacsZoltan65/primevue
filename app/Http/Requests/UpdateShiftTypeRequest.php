@@ -2,16 +2,16 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class UpdateShiftTypeRequest extends FormRequest
+class UpdateShiftTypeRequest extends BaseRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,12 @@ class UpdateShiftTypeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => [
+                'required','string',
+                "min:{$this->validationRules['minStringLength']}",
+                "max:{$this->validationRules['maxStringLength']}",
+                Rule::unique('shift_types', 'name')->ignore($this->id),
+            ],
         ];
     }
 }

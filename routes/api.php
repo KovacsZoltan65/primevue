@@ -40,7 +40,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         });
 
     Route::get('/activities', [App\Http\Controllers\ActivityController::class, 'getActivities'])->name('api.get.actigities');
-        
+
     /**
      * =======================================================
      * LANGUAGES
@@ -70,7 +70,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     Route::delete('/acs_systems/{id}', [App\Http\Controllers\ACSController::class, 'deleteACS'])->name('api.delete.acs')->where('id', '[0-9]+');
     Route::delete('/acs_systems', [\App\Http\Controllers\ACSController::class, 'deleteACSs'])->name('api.delete.acss');
-    
+
     /*
     Route::prefix('admin/menu')->group(function () {
         Route::get('/', [MenuController::class, 'index'])->name('menu.index'); // Menüpontok listázása
@@ -147,12 +147,6 @@ Route::middleware(['web', 'auth'])->group(function () {
      * =======================================================
      * VÁROSOK
      * =======================================================
-     *
-     * A városokhoz tartozó API útvonalak.
-     * A városok listáját szolgáltatja az API-n keresztül.
-     *
-     * @param CityController $cityController A CityController példány.
-     * @return JsonResponse A városok listáját tartalmazó JSON-válasz.
      */
     Route::get('/cities', [App\Http\Controllers\CityController::class, 'getCities'])->name('api.get.cities');
 
@@ -304,7 +298,14 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/entities', [\App\Http\Controllers\EntityController::class, 'createEntities'])->name('api.post.entities');
     Route::put('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'updateEntities'])->name('api.put.entities')->where('id', '[0-9]+');
     Route::delete('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'deleteEntities'])->name('api.delete.entities')->where('id', '[0-9]+');
-    
+
+    /**
+     * =======================================================
+     * MŰSZAK TÍPUSOK
+     * =======================================================
+     */
+    Route::post('/shift_types', [\App\Http\Controllers\ShiftTypeController::class, 'getShiftTypes'])->name('api.get.shift_types');
+
     /**
      * =======================================================
      * HIERARCHIA
@@ -330,5 +331,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/entity-hierarchy/swap-subordinates', [\App\Http\Controllers\HierarchyController::class, 'swapSubordinates']);
     // Dolgozói szint megállapítása
     Route::get('/employee/{id}/role', [\App\Http\Controllers\HierarchyController::class, 'getEmployeeRole']);
+
+
 
 });

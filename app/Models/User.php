@@ -7,6 +7,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
@@ -151,9 +152,39 @@ class User extends Authenticatable
         */
     }
 
+    public function getCreatedAtAttribute()
+    {
+        return date(
+            'd-m-Y H:i',
+            strtotime($this->attributes['created_at']));
+    }
+
+    public function getUpdatedAtAttribute(): string
+    {
+        return date(
+            'd-m-Y H:i',
+            strtotime($this->attributes['updated_at'])
+        );
+    }
+
+    public function getEmailVerifiedAtAttribute()
+    {
+        return $this->attributes['email_verified_at'] == null
+            ? null
+            : date('d-m-Y H:i', strtotime($this->attributes['email_verified_at']));
+    }
+
     #[Override]
     public function getActivitylogOptions(): LogOptions {
         return LogOptions::defaults()
             ->logFillable();
+    }
+
+    public function getPermissionArray()
+    {
+        return $this->getAllPermissions()
+        ->mapWithKeys(function ($pr) {
+            return [$pr['name'] => true];
+        });
     }
 }

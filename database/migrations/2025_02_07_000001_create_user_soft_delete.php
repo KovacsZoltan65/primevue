@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
         Schema::create('user_soft_delete_trigger', function (Blueprint $table) {
             DB::unprepared('CREATE TRIGGER after_user_soft_delete AFTER UPDATE ON users FOR EACH ROW
             BEGIN
@@ -19,6 +20,7 @@ return new class extends Migration
                 END IF
             END');
         });
+        */
     }
 
     /**

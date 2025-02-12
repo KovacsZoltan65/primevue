@@ -167,14 +167,12 @@ const fetchItems = async () => {
 
     //    loading.value = false;
     //} else {
-        await CompanyService.getCompanies()
-            .then((response) => {
-                // A városok listája a companies változóban lesz elmentve
+        await CompanyService.getCompanies().then((response) => {
+                // A cégek listája a companies változóban lesz elmentve
                 companies.value = response.data;
 
                 //localStorage.setItem(local_storage_companies, JSON.stringify(response.data));
-            })
-            .catch((error) => {
+            }).catch((error) => {
                 // Jelenítse meg a hibaüzenetet a konzolon
                 console.error("getCompanies API Error:", error);
 
@@ -301,7 +299,7 @@ const createCompany = async () => {
         })
         .catch((error) => {
 
-            if( error.response && error.response.status === 422){
+            if( error.response && error.response.status === 422 ) {
                 const validationErrors = error.response.data.details;
 
                 toast.add({
@@ -319,7 +317,7 @@ const createCompany = async () => {
                     priority: "medium",
                     validationErrors: validationErrors,
                 });
-            }else{
+            } else {
 
                 // Hibás esetben a lokális adat törlése
                 const index = findIndexById(newCompany.id);
@@ -522,7 +520,7 @@ const confirmDeleteCompany = (data) => {
     deleteCompanyDialog.value = true;
 };
 
-function confirmDeleteSelected() {
+const confirmDeleteSelected = () => {
     deleteSelectedCompaniesDialog.value = true;
 };
 

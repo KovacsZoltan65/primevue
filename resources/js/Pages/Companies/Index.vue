@@ -617,8 +617,8 @@ watch(
 
         <Toast />
 
-        {{ $page.props }}
-
+        {{ $page.props.can }}
+        
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>

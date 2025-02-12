@@ -2,7 +2,7 @@
 
 /**
  * Dátum függvények
- * 
+ *
  * @author Kovács Zoltán <zoltan1_kovacs@msn.com>
  * @date 2023-08-01
  */
@@ -15,6 +15,10 @@ trait DateTime
 {
     protected $format = 'Y-m-d H:i:s';
 
+    protected $date_format = 'Y-m-d';
+
+    protected $time_format = 'H:i:s';
+
     protected $localization = 'hu';
 
     protected $timezone_name = 'Europe/Budapest';
@@ -22,8 +26,23 @@ trait DateTime
     public function actualDate(string $format = null): string
     {
         if( $format === null ) { $format = $this->format; }
-        
+
         return Carbon::now()->format($format);
+    }
+
+    public function getFormat()
+    {
+        return $this->format;
+    }
+
+    public function getDateFormat()
+    {
+        return $this->date_format;
+    }
+
+    public function getTimeFormat()
+    {
+        return $this->time_format;
     }
 
     /**
@@ -36,7 +55,7 @@ trait DateTime
     public function startThisMonth(string $format = null): string
     {
         if( $format === null ) { $format = $this->format; }
-        
+
         return Carbon::now()->startOfMonth()->format($format);
     }
 
@@ -44,7 +63,7 @@ trait DateTime
     public function endOfThisMonth(string $format = null): string
     {
         if( $format === null ) { $format = $this->format; }
-        
+
         return Carbon::now()->endOfMonth()->format($format);
     }
 
@@ -52,7 +71,7 @@ trait DateTime
     public function startLastMonth(string $format = null): string
     {
         if( $format === null ) { $format = $this->format; }
-        
+
         return Carbon::now()->subMonth()->startOfMonth()->format($format);
     }
 
@@ -60,17 +79,17 @@ trait DateTime
     public function endOfLastMonth(string $format = null): string
     {
         if( $format === null ) { $format = $this->format; }
-        
+
         return Carbon::now()->subMonth()->endOfMonth()->format($format);
     }
-    
+
     public function getTranslatedMonthName(string $date): string
     {
         return Carbon::parse($date)
             ->locale($this->localization)
             ->getTranslatedMonthName();
     }
-    
+
     /**
      * ============================================
      * Hetek
@@ -80,23 +99,23 @@ trait DateTime
     {
         return Carbon::parse($date)->locale($this->localization)->startOfWeek();
     }
-    
+
     public function endOfWeek(string $date): string
     {
         return Carbon::parse($date)->locale($this->localization)->endOfWeek();
     }
-    
+
     public function startLastWeek(string $format = null): string
     {
         if( $format === null ) { $format = $this->format; }
-        
+
         return Carbon::now()->subWeek()->startOfWeek()->format($format);
     }
 
     public function endOfLastWeek(string $format = null): string
     {
         if( $format === null ) { $format = $this->format; }
-        
+
         return Carbon::now()->subWeek()->endOfWeek()->format($format);
     }
 
@@ -111,20 +130,20 @@ trait DateTime
     {
         Carbon::parse('')->getDays();
     }
-    
+
     public function getTranslatedDayName(string $date): string
     {
         return Carbon::parse($date)
             ->locale($this->localization)
             ->getTranslatedDayName();
     }
-    
+
     /**
      * ============================================
      * Összehasonlítás
      * ============================================
      */
-    
+
     public function compareDates(string $date_01, string $date_02, string $format = null): bool
     {
         if( $format === null ){ $format = $this->format; }
@@ -140,7 +159,7 @@ trait DateTime
      * Vizsgálatok
      * ============================================
      */
-    
+
     public function isWeekday(string $date): bool
     {
         return Carbon::parse($date)->isWeekday();

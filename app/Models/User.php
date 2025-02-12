@@ -16,13 +16,15 @@ use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Traits\DateTime;
 
 class User extends Authenticatable
 {
     use HasFactory,
         Notifiable,
         HasRoles,
-        LogsActivity;
+        LogsActivity, 
+        DateTime;
 
     /**
      * The attributes that are mass assignable.
@@ -83,8 +85,8 @@ class User extends Authenticatable
         ];
     }
 
-    public function scopeSearch(Builder $query, Request $request){
-
+    public function scopeSearch(Builder $query, Request $request)
+    {
         return $query->when($request->search, function ($query) use ($request) {
             $query->where(function ($query) use ($request) {
                 $query->where('name', 'like', "%{$request->search}%");
@@ -99,6 +101,11 @@ class User extends Authenticatable
             });
         });
         */
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', '=', 1);
     }
 
     /**
@@ -154,6 +161,7 @@ class User extends Authenticatable
 
     public function getCreatedAtAttribute()
     {
+<<<<<<< HEAD
         return date(
             'd-m-Y H:i',
             strtotime($this->attributes['created_at']));
@@ -165,13 +173,40 @@ class User extends Authenticatable
             'd-m-Y H:i',
             strtotime($this->attributes['updated_at'])
         );
+=======
+        $format = $this->getFormat();
+
+        return date($format, strtotime($this->attributes['created_at']));
+    }
+
+    public function getUpdatedAtAttribute()
+    {
+        $format = $this->getFormat();
+
+        return date($format, strtotime($this->attributes['updated_at']));
+>>>>>>> c4c0936cceac52e5ba9be1ecc8947a8b95cf3577
     }
 
     public function getEmailVerifiedAtAttribute()
     {
+<<<<<<< HEAD
         return $this->attributes['email_verified_at'] == null
             ? null
             : date('d-m-Y H:i', strtotime($this->attributes['email_verified_at']));
+=======
+        $format = $this->getFormat();
+
+        return $this->attributes['email_verified_at'] == null
+        ? null
+        : date($format, strtotime($this->attributes['email_verified_at']));
+    }
+
+    public function getPermissionArray()
+    {
+        return $this->getAllPermissions()->mapWithKeys(function($pr){
+            return [$pr['name'] => true];
+        });
+>>>>>>> c4c0936cceac52e5ba9be1ecc8947a8b95cf3577
     }
 
     #[Override]

@@ -26,7 +26,7 @@ import EntityService from "@/service/EntityService.js";
 
 const props = defineProps({
   search: { type: Object, default: () => {}, },
-  //can: { type: Object, default: () => {}, },
+  can: { type: Object, default: () => {}, },
 });
 
 const getBools = () => {
@@ -153,14 +153,102 @@ const openNew = () => {
     entityDialog.value = true;
 }
 
+const openSettingsDialog = () => {
+    settingsDialog.value = true;
+};
 
+const confirmDeleteSelected = () => {
+    deleteSelectedEntitiesDialog.value = true;
+};
+
+const findIndexById = (id) => {
+    return entities.value.findIndex((entity) => entity.id === id);
+};
+
+const exportCSV = () => {
+    dt.value.exportCSV();
+};
+
+const onUpload = () => {
+    toast.add({
+        severity: 'info',
+        summary: 'Success',
+        detail: 'File Uploaded',
+        life: 3000
+    });
+};
 
 </script>
 
 <template>
   <AppLayout>
     <Head :title="$t('entities')"/>
+{{ $page.props }}
+    <Toast />
 
-    {{ JSON.stringify(entities) }}
+    <div class="card">
+        <Toolbar class="md-6">
+
+            <template #start>
+
+                <!-- Settings Button -->
+                <Button
+                    icon="pi pi-cog"
+                    severity="secondary"
+                    class="mr-2"
+                    @click="openSettingsDialog"
+                />
+
+                <!-- New Button -->
+                <Button
+                    :label="$t('add_new')"
+                    icon="pi pi-plus"
+                    severity="secondary"
+                    class="mr-2"
+                    @click="openNew"
+                    :disabled="!props.can.entities_create"
+                />
+
+                <!-- Delete Selected Button -->
+                <Button
+                    :label="$t('delete_selected')"
+                    icon="pi pi-trash"
+                    severity="secondary"
+                    class="mr-2"
+                    @click="confirmDeleteSelected"
+                    :disabled="!props.can.entities_delete ||
+                        !selectedEntities ||
+                        !selectedEntities.length"
+                />
+
+            </template>
+
+            <template #end>
+                <!-- File Upload -->
+                <FileUpload
+                    mode="basic"
+                    accept="image/*"
+                    :maxFileSize="1000000"
+                    label="Import"
+                    customUpload auto
+                    chooseLabel="Import"
+                    class="mr-2"
+                    :chooseButtonProps="{ severity: 'secondary' }"
+                    @upload="onUpload"
+                />
+
+                <!-- Export -->
+                <Button
+                    :label="$t('export')"
+                    icon="pi pi-upload"
+                    severity="secondary"
+                    @click="exportCSV($event)"
+                />
+
+            </template>
+
+        </Toolbar>
+    </div>
+
   </AppLayout>
 </template>

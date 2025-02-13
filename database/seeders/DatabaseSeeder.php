@@ -34,7 +34,6 @@ class DatabaseSeeder extends Seeder
             HierarchySeeder::class,
 
             MenuItemSeeder::class,
-            MenuItemEntitiesSeeder::class,
 
             RoleAndPermissionSeeder::class,
 

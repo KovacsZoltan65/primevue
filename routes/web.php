@@ -159,7 +159,7 @@ Route::middleware('auth')->group(function () {
      * =======================================================
      */
     Route::get('/acs_systems', [App\Http\Controllers\ACSController::class, 'index'])->name('acs_systems');
-    
+
     /**
      * =======================================================
      * PERSONS
@@ -174,4 +174,11 @@ Route::middleware('auth')->group(function () {
      */
     Route::get('/entities', [\App\Http\Controllers\EntityController::class, 'index'])->name('entities');});
 
+    /**
+     * =======================================================
+     * MŰSZAK TÍPUSOK
+     * =======================================================
+     */
+    Route::get('/shift_types', [\App\Http\Controllers\ShiftTypeController::class, 'index'])->name('shifts_types');
+    
 require __DIR__.'/auth.php';

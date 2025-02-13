@@ -23,7 +23,7 @@ class User extends Authenticatable
     use HasFactory,
         Notifiable,
         HasRoles,
-        LogsActivity, 
+        LogsActivity,
         DateTime;
 
     /**
@@ -161,37 +161,37 @@ class User extends Authenticatable
 
     public function getCreatedAtAttribute()
     {
-        $format = $this->getFormat();
-
-        return date($format, strtotime($this->attributes['created_at']));
+        return date(
+            'd-m-Y H:i',
+            strtotime($this->attributes['created_at']));
     }
 
-    public function getUpdatedAtAttribute()
+    public function getUpdatedAtAttribute(): string
     {
-        $format = $this->getFormat();
-
-        return date($format, strtotime($this->attributes['updated_at']));
+        return date(
+            'd-m-Y H:i',
+            strtotime($this->attributes['updated_at'])
+        );
     }
 
     public function getEmailVerifiedAtAttribute()
     {
-        $format = $this->getFormat();
-
         return $this->attributes['email_verified_at'] == null
-        ? null
-        : date($format, strtotime($this->attributes['email_verified_at']));
-    }
-
-    public function getPermissionArray()
-    {
-        return $this->getAllPermissions()->mapWithKeys(function($pr){
-            return [$pr['name'] => true];
-        });
+            ? null
+            : date('d-m-Y H:i', strtotime($this->attributes['email_verified_at']));
     }
 
     #[Override]
     public function getActivitylogOptions(): LogOptions {
         return LogOptions::defaults()
             ->logFillable();
+    }
+
+    public function getPermissionArray()
+    {
+        return $this->getAllPermissions()
+        ->mapWithKeys(function ($pr) {
+            return [$pr['name'] => true];
+        });
     }
 }

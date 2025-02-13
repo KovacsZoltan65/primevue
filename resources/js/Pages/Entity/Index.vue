@@ -26,7 +26,7 @@ import EntityService from "@/service/EntityService.js";
 
 const props = defineProps({
   search: { type: Object, default: () => {}, },
-  can: { type: Object, default: () => {}, },
+  //can: { type: Object, default: () => {}, },
 });
 
 const getBools = () => {
@@ -160,5 +160,7 @@ const openNew = () => {
 <template>
   <AppLayout>
     <Head :title="$t('entities')"/>
+
+    {{ JSON.stringify(entities) }}
   </AppLayout>
 </template>

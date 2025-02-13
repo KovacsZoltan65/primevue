@@ -30,7 +30,7 @@ class ActivityController extends Controller
     use AuthorizesRequests,
         Functions;
     
-    protected static ActivityRepository $activityRepository;
+    protected static $activityRepository;
     
     protected string $tag = '';
     

@@ -65,9 +65,9 @@ class Entity extends Model
          return self::$logName;
      }
 
-    public function scopeSerach(Builder $query, Request $request)
+    public function scopeSearch(Builder $query, Request $request)
     {
-        return $query->when($request->search, function ($query) use ($request) {
+        $retVal = $query->when($request->search, function ($query) use ($request) {
             $query->where(function ($query) use ($request) {
                 $query->where('name', 'like', "%{$request->search}%")
                       ->orWhere('email', 'like', "%{$request->search}%");
@@ -75,6 +75,7 @@ class Entity extends Model
         })->when($request->active, function ($query) use ($request) {
             $query->where('active', $request->active);
         });
+        return $retVal;
     }
     
     public function scopeActive(Builder $query): Builder

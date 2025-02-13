@@ -73,9 +73,11 @@ class EntityController extends Controller
             return response()->json($entities, Response::HTTP_OK);
 
         } catch (QueryException $ex) {
-            return $this->handleException($ex, 'getCompanies query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+            \Log::info('EntityController QueryException $ex: ' . print_r($ex, true));
+            return $this->handleException($ex, 'getEntities query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
-            return $this->handleException($ex, 'getCompanies general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            \Log::info('EntityController Exception $ex: ' . print_r($ex, true));
+            return $this->handleException($ex, 'getEntities general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

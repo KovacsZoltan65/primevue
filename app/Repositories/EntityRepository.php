@@ -51,10 +51,11 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                $companyQuery = Entity::search($request);
-                return $companyQuery->get();
+                $entityQuery = Entity::search($request);
+                return $entityQuery->get();
             });
         } catch(Exception $ex) {
+            \Log::info('EntityRepository@getEntities Exception $ex: ' . print_r($ex->getMessage(), true));
             $this->logError($ex, 'getEntities error', ['request' => $request->all()]);
             throw $ex;
         }

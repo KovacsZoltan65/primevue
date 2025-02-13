@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
         Schema::create('entity_soft_delete', function (Blueprint $table) {
             \DB::unprepared('CREATE TRIGGER after_entities_soft_delete AFTER UPDATE ON entities FOR EACH ROW
              BEGIN
@@ -19,6 +20,7 @@ return new class extends Migration
                  END IF;
              END');
         });
+        */
     }
 
     /**

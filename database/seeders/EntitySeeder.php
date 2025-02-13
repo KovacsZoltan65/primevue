@@ -28,11 +28,28 @@ class EntitySeeder extends Seeder
         $company_ids = Company::pluck('id')->toArray();
         //$person_ids = Person::pluck('id')->toArray();
         $user_ids = User::pluck('id')->toArray();
-
+        /*
+        $arr_entities = [
+            [
+                'name' => 'Entity_01', 'email' => 'entity_01@company.com', 'user_id' => $faker->randomElement($user_ids), 'company_id' => $faker->randomElement($company_ids), 
+                'start_date' => $faker->dateTimeBetween('-10 year', 'now'), 
+                'end_date' => $faker->dateTimeBetween('now', '+10 year'), 
+                'last_export' => NULL, 'active' => 1],
+        ];
+        */
+        for( $i = 1; $i <= 40; $i++ ) {
+            $arr_entities[] = [
+                'name' => "Entity_" . ($i < 10 ? "0{$i}" : $i), 'email' => 'entity_' . ($i < 10 ? "0{$i}" : $i) . '@company.com', 'user_id' => $faker->randomElement($user_ids), 'company_id' => $faker->randomElement($company_ids), 
+                'start_date' => $faker->dateTimeBetween('-10 year', 'now'), 
+                'end_date' => $faker->dateTimeBetween('now', '+10 year'), 'last_export' => NULL, 'active' => 1
+            ];
+        }
+        \Log::info('$arr_entities: ' . print_r($arr_entities, true));
+        /*
         $arr_entities = array_map(function ($i) use ($faker, $company_ids, $user_ids): array {
             return [
                 'id' => $i,
-                'name' => "Entity_" . ($i < 10) ? "0{$i}" : $i,
+                'name' => "Entity_" . ($i < 10 ? "0{$i}" : $i),
                 'email' => 'entity_' . ($i < 10) ? "0{$i}" : $i . '@company.com',
                 'user_id' => $faker->randomElement($user_ids),
                 'company_id' => $faker->randomElement($company_ids),
@@ -42,6 +59,7 @@ class EntitySeeder extends Seeder
                 'active' => 1,
             ];
         }, range(1, 40));
+        */
 
         $count = count($arr_entities);
 

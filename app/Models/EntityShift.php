@@ -2,8 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Http\Request;
 use Override;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class EntityShift extends Model
 {
@@ -41,6 +47,15 @@ class EntityShift extends Model
     public static function getTag(): string
     {
         return self::$logName;
+    }
+
+    public function scopeSearch(Builder $query, Request $request): Builder 
+    {
+        return $query->when($request->search, function($query) use($request) {
+            $query->where(function ($query) use ($request) {
+                $query->where('name', 'like', "%{$request->search}%");
+            });
+        });
     }
 
     public function scopeActive(Builder $query): Builder

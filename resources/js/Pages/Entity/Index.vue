@@ -1,48 +1,46 @@
 <script setup>
-import { computed, onMounted, ref, reactive, watch } from "vue";
+//
+import {onMounted, reactive, ref, watch} from 'vue';
 import { Head } from "@inertiajs/vue3";
-import { FilterMatchMode } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
-import { trans } from "laravel-vue-i18n";
+
+import {Toolbar,DataTable,Column,IconField,
+    InputText,InputIcon,Button,Dialog,
+    Select,Tag,FileUpload,FloatLabel,
+    Message,Checkbox} from "primevue";
+
+// TOAST
+import { useToast } from "primevue/usetoast";
+import Toast from 'primevue/toast';
 
 // Validation
 import useVuelidate from "@vuelidate/core";
 import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
 import validationRules from '@/Validation/ValidationRules.json';
 
-// TOAST
-import { useToast } from "primevue/usetoast";
-import Toast from 'primevue/toast';
-
-import CompanyService from "@/service/CompanyService";
-import ErrorService from "@/service/ErrorService";
-import { createId } from "@/helpers/functions";
-
-import {Toolbar,DataTable,Column,IconField,
-    InputText,InputIcon,Button,Dialog,
-    Select,Tag,FileUpload,FloatLabel,
-    Message,Checkbox} from "primevue";
+//
 import EntityService from "@/service/EntityService.js";
+import ErrorService from "@/service/ErrorService.js";
+import { createId } from "@/helpers/functions.js";
+import {trans} from "laravel-vue-i18n";
+import {FilterMatchMode} from "@primevue/core/api";
 
-const props = defineProps({
-  search: { type: Object, default: () => {}, },
-  can: { type: Object, default: () => {}, },
-});
-
-const getBools = () => {
-    return [
-        {label: trans("inactive"),value: 0,},
-        {label: trans("active"),value: 1,},
-    ];
-};
-
+//
 const toast = useToast();
-const loading = ref(true);
+const loading = ref(false);
 const dt = ref();
 const filters = ref({});
+const submitted = ref(false);
 
-const entities = ref({});
+const local_storage_column_key = 'ln_entities_grid_columns';
 
+//
+const props = defineProps({
+    search: { type: Object, default: () => {}, },
+    can: { type: Object, default: () => {}, },
+});
+
+//
 const defaultEntity = {
     id: null,
     name: "",
@@ -50,76 +48,67 @@ const defaultEntity = {
     start_date: "",
     end_date: "",
     last_export: "",
+    user_id: null,
     company_id: null,
     active: 1
 };
 
-const local_storage_column_key = 'ln_entities_grid_columns';
-
+const entities = ref();
 const entity = ref({ ...defaultEntity });
+const selectedEntities = ref();
 
 const initialEntity = () => {
     return { ...defaultEntity };
 };
 
-const submitted = ref(false);
-
 const rules = {
-    name: {
-        required: helpers.withMessage(trans("validate_name"), required),
-        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
-        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
-    },
-    email: { required: helpers.withMessage(trans("validate_email"), required), },
-    start_date: { required: helpers.withMessage(trans("validate_start_date"), required), },
-    end_date: { required: helpers.withMessage(trans("validate_end_date"), required), },
-    last_export: { required: helpers.withMessage(trans("validate_last_export"), required), },
-    company_id: { required: helpers.withMessage(trans("validate_company_id"), required), }
+    name:        { required: helpers.withMessage(trans("validate_directory"), required), },
+    email:       { required: helpers.withMessage(trans("validate_directory"), required), },
+    start_date:  { required: helpers.withMessage(trans("validate_directory"), required), },
+    last_export: { required: helpers.withMessage(trans("validate_directory"), required), },
+    user_id:     { required: helpers.withMessage(trans("validate_directory"), required), },
+    company_id:  { required: helpers.withMessage(trans("validate_directory"), required), }
 };
-
 const v$ = useVuelidate(rules, entity);
 
 const state = reactive({
     columns: {
-        'id': { fields: 'id', is_visible: true, is_sortable: true, is_filterable: true },
-        'name': { fields: 'name', is_visible: true, is_sortable: true, is_filterable: true },
-        'email': { fields: 'email', is_visible: true, is_sortable: true, is_filterable: true },
-        'start_date': { fields: 'start_date', is_visible: true, is_sortable: true, is_filterable: true },
-        'end_date': { fields: 'end_date', is_visible: true, is_sortable: true, is_filterable: true },
-        'last_export': { fields: 'last_export', is_visible: true, is_sortable: true, is_filterable: true },
-        'company_id': { fields: 'company_id', is_visible: true, is_sortable: true, is_filterable: true },
-        'active': { fields: 'active', is_visible: true, is_sortable: true, is_filterable: true },
+        "id":          { field: "id", is_visible: true, is_sortable: true, is_filterable: true },
+        "name":        { field: "name", is_visible: true, is_sortable: true, is_filterable: true },
+        "email":       { field: "email", is_visible: true, is_sortable: true, is_filterable: true },
+        "start_date":  { field: "start_date", is_visible: true, is_sortable: true, is_filterable: true },
+        "end_date":    { field: "end_date", is_visible: true, is_sortable: true, is_filterable: true },
+        "last_export": { field: "last_export", is_visible: true, is_sortable: true, is_filterable: true },
+        "user_id":     { field: "user_id", is_visible: true, is_sortable: true, is_filterable: true },
+        "company_id":  { field: "company_id", is_visible: true, is_sortable: true, is_filterable: true },
+        "active":      { field: "active", is_visible: true, is_sortable: true, is_filterable: true }
     }
 });
 
 watch(state.columns, (new_value, old_value) => {
-    localStorage.setItem(local_storage_column_key, JSON.stringify(new_value) );
+    localStorage.setItem(local_storage_column_key, JSON.stringify(new_value));
 }, { deep: true });
-
-const selectedEntities = ref([]);
-
-const settingsDialog = ref(false);
-const entityDialog = ref(false);
-const deleteSelectedEntitiesDialog = ref(false);
-const deleteEntityDialog = ref(false);
 
 const fetchItems = async () => {
     loading.value = true;
 
     await EntityService.getEntities()
         .then((response) => {
+            //console.log('response', response);
             entities.value = response.data;
-        }).catch((error) => {
-            console.log('getEntities API Error:', error);
+        })
+        .catch((error) => {
+            //console.error("getEntities API Error:", error);
 
             ErrorService.logClientError(error, {
                 componentName: "Fetch Entities",
-                additionalInfo: "Failed to receive the entities",
+                additionalInfo: "Failed to retrieve the entity",
                 category: "Error",
                 priority: "high",
                 data: null,
-            })
-        }).finally(() => {
+            });
+        })
+        .finally(() => {
             loading.value = false;
         });
 };
@@ -130,44 +119,66 @@ onMounted(() => {
     let columns = localStorage.getItem(local_storage_column_key);
     if( columns ) {
         columns = JSON.parse(columns);
-        for( const column_name in columns ) {
+        for(const column_name in columns) {
             state.columns[column_name] = columns[column_name];
         }
     }
 });
 
-const hideDialog = () => {
-    entitiy.value = initialEntity();
-    settingsDialog.value = false;
-    entityDialog.value = false;
-    deleteSelectedEntityDialog.value = false;
-    deleteEntityDialog.value = false;
-    submitted.value = false;
-
-    v$.value.$reset();
-};
-
-const openNew = () => {
-    entity.value = initialEntity();
-    submitted.value = false;
-    entityDialog.value = true;
-}
+/**
+ * ========================================================
+ * Dialog kezelés
+ * ========================================================
+ */
+const settingsDialog = ref(false);
+const entityDialog = ref(false);
+const deleteEntityDialog = ref(false);
+const deleteEntitiesDialog = ref(false);
 
 const openSettingsDialog = () => {
     settingsDialog.value = true;
 };
 
-const confirmDeleteSelected = () => {
-    deleteSelectedEntitiesDialog.value = true;
+const confirmDeleteSelected = () => {};
+
+const confirmDeleteEntity = (data) => {}
+
+const openNew = () => {};
+
+const hideDialog = () => {
+    settingsDialog.value = false;
 };
 
-const findIndexById = (id) => {
-    return entities.value.findIndex((entity) => entity.id === id);
+/**
+ * ========================================================
+ */
+
+/**
+ * ========================================================
+ * Filter kezelés
+ * ========================================================
+ */
+const initFilters = () => {
+    filters.value = {
+        global: {value: null, matchMode: FilterMatchMode.CONTAINS},
+        name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        email: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        start_date: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        end_date: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        last_export: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        user_id: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        company_id: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        active: {value: null, matchMode: FilterMatchMode.STARTS_WITH}
+    };
+}
+const clearFilter = () => {
+    initFilters();
 };
 
-const exportCSV = () => {
-    dt.value.exportCSV();
-};
+initFilters();
+/**
+ * ========================================================
+ */
 
 const onUpload = () => {
     toast.add({
@@ -178,77 +189,279 @@ const onUpload = () => {
     });
 };
 
+const findIndexById = (id) => {
+    return entities.value.findIndex((entity) => entity.id === id);
+};
+
+const exportCSV = () => {
+    dt.value.exportCSV();
+};
+
+const getModalTitle = () => {
+    return entity.value.id
+        ? trans("entities_edit_title")
+        : trans("entities_new_title");
+};
+
+const getModalDetails = () => {
+    return entity.value.id
+        ? trans("entities_edit_details")
+        : trans("entities_new_details");
+};
+
+const getBools = () => {
+    return [
+        {label: trans("inactive"),value: 0,},
+        {label: trans("active"),value: 1,},
+    ];
+};
+
 </script>
 
 <template>
-  <AppLayout>
-    <Head :title="$t('entities')"/>
-{{ $page.props }}
-    <Toast />
+    <AppLayout>
+        <Head :title="$t('entities')" />
 
-    <div class="card">
-        <Toolbar class="md-6">
+        <Toast />
 
-            <template #start>
+        <div class="card">
+            <Toolbar class="md-6">
+                <template #start>
+                    <!-- Settings -->
+                    <Button
+                        icon="pi pi-cog"
+                        severity="secondary"
+                        class="mr-2"
+                        @click="openSettingsDialog"
+                    />
 
-                <!-- Settings Button -->
-                <Button
-                    icon="pi pi-cog"
-                    severity="secondary"
-                    class="mr-2"
-                    @click="openSettingsDialog"
+                    <!-- New Button -->
+                    <Button
+                        :label="$t('add_new')"
+                        icon="pi pi-plus"
+                        severity="secondary"
+                        class="mr-2"
+                        @click="openNew"
+                        :disabled="!props.can.entities_create"
+                    />
+
+                    <!-- Delete Selected Button -->
+                    <Button
+                        :label="$t('delete_selected')"
+                        icon="pi pi-trash"
+                        severity="secondary"
+                        class="mr-2"
+                        @click="confirmDeleteSelected"
+                        :disabled="!props.can.entities_delete ||
+                            !selectedEntities ||
+                            !selectedEntities.length"
+                    />
+
+                </template>
+
+                <template #end>
+
+                    <!-- Feltöltés -->
+                    <FileUpload
+                        mode="basic"
+                        accept="image/*"
+                        :maxFileSize="1000000"
+                        label="Import"
+                        customUpload auto
+                        chooseLabel="Import"
+                        class="mr-2"
+                        :chooseButtonProps="{ severity: 'secondary' }"
+                        @upload="onUpload"
+                    />
+
+                    <!-- Exportálás -->
+                    <Button
+                        :label="$t('export')"
+                        icon="pi pi-upload"
+                        severity="secondary"
+                        @click="exportCSV($event)"
+                    />
+
+                </template>
+            </Toolbar>
+        </div>
+
+        <div class="card">
+            <DataTable
+                ref="dt"
+                v-model:selection="selectedEntities"
+                v-model:filters="filters"
+                filterDisplay="row"
+                :value="entities"
+                dataKey="id"
+                :paginator="true" :rows="10" sortMode="multiple"
+                :loading="loading" stripedRows removableSort
+                :globalFilterFields="['name']"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                :rowsPerPageOptions="[5, 10, 25]"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+            >
+                <template #header>
+                    <div class="flex flex-wrap gap-2 items-center justify-between">
+                        <!-- SZŰRÉS TÖRLÉSE -->
+                        <Button
+                            type="button"
+                            icon="pi pi-filter-slash"
+                            :label="$t('clear')"
+                            outlined
+                            @click="clearFilter()"
+                        />
+
+                        <!-- FELIRAT -->
+                        <div class="font-semibold text-xl mb-1">
+                            {{ $t("entities_title") }}
+                        </div>
+
+                        <!-- KERESÉS -->
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText
+                                v-model="filters['global'].value"
+                                :placeholder="$t('search')"
+                            />
+                        </IconField>
+
+                    </div>
+                </template>
+
+                <template #paginatorstart>
+                    <Button
+                        type="button"
+                        icon="pi pi-refresh"
+                        class="p-button-text"
+                        @click="fetchItems()"
+                    />
+                </template>
+
+                <template #empty>
+                    {{ $t("data_not_found", { data: "entity" }) }}
+                </template>
+
+                <template #loading>
+                    {{ $t("loader", { data: "Entity" }) }}
+                </template>
+
+                <!-- SELECTION -->
+                <Column
+                    selectionMode="multiple"
+                    style="width: 3rem"
+                    :exportable="false"
+                    :disabled="!props.can.entities_delete"
                 />
 
-                <!-- New Button -->
-                <Button
-                    :label="$t('add_new')"
-                    icon="pi pi-plus"
-                    severity="secondary"
-                    class="mr-2"
-                    @click="openNew"
-                    :disabled="!props.can.entities_create"
+                <!-- ID -->
+                <Column
+                    :field="state.columns.id.field"
+                    :header="$t(state.columns.id.field)"
+                    :sortable="state.columns.id.is_sortable"
+                    :hidden="!state.columns.id.is_visible"
+                    style="min-width: 16rem"
                 />
 
-                <!-- Delete Selected Button -->
-                <Button
-                    :label="$t('delete_selected')"
-                    icon="pi pi-trash"
-                    severity="secondary"
-                    class="mr-2"
-                    @click="confirmDeleteSelected"
-                    :disabled="!props.can.entities_delete ||
-                        !selectedEntities ||
-                        !selectedEntities.length"
-                />
+                <!-- NAME -->
+                <Column
+                    :field="state.columns.name.field"
+                    :header="$t(state.columns.name.field)"
+                    :sortable="state.columns.name.is_sortable"
+                    :hidden="!state.columns.name.is_visible"
+                    style="min-width: 16rem"
+                >
+                    <template #body="{ data }">
+                        {{ data.name }}
+                    </template>
+                    <template #filter="{ filterModel, filterCallback }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            @input="filterCallback()"
+                            placeholder="Search by name"
+                        />
+                    </template>
+                </Column>
 
-            </template>
+                <!-- EMAIL -->
+                <Column
+                    :field="state.columns.email.field"
+                    :header="$t(state.columns.email.field)"
+                    :sortable="state.columns.email.is_sortable"
+                    :hidden="!state.columns.email.is_visible"
+                    style="min-width: 16rem"
+                >
+                    <template #body="{ data }">
+                        {{ data.email }}
+                    </template>
+                    <template #filter="{ filterModel, filterCallback }">
+                        <InputText
+                            v-model="filterModel.value"
+                            type="text"
+                            @input="filterCallback()"
+                            placeholder="Search by email"
+                        />
+                    </template>
+                </Column>
 
-            <template #end>
-                <!-- File Upload -->
-                <FileUpload
-                    mode="basic"
-                    accept="image/*"
-                    :maxFileSize="1000000"
-                    label="Import"
-                    customUpload auto
-                    chooseLabel="Import"
-                    class="mr-2"
-                    :chooseButtonProps="{ severity: 'secondary' }"
-                    @upload="onUpload"
-                />
+                <!-- START DATE -->
+                <Column
+                    :field="state.columns.start_date.field"
+                    :header="$t(state.columns.start_date.field)"
+                    :sortable="state.columns.start_date.is_sortable"
+                    :hidden="!state.columns.start_date.is_visible"
+                    style="min-width: 16rem"
+                ></Column>
 
-                <!-- Export -->
-                <Button
-                    :label="$t('export')"
-                    icon="pi pi-upload"
-                    severity="secondary"
-                    @click="exportCSV($event)"
-                />
+                <!-- END DATE -->
+                <Column
+                    :field="state.columns.end_date.field"
+                    :header="$t(state.columns.end_date.field)"
+                    :sortable="state.columns.end_date.is_sortable"
+                    :hidden="!state.columns.end_date.is_visible"
+                    style="min-width: 16rem"
+                ></Column>
 
-            </template>
+            </DataTable>
+        </div>
 
-        </Toolbar>
-    </div>
+        <!-- SETTINGS DIALOG -->
+        <Dialog
+            v-model:visible="settingsDialog"
+            :style="{ width: '550px' }"
+            :header="$t('app_settings_title')"
+            :modal="true"
+        >
+            <div class="flex flex-col gap-6" style="margin-top: 17px;">
+                <div class="flex flex-col gap-2">
+                    <div class="flex flex-wrap gap-4">
+                        <div
+                            v-for="(config, column) in state.columns"
+                            :key="column"
+                            class="flex items-center gap-2">
+                            <Checkbox
+                                v-model="config.is_visible"
+                                :inputId="column"
+                                :value="true" binary
+                            />
+                            <label :for="column">{{ column }}</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Dialog>
 
-  </AppLayout>
+        <!-- EDIT ENTITY DIALOG -->
+        <Dialog></Dialog>
+
+        <!-- DELETE ENTITY DIALOG -->
+        <Dialog></Dialog>
+
+        <!-- DELETE ENTITIES DIALOG -->
+        <Dialog></Dialog>
+
+    </AppLayout>
 </template>

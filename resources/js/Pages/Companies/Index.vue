@@ -119,15 +119,15 @@ const v$ = useVuelidate(rules, company);
  */
 const state = reactive({
     columns: {
-        'id': { field: 'id', is_visible: true, is_sortable: true, is_filterable: true },
-        'name': { field: 'name', is_visible: true, is_sortable: true, is_filterable: true },
-        'country_id': { field: 'country_id', is_visible: true, is_sortable: true, is_filterable: true },
-        'city_id': { field: 'city_id', is_visible: true, is_sortable: true, is_filterable: true },
-        'directory': { field: 'directory', is_visible: true, is_sortable: true, is_filterable: true },
+        'id':                  { field: 'id', is_visible: true, is_sortable: true, is_filterable: true },
+        'name':                { field: 'name', is_visible: true, is_sortable: true, is_filterable: true },
+        'country_id':          { field: 'country_id', is_visible: true, is_sortable: true, is_filterable: true },
+        'city_id':             { field: 'city_id', is_visible: true, is_sortable: true, is_filterable: true },
+        'directory':           { field: 'directory', is_visible: true, is_sortable: true, is_filterable: true },
         'registration_number': { field: 'registration_number', is_visible: true, is_sortable: true, is_filterable: true },
-        'tax_id': { field: 'tax_id', is_visible: true, is_sortable: true, is_filterable: true },
-        'address': { field: 'address', is_visible: true, is_sortable: true, is_filterable: true },
-        'active': { field: 'active', is_visible: true, is_sortable: true, is_filterable: true }
+        'tax_id':              { field: 'tax_id', is_visible: true, is_sortable: true, is_filterable: true },
+        'address':             { field: 'address', is_visible: true, is_sortable: true, is_filterable: true },
+        'active':              { field: 'active', is_visible: true, is_sortable: true, is_filterable: true }
     }
 });
 
@@ -578,10 +578,6 @@ const clearFilter = () => {
 
 initFilters();
 
-const throwError = () => {
-    throw new Error('Test error');
-};
-
 watch(
     () => company.value.name,
     /**
@@ -616,7 +612,7 @@ watch(
         <Toast />
 
         {{ $page.props.can }}
-        
+
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
@@ -629,16 +625,6 @@ watch(
                         @click="openSettingsDialog"
                     />
 
-                    <!-- ERROR -->
-                <!--
-                    <Button
-                        label="ERROR"
-                        icon="pi pi-plus"
-                        severity="secondary"
-                        class="mr-2"
-                        @click="throwError"
-                    />
-                -->
                     <!-- New Button -->
                     <Button
                         :label="$t('add_new')"

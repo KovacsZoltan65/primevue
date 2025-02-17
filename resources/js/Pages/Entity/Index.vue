@@ -143,7 +143,18 @@ const confirmDeleteSelected = () => {};
 
 const confirmDeleteEntity = (data) => {}
 
-const openNew = () => {};
+const openNew = () => {
+    console.log('openNew');
+    entity.value = initialEntity();
+    entityDialog.value = true;
+    submitted.value = false;
+};
+
+const openEdit = (data) => {
+    console.log('openEdit');
+    entity.value = {...data};
+    entityDialog.value = true;
+};
 
 const hideDialog = () => {
     settingsDialog.value = false;
@@ -161,14 +172,14 @@ const hideDialog = () => {
 const initFilters = () => {
     filters.value = {
         global: {value: null, matchMode: FilterMatchMode.CONTAINS},
-        name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        email: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        start_date: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        end_date: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        last_export: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        user_id: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        company_id: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        active: {value: null, matchMode: FilterMatchMode.STARTS_WITH}
+        name: {value: null, matchMode: FilterMatchMode.CONTAINS},
+        email: {value: null, matchMode: FilterMatchMode.CONTAINS},
+        //start_date: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        //end_date: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        //last_export: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        //user_id: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        //company_id: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+        //active: {value: null, matchMode: FilterMatchMode.STARTS_WITH}
     };
 }
 const clearFilter = () => {
@@ -425,6 +436,28 @@ const getBools = () => {
                     style="min-width: 16rem"
                 ></Column>
 
+            <!-- ACTIONS -->
+            <Column :exportable="false" style="min-width: 12rem">
+                <template #body="slotProps">
+                    <Button 
+                        icon="pi pi-pencil"
+                        outlined
+                        rounded
+                        class="mr-2"
+                        @click="openEdit(slotProps.data)"
+                        :disabled="!props.can.entities_edit"
+                    />
+                    <Button
+                        icon="pi pi-trash"
+                        outlined
+                        rounded
+                        severity="danger"
+                        @click="confirmDeleteEntity(slotProps.data)"
+                        :disabled="!props.can.entities_delete"
+                    />
+                </template>
+            </Column>
+
             </DataTable>
         </div>
 
@@ -455,7 +488,12 @@ const getBools = () => {
         </Dialog>
 
         <!-- EDIT ENTITY DIALOG -->
-        <Dialog></Dialog>
+        <Dialog 
+            v-model:visible="entityDialog"
+            :style="{ width: '550px' }"
+            :header="getModalTitle()"
+            :modal="true"
+        >dídí</Dialog>
 
         <!-- DELETE ENTITY DIALOG -->
         <Dialog></Dialog>

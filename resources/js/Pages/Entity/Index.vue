@@ -24,6 +24,7 @@ import ErrorService from "@/service/ErrorService.js";
 import { createId } from "@/helpers/functions.js";
 import {trans} from "laravel-vue-i18n";
 import {FilterMatchMode} from "@primevue/core/api";
+import CompanyService from "@/service/CompanyService.js";
 
 //
 const toast = useToast();
@@ -125,6 +126,261 @@ onMounted(() => {
     }
 });
 
+const saveEntity = async () => {
+    const result = await v$.value.$validate();
+
+    if(result) {
+        submitted.value = true;
+
+        if (entity.value.id) {
+            await updateEntity();
+        } else {
+            await createEntity();
+        }
+    } else {
+        const validationErrors = v$.value.$errors.map((error) => ({
+            field: error.$property,
+            message: trans(error.$message),
+        }));
+
+        const data = {
+            componentName: "saveEntity",
+            additionalInfo: "Client-side validation failed during entity update",
+            category: "Validation Error",
+            priority: "low",
+            validationErrors: validationErrors,
+        };
+
+        await ErrorService.logValidationError(new Error('Client-side validation error'), data);
+
+        toast.add({
+            severity: "error",
+            summary: "Validation Error",
+            detail: "Please fix the highlighted errors before submitting.",
+        });
+    }
+};
+
+const createEntity = async () => {
+    const newEntity = {...entity.value, id: createId() };
+
+    entities.value.push(newEntity);
+
+    toast.add({
+        severity: "success",
+        summary: "Creating...",
+        detail: "Entity creation in progress",
+        life: 3000,
+    });
+
+    await EntityService.createEntity(entity.value)
+        .then((response) => {
+            const index = findIndexById(newEntity.id);
+            if (index !== -1) {
+                entities.value.splice(index, 1, response.data);
+            }
+
+            hideDialog();
+
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Entity Created",
+                life: 3000,
+            });
+        })
+        .catch((error) => {
+            if( error.response && error.response.status === 422 ) {
+                const validationErrors = error.response.data.details;
+
+                toast.add({
+                    severity: "warn",
+                    summary: "Validation Error",
+                    detail: "Please check your inputs",
+                    life: 4000,
+                });
+
+                ErrorService.logClientError(error, {
+                    componentName: "CreateEntityDialog",
+                    additionalInfo: "Validation errors occurred during entity creation",
+                    category: "Validation Error",
+                    priority: "medium",
+                    validationErrors: validationErrors,
+                });
+            } else {
+                const index = findIndexById(newEntity.id);
+                if (index !== -1) {
+                    entities.value.splice(index, 1);
+                }
+
+                toast.add({
+                    severity: "error",
+                    summary: "Error",
+                    detail: trans('error_entity_create'),
+                });
+
+                ErrorService.logClientError(error, {
+                    componentName: "CreateEntityDialog",
+                    additionalInfo: "Failed to create a entity in the backend",
+                    category: "Error",
+                    priority: "high",
+                    data: entity.value,
+                });
+            }
+        });
+};
+
+const updateEntity = async () => {
+    const index = findIndexById(entity.value.id);
+    if (index === -1) {
+        console.error(`Entity with id ${entity.value.id} not found`);
+        return;
+    }
+
+    const originalEntity = { ...entities.value[index] };
+
+    entities.value.splice(index, 1, { ...entity.value });
+
+    toast.add({
+        severity: "info",
+        summary: "Updating...",
+        detail: "Entity update in progress",
+        life: 2000,
+    });
+
+    await EntityService.updateEntity(company.value.id, company.value)
+        .then((response) => {
+            // Sikeres válasz kezelése
+            // Frissített adat a válaszból
+            entities.value.splice(index, 1, response.data);
+
+            hideDialog();
+
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Entity Updated",
+                life: 3000,
+            });
+        })
+        .catch((error) => {
+            // Sikertelen frissítés esetén az eredeti adat visszaállítása
+            entities.value.splice(index, 1, originalEntity);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to update entity",
+            });
+
+            // Hiba naplózása a szerver felé
+            ErrorService.logClientError(error, {
+                componentName: "UpdateEntityDialog",
+                additionalInfo: "Failed to update a entity in the backend",
+                category: "Error",
+                priority: "medium",
+                data: entity.value,
+            });
+        });
+};
+
+const deleteEntity = async () => {
+    const index = findIndexById(entity.value.id);
+    if (index === -1) {
+        console.warn("No entity found with the given id:", entity.value.id);
+        return;
+    }
+
+    const originalEntity = { ...entities.value[index] };
+
+    entities.value.splice(index, 1);
+
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Entity deletion in progress",
+        life: 2000,
+    });
+
+    await CompanyService.deleteCompany(id)
+        .then((response) => {
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Entity Deleted",
+                life: 3000,
+            });
+        })
+        .catch((error) => {
+            entities.value.splice(index, 0, originalEntity);
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to delete entity",
+            });
+
+            ErrorService.logClientError(error, {
+                componentName: "DeleteEntityDialog",
+                additionalInfo: "Failed to delete a entity in the backend",
+                category: "Error",
+                priority: "medium",
+                data: entity.value,
+            });
+
+        });
+};
+
+const deleteEntities = async () => {
+    const originalEntities = [...entities.value];
+
+    selectedEntities.value.forEach(selectedEntity => {
+        const index = entities.value.findIndex(entity => entity.id === selectedEntity.id);
+        if (index !== -1) {
+            entities.value.splice(index, 1);
+        }
+    });
+
+    toast.add({
+        severity: "info",
+        summary: "Deleting...",
+        detail: "Deleting selected entities...",
+        life: 2000,
+    });
+
+    await EntityService.deleteEntities(selectedEntities.value.map(entity => entity.id))
+        .then((response) => {
+            toast.add({
+                severity: "success",
+                summary: "Successful",
+                detail: "Selected entities deleted",
+                life: 3000,
+            });
+
+            selectedEntities.value = [];
+        })
+        .catch((error) => {
+            entities.value = originalEntities;
+
+            const errorMessage = error.response?.data?.error || "Failed to delete selected entities";
+
+            toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: errorMessage,
+                life: 3000,
+            });
+
+            ErrorService.logClientError(error, {
+                componentName: "DeleteEntitiesDialog",
+                additionalInfo: "Failed to delete a entities in the backend",
+                category: "Error",
+                priority: "low",
+                data: companies.value
+            });
+        });
+};
+
 /**
  * ========================================================
  * Dialog kezelés
@@ -158,6 +414,9 @@ const openEdit = (data) => {
 
 const hideDialog = () => {
     settingsDialog.value = false;
+    entityDialog.value = false;
+    deleteEntityDialog.value = false;
+    deleteEntitiesDialog.value = false;
 };
 
 /**
@@ -439,7 +698,7 @@ const getBools = () => {
             <!-- ACTIONS -->
             <Column :exportable="false" style="min-width: 12rem">
                 <template #body="slotProps">
-                    <Button 
+                    <Button
                         icon="pi pi-pencil"
                         outlined
                         rounded
@@ -488,12 +747,129 @@ const getBools = () => {
         </Dialog>
 
         <!-- EDIT ENTITY DIALOG -->
-        <Dialog 
+        <Dialog
             v-model:visible="entityDialog"
             :style="{ width: '550px' }"
             :header="getModalTitle()"
             :modal="true"
-        >dídí</Dialog>
+        >
+            <div class="flex flex-col gap-6" style="margin-top: 17px;">
+                <!-- NAME -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="name" class="block font-bold mb-3">
+                            {{ $t("name") }}
+                        </label>
+                        <InputText
+                            id="name"
+                            v-model="entity.name"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_company_name') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.name.$error">
+                        {{ $t(v$.name.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- EMAIL -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="email" class="block font-bold mb-3">
+                            {{ $t("email") }}
+                        </label>
+                        <InputText
+                            id="email"
+                            v-model="entity.email"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_entity_email') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.email.$error">
+                        {{ $t(v$.email.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- START DATE -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="start_date" class="block font-bold mb-3">
+                            {{ $t("start_date") }}
+                        </label>
+                        <InputText
+                            id="start_date"
+                            v-model="entity.start_date"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_entity_start_date') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.start_date.$error">
+                        {{ $t(v$.start_date.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- END DATE -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="end_date" class="block font-bold mb-3">
+                            {{ $t("end_date") }}
+                        </label>
+                        <InputText
+                            id="end_date"
+                            v-model="entity.end_date"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <!--
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_entity_end_date') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.end_date.$error">
+                        {{ $t(v$.end_date.$errors[0].$message) }}
+                    </small>
+                    -->
+                </div>
+
+            </div>
+
+            <template #footer>
+                <Button
+                    :label="$t('cancel')"
+                    icon="pi pi-times"
+                    text
+                    @click="hideDialog"
+                />
+                <Button
+                    :label="$t('save')"
+                    icon="pi pi-check"
+                    @click="saveEntity"
+                />
+
+            </template>
+
+        </Dialog>
 
         <!-- DELETE ENTITY DIALOG -->
         <Dialog></Dialog>

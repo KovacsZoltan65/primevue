@@ -232,18 +232,18 @@ const saveCompany = async () => {
         submitted.value = true;
 
         if (company.value.id) {
-            updateCompany();
+            await updateCompany();
         } else {
-            createCompany();
+            await createCompany();
         }
 
         //localStorage.removeItem(local_storage_companies);
     } else {
         // Validációs hibák összegyűjtése
         const validationErrors = v$.value.$errors.map((error) => ({
-                field: error.$property,
-                message: trans(error.$message),
-            }));
+            field: error.$property,
+            message: trans(error.$message),
+        }));
         // Adatok előkészítése logoláshoz
         const data = {
             componentName: "saveCompany",
@@ -253,7 +253,7 @@ const saveCompany = async () => {
             validationErrors: validationErrors,
         };
         // Validációs hibák logolása
-        ErrorService.logValidationError(new Error('Client-side validation error'), data);
+        await ErrorService.logValidationError(new Error('Client-side validation error'), data);
 
         // Hibaüzenet megjelenítése a felhasználónak
         toast.add({

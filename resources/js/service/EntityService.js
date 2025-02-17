@@ -60,31 +60,17 @@ class EntityService extends BaseService {
         return this.post(this.url, data);
     }
 
-    /**
-     * Frissítsen egy entitást az API-ban az azonosítója alapján.
-     *
-     * Elküldi az entitás adatait a szervernek a PUT-kérésben,
-     * és az API válaszát visszaadja.
-     *
-     * @param {number} id - A frissítend  entitás azonosítója.
-     * @param {object} data - Az új entitás adatait tartalmazó objektum.
-     * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
-     */
     updateEntity(id, data) {
         return this.put(`${this.url}/${id}`, data);
     }
 
-    /**
-     * Töröljön egy entitást az API-ból az azonosítója alapján.
-     *
-     * Elküldi a törlési kérést a szervernek a DELETE-kérésben,
-     * és az API válaszát visszaadja.
-     *
-     * @param {number} id - A törölni kívánt entitás azonosítója.
-     * @returns {Promise<AxiosResponse<any>>} Ígéret az API válaszával.
-     */
     deleteEntity(id) {
         return this.delete(`${this.url}/${id}`);
+    }
+
+    deleteEntities(ids) {
+        const query = ids.map(id => `ids[]=${id}`).join('&');
+        return this.delete(`${this.url}?${query}`);
     }
 }
 

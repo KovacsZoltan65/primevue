@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, reactive, watch } from "vue";
+import { onMounted, ref, reactive, watch } from "vue";
 import { Head } from "@inertiajs/vue3";
 import { FilterMatchMode } from "@primevue/core/api";
 import AppLayout from "@/Layouts/AppLayout.vue";
@@ -20,7 +20,7 @@ import { createId } from "@/helpers/functions";
 
 import {Toolbar,DataTable,Column,IconField,
     InputText,InputIcon,Button,Dialog,
-    Select,Tag,FileUpload,FloatLabel,
+    Select,FileUpload,FloatLabel,
     Message,Checkbox} from "primevue";
 
 /**
@@ -32,13 +32,14 @@ const props = defineProps({
     search: { type: Object, default: () => {}, },
     can: { type: Object, default: () => {}, },
 });
-
+/*
 const getBools = () => {
     return [
         {label: trans("inactive"),value: 0,},
         {label: trans("active"),value: 1,},
     ];
 };
+*/
 
 const toast = useToast();
 const loading = ref(true);
@@ -71,7 +72,7 @@ const initialCompany = () => {
 /**
  * Reaktív hivatkozás a beküldött (submit) állapotára.
  *
- * @type {ref<boolean>}
+ * @type {Ref<UnwrapRef<boolean>, UnwrapRef<boolean> | boolean>}
  */
 const submitted = ref(false);
 

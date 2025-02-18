@@ -27,15 +27,15 @@ export const localeHU = {
     cancel: "Mégse",
     completed: "Befejezve",
     pending: "Függőben",
-    fileSizeTypes: "['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']",
+    fileSizeTypes: ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],
     dayNames:
-        "['Vasárnap', 'Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat']",
-    dayNamesShort: "['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo']",
-    dayNamesMin: "['V', 'H', 'K', 'Sz', 'Cs', 'P', 'Sz']",
+        ["Vasárnap", "Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat"],
+    dayNamesShort: ["V", "H", "K", "Sze", "Cs", "P", "Szo"],
+    dayNamesMin: ["V", "H", "K", "Sz", "Cs", "P", "Sz"],
     monthNames:
-        "['Január', 'Február', 'Március', 'Április', 'Május', 'Június', 'Július', 'Augusztus', 'Szeptember', 'Október', 'November', 'December']",
+        ["Január", "Február", "Március", "Április", "Május", "Június", "Július", "Augusztus", "Szeptember", "Október", "November", "December"],
     monthNamesShort:
-        "['Jan', 'Feb', 'Már', 'Ápr', 'Máj', 'Jún', 'Júl', 'Aug', 'Szep', 'Okt', 'Nov', 'Dec']",
+        ["Jan", "Feb", "Már", "Ápr", "Máj", "Jún", "Júl", "Aug", "Szep", "Okt", "Nov", "Dec"],
     chooseYear: "Év választása",
     chooseMonth: "Hónap választása",
     chooseDate: "Dátum választása",

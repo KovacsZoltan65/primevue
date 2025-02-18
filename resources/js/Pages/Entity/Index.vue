@@ -1,6 +1,6 @@
 <script setup>
 //
-import {onMounted, reactive, ref, watch} from 'vue';
+import {computed, onMounted, reactive, ref, watch} from 'vue';
 import { Head } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 
@@ -8,6 +8,8 @@ import {Toolbar,DataTable,Column,IconField,
     InputText,InputIcon,Button,Dialog,
     Select,Tag,FileUpload,FloatLabel,
     Message,Checkbox, DatePicker} from "primevue";
+
+import { format } from 'date-fns';
 
 // TOAST
 import { useToast } from "primevue/usetoast";
@@ -100,6 +102,10 @@ const fetchItems = async () => {
         .then((response) => {
             //console.log('response', response);
             entities.value = response.data;
+
+            //console.log('entities.value', entities.value);
+
+            //console.log('2', entities.value.start_date);
         })
         .catch((error) => {
             //console.error("getEntities API Error:", error);
@@ -130,6 +136,20 @@ onMounted(() => {
 });
 
 const saveEntity = async () => {
+
+    entity.value.start_date = format(entity.value.start_date, "yyyy-MM-dd");
+    //entity.value.end_date = format(entity.value.end_date, "yyyy-MM-dd");
+    //entity.value.last_import = format(entity.value.last_import, "yyyy-MM-dd");
+
+    entity.value.end_date = entity.value.end_date
+        ? format(new Date(entity.value.end_date), "yyyy-MM-dd")
+        : null;
+    entity.value.last_import = entity.value.last_export
+        ? format(new Date(entity.value.last_export), "yyyy-MM-dd")
+        : null;
+
+    console.log("Mentésre kerül:", entity.value);
+    /*
     const result = await v$.value.$validate();
 
     if(result) {
@@ -162,6 +182,7 @@ const saveEntity = async () => {
             detail: "Please fix the highlighted errors before submitting.",
         });
     }
+    */
 };
 
 const createEntity = async () => {
@@ -403,18 +424,39 @@ const confirmDeleteSelected = () => {};
 const confirmDeleteEntity = (data) => {}
 
 const openNew = () => {
-    console.log('openNew');
+    //console.log('openNew');
     entity.value = initialEntity();
     entityDialog.value = true;
     submitted.value = false;
 };
 
 const openEdit = (data) => {
-    console.log(data);
-    console.log('openEdit');
+    //console.log('data', data);
     entity.value = {...data};
+
+    //entity.value.start_date = new Date(data.start_date); // Átalakítás
+    //entity.value.end_date = new Date(data.end_date); // Átalakítás
+    //entity.value.last_export = new Date(data.last_export); // Átalakítás
+
+    //console.log('entity', entity.value);
+
     entityDialog.value = true;
 };
+
+const startDate = computed({
+    get: () => entity.value.start_date ? new Date(entity.value.start_date) : null,
+    set: (value) => entity.value.start_date = value,
+});
+
+const endDate = computed({
+    get: () => entity.value.end_date ? new Date(entity.value.end_date) : null,
+    set: (value) => entity.value.end_date = value,
+});
+
+const lastExport = computed({
+    get: () => entity.value.last_export ? new Date(entity.value.last_export) : null,
+    set: (value) => entity.value.last_export = value,
+});
 
 const hideDialog = () => {
     settingsDialog.value = false;
@@ -824,8 +866,9 @@ const getBools = () => {
                             <label for="start_date" class="block font-bold mb-3">
                                 {{ $t("entities_start_date") }}
                             </label>
+
                             <DatePicker
-                                v-model="entities.start_date"
+                                v-model="startDate"
                                 dateFormat="yy-mm-dd"
                                 fluid showIcon showButtonBar
                             />
@@ -849,7 +892,8 @@ const getBools = () => {
                                 {{ $t("entities_end_date") }}
                             </label>
                             <DatePicker
-                                v-model="entities.end_date"
+                                id="end_date"
+                                v-model="endDate"
                                 dateFormat="yy-mm-dd"
                                 fluid showIcon showButtonBar
                             />
@@ -873,7 +917,7 @@ const getBools = () => {
                                 {{ $t("entities_last_export") }}
                             </label>
                             <DatePicker
-                                v-model="entities.last_export"
+                                v-model="lastExport"
                                 dateFormat="yy-mm-dd"
                                 fluid showIcon showButtonBar
                             />

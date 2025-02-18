@@ -29,7 +29,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
     public function __construct(CacheService $cacheService)
     {
         $this->tag = Entity::getTag();
-        
+
         $this->cacheService = $cacheService;
     }
 
@@ -48,12 +48,19 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
     public function getEntities(Request $request)
     {
         try {
+
+            $entityQuery = Entity::search($request);
+            $aa = $entityQuery->get();
+            \Log::info('$aa: ' . print_r($aa, true));
+            return $aa;
+            /*
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $entityQuery = Entity::search($request);
                 return $entityQuery->get();
             });
+            */
         } catch(Exception $ex) {
             \Log::info('EntityRepository@getEntities Exception $ex: ' . print_r($ex->getMessage(), true));
             $this->logError($ex, 'getEntities error', ['request' => $request->all()]);
@@ -111,7 +118,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
 
                 $this->cacheService->forgetAll($this->tag);
             });
-            
+
             return $entity;
         } catch(Exception $ex) {
             $this->logError($ex, 'updateEntity error', ['request' => $request->all()]);
@@ -185,5 +192,5 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
-    
+
 }

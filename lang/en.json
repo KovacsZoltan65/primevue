@@ -105,6 +105,9 @@
     "select_country": "Select a Country",
     "select_city": "Select a City",
 
+    "start_date": "Start Date",
+    "end_date": "End Date",
+
     "specimens": "Specimens",
 
     "users": "Users",
@@ -130,6 +133,20 @@
     "companies_delete_title_2": "Companies Deletion",
     "companies_delete_details_2": "Confirm Deletion",
 
+    "entities": "Entities",
+    "entities_title": "Manage Entities",
+    "entities_details": "",
+    "entities_new_title": "New Entity",
+    "entities_new_details": "",
+    "entities_edit_title": "Edit Entity",
+    "entities_edit_details": "",
+    "entities_delete_title": "",
+    "entities_delete_details": "",
+    "entities_delete_title_2": "",
+    "entities_delete_details_2": "",
+    "entities_start_date": "Entry date",
+    "entities_end_date": "Exit date",
+
     "enter_company_name": "Enter Company Name",
     "enter_company_email": "Enter Company Email",
     "enter_company_code": "Enter Company Code",
@@ -139,6 +156,9 @@
     "enter_address": "Enter the address",
     "enter_registration_number": "Enter the registration number",
     "enter_tax_id": "Enter your tax number",
+    "enter_email": "Enter the email address",
+
+    "enter_entities_start_date": "Enter Start Date",
 
     "subdomains": "Subdomains",
 

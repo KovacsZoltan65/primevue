@@ -49,7 +49,12 @@ class EntityController extends Controller
     {
         $roles = $this->getUserRoles($this->tag);
 
+        $users = null;
+        $companies = null;
+
         return Inertia::render('Entity/Index',[
+            'users' => '',
+            'companies' => '',
             'search' => request('search'),
             'can' => $roles,
         ]);

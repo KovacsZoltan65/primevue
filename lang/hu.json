@@ -104,6 +104,9 @@
     "select_country": "Válasszon egy országot",
     "select_city": "Válasszon egy várost",
 
+    "start_date": "Kezdő dátum",
+    "end_date": "Záró dátum",
+
     "specimens": "Példányok",
 
     "users": "Felhasználók",
@@ -128,6 +131,20 @@
     "companies_delete_title_2": "Cégek törlése",
     "companies_delete_details_2": "Törlés megerősítése",
 
+    "entities": "Dolgozók",
+    "entities_title": "Munkavállalók kezelése",
+    "entities_details": "",
+    "entities_new_title": "Új munkavállaló",
+    "entities_new_details": "",
+    "entities_edit_title": "Munkavállaló szerkesztése",
+    "entities_edit_details": "",
+    "entities_delete_title": "",
+    "entities_delete_details": "",
+    "entities_delete_title_2": "",
+    "entities_delete_details_2": "",
+    "entities_start_date": "Belépés dátuma",
+    "entities_end_date": "Kilépés dátuma",
+
     "enter_company_name": "Írja be a cég nevét",
     "enter_company_email": "Írja be a cég email címét",
     "enter_company_phone": "Írja be a cég telefonszámát",
@@ -136,6 +153,9 @@
     "enter_address": "Írja be a címet",
     "enter_registration_number": "Írja be a regisztrációs számot",
     "enter_tax_id": "Írja be az adószámot",
+    "enter_email": "Addja meg az e-mail címét",
+
+    "enter_entities_start_date": "Addja meg a belépés dátumot",
 
     "subdomains": "Subdomainek",
     "subdomains_title": "Subdomainek kezelése",

@@ -37,6 +37,8 @@ const local_storage_column_key = 'ln_entities_grid_columns';
 
 //
 const props = defineProps({
+    users: { type: Object, default: () => {}, },
+    companies: { type: Object, default: () => {}, },
     search: { type: Object, default: () => {}, },
     can: { type: Object, default: () => {}, },
 });
@@ -507,17 +509,15 @@ const getBools = () => {
 
                     <!-- New Button -->
                     <Button
-                        :label="$t('add_new')"
                         icon="pi pi-plus"
                         severity="secondary"
                         class="mr-2"
                         @click="openNew"
                         :disabled="!props.can.entities_create"
                     />
-
+                    
                     <!-- Delete Selected Button -->
                     <Button
-                        :label="$t('delete_selected')"
                         icon="pi pi-trash"
                         severity="secondary"
                         class="mr-2"
@@ -527,6 +527,13 @@ const getBools = () => {
                             !selectedEntities.length"
                     />
 
+                </template>
+
+                <template #center>
+                    <!-- FELIRAT -->
+                    <div class="font-semibold text-xl mb-1">
+                        {{ $t("entities_title") }}
+                    </div>
                 </template>
 
                 <template #end>
@@ -583,10 +590,11 @@ const getBools = () => {
                         />
 
                         <!-- FELIRAT -->
+                        <!--
                         <div class="font-semibold text-xl mb-1">
                             {{ $t("entities_title") }}
                         </div>
-
+                        -->
                         <!-- KERESÉS -->
                         <IconField>
                             <InputIcon>
@@ -795,7 +803,7 @@ const getBools = () => {
                         severity="secondary"
                         variant="simple"
                     >
-                        {{ $t('enter_entity_email') }}
+                        {{ $t('enter_email') }}
                     </Message>
                     <small class="text-red-500" v-if="v$.email.$error">
                         {{ $t(v$.email.$errors[0].$message) }}
@@ -806,7 +814,7 @@ const getBools = () => {
                 <div class="flex flex-col grow basis-0 gap-2">
                     <FloatLabel variant="on">
                         <label for="start_date" class="block font-bold mb-3">
-                            {{ $t("start_date") }}
+                            {{ $t("entities_start_date") }}
                         </label>
                         <InputText
                             id="start_date"
@@ -830,7 +838,7 @@ const getBools = () => {
                 <div class="flex flex-col grow basis-0 gap-2">
                     <FloatLabel variant="on">
                         <label for="end_date" class="block font-bold mb-3">
-                            {{ $t("end_date") }}
+                            {{ $t("entities_end_date") }}
                         </label>
                         <InputText
                             id="end_date"
@@ -850,6 +858,102 @@ const getBools = () => {
                         {{ $t(v$.end_date.$errors[0].$message) }}
                     </small>
                     -->
+                </div>
+
+                <!-- LAST EXPORT DATE -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="last_export" class="block font-bold mb-3">
+                            {{ $t("last_export") }}
+                        </label>
+                        <InputText
+                            id="last_export"
+                            v-model="entity.last_export"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_entity_last_export') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.last_export.$error">
+                        {{ $t(v$.last_export.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- USER_ID -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="user_id" class="block font-bold mb-3">
+                            {{ $t("user_id") }}
+                        </label>
+                        <InputText
+                            id="user_id"
+                            v-model="entity.user_id"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_user_id') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.user_id.$error">
+                        {{ $t(v$.user_id.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- COMPANY_ID -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel variant="on">
+                        <label for="company_id" class="block font-bold mb-3">
+                            {{ $t("company_id") }}
+                        </label>
+                        <InputText
+                            id="company_id"
+                            v-model="entity.company_id"
+                            fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_company_id') }}
+                    </Message>
+                    <small class="text-red-500" v-if="v$.company_id.$error">
+                        {{ $t(v$.company_id.$errors[0].$message) }}
+                    </small>
+                </div>
+
+                <!-- ACTIVE -->
+                <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
+                        <label for="active" class="block font-bold mb-3">
+                            {{ $t("active") }}
+                        </label>
+                        <Select
+                            id="active"
+                            v-model="entity.active"
+                            :options="getBools()"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Active" fluid
+                        />
+                    </FloatLabel>
+                    <Message
+                        size="small"
+                        severity="secondary"
+                        variant="simple"
+                    >
+                        {{ $t('enter_active') }}
+                    </Message>
                 </div>
 
             </div>

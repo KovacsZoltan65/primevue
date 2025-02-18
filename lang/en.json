@@ -146,6 +146,7 @@
     "entities_delete_details_2": "",
     "entities_start_date": "Entry date",
     "entities_end_date": "Exit date",
+    "entities_last_export": "Last Export",
 
     "enter_company_name": "Enter Company Name",
     "enter_company_email": "Enter Company Email",

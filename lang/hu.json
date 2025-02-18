@@ -144,6 +144,7 @@
     "entities_delete_details_2": "",
     "entities_start_date": "Belépés dátuma",
     "entities_end_date": "Kilépés dátuma",
+    "entities_last_export": "Utolsó export",
 
     "enter_company_name": "Írja be a cég nevét",
     "enter_company_email": "Írja be a cég email címét",

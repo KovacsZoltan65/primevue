@@ -7,7 +7,7 @@ import AppLayout from "@/Layouts/AppLayout.vue";
 import {Toolbar,DataTable,Column,IconField,
     InputText,InputIcon,Button,Dialog,
     Select,Tag,FileUpload,FloatLabel,
-    Message,Checkbox} from "primevue";
+    Message,Checkbox, DatePicker} from "primevue";
 
 // TOAST
 import { useToast } from "primevue/usetoast";
@@ -68,6 +68,7 @@ const rules = {
     name:        { required: helpers.withMessage(trans("validate_directory"), required), },
     email:       { required: helpers.withMessage(trans("validate_directory"), required), },
     start_date:  { required: helpers.withMessage(trans("validate_directory"), required), },
+    end_date:    { required: helpers.withMessage(trans("validate_directory"), required), },
     last_export: { required: helpers.withMessage(trans("validate_directory"), required), },
     user_id:     { required: helpers.withMessage(trans("validate_directory"), required), },
     company_id:  { required: helpers.withMessage(trans("validate_directory"), required), }
@@ -409,6 +410,7 @@ const openNew = () => {
 };
 
 const openEdit = (data) => {
+    console.log(data);
     console.log('openEdit');
     entity.value = {...data};
     entityDialog.value = true;
@@ -495,7 +497,11 @@ const getBools = () => {
         <Head :title="$t('entities')" />
 
         <Toast />
-
+        <!--
+        <pre>
+            {{ $page.props.users }}
+        </pre>
+        -->
         <div class="card">
             <Toolbar class="md-6">
                 <template #start>
@@ -515,7 +521,7 @@ const getBools = () => {
                         @click="openNew"
                         :disabled="!props.can.entities_create"
                     />
-                    
+
                     <!-- Delete Selected Button -->
                     <Button
                         icon="pi pi-trash"
@@ -810,113 +816,123 @@ const getBools = () => {
                     </small>
                 </div>
 
-                <!-- START DATE -->
-                <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel variant="on">
-                        <label for="start_date" class="block font-bold mb-3">
-                            {{ $t("entities_start_date") }}
-                        </label>
-                        <InputText
-                            id="start_date"
-                            v-model="entity.start_date"
-                            fluid
-                        />
-                    </FloatLabel>
-                    <Message
-                        size="small"
-                        severity="secondary"
-                        variant="simple"
-                    >
-                        {{ $t('enter_entity_start_date') }}
-                    </Message>
-                    <small class="text-red-500" v-if="v$.start_date.$error">
-                        {{ $t(v$.start_date.$errors[0].$message) }}
-                    </small>
+                <div class="flex flex-wrap gap-4">
+
+                    <!-- START DATE -->
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <FloatLabel>
+                            <label for="start_date" class="block font-bold mb-3">
+                                {{ $t("entities_start_date") }}
+                            </label>
+                            <DatePicker
+                                v-model="entities.start_date"
+                                dateFormat="yy-mm-dd"
+                                fluid showIcon showButtonBar
+                            />
+                        </FloatLabel>
+                        <Message
+                            size="small"
+                            severity="secondary"
+                            variant="simple"
+                        >
+                            {{ $t('enter_entity_start_date') }}
+                        </Message>
+                        <small class="text-red-500" v-if="v$.start_date.$error">
+                            {{ $t(v$.start_date.$errors[0].$message) }}
+                        </small>
+                    </div>
+
+                    <!-- END DATE -->
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <FloatLabel>
+                            <label for="end_date" class="block font-bold mb-3">
+                                {{ $t("entities_end_date") }}
+                            </label>
+                            <DatePicker
+                                v-model="entities.end_date"
+                                dateFormat="yy-mm-dd"
+                                fluid showIcon showButtonBar
+                            />
+                        </FloatLabel>
+                        <Message
+                            size="small"
+                            severity="secondary"
+                            variant="simple"
+                        >
+                            {{ $t('enter_entity_end_date') }}
+                        </Message>
+                        <small class="text-red-500" v-if="v$.end_date.$error">
+                            {{ $t(v$.end_date.$errors[0].$message) }}
+                        </small>
+                    </div>
+
+                    <!-- LAST EXPORT DATE -->
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <FloatLabel>
+                            <label for="last_export" class="block font-bold mb-3">
+                                {{ $t("entities_last_export") }}
+                            </label>
+                            <DatePicker
+                                v-model="entities.last_export"
+                                dateFormat="yy-mm-dd"
+                                fluid showIcon showButtonBar
+                            />
+                        </FloatLabel>
+                        <Message
+                            size="small"
+                            severity="secondary"
+                            variant="simple"
+                        >
+                            {{ $t('enter_entity_last_export') }}
+                        </Message>
+                        <small class="text-red-500" v-if="v$.last_export.$error">
+                            {{ $t(v$.last_export.$errors[0].$message) }}
+                        </small>
+                    </div>
                 </div>
 
-                <!-- END DATE -->
-                <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel variant="on">
-                        <label for="end_date" class="block font-bold mb-3">
-                            {{ $t("entities_end_date") }}
-                        </label>
-                        <InputText
-                            id="end_date"
-                            v-model="entity.end_date"
-                            fluid
-                        />
-                    </FloatLabel>
-                    <!--
-                    <Message
-                        size="small"
-                        severity="secondary"
-                        variant="simple"
-                    >
-                        {{ $t('enter_entity_end_date') }}
-                    </Message>
-                    <small class="text-red-500" v-if="v$.end_date.$error">
-                        {{ $t(v$.end_date.$errors[0].$message) }}
-                    </small>
-                    -->
-                </div>
+                <div class="flex flex-wrap gap-4">
+                    <!-- USER_ID -->
+                    <div class="flex flex-col grow basis-0 gap-2">
+                        <FloatLabel>
+                            <label for="user_id" class="block font-bold mb-3">
+                                {{ $t("user_id") }}
+                            </label>
+                            <Select
+                                id="user_id"
+                                v-model="entity.user_id"
+                                :options="props.users"
+                                optionLabel="name"
+                                optionValue="id"
+                                :placeholder="$t('user')"
+                                fluid
+                            />
+                        </FloatLabel>
+                        <Message
+                            size="small"
+                            severity="secondary"
+                            variant="simple"
+                        >
+                            {{ $t('enter_user_id') }}
+                        </Message>
+                        <small class="text-red-500" v-if="v$.user_id.$error">
+                            {{ $t(v$.user_id.$errors[0].$message) }}
+                        </small>
+                    </div>
 
-                <!-- LAST EXPORT DATE -->
-                <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel variant="on">
-                        <label for="last_export" class="block font-bold mb-3">
-                            {{ $t("last_export") }}
-                        </label>
-                        <InputText
-                            id="last_export"
-                            v-model="entity.last_export"
-                            fluid
-                        />
-                    </FloatLabel>
-                    <Message
-                        size="small"
-                        severity="secondary"
-                        variant="simple"
-                    >
-                        {{ $t('enter_entity_last_export') }}
-                    </Message>
-                    <small class="text-red-500" v-if="v$.last_export.$error">
-                        {{ $t(v$.last_export.$errors[0].$message) }}
-                    </small>
-                </div>
-
-                <!-- USER_ID -->
-                <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel variant="on">
-                        <label for="user_id" class="block font-bold mb-3">
-                            {{ $t("user_id") }}
-                        </label>
-                        <InputText
-                            id="user_id"
-                            v-model="entity.user_id"
-                            fluid
-                        />
-                    </FloatLabel>
-                    <Message
-                        size="small"
-                        severity="secondary"
-                        variant="simple"
-                    >
-                        {{ $t('enter_user_id') }}
-                    </Message>
-                    <small class="text-red-500" v-if="v$.user_id.$error">
-                        {{ $t(v$.user_id.$errors[0].$message) }}
-                    </small>
-                </div>
-
-                <!-- COMPANY_ID -->
-                <div class="flex flex-col grow basis-0 gap-2">
-                    <FloatLabel variant="on">
+                    <!-- COMPANY_ID -->
+                    <div class="flex flex-col grow basis-0 gap-2">
+                    <FloatLabel>
                         <label for="company_id" class="block font-bold mb-3">
                             {{ $t("company_id") }}
                         </label>
-                        <InputText
+                        <Select
                             id="company_id"
                             v-model="entity.company_id"
+                            :options="props.companies"
+                            optionLabel="name"
+                            optionValue="id"
+                            :placeholder="$t('company')"
                             fluid
                         />
                     </FloatLabel>
@@ -931,7 +947,7 @@ const getBools = () => {
                         {{ $t(v$.company_id.$errors[0].$message) }}
                     </small>
                 </div>
-
+                </div>
                 <!-- ACTIVE -->
                 <div class="flex flex-col grow basis-0 gap-2">
                     <FloatLabel>

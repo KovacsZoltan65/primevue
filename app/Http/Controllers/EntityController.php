@@ -7,7 +7,9 @@ use App\Http\Requests\StoreEntityRequest;
 use App\Http\Requests\UpdateEntityRequest;
 use App\Http\Resources\EntityResource;
 use App\Models\Entity;
+use App\Models\User;
 use App\Repositories\EntityRepository;
+use App\Repositories\CompanyRepository;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -29,12 +31,14 @@ class EntityController extends Controller
     use AuthorizesRequests,
         Functions;
     protected EntityRepository $entityRepository;
+    protected CompanyRepository $companyRepository;
 
     protected string $tag = 'entities';
 
-    public function __construct(EntityRepository $repository)
+    public function __construct(EntityRepository $repository, CompanyRepository $companyRepository)
     {
         $this->entityRepository = $repository;
+        $this->companyRepository = $companyRepository;
 
         $tag = Entity::getTag();
 
@@ -49,12 +53,15 @@ class EntityController extends Controller
     {
         $roles = $this->getUserRoles($this->tag);
 
-        $users = null;
-        $companies = null;
+        $users = User::select('id', 'name')
+            ->orderBy('name')
+            ->where('active', '=', 1)
+            ->get()->toArray();
+        $companies = $this->companyRepository->getActiveCompanies();
 
         return Inertia::render('Entity/Index',[
-            'users' => '',
-            'companies' => '',
+            'users' => $users,
+            'companies' => $companies,
             'search' => request('search'),
             'can' => $roles,
         ]);

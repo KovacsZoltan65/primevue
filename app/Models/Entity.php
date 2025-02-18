@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Carbon\Carbon;
 
 class Entity extends Model
 {
@@ -37,7 +38,19 @@ class Entity extends Model
     ];
     protected $casts = [
         'active' => 'integer',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
+
+    public function getStartDateAttribute($value)
+    {
+        return Carbon::parse($value)->format('Y-m-d');
+    }
+
+    public function getEndDateAttribute($value)
+    {
+        return Carbon::parse($value)->format('Y-m-d');
+    }
 
     /*
      * ==============================================================
@@ -77,7 +90,7 @@ class Entity extends Model
         });
         return $retVal;
     }
-    
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('active', '=', 1);

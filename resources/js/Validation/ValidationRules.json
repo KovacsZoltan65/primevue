@@ -15,5 +15,8 @@
     "password_min_letter": 3,
 
     "mysql_port_min": 1,
-    "mysql_port_max": 9999
+    "mysql_port_max": 9999,
+
+    "days_before_start": 30,
+    "days_after_end": 30
 }

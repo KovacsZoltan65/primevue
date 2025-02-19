@@ -20,8 +20,8 @@ import Toast from 'primevue/toast';
 import useVuelidate from "@vuelidate/core";
 import {
     helpers, required,
-    minLength, maxLength, 
-    minDate, maxDate, afterStartDate, 
+    minLength, maxLength,
+    minDate, maxDate, afterStartDate,
     beforeEndDate, last30DaysAgo, after30DaysAgo,
 } from "@vuelidate/validators";
 import validationRules from '@/Validation/ValidationRules.json';
@@ -76,14 +76,34 @@ const rules = {
     name:        { required: helpers.withMessage(trans("validate_directory"), required), },
     email:       { required: helpers.withMessage(trans("validate_directory"), required), },
 
-    start_date:  {
-        required: helpers.withMessage(trans("validate_directory"), required),
-        minDate: helpers.withMessage(trans("validate_directory"), minDate( moment().clone().add(30, 'days') )),
+    start_date: {
+        required,
+        validDate: helpers.withMessage(
+            trans("invalid_date"),
+            (value) => moment(value, "YYYY-MM-DD", true).isValid()
+        ),
+        notOlderThan30Days: helpers.withMessage(
+            ({ $params }) => { console.log('$params', $params); },
+            (value) => moment(value).isSameOrAfter(moment().subtract(30, "days"))
+        ),
+        /*
+        notOlderThan30Days: helpers.withMessage(
+            ({ $params }) => trans('validate_start_date_no_older_days', { days: $params.days }),
+            (value) => moment(value).isSameOrAfter(moment().subtract(validationRules.days_before_start, "days"))
+        ),
+        */
     },
 
-    end_date:    {
-        minDate: helpers.withMessage(helpers.withMessage(trans("validate_start_date"), minDate(  ))),
-        maxDate: () => {}
+    end_date: {
+        validDate: helpers.withMessage(
+            "Érvénytelen dátum", (value) => moment(value, "YYYY-MM-DD", true).isValid()
+        ),
+        notBeforeStart: helpers.withMessage(
+            "A befejező dátum nem lehet korábbi, mint a kezdő dátum", (value, { start_date }) => moment(value).isSameOrAfter(moment(start_date))
+        ),
+        notOlderThan30Days: helpers.withMessage(
+            "A befejező dátum nem lehet 30 napnál régebbi az aktuális dátumhoz képest", (value) => moment(value).isSameOrAfter(moment().subtract(30, "days"))
+        ),
     },
 
     last_export: { required: helpers.withMessage(trans("validate_directory"), required), },
@@ -156,6 +176,8 @@ const saveEntity = async () => {
     entity.value.last_import = entity.value.last_export
         ? format(new Date(entity.value.last_export), "yyyy-MM-dd")
         : null;
+
+    const result = await v$.value.$validate();
 
     console.log("Mentésre kerül:", entity.value);
     /*

@@ -189,7 +189,9 @@
     "validate_same_as": "the two fields are not the same.",
     "validate_tax_id": "Tax ID number is required.",
     "validate_directory": "Directory is required",
+    "validate_invalid_date": "Invalid date",
     "validate_registration_number": "Reg. No. is required",
+    "validate_start_date_no_older_days": "The start date cannot be older than :days days.",
 
     "error_400": "Bad Request",
     "error_401": "Unauthorized! Redirecting to login...",

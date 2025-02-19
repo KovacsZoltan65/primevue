@@ -187,6 +187,9 @@
     "validate_tax_id": "Az adószám megadása kötelező",
     "validate_directory": "A könyvtár megadása kötelező",
     "validate_registration_number": "A reg.no megadása kötelező",
+    "validate_invalid_date": "Érvénytelen dátum",
+    "validate_start_date_no_older_days": "A kezdő dátum nem lehet :days napnál régebbi",
+    "validate_end_date_": "",
 
     "error_400": "Rossz kérés",
     "error_401": "Jogosulatlan! Átirányítás a bejelentkezéshez...",

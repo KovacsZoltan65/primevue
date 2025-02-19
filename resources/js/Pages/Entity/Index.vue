@@ -3,6 +3,7 @@
 import {computed, onMounted, reactive, ref, watch} from 'vue';
 import { Head } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
+import moment from 'moment';
 
 import {Toolbar,DataTable,Column,IconField,
     InputText,InputIcon,Button,Dialog,
@@ -17,7 +18,12 @@ import Toast from 'primevue/toast';
 
 // Validation
 import useVuelidate from "@vuelidate/core";
-import { helpers, maxLength, minLength, required } from "@vuelidate/validators";
+import {
+    helpers, required,
+    minLength, maxLength, 
+    minDate, maxDate, afterStartDate, 
+    beforeEndDate, last30DaysAgo, after30DaysAgo,
+} from "@vuelidate/validators";
 import validationRules from '@/Validation/ValidationRules.json';
 
 //
@@ -69,8 +75,17 @@ const initialEntity = () => {
 const rules = {
     name:        { required: helpers.withMessage(trans("validate_directory"), required), },
     email:       { required: helpers.withMessage(trans("validate_directory"), required), },
-    start_date:  { required: helpers.withMessage(trans("validate_directory"), required), },
-    end_date:    { required: helpers.withMessage(trans("validate_directory"), required), },
+
+    start_date:  {
+        required: helpers.withMessage(trans("validate_directory"), required),
+        minDate: helpers.withMessage(trans("validate_directory"), minDate( moment().clone().add(30, 'days') )),
+    },
+
+    end_date:    {
+        minDate: helpers.withMessage(helpers.withMessage(trans("validate_start_date"), minDate(  ))),
+        maxDate: () => {}
+    },
+
     last_export: { required: helpers.withMessage(trans("validate_directory"), required), },
     user_id:     { required: helpers.withMessage(trans("validate_directory"), required), },
     company_id:  { required: helpers.withMessage(trans("validate_directory"), required), }

@@ -50,9 +50,9 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
         try {
 
             $entityQuery = Entity::search($request);
-            $aa = $entityQuery->get();
-            \Log::info('$aa: ' . print_r($aa, true));
-            return $aa;
+            $entities = $entityQuery->get();
+
+            return $entities;
             /*
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
@@ -62,7 +62,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
             });
             */
         } catch(Exception $ex) {
-            \Log::info('EntityRepository@getEntities Exception $ex: ' . print_r($ex->getMessage(), true));
+            //\Log::info('EntityRepository@getEntities Exception $ex: ' . print_r($ex->getMessage(), true));
             $this->logError($ex, 'getEntities error', ['request' => $request->all()]);
             throw $ex;
         }

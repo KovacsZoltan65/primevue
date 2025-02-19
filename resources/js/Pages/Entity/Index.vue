@@ -100,15 +100,9 @@ const fetchItems = async () => {
 
     await EntityService.getEntities()
         .then((response) => {
-            //console.log('response', response);
             entities.value = response.data;
-
-            //console.log('entities.value', entities.value);
-
-            //console.log('2', entities.value.start_date);
         })
         .catch((error) => {
-            //console.error("getEntities API Error:", error);
 
             ErrorService.logClientError(error, {
                 componentName: "Fetch Entities",

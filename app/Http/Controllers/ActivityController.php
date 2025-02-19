@@ -29,24 +29,25 @@ class ActivityController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    
+
     protected static $activityRepository;
-    
+
     protected string $tag = '';
-    
+
     public function __construct(ActivityRepository $repository)
     {
+//\Log::info('__construct');
         self::$activityRepository = $repository;
-        
+
         $this->tag = Activity::getTag();
-        
+
         $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getActivities', 'getActivity']]);
         //$this->middleware("can:{$this->tag} create", ['only' => ['createActivity']]);
         //$this->middleware("can:{$this->tag} edit", ['only' => ['updateActivity']]);
         //$this->middleware("can:{$this->tag} delete", ['only' => ['deleteActivity', 'deleteActivities']]);
         //$this->middleware("can:{$this->tag} restore", ['only' => ['restoreActivity']]);
     }
-    
+
     public function index(Request $request): InertiaResponse
     {
         $roles = $this->getUserRoles($this->tag);
@@ -56,7 +57,7 @@ class ActivityController extends Controller
             'can' => $roles,
         ]);
     }
-    
+
     public function applySearch(Builder $query, string $search): Builder
     {
         return $query->when($search, function ($query, string $search) {
@@ -69,7 +70,7 @@ class ActivityController extends Controller
         try {
             $_activities = self::$activityRepository->getActivities($request);
             $activities = ActivityResource::collection($_activities);
-            
+
             return response()->json($activities, Response::HTTP_OK);
         } catch (QueryException $ex) {
             return $this->handleException($ex, 'getActivities query error', Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -77,12 +78,12 @@ class ActivityController extends Controller
             return $this->handleException($ex, 'getActivities general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getActivity(GetActivityRequest $request): JsonResponse
     {
         try {
             $activity = self::$activityRepository->getActivity($request->id);
-            
+
             return response()->json($activity, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'getActivity model not found error', Response::HTTP_NOT_FOUND);
@@ -92,7 +93,7 @@ class ActivityController extends Controller
             return $this->handleException($ex, 'getActivity general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * ==========================================
      * 1. Hibák listázása dátumszűrővel:
@@ -132,7 +133,7 @@ class ActivityController extends Controller
     public static function logServerValidationError(ValidationException $ex, Request $request): JsonResponse
     {
         $result = self::$activityRepository->logServerValidationError($ex, $request);
-        
+
         return response()->json($result);
     }
 
@@ -186,14 +187,14 @@ class ActivityController extends Controller
     public function getErrorById(string $errorId): JsonResponse
     {
         $result = self::$activityRepository->getErrorById($errorId);
-        
+
         return response()->json($result['array'], $result['response']);
     }
 
     public function getErrorByUniqueId(string $uniqueErrorId): JsonResponse
     {
         $result = self::$activityRepository->getErrorById($uniqueErrorId);
-        
+
         return response()->json($result['array'], $result['response']);
     }
 }

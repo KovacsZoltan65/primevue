@@ -81,14 +81,14 @@ class EntityController extends Controller
         try {
             $_entities = $this->entityRepository->getEntities($request);
             $entities = EntityResource::collection($_entities);
-
+\Log::info('EntityController $entities[0]->end_date: ' . print_r($entities[0]->end_date, true));
             return response()->json($entities, Response::HTTP_OK);
 
         } catch (QueryException $ex) {
-            \Log::info('EntityController QueryException $ex: ' . print_r($ex, true));
+            //\Log::info('EntityController QueryException $ex->getMessage(): ' . print_r($ex->getMessage(), true));
             return $this->handleException($ex, 'getEntities query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
-            \Log::info('EntityController Exception $ex: ' . print_r($ex, true));
+            //\Log::info('EntityController Exception $ex->getMessage(): ' . print_r($ex->getMessage(), true));
             return $this->handleException($ex, 'getEntities general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

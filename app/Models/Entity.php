@@ -26,30 +26,60 @@ class Entity extends Model
         'last_export', 'user_id',
         'company_id', 'active'
     ];
-    protected $attributes = [
-        'name' => '',
-        'email' => '',
-        'start_date' => null,
-        'end_date' => null,
-        'last_export' => null,
-        'user_id' => null,
-        'company_id' => null,
-        'active' => 1
-    ];
+
+    protected $attributes = [];
+
     protected $casts = [
         'active' => 'integer',
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'start_date' => 'datetime:Y-m-d',
+        'end_date' => 'datetime:Y-m-d',
+        'last_export' => 'datetime:Y-m-d'
     ];
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->attributes = array_merge($this->attributes, [
+            'name' => config('entity.defaults.name', ''),
+            'email' => config('entity.defaults.email', ''),
+            'start_date' => config('entity.defaults.start_date', null),
+            'end_date' => config('entity.defaults.end_date', null),
+            'last_export' => config('entity.defaults.last_export', null),
+            'user_id' => config('entity.defaults.user_id', null),
+            'company_id' => config('entity.defaults.company_id', null),
+            'active' => config('entity.defaults.active', 1),
+        ]);
+    }
 
     public function getStartDateAttribute($value)
     {
-        return Carbon::parse($value)->format('Y-m-d');
+        return $value ? Carbon::parse($value)->format('Y-m-d') : null;
+    }
+
+    public function setStartDateAttribute($value)
+    {
+        $this->attributes['start_date'] = $value ? Carbon::parse($value)->format('Y-m-d') : null;
     }
 
     public function getEndDateAttribute($value)
     {
-        return Carbon::parse($value)->format('Y-m-d');
+        return $value ? Carbon::parse($value)->format('Y-m-d') : null;
+    }
+
+    public function setEndDateAttribute($value)
+    {
+        $this->attributes['end_date'] = $value ? Carbon::parse($value)->format('Y-m-d') : null;
+    }
+
+    public function getLastExportAttribute($value)
+    {
+        return $value ? Carbon::parse($value)->format('Y-m-d') : null;
+    }
+
+    public function setLastExportAttribute($value)
+    {
+        $this->attributes['last_export'] = $value ? Carbon::parse($value)->format('Y-m-d') : null;
     }
 
     /*
@@ -59,7 +89,12 @@ class Entity extends Model
      */
 
     // Ha szeretnéd, hogy minden mezőt automatikusan naplózzon:
-    protected static $logAttributes = ['*'];
+    protected static $logAttributes = [
+        'name', 'email',
+        'start_date', 'end_date',
+        'last_export', 'user_id',
+        'company_id', 'active'
+    ];
     protected static $logOnlyDirty = true; // Csak a változásokat naplózza
     protected static $logName = 'entities';
 
@@ -88,12 +123,18 @@ class Entity extends Model
         })->when($request->active, function ($query) use ($request) {
             $query->where('active', $request->active);
         });
+
         return $retVal;
     }
 
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('active', '=', 1);
+    }
+
+    public function scopeWithArchived(Builder $query)
+    {
+        return $query->withTrashed();
     }
 
     /**

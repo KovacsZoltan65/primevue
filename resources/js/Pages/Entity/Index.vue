@@ -19,7 +19,7 @@ import Toast from 'primevue/toast';
 // Validation
 import useVuelidate from "@vuelidate/core";
 import {
-    helpers, required,
+    helpers, required, email,
     minLength, maxLength,
 } from "@vuelidate/validators";
 import validationRules from '@/Validation/ValidationRules.json';
@@ -71,11 +71,29 @@ const initialEntity = () => {
 };
 
 const rules = {
-    name: { required: helpers.withMessage(trans("validate_directory"), required), },
-    email: { required: helpers.withMessage(trans("validate_directory"), required), },
+    name: {
+        required: helpers.withMessage(
+            ({ $params }) => trans("validate_field_required", { field: 'név' }),
+            required
+        ),
+        validEmail: helpers.withMessage(
+            trans("validate_email.not_email"),
+            email
+        ),
+    },
+
+    email: {
+        required: helpers.withMessage(
+            ({ $params }) => trans("validate_field_required", { field: 'email' }),
+            required
+        ),
+    },
 
     start_date: {
-        required,
+        required: helpers.withMessage(
+            () => trans('validate_required.start_date', { field: 'start_date' }),
+            required
+        ),
         validDate: helpers.withMessage(
             trans("validate_date.start_within_range"),  // Mostantól a szekcionált formát használja
             (value) => moment(value, "YYYY-MM-DD", true).isValid()
@@ -92,18 +110,17 @@ const rules = {
     end_date: {
         validDate: helpers.withMessage(
             trans("validate_date.invalid"),
-            (value) => moment(value, "YYYY-MM-DD", true).isValid()
+            (value) => !value || moment(value, "YYYY-MM-DD", true).isValid()
         ),
         notBeforeStart: helpers.withMessage(
             trans("validate_date.after_start"),
-            (value, { start_date }) => moment(value).isSameOrAfter(moment(start_date))
+            (value, { start_date }) => !value || moment(value).isSameOrAfter(moment(start_date))
         ),
         withinValidEndRange: helpers.withMessage(
-            ({ $params }) => trans("validate_date.end_within_range", { days: $params.days || 30 }), // Biztosított paraméter
+            ({ $params }) => trans("validate_date.end_within_range", { days: $params.days || 30 }),
             helpers.withParams(
-                { days: validationRules.days_after_end ?? 30 }, // Ha undefined, alapértelmezett 30
-                (value) =>
-                    moment(value).isSameOrAfter(moment().subtract(validationRules.days_after_end || 30, "days"))
+                { days: validationRules.days_after_end ?? 30 },
+                (value) => !value || moment(value).isSameOrAfter(moment().subtract(validationRules.days_after_end || 30, "days"))
             )
         ),
     },
@@ -111,7 +128,7 @@ const rules = {
     last_export: {
         validDate: helpers.withMessage(
             trans("validate_date.invalid"),
-            (value) => !value || moment(value, "YYYY-MM-DD", true).isValid() // Ha nincs megadva, akkor valid
+            (value) => !value || moment(value, "YYYY-MM-DD", true).isValid()
         ),
         notAfterStart: helpers.withMessage(
             trans("validate_date.before_start"),
@@ -508,6 +525,8 @@ const hideDialog = () => {
     entityDialog.value = false;
     deleteEntityDialog.value = false;
     deleteEntitiesDialog.value = false;
+
+    v$.value.$reset();
 };
 
 /**

@@ -45,9 +45,9 @@ class StoreEntityRequest extends BaseRequest
                 'max' => __('validate_max.numeric', ['max' => $this->validationRules['maxStringLength']]),
             ],
             'email' => [
-                'required' => __('validate_required'),
-                'email' => __('validate_email'),
-                'unique' => __('validate_unique')
+                'required' => __('validate_email.required'),
+                'email' => __('validate_email.not_email'),
+                'unique' => __('validate_email.unique')
             ]
         ];
     }

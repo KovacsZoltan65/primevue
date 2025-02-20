@@ -44,8 +44,8 @@ class UpdateEntityRequest extends BaseRequest
                 'unique' => __('validate_unique'),
             ],
             'email' => [
-                'required' => __('validate_required'),
-                'email' => __('validate_email'),
+                'required' => __('validate_email.required'),
+                'email' => __('validate_email.not_email'),
             ]
         ];
     }

@@ -170,9 +170,19 @@
     "validation_": "",
 
     "validate_required": "This field is required.",
+    "validate_required.name": "Name is required.",
+    "validate_required.email": "Email is required.",
+    "validate_required.start_date": "Start date is required",
+    "validate_required.end_date": "",
+    "validate_required.last_export": "",
+
     "validate_field_required": "Specifying :field is required.",
     "validate_name": "Name is required",
-    "validate_email": "Email is required",
+
+    "validate_email.required": "Email is required",
+    "validate_email.not_email": "The value provided is not an email.",
+    "validate_email.unique": "The email address provided is not unique.",
+
     "validate_code": "Code is required",
     "validate_region_id": "Region is required",
     "validate_country_id": "Country is required",
@@ -192,6 +202,7 @@
     "validate_invalid_date": "Invalid date",
     "validate_registration_number": "Reg. No. is required",
     "validate_start_date_no_older_days": "The start date cannot be older than :days days.",
+
     "validate_date.invalid": "Invalid date.",
     "validate_date.after_start": "The end date cannot be earlier than the start date.",
     "validate_date.start_within_range": "The start date can be at most :days days earlier than the current date.",

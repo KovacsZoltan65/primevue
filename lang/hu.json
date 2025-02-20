@@ -166,10 +166,21 @@
 
     "validation_error": "Érvényesítési hiba",
     "validation_client_side_error": "Az ügyféloldali ellenőrzés sikertelen volt a szerepkör frissítése során",
+
     "validate_required": "Ez a mező kötelező.",
+    "validate_required.name": "A név megadása kötelező",
+    "validate_required.email": "Az email cím megadása kötelező",
+    "validate_required.start_date": "A kezdő dátum megadása kötelező",
+    "validate_required.end_date": "A záró dátum megadása kötelező",
+    "validate_required.last_export": "Az utolsó export megadása kötelező",
+
     "validate_field_required": "A(z) :field megadása kötelező.",
     "validate_name": "A név megadása kötelező",
-    "validate_email": "Az email megadása kötelező",
+
+    "validate_email.required": "Az email megadása kötelező",
+    "validate_email.not_email": "A megadott érték nem email",
+    "validate_email.unique": "A megadott email cím nem egyedi",
+
     "validate_code": "A kód megadása kötelező",
     "validate_region_id": "A megye megadása kötelező",
     "validate_country_id": "Az ország megadása kötelező",

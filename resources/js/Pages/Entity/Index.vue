@@ -30,7 +30,7 @@ import CompanyService from "@/service/CompanyService.js";
 import ErrorService from "@/service/ErrorService.js";
 import { createId } from "@/helpers/functions.js";
 import {trans} from "laravel-vue-i18n";
-import {FilterMatchMode} from "@primevue/core/api";
+import {FilterMatchMode, FilterOperator} from "@primevue/core/api";
 
 //
 const toast = useToast();
@@ -194,10 +194,7 @@ onMounted(() => {
 });
 
 const saveEntity = async () => {
-    //console.log(entity.value);
-    //entity.value.start_date = format(entity.value.start_date, "yyyy-MM-dd");
-    //entity.value.end_date = format(entity.value.end_date, "yyyy-MM-dd");
-    //entity.value.last_import = format(entity.value.last_import, "yyyy-MM-dd");
+
     entity.value.start_date = entity.value.start_date
         ? format(new Date(entity.value.start_date), "yyyy-MM-dd")
         : null;
@@ -208,10 +205,6 @@ const saveEntity = async () => {
         ? format(new Date(entity.value.last_export), "yyyy-MM-dd")
         : null;
 
-    const result = await v$.value.$validate();
-
-    console.log("Mentésre kerül:", entity.value);
-    /*
     const result = await v$.value.$validate();
 
     if(result) {
@@ -244,7 +237,6 @@ const saveEntity = async () => {
             detail: "Please fix the highlighted errors before submitting.",
         });
     }
-    */
 };
 
 const createEntity = async () => {
@@ -493,15 +485,7 @@ const openNew = () => {
 };
 
 const openEdit = (data) => {
-    //console.log('data', data);
     entity.value = {...data};
-
-    //entity.value.start_date = new Date(data.start_date); // Átalakítás
-    //entity.value.end_date = new Date(data.end_date); // Átalakítás
-    //entity.value.last_export = new Date(data.last_export); // Átalakítás
-
-    //console.log('entity', entity.value);
-
     entityDialog.value = true;
 };
 
@@ -543,12 +527,10 @@ const initFilters = () => {
         global: {value: null, matchMode: FilterMatchMode.CONTAINS},
         name: {value: null, matchMode: FilterMatchMode.CONTAINS},
         email: {value: null, matchMode: FilterMatchMode.CONTAINS},
-        //start_date: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        //end_date: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        //last_export: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        //user_id: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        //company_id: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        //active: {value: null, matchMode: FilterMatchMode.STARTS_WITH}
+        start_date: {
+            operator: FilterOperator.AND,
+            constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }]
+        },
     };
 }
 const clearFilter = () => {
@@ -685,7 +667,7 @@ const getBools = () => {
                 dataKey="id"
                 :paginator="true" :rows="10" sortMode="multiple"
                 :loading="loading" stripedRows removableSort
-                :globalFilterFields="['name']"
+                :globalFilterFields="['name', 'email', 'start_date']"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
@@ -799,12 +781,26 @@ const getBools = () => {
 
                 <!-- START DATE -->
                 <Column
-                    :field="state.columns.start_date.field"
-                    :header="$t(state.columns.start_date.field)"
-                    :sortable="state.columns.start_date.is_sortable"
-                    :hidden="!state.columns.start_date.is_visible"
+                    field="start_date"
+                    header="start_date"
+                    sortable="true"
+                    filterField="start_date"
                     style="min-width: 16rem"
-                ></Column>
+                    filterMatchMode="equals"
+                    dataType="date"
+                >
+                    <template #body="{ data }">
+                        {{ data.start_date }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <DatePicker
+                            v-model="filterModel.value"
+                            dateFormat="yy-mm-dd"
+                            placeholder="yyyy-mm-dd"
+
+                        />
+                    </template>
+                </Column>
 
                 <!-- END DATE -->
                 <Column

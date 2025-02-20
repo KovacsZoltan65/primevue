@@ -189,7 +189,12 @@
     "validate_registration_number": "A reg.no megadása kötelező",
     "validate_invalid_date": "Érvénytelen dátum",
     "validate_start_date_no_older_days": "A kezdő dátum nem lehet :days napnál régebbi",
-    "validate_end_date_": "",
+
+    "validate_date.invalid": "Érvénytelen dátum.",
+    "validate_date.after_start": "A befejező dátum nem lehet korábbi, mint a kezdő dátum.",
+    "validate_date.start_within_range": "A kezdő dátum legfeljebb :days nappal lehet korábbi az aktuális dátumnál.",
+    "validate_date.end_within_range": "A befejező dátum legfeljebb :days nappal lehet későbbi az aktuális dátumnál.",
+    "validate_date.before_start": "Az utolsó export dátuma nem lehet későbbi, mint a kezdő dátum.",
 
     "error_400": "Rossz kérés",
     "error_401": "Jogosulatlan! Átirányítás a bejelentkezéshez...",

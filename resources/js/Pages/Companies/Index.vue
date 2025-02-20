@@ -87,8 +87,14 @@ const submitted = ref(false);
 const rules = {
     name: {
         required: helpers.withMessage(trans("validate_name"), required),
-        minLength: helpers.withMessage( ({ $params }) => trans('validate_min.string', { min: $params.min }), minLength(validationRules.minStringLength)),
-        maxLength: helpers.withMessage( ({ $params }) => trans('validate_max.string', { max: $params.max }), maxLength(validationRules.maxStringLength)),
+        minLength: helpers.withMessage(
+            ({ $params }) => trans('validate_min.string', { min: $params.min }),
+            minLength(validationRules.minStringLength)
+        ),
+        maxLength: helpers.withMessage(
+            ({ $params }) => trans('validate_max.string', { max: $params.max }),
+            maxLength(validationRules.maxStringLength)
+        ),
     },
     country_id: { required: helpers.withMessage(trans("validate_country_id"), required), },
     city_id: { required: helpers.withMessage(trans("validate_city_id"), required), },

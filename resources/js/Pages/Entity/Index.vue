@@ -5,10 +5,10 @@ import { Head } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import moment from 'moment';
 
-import {Toolbar,DataTable,Column,IconField,
-    InputText,InputIcon,Button,Dialog,
-    Select,Tag,FileUpload,FloatLabel,
-    Message,Checkbox, DatePicker} from "primevue";
+import {Toolbar, DataTable, Column, IconField,
+    InputText, InputIcon, Button, Dialog,
+    Select, FileUpload, FloatLabel,
+    Message, Checkbox, DatePicker} from "primevue";
 
 import { format } from 'date-fns';
 
@@ -21,18 +21,16 @@ import useVuelidate from "@vuelidate/core";
 import {
     helpers, required,
     minLength, maxLength,
-    minDate, maxDate, afterStartDate,
-    beforeEndDate, last30DaysAgo, after30DaysAgo,
 } from "@vuelidate/validators";
 import validationRules from '@/Validation/ValidationRules.json';
 
 //
 import EntityService from "@/service/EntityService.js";
+import CompanyService from "@/service/CompanyService.js";
 import ErrorService from "@/service/ErrorService.js";
 import { createId } from "@/helpers/functions.js";
 import {trans} from "laravel-vue-i18n";
 import {FilterMatchMode} from "@primevue/core/api";
-import CompanyService from "@/service/CompanyService.js";
 
 //
 const toast = useToast();
@@ -73,42 +71,56 @@ const initialEntity = () => {
 };
 
 const rules = {
-    name:        { required: helpers.withMessage(trans("validate_directory"), required), },
-    email:       { required: helpers.withMessage(trans("validate_directory"), required), },
+    name: { required: helpers.withMessage(trans("validate_directory"), required), },
+    email: { required: helpers.withMessage(trans("validate_directory"), required), },
 
     start_date: {
         required,
         validDate: helpers.withMessage(
-            trans("invalid_date"),
+            trans("validate_date.start_within_range"),  // Mostantól a szekcionált formát használja
             (value) => moment(value, "YYYY-MM-DD", true).isValid()
         ),
-        notOlderThan30Days: helpers.withMessage(
-            ({ $params }) => { console.log('$params', $params); },
-            (value) => moment(value).isSameOrAfter(moment().subtract(30, "days"))
+        withinValidStartRange: helpers.withMessage(
+            ({ $params }) => trans("validate_date.start_within_range", { days: $params.days || 30 }),
+            helpers.withParams(
+                { days: validationRules.days_before_start ?? 30 },
+                (value) => moment(value).isSameOrAfter(moment().subtract(validationRules.days_before_start || 30, "days"))
+            )
         ),
-        /*
-        notOlderThan30Days: helpers.withMessage(
-            ({ $params }) => trans('validate_start_date_no_older_days', { days: $params.days }),
-            (value) => moment(value).isSameOrAfter(moment().subtract(validationRules.days_before_start, "days"))
-        ),
-        */
     },
 
     end_date: {
         validDate: helpers.withMessage(
-            "Érvénytelen dátum", (value) => moment(value, "YYYY-MM-DD", true).isValid()
+            trans("validate_date.invalid"),
+            (value) => moment(value, "YYYY-MM-DD", true).isValid()
         ),
         notBeforeStart: helpers.withMessage(
-            "A befejező dátum nem lehet korábbi, mint a kezdő dátum", (value, { start_date }) => moment(value).isSameOrAfter(moment(start_date))
+            trans("validate_date.after_start"),
+            (value, { start_date }) => moment(value).isSameOrAfter(moment(start_date))
         ),
-        notOlderThan30Days: helpers.withMessage(
-            "A befejező dátum nem lehet 30 napnál régebbi az aktuális dátumhoz képest", (value) => moment(value).isSameOrAfter(moment().subtract(30, "days"))
+        withinValidEndRange: helpers.withMessage(
+            ({ $params }) => trans("validate_date.end_within_range", { days: $params.days || 30 }), // Biztosított paraméter
+            helpers.withParams(
+                { days: validationRules.days_after_end ?? 30 }, // Ha undefined, alapértelmezett 30
+                (value) =>
+                    moment(value).isSameOrAfter(moment().subtract(validationRules.days_after_end || 30, "days"))
+            )
         ),
     },
 
-    last_export: { required: helpers.withMessage(trans("validate_directory"), required), },
-    user_id:     { required: helpers.withMessage(trans("validate_directory"), required), },
-    company_id:  { required: helpers.withMessage(trans("validate_directory"), required), }
+    last_export: {
+        validDate: helpers.withMessage(
+            trans("validate_date.invalid"),
+            (value) => !value || moment(value, "YYYY-MM-DD", true).isValid() // Ha nincs megadva, akkor valid
+        ),
+        notAfterStart: helpers.withMessage(
+            trans("validate_date.before_start"),
+            (value, { start_date }) => !value || moment(value).isSameOrBefore(moment(start_date))
+        ),
+    },
+
+    user_id:     { required: helpers.withMessage(trans("validate_required"), required), },
+    company_id:  { required: helpers.withMessage(trans("validate_required"), required), }
 };
 const v$ = useVuelidate(rules, entity);
 
@@ -165,11 +177,13 @@ onMounted(() => {
 });
 
 const saveEntity = async () => {
-
-    entity.value.start_date = format(entity.value.start_date, "yyyy-MM-dd");
+    //console.log(entity.value);
+    //entity.value.start_date = format(entity.value.start_date, "yyyy-MM-dd");
     //entity.value.end_date = format(entity.value.end_date, "yyyy-MM-dd");
     //entity.value.last_import = format(entity.value.last_import, "yyyy-MM-dd");
-
+    entity.value.start_date = entity.value.start_date
+        ? format(new Date(entity.value.start_date), "yyyy-MM-dd")
+        : null;
     entity.value.end_date = entity.value.end_date
         ? format(new Date(entity.value.end_date), "yyyy-MM-dd")
         : null;

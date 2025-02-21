@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Repositories\Auth;
 
 use App\Interfaces\RoleRepositoryInterface;
 use App\Models\Auth\Permission;
@@ -8,11 +8,11 @@ use App\Models\Auth\Role;
 use App\Services\CacheService;
 use App\Traits\Functions;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Override;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Eloquent\BaseRepository;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class RoleRepositoryEloquent.
@@ -30,7 +30,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
     public function __construct(CacheService $cacheService)
     {
         $this->tag = Role::getTag();
-        
+
         $this->cacheService = $cacheService;
     }
 
@@ -46,6 +46,23 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
             ];
         } catch(Exception $ex) {
             $this->logError($ex, 'listRolesAndPermission error', []);
+            throw $ex;
+        }
+    }
+
+    public function getActiveRoles()
+    {
+        try {
+            $model = $this->model();
+            $roles = $model::query()
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->where('active','=',1)
+                ->get()->toArray();
+
+            return $roles;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'getActiveRoles error', []);
             throw $ex;
         }
     }
@@ -150,7 +167,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
             $deletedCount = 0;
 
             DB::transaction(function () use ($ids, &$deletedCount) {
-                $roles = Company::whereIn('id', $ids)->lockForUpdate()->get();
+                $roles = Role::whereIn('id', $ids)->lockForUpdate()->get();
 
                 $deletedCount = $roles->each(function ($role) {
                     $role->delete();
@@ -232,18 +249,16 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
      * @return string
      */
     #[Override]
-    public function model()
+    public function model(): string
     {
         return Role::class;
     }
-
-
 
     /**
      * Boot up the repository, pushing criteria
      */
     #[Override]
-    public function boot()
+    public function boot(): void
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }

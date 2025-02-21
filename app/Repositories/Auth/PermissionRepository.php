@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 class PermissionRepository extends BaseRepository implements PermissionRepositoryInterface
 {
     use Functions;
-    
+
     protected CacheService $cacheService;
 
     protected string $tag = 'permissions';
@@ -33,6 +33,22 @@ class PermissionRepository extends BaseRepository implements PermissionRepositor
     {
         $this->tag = Permission::getTag();
         $this->cacheService = $cacheService;
+    }
+
+    public function getActivePermissions()
+    {
+        try {
+            $model = $this->model();
+            $permissions = $model::query()
+                ->selection('id', 'name')->orderBy('name')
+                ->where('avtive', '=', 1)
+                ->get()->toArray();
+
+            return $permissions;
+        } catch( Exception $ex ) {
+            $this->logError($ex, 'getActivePermissions error', []);
+            throw $ex;
+        }
     }
 
     public function getPermissions(Request $request)
@@ -82,9 +98,9 @@ class PermissionRepository extends BaseRepository implements PermissionRepositor
     {
         try{
             $permission = Permission::create($request->all());
-            
+
             $this->cacheService->forgetAll($this->tag);
-            
+
             return $permission;
         } catch(Exception $ex) {
             $this->logError($ex, 'createPermission error', ['request' => $request->all()]);
@@ -130,7 +146,7 @@ class PermissionRepository extends BaseRepository implements PermissionRepositor
             throw $ex;
         }
     }
-    
+
     public function deletePermission(Request $request)
     {
         try {
@@ -160,20 +176,20 @@ class PermissionRepository extends BaseRepository implements PermissionRepositor
             throw $ex;
         }
     }
-    
+
     public function realDeletePermission(int $id)
     {
         try {
             $permission = Permission::withTrashed()->findOrFail($id);
             $deletedCount = $permission->forceDelete();
-            
+
             return $deletedCount;
         } catch(Exception $ex) {
             $this->handleException($ex, 'realDeletePermission error', Response::HTTP_INTERNAL_SERVER_ERROR);
             throw $ex;
         }
     }
-            
+
     /**
      * Specify Model class name
      *

@@ -85,6 +85,11 @@ class User extends Authenticatable
         ];
     }
 
+    public static function getTag(): string
+     {
+         return self::$logName;
+     }
+
     public function scopeSearch(Builder $query, Request $request)
     {
         return $query->when($request->search, function ($query) use ($request) {
@@ -92,20 +97,16 @@ class User extends Authenticatable
                 $query->where('name', 'like', "%{$request->search}%");
             });
         });
-        /*
-        $query = User::query();
-
-        return $query->when($request->search, function($query) use($request){
-            $query->where(function($query) use($request){
-                $query->where('name', 'like', "%{$request->search}%");
-            });
-        });
-        */
     }
 
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('active', '=', 1);
+    }
+
+    public function scopeWithArchived(Builder $query)
+    {
+        return $query->withTrashed();
     }
 
     /**
@@ -146,17 +147,6 @@ class User extends Authenticatable
             'id',           // A `users` kulcsa
             'id'            // A `companies` kulcsa
         );
-
-        /*
-        return $this->hasManyThrough(
-            Entity::class,      // Cél tábla
-            Company::class,     // Közvetítő tábla
-            'person_company',
-            'company_id',
-            'id',
-            'id'
-        );
-        */
     }
 
     public function getCreatedAtAttribute()
@@ -193,5 +183,11 @@ class User extends Authenticatable
         ->mapWithKeys(function ($pr) {
             return [$pr['name'] => true];
         });
+    }
+
+    #[Override]
+    public function getActivitylogOptions(): LogOptions {
+        return LogOptions::defaults()
+            ->logFillable();
     }
 }

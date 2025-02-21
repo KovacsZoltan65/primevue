@@ -223,12 +223,12 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         //
     }
 
-    public function model()
+    public function model(): string
     {
         return Company::class;
     }
 
-    public function boot()
+    public function boot(): void
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }

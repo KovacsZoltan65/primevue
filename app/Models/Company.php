@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Carbon\Carbon;
 
 class Company extends Model
 {

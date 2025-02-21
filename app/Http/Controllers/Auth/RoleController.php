@@ -9,7 +9,7 @@ use App\Http\Resources\Auth\RoleResource;
 use App\Models\Auth\Permission;
 use App\Models\Auth\Role;
 use App\Models\User;
-use App\Repositories\RoleRepository;
+use App\Repositories\Auth\RoleRepository;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -77,6 +77,19 @@ class RoleController extends Controller
             return $this->handleException($ex, 'listRolesAndPermissions query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             return $this->handleException($ex, 'listRolesAndPermissions general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getActiveRoles(): JsonResponse
+    {
+        try {
+            $roles = $this->roleRepository->getActiveRoles();
+
+            return response()->json($roles, Response::HTTP_OK);
+        } catch (QueryException $ex) {
+            return $this->handleException($ex, 'getActiveRoles query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (Exception $ex) {
+            return $this->handleException($ex, 'getActiveRoles general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

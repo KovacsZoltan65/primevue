@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Traits\Functions;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +17,21 @@ use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
+    use Functions;
+
+    protected $roleRepository,
+              $permissionRepository;
+
+    protected string $tag = '';
+
+    public function __construct(RoleRepository $roleRepository, PermissionRepository $permissionRepository)
+    {
+        $this->roleRepository = $roleRepository;
+        $this->permissionRepository = $permissionRepository;
+
+        $this->tag = '';
+    }
+
     /**
      * A felhasználókezelési oldal megjelenítése.
      *
@@ -23,6 +40,8 @@ class UserController extends Controller
      */
     public function index(Request $request): InertiaResponse
     {
+        $roles = $this->roleRepository->getActiveUsers();
+        $permissions = $this->permissionRepository->getActivePermissions();
         // Jelenítse meg a felhasználókezelő oldalt
         return Inertia::render('Auth/User/Index');
     }
@@ -42,6 +61,21 @@ class UserController extends Controller
         });
     }
 
+    public function getActiveUsers()
+    {
+        try {
+            $users = User::query()
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->where('active', '=', 1)
+                ->get()->toArray();
+
+            return $users;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'getActiveUsers error', []);
+            throw $ex;
+        }
+    }
     /**
      * Visszaadja a felhasználókat a keresési feltételek alapján.
      *

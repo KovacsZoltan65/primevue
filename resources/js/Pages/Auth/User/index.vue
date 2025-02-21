@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, reactive } from "vue";
+import { onMounted, ref, reactive } from "vue";
 import { Head } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
@@ -32,7 +32,12 @@ import Password from "primevue/password";
 /**
  * Szerver felöl jövő adatok
  */
-const props = defineProps({});
+const props = defineProps({
+    permissions: { type: Object, default: () => {}, },
+    roles: { type: Object, default: () => {}, },
+    search: { type: Object, default: () => {}, },
+    can: { type: Object, default: () => {}, },
+});
 
 /**
  * Az állapotmező logikai értékeit adja vissza.

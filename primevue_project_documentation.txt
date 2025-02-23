@@ -187,3 +187,92 @@ E-jelenlét egy beosztás-tervező alkalmazás, amelynek célja a munkavállaló
         - Súlyos hibák esetén az adminisztrátorok értesítése.
     - Tanulási visszacsatolás:
         - A gépi tanulási modell automatikus újratanítása a naplófájlok alapján.
+
+# Tesztelési Stratégia a Projektben
+
+Ez a dokumentáció áttekinti a különböző teszt típusokat és módszereket, amelyekkel biztosítjuk, hogy az alkalmazásunk – legyen az a Laravel backend vagy a Primevue alapú frontend – megbízható és karbantartható maradjon.
+
+## Tartalom
+
+- [Bevezetés](#bevezetés)
+- [Teszt Típusok](#teszt-típusok)
+  - [Unit Tesztek](#unit-tesztek)
+  - [Feature (Integrációs) Tesztek](#feature-integrációs-tesztek)
+  - [End-to-End (E2E) Tesztek](#end-to-end-e2e-tesztek)
+  - [API Tesztek](#api-tesztek)
+  - [Regressziós Tesztek](#regressziós-tesztek)
+- [PHPUnit Példák a Laravel Backendhez](#phpunit-példák-a-laravel-backendhez)
+  - [Unit Teszt Példa](#unit-teszt-példa)
+  - [Feature Teszt Példa Hitelesítéssel](#feature-teszt-példa-hitelesítéssel)
+- [Frontend Tesztek a Primevue Komponensekhez](#frontend-tesztek-a-primevue-komponensekhez)
+- [CI/CD Integráció](#cicd-integráció)
+- [Összegzés](#összegzés)
+
+## Bevezetés
+
+A projekt stabilitásának és megbízhatóságának biztosítása érdekében több szinten teszteljük a kódot. A tesztek segítenek időben felfedni a hibákat, és biztosítják, hogy a későbbi módosítások ne okozzanak regressziókat.
+
+## Teszt Típusok
+
+### Unit Tesztek
+
+- **Cél:** Az egyes kódrészek, például függvények, metódusok, vagy osztályok izolált ellenőrzése.
+- **Előnyök:**  
+  - Gyorsan futnak.  
+  - Könnyen szűkítik a hibakeresés területét.
+- **Mit teszteljünk:**  
+  - Üzleti logika, segédfüggvények, model metódusok, stb.
+
+### Feature (Integrációs) Tesztek
+
+- **Cél:** Az alkalmazás nagyobb egységeinek (pl. controller, route, view) együttműködését ellenőrzi.
+- **Előnyök:**  
+  - Szimulálja a felhasználói interakciókat és az egyes komponensek integrációját.
+- **Példa:**  
+  - A *Companies* oldal tesztelése, ahol a view-ban megjelenő változókat és a HTTP válaszokat ellenőrizzük.
+
+### End-to-End (E2E) Tesztek
+
+- **Cél:** A teljes felhasználói élmény szimulálása a böngésző szintjén.
+- **Eszközök:**  
+  - Laravel Dusk, Cypress.
+- **Mit teszteljünk:**  
+  - Navigáció, JavaScript interakciók, felhasználói folyamatok.
+
+### API Tesztek
+
+- **Cél:** A REST API végpontok válaszainak, státuszkódjainak, és jogosultsági mechanizmusainak ellenőrzése.
+- **Példa:**  
+  - Adatvalidáció, hibakezelés, jogosultság-ellenőrzés.
+
+### Regressziós Tesztek
+
+- **Cél:** Annak ellenőrzése, hogy a korábban működő funkciók új módosítások után is hibátlanul működnek.
+- **Előnyök:**  
+  - Folyamatos stabilitást biztosít a kód változásai mellett.
+
+## PHPUnit Példák a Laravel Backendhez
+
+### Unit Teszt Példa
+
+A következő példa egy `CompanyService` osztály `getAllCompanies()` metódusának izolált tesztelését mutatja be:
+
+```php
+<?php
+// tests/CompanyServiceTest.php
+namespace Tests;
+
+use Tests\TestCase;
+use App\Services\CompanyService;
+
+class CompanyServiceTest extends TestCase
+{
+    public function testGetAllCompaniesReturnsNonEmptyArray(): void
+    {
+        $service = new CompanyService();
+        $companies = $service->getAllCompanies();
+
+        $this->assertIsArray($companies, 'A visszatérési értéknek tömbnek kell lennie');
+        $this->assertNotEmpty($companies, 'A tömbnek nem szabad üresnek lennie');
+    }
+}

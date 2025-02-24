@@ -57,11 +57,6 @@ class User extends Authenticatable
      * ==============================================================
      */
 
-    public static function getTag(): string
-    {
-        return self::$logName;
-    }
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -183,11 +178,5 @@ class User extends Authenticatable
         ->mapWithKeys(function ($pr) {
             return [$pr['name'] => true];
         });
-    }
-
-    #[Override]
-    public function getActivitylogOptions(): LogOptions {
-        return LogOptions::defaults()
-            ->logFillable();
     }
 }

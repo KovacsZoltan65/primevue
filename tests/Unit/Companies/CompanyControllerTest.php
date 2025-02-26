@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Companies;
 
 use App\Http\Controllers\CompanyController;
 use App\Http\Requests\GetCompanyRequest;

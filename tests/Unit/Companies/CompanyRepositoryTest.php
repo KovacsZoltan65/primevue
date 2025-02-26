@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Companies;
 
 use PHPUnit\Framework\TestCase;
 use App\Repositories\CompanyRepository;

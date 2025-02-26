@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
             //PersonSeeder::class,              // - Ne változtasd meg a sorrendet!!
 
             EntitySeeder::class,              // - Ne változtasd meg a sorrendet!!
-            CompanyEntitySeeder::class,
+            //CompanyEntitySeeder::class,
             HierarchySeeder::class,
 
             MenuItemSeeder::class,

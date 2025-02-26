@@ -22,7 +22,7 @@ class CompanyEntitySeeder extends Seeder
 
         // Create 3 companies
         //$companies = Company::factory()->count(3)->create();
-        $companies = Company::all();
+        //$companies = Company::all();
 
         // Create 3 persons
         //$persons = Person::factory()->count(3)->create();
@@ -34,9 +34,9 @@ class CompanyEntitySeeder extends Seeder
         });
 
         // Create 1-3 entities in each company
-        $companies->each(function (Company $company) {
-            Entity::factory()->count(rand(1, 3))->create(['company_id' => $company->id]);
-        });
+        //$companies->each(function (Company $company) {
+        //    Entity::factory()->count(rand(1, 3))->create(['company_id' => $company->id]);
+        //});
 
         activity()->enableLogging();
     }

@@ -2,19 +2,36 @@
 
 namespace Tests\API\Companies;
 
+use App\Models\User;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Company;
 
 class CompaniesIndexApiTest extends TestCase
 {
-    //use RefreshDatabase;
+    use RefreshDatabase;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        //$this->withoutMiddleware();
+        $user = User::where([
+            ['email', '=', 'zoltan1_kovacs@msn.com'],
+            ['password' => bcrypt('password')]
+        ])->first();
+
+        // Token generálása a felhasználónak (Sanctum példa)
+        $token = $user->createToken('TestToken')->plainTextToken;
+        // Az Authorization fejléc beállítása a tesztkérésekhez
+        $this->withHeader('Authorization', "Bearer {$token}");
+    }
 
     /** @test */
     public function testGetCompaniesApiReturnsListOfCompanies(): void
     {
         // Létrehozunk 3 céget a teszt adatbázisban
-        //$companies = Company::factory()->count(3)->create();
+        $companies = Company::factory()->count(3)->create();
 
         // API hívás az "api/getCompanies" végpontra
         $response = $this->getJson('api/getCompanies');

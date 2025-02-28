@@ -781,9 +781,10 @@ const getBools = () => {
 
                 <!-- START DATE -->
                 <Column
-                    field="start_date"
-                    header="start_date"
-                    sortable="true"
+                    :field="state.columns.start_date.field"
+                    :header="$t(state.columns.start_date.field)"
+                    :sortable="state.columns.start_date.is_sortable"
+                    :hidden="!state.columns.start_date.is_visible"
                     filterField="start_date"
                     style="min-width: 16rem"
                     filterMatchMode="equals"
@@ -1096,7 +1097,37 @@ const getBools = () => {
         </Dialog>
 
         <!-- DELETE ENTITY DIALOG -->
-        <Dialog></Dialog>
+        <Dialog>
+            <span class="text-surface-500 dark:text-surface-400 block mb-8">
+                {{ $t("entities_delete_title") }}
+            </span>
+            <!-- A párbeszédpanel tartalma -->
+            <div class="flex items-center gap-4">
+                <!-- A figyelmeztető ikon -->
+                <i class="pi pi-exclamation-triangle !text-3xl" />
+                <!-- A szöveg, amely megjelenik a párbeszédpanelen -->
+                <span v-if="entity">
+                    {{ $t("confirm_delete_2") }} <b>{{ entity.name }}</b
+                    >?
+                </span>
+            </div>
+            <!-- A párbeszédpanel lábléc, amely tartalmazza a gombokat -->
+            <template #footer>
+                <!-- A "Nem" gomb -->
+                <Button
+                    :label="$t('no')"
+                    icon="pi pi-times"
+                    @click="deleteEntityDialog = false"
+                    text
+                />
+                <!-- A "Igen" gomb, amely törli a dolgozót -->
+                <Button
+                    :label="$t('yes')"
+                    icon="pi pi-check"
+                    @click="deleteEntity"
+                />
+            </template>
+        </Dialog>
 
         <!-- DELETE ENTITIES DIALOG -->
         <Dialog></Dialog>

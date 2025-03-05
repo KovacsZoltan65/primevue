@@ -17,7 +17,10 @@ class WorkplanFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => '',
+            'company_id' => '',
+            'acs_id' => '',
+            'active' => 1,
         ];
     }
 }

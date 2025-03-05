@@ -220,7 +220,7 @@ class CompanyController extends Controller
         }
     }
 
-    public function realDeleteCompany(GetCompanyRequest $request)
+    public function realDeleteCompany(GetCompanyRequest $request): JsonResponse
     {
         try {
             $deletedCount = $this->companyRepository->realDeleteCompany($request->id);

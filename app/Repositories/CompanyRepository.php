@@ -163,7 +163,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function deleteCompany(Request $request)
+    public function deleteCompany(Request $request): ?Company
     {
         try {
             $company = null;
@@ -181,7 +181,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function restoreCompany(Request $request): Company
+    public function restoreCompany(Request $request): ?Company
     {
         try {
             $company = new Company();
@@ -199,10 +199,11 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function realDeleteCompany(int $id): Company
+    public function realDeleteCompany(int $id): ?Company
     {
         try {
             $company = null;
+
             DB::transaction(function() use($id, &$company) {
                 $company = Company::withTrashed()->lockForUpdate()->findOrFail($id);
                 $company->forceDelete();

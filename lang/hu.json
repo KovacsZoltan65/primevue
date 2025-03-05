@@ -232,6 +232,11 @@
     "migration_creating_shift_types": "Műszaktípusok létrehozása...",
     "migration_created_shift_types": "A műszaktípusok létrehozva",
 
+    "migration_creating_entities": "Entitások létrehozása...",
+    "migration_created_entities": "Entitások létrehozva",
+    "migration_creating_workplans": "Munkarendek létrehozása...",
+    "migration_created_workplans": "Munkarendek létrehozva",
+
     "command_company_description": "Vállalat létrehozása, frissítése vagy törlése megadott adatokkal vagy véletlenszerű értékekkel.",
     "command_company_actions": "cég létrehozása, frissítése, törlése vagy listázása",
     "command_company_data": "JSON formátumú adatok a vállalat számára",

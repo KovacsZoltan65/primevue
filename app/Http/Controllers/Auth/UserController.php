@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\Auth\PermissionRepository;
+use App\Repositories\Auth\RoleRepository;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -40,7 +42,7 @@ class UserController extends Controller
      */
     public function index(Request $request): InertiaResponse
     {
-        $roles = $this->roleRepository->getActiveUsers();
+        $roles = $this->roleRepository->getActiveRoles();
         $permissions = $this->permissionRepository->getActivePermissions();
         // Jelenítse meg a felhasználókezelő oldalt
         return Inertia::render('Auth/User/Index');

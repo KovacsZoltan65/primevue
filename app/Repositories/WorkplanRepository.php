@@ -7,6 +7,7 @@ use App\Interfaces\WorkplanRepositoryInterface;
 use App\Services\CacheService;
 use App\Traits\Functions;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Models\Workplan;
@@ -33,37 +34,27 @@ class WorkplanRepository extends BaseRepository implements WorkplanRepositoryInt
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveWorkplans()
+    public function getActiveWorkplans(): Array
     {
-        try {
-            $model = $this->model();
-            $workplans = $model::query()
-                ->select('id', 'name')
-                ->orderBy('name')
-                ->where('active', '=', 1)
-                ->get()->toArray();
+        $model = $this->model();
+        $workplans = $model::query()
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->where('active', '=', 1)
+            ->get()->toArray();
 
-            return $workplans;
-        } catch( Exception $ex ) {
-            $this->logError($ex, 'getActiveWorkplans error', []);
-            throw $ex;
-        }
+        return $workplans;
     }
 
     public function getWorkplans(Request $request)
     {
-        try {
-            $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
+        $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
-            return $this->cacheService->remember($this->tag, $cacheKey, function() use($request) {
-                $workplanQuery = Workplan::search($request);
+        return $this->cacheService->remember($this->tag, $cacheKey, function() use($request) {
+            $workplanQuery = Workplan::search($request);
 
-                return $workplanQuery->get();
-            });
-        } catch( Exception $ex ) {
-            $this->logError($ex, 'getWorkplans error', ['request' => $request->all()]);
-            throw $ex;
-        }
+            return $workplanQuery->get();
+        });
     }
 
     public function getWorkplan(int $id): Workplan
@@ -82,138 +73,104 @@ class WorkplanRepository extends BaseRepository implements WorkplanRepositoryInt
 
     public function getWorkplanByName(string $name): Workplan
     {
-        try {
-            $cacheKey = $this->generateCacheKey($this->tag, $name);
+        $cacheKey = $this->generateCacheKey($this->tag, $name);
 
-            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($name) {
-                return Workplan::where('name', '=', $name)->firstOrFail();
-            });
-        } catch( Exception $ex ) {
-            $this->logError($ex, 'getWorkplanByName error', ['name' => $name]);
-            throw $ex;
-        }
+        return $this->cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+            return Workplan::where('name', '=', $name)->firstOrFail();
+        });
     }
 
     public function createWorkplan(Request $request): ?Workplan
     {
-        try {
-            $workplan = null;
+        $workplan = null;
 
-            DB::transaction(function() use($request, &$workplan) {
-                // 1. Munkarend létrehozása
-                $workplan = Workplan::create($request->all());
+        DB::transaction(function() use($request, &$workplan) {
+            // 1. Munkarend létrehozása
+            $workplan = Workplan::create($request->all());
 
-                // 2. Kapcsolódó rekordok létrehozása (pl. alapértelmezett beállítások)
-                $this->createDefaultSettings($workplan);
+            // 2. Kapcsolódó rekordok létrehozása (pl. alapértelmezett beállítások)
+            $this->createDefaultSettings($workplan);
 
-                // 3. Cache törlése, ha releváns
-                $this->cacheService->forgetAll($this->tag);
-            });
+            // 3. Cache törlése, ha releváns
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-            return $workplan;
-        } catch( Exception $ex ) {
-            $this->logError($ex, 'createWorkplan error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $workplan;
     }
 
     public function updateWorkplan($request, int $id): ?Workplan
     {
-        try {
-            $workplan = null;
+        $workplan = null;
 
-            DB::transaction(function() use($request, $id, &$workplan) {
-                $workplan = Workplan::lockForUpdate()->findOrFail($id);
-                $workplan->update($request->all());
-                $workplan->refresh();
-            });
+        DB::transaction(function() use($request, $id, &$workplan) {
+            $workplan = Workplan::lockForUpdate()->findOrFail($id);
+            $workplan->update($request->all());
+            $workplan->refresh();
+        });
 
-            return $workplan;
-        } catch( Exception $ex ) {
-            $this->logError($ex, 'updateWorkplan error', ['id' => $id, 'request' => $request->all()]);
-            throw $ex;
-        }
+        return $workplan;
     }
 
     public function deleteWorkplans(Request $request): int
     {
-        try {
-            $validated = $request->validate([
-                'ids' => ['required', 'array', 'min:1'],
-                'ids.*' => ['integer', 'exists:workplans,id'],
-            ]);
-            $ids = $validated['ids'];
-            $deletedCount = 0;
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:workplans,id'],
+        ]);
+        $ids = $validated['ids'];
+        $deletedCount = 0;
 
-            DB::transaction(function() use($ids, &$deletedCount) {
-                $workplans = Workplan::whereIn('id', $ids)->lockForUpdate()->get();
+        DB::transaction(function() use($ids, &$deletedCount) {
+            $workplans = Workplan::whereIn('id', $ids)->lockForUpdate()->get();
 
-                $deletedCount = $workplans->each(function ($workplan): void {
-                    $workplan->delete();
-                })->count();
+            $deletedCount = $workplans->each(function ($workplan): void {
+                $workplan->delete();
+            })->count();
 
-                $this->cacheService->forgetAll($this->tag);
-            });
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-            return $deletedCount;
-        } catch( Exception $ex ) {
-            $this->logError($ex, 'deleteWorkplans error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $deletedCount;
     }
 
     public function deleteWorkplan(Request $request): ?Workplan
     {
         $workplan = null;
-        try {
-            DB::transaction(function() use($request, &$workplan) {
-                $workplan = Workplan::lockForUpdate()->findOrFail($request->id);
-                $workplan->delete();
 
-                $this->cacheService->forgetAll($this->tag);
-            });
+        DB::transaction(function() use($request, &$workplan) {
+            $workplan = Workplan::lockForUpdate()->findOrFail($request->id);
+            $workplan->delete();
 
-            return $workplan;
-        } catch( Exception $ex ) {
-            $this->logError($ex, 'deleteWorkplan error', ['request' => $request->all()]);
-            throw $ex;
-        }
+            $this->cacheService->forgetAll($this->tag);
+        });
+
+        return $workplan;
     }
 
     public function restoreWorkplan(Request $request): ?Workplan
     {
-        try {
-            $workplan = null;
-            DB::transaction(function() use($request, &$workplan) {
-                $workplan = Workplan::withTrashed()->lockForUpdate()->findOrFail($request->id);
-                $workplan->restore();
+        $workplan = null;
+        DB::transaction(function() use($request, &$workplan) {
+            $workplan = Workplan::withTrashed()->lockForUpdate()->findOrFail($request->id);
+            $workplan->restore();
 
-                $this->cacheService->forgetAll($this->tag);
-            });
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-            return $workplan;
-        } catch( Exception $ex ) {
-            $this->logError($ex, 'restoreWorkplan error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $workplan;
     }
 
     public function realDeleteWorkplan(int $id): Workplan
     {
-        try {
-            $workplan = null;
-            DB::transaction(function() use($id, &$workplan): void {
-                $workplan = Workplan::withTrashed()->lockForUpdate()->findOrFail($id);
-                $workplan->forceDelete();
+        $workplan = null;
+        DB::transaction(function() use($id, &$workplan): void {
+            $workplan = Workplan::withTrashed()->lockForUpdate()->findOrFail($id);
+            $workplan->forceDelete();
 
-                $this->cacheService->forgetAll($this->tag);
-            });
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-            return $workplan;
-        } catch( Exception $ex ) {
-            $this->logError($ex, 'realDeleteWorkplan error', ['id' => $id]);
-            throw $ex;
-        }
+        return $workplan;
     }
 
     private function createDefaultSettings(Workplan $company): void{}

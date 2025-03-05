@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\WorkplanRepository;
+use App\Services\Workplans\WorkplanService;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
@@ -23,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     {
         define('APP_ACTIVE', 1);
         define('APP_INACTIVE', 0);
-        
+
         define('APP_TRUE', true);
         define('APP_FALSE', false);
 

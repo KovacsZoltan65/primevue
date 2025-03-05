@@ -35,7 +35,7 @@ class CompaniesPageTest extends TestCase
         $response->assertStatus(200);
 
         // Ellenőrizzük, hogy a helyes view-t jeleníti meg (pl. companies.blade.php)
-        $response->assertViewIs('companies');
+        $response->assertViewIs('Index');
 
         // Ellenőrizzük, hogy a view-ban létezik a "companies" változó, és nem üres
         //$response->assertViewHas('companies', function ($companies) {

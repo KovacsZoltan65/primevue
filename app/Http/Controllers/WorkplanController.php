@@ -7,7 +7,7 @@ use App\Http\Requests\StoreWorkplanRequest;
 use App\Http\Requests\UpdateWorkplanRequest;
 use App\Http\Resources\WorkplanResource;
 use App\Models\Workplan;
-use App\Repositories\WorkplanRepository;
+use App\Services\Workplans\WorkplanService;
 use App\Traits\Functions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -27,15 +27,17 @@ class WorkplanController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected WorkplanRepository $workplanRepository;
+    //protected WorkplanRepository $workplanRepository;
+    protected WorkplanService $workplanService;
 
     protected string $tag = '';
 
-    public function __construct(WorkplanRepository $workplanRepository)
+    public function __construct(WorkplanService $workplanService)
     {
         $this->tag = Workplan::getTag();
 
-        $this->workplanRepository = $workplanRepository;
+        //$this->workplanRepository = $workplanRepository;
+        $this->workplanService = $workplanService;
 
         $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getWorkplans', 'getWorkplan', 'getWorkplanByName']]);
         $this->middleware("can:{$this->tag} create", ['only' => ['createWorkplan']]);
@@ -63,8 +65,8 @@ class WorkplanController extends Controller
 
     public function getActiveWorkplans(): JsonResponse
     {
-        try {
-            $workplans = $this->workplanRepository->getActiveWorkplans();
+        try{
+            $workplans = $this->workplanService->getActiveWorkplans();
 
             return response()->json($workplans, Response::HTTP_OK);
         } catch(QueryException $ex) {
@@ -77,7 +79,7 @@ class WorkplanController extends Controller
     public function getWorkplans(Request $request): JsonResponse
     {
         try {
-            $_workplans = $this->workplanRepository->getWorkplans($request);
+            $_workplans = $this->workplanService->getWorkplans($request);
             $workplans = WorkplanResource::collection($_workplans);
 
             return response()->json($workplans, Response::HTTP_OK);
@@ -91,7 +93,7 @@ class WorkplanController extends Controller
     public function getWorkplan(GetWorkplanRequest $request): JsonResponse
     {
         try {
-            $workplan = $this->workplanRepository->getWorkplan($request->id);
+            $workplan = $this->workplanService->getWorkplan($request->id);
 
             return response()->json($workplan, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -106,7 +108,7 @@ class WorkplanController extends Controller
     public function getWorkplanByName(string $name): JsonResponse
     {
         try {
-            $workplan = $this->workplanRepository->getWorkplanByName($name);
+            $workplan = $this->workplanService->getWorkplanByName($name);
 
             return response()->json($workplan, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
@@ -121,7 +123,7 @@ class WorkplanController extends Controller
     public function createWorkplan(StoreWorkplanRequest $request): JsonResponse
     {
         try {
-            $workplan = $this->workplanRepository->createWorkplan($request);
+            $workplan = $this->workplanService->createWorkplan($request);
 
             return response()->json($workplan, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
@@ -134,7 +136,7 @@ class WorkplanController extends Controller
     public function updateWorkplan(UpdateWorkplanRequest $request, int $id): JsonResponse
     {
         try{
-            $workplan = $this->workplanRepository->updateCompany($request, $id);
+            $workplan = $this->workplanService->updateWorkplan($request, $id);
 
             return response()->json($workplan, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
@@ -149,7 +151,7 @@ class WorkplanController extends Controller
     public function deleteWorkplans(Request $request): JsonResponse
     {
         try {
-            $deletedCount = $this->workplanRepository->deleteWorkplan($request);
+            $deletedCount = $this->workplanService->deleteWorkplan($request);
             return response()->json($deletedCount, Response::HTTP_OK);
 
         } catch(ValidationException $ex) {
@@ -164,7 +166,7 @@ class WorkplanController extends Controller
     public function deleteWorkplan(GetWorkplanRequest $request): JsonResponse
     {
         try {
-            $workplan = $this->workplanRepository($request);
+            $workplan = $this->workplanService($request);
 
             return response()->json($workplan, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -179,7 +181,7 @@ class WorkplanController extends Controller
     public function restoreWorkplan(GetWorkplanRequest $request): JsonResponse
     {
         try {
-            $workplan = $this->workplanRepository->restoreWorkplan($request);
+            $workplan = $this->workplanService->restoreWorkplan($request);
 
             return response()->json($workplan, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -194,7 +196,7 @@ class WorkplanController extends Controller
     public function realDeleteWorkplan(GetWorkplanRequest $request): JsonResponse
     {
         try {
-            $deletedCount = $this->workplanRepository->realDeleteWorkplan($request->id);
+            $deletedCount = $this->workplanService->realDeleteWorkplan($request->id);
 
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

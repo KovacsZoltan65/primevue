@@ -47,6 +47,8 @@ class DatabaseSeeder extends Seeder
             // Műszakok
             EntityShiftSeeder::class,
 
+            // Munkarendek
+            WorkplanSeeder::class,
         ]);
 
         // User::factory(10)->create();

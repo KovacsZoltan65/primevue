@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ACS;
 use App\Repositories\ACSRepository;
+use App\Services\ACS\AcsService;
 use App\Traits\Functions;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
@@ -29,12 +30,12 @@ class ACSController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected ACSRepository $acsRepository;
+    protected AcsService $acsService;
     protected string $tag = '';
 
-    public function __construct(ACSRepository $repository)
+    public function __construct(AcsService $acsService)
     {
-        $this->acsRepository = $repository;
+        $this->acsService = $acsService;
 
         $this->tag = ACS::getTag();
 
@@ -67,10 +68,10 @@ class ACSController extends Controller
     {
         try {
             $active_acss = [
-                ['id' => 0, 'name' => 'Nincs'], 
-                ...$this->acsRepository->getActiveACSs()
+                ['id' => 0, 'name' => 'Nincs'],
+                ...$this->acsService->getActiveACSs()
             ];
-            
+
             return $active_acss;
         } catch (QueryException $ex) {
             return $this->handleException($ex, 'getActiveACS query error', Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -78,13 +79,13 @@ class ACSController extends Controller
             return $this->handleException($ex, 'getActiveACS general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getACSs(Request $request): JsonResponse
     {
         try {
-            $_acss = $this->acsRepository->getACSs($request);
+            $_acss = $this->acsService->getACSs($request);
             $acss = ACSResource::collection($_acss);
-            
+
             return response()->json($acss, Response::HTTP_OK);
 
         } catch (QueryException $ex) {
@@ -97,7 +98,7 @@ class ACSController extends Controller
     public function getACS(GetACSRequest $request): JsonResponse
     {
         try {
-            $acs = $this->acsRepository->getACS($request->id);
+            $acs = $this->acsService->getACS($request->id);
 
             return response()->json($acs, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -112,7 +113,7 @@ class ACSController extends Controller
     public function getACSByName(string $name): JsonResponse
     {
         try {
-            $acs = $this->acsRepository->getACSByName($name);
+            $acs = $this->acsService->getACSByName($name);
 
             return response()->json($acs, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
@@ -127,7 +128,7 @@ class ACSController extends Controller
     public function createACS(StoreACSRequest $request): JsonResponse
     {
         try {
-            $acs = $this->acsRepository->createACS($request);
+            $acs = $this->acsService->createACS($request);
 
             return response()->json($acs, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
@@ -140,7 +141,7 @@ class ACSController extends Controller
     public function updateACS(UpdateACSRequest $request, int $id): JsonResponse
     {
         try{
-            $acs = $this->acsRepository->updateACS($request, $id);
+            $acs = $this->acsService->updateACS($request, $id);
 
             return response()->json($acs, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
@@ -155,7 +156,7 @@ class ACSController extends Controller
     public function deleteACSs(Request $request): JsonResponse
     {
         try {
-            $deletedCount = $this->acsRepository->deleteACSs($request);
+            $deletedCount = $this->acsService->deleteACSs($request);
             return response()->json($deletedCount, Response::HTTP_OK);
 
         } catch(ValidationException $ex) {
@@ -170,7 +171,7 @@ class ACSController extends Controller
     public function deleteACS(GetACSRequest $request): JsonResponse
     {
         try {
-            $acs = $this->acsRepository($request);
+            $acs = $this->acsService->deleteACS($request);
 
             return response()->json($acs, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -185,7 +186,7 @@ class ACSController extends Controller
     public function restoreACS(GetACSRequest $request): JsonResponse
     {
         try {
-            $acs = $this->acsRepository->restoreACS($request);
+            $acs = $this->acsService->restoreACS($request);
 
             return response()->json($acs, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -200,7 +201,7 @@ class ACSController extends Controller
     public function realDeleteACS(GetACSRequest $request)
     {
         try {
-            $deletedCount = $this->acsRepository->realDeleteACS($request->id);
+            $deletedCount = $this->acsService->realDeleteACS($request->id);
 
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

@@ -33,189 +33,138 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveACSs()
+    public function getActiveACSs(): Array
     {
-        try {
-            $model = $this->model();
-            $acss = $model::query()
-                ->select('id', 'name')
-                ->orderBy('name')
-                ->where('active','=',1)
-                ->get()->toArray();
+        $model = $this->model();
+        $acss = $model::query()
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->where('active','=',1)
+            ->get()->toArray();
 
-            return $acss;
-        } catch (Exception $ex) {
-            $this->logError($ex, 'getActiveACSs error', []);
-            throw $ex;
-        }
+        return $acss;
     }
 
-    public function getACSs(Request $request)
+    public function getACSs(Request $request): Array
     {
-        try {
-            $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
+        $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
-            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-                $acsQuery = ACS::search($request);
-                return $acsQuery->get();
-            });
-        } catch (Exception $ex) {
-            $this->logError($ex, 'getACSs error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+            $acsQuery = ACS::search($request);
+            return $acsQuery->get();
+        });
     }
 
-    public function getACS(int $id)
+    public function getACS(int $id): ACS
     {
-        try {
-            $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
+        $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
 
-            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
-                return ACS::findOrFail($id);
-            });
-        } catch(Exception $ex) {
-            $this->logError($ex, 'getACS error', ['id' => $id]);
-            throw $ex;
-        }
+        return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
+            return ACS::findOrFail($id);
+        });
     }
 
-    public function getACSByName(string $name)
+    public function getACSByName(string $name): ACS
     {
-        try {
-            $cacheKey = $this->generateCacheKey($this->tag, $name);
+        $cacheKey = $this->generateCacheKey($this->tag, $name);
 
-            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($name) {
-                return ACS::where('name', '=', $name)->firstOrFail();
-            });
-        } catch(Exception $ex) {
-            $this->logError($ex, 'getACSByName error', ['name' => $name]);
-            throw $ex;
-        }
+        return $this->cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+            return ACS::where('name', '=', $name)->firstOrFail();
+        });
     }
 
-    public function createACS(Request $request)
+    public function createACS(Request $request): ACS
     {
-        try{
-            $acs = null;
+        $acs = null;
 
-            DB::transaction(function() use($request, &$acs) {
-                // 1. Cég létrehozása
-                $acs = ACS::create($request->all());
+        DB::transaction(function() use($request, &$acs) {
+            // 1. Cég létrehozása
+            $acs = ACS::create($request->all());
 
-                // 2. Kapcsolódó rekordok létrehozása (pl. alapértelmezett beállítások)
-                $this->createDefaultSettings($acs);
+            // 2. Kapcsolódó rekordok létrehozása (pl. alapértelmezett beállítások)
+            $this->createDefaultSettings($acs);
 
-                // 3. Cache törlése, ha releváns
-                $this->cacheService->forgetAll($this->tag);
-            });
-            return $acs;
-        } catch(Exception $ex) {
-            $this->logError($ex, 'createACS error', ['request' => $request->all()]);
-            throw $ex;
-        }
+            // 3. Cache törlése, ha releváns
+            $this->cacheService->forgetAll($this->tag);
+        });
+        return $acs;
     }
 
-    public function updateACS($request, int $id)
+    public function updateACS($request, int $id): ?ACS
     {
-        try {
-            $acs = null;
-            DB::transaction(function() use($request, $id, &$acs) {
-                $acs = ACS::lockForUpdate()->findOrFail($id);
-                $acs->update($request->all());
-                $acs->refresh();
+        $acs = null;
+        DB::transaction(function() use($request, $id, &$acs) {
+            $acs = ACS::lockForUpdate()->findOrFail($id);
+            $acs->update($request->all());
+            $acs->refresh();
 
-                $this->cacheService->forgetAll($this->tag);
-            });
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-            return $acs;
-        } catch(Exception $ex) {
-            $this->logError($ex, 'updateACS error', ['id' => $id, 'request' => $request->all()]);
-            throw $ex;
-        }
+        return $acs;
     }
 
-    public function deleteACSs(Request $request)
+    public function deleteACSs(Request $request): int
     {
-        try {
-            $validated = $request->validate([
-                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
-                'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
-            ]);
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
+            'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
+        ]);
 
-            $ids = $validated['ids'];
-            $deletedCount = 0;
+        $ids = $validated['ids'];
+        $deletedCount = 0;
 
-            DB::transaction(function () use ($ids, &$deletedCount) {
-                $acss = ACS::whereIn('id', $ids)->lockForUpdate()->get();
+        DB::transaction(function () use ($ids, &$deletedCount) {
+            $acss = ACS::whereIn('id', $ids)->lockForUpdate()->get();
 
-                $deletedCount = $acss->each(function ($acs) {
-                    $acs->delete();
-                })->count();
-
-                // Cache törlése, ha szükséges
-                $this->cacheService->forgetAll($this->tag);
-            });
-
-            return $deletedCount;
-        } catch(Exception $ex) {
-            $this->logError($ex, 'deleteACSs error', ['request' => $request->all()]);
-            throw $ex;
-        }
-    }
-
-    public function deleteACS(Request $request)
-    {
-        try {
-            $acs = null;
-            DB::transaction(function() use($request, &$acs) {
-                $acs = ACS::lockForUpdate()->findOrFail($request->id);
+            $deletedCount = $acss->each(function ($acs) {
                 $acs->delete();
+            })->count();
 
-                $this->cacheService->forgetAll($this->tag);
-            });
+            // Cache törlése, ha szükséges
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-            return $acs;
-        } catch(Exception $ex) {
-            $this->logError($ex, 'deleteCompany error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $deletedCount;
+    }
+
+    public function deleteACS(Request $request): ?ACS
+    {
+        $acs = null;
+        DB::transaction(function() use($request, &$acs) {
+            $acs = ACS::lockForUpdate()->findOrFail($request->id);
+            $acs->delete();
+
+            $this->cacheService->forgetAll($this->tag);
+        });
+
+        return $acs;
     }
 
     public function restoreACS(Request $request): ACS
     {
-        try {
-            $acs = new ACS();
-            DB::transaction(function() use($request, &$acs) {
-                $acs = ACS::withTrashed()->lockForUpdate()->findOrFail($request->id);
-                $acs->restore();
+        $acs = new ACS();
+        DB::transaction(function() use($request, &$acs) {
+            $acs = ACS::withTrashed()->lockForUpdate()->findOrFail($request->id);
+            $acs->restore();
 
-                $this->cacheService->forgetAll($this->tag);
-            });
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-            return $acs;
-        } catch(Exception $ex) {
-            $this->logError($ex, 'restoreACS error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $acs;
     }
 
-    public function realDeleteACS(int $id): ACS
+    public function realDeleteACS(int $id): ?ACS
     {
-        try {
-            $acs = null;
-            DB::transaction(function() use($id, &$acs) {
-                $acs = ACS::withTrashed()->lockForUpdate()->findOrFail($id);
-                $acs->forceDelete();
+        $acs = null;
+        DB::transaction(function() use($id, &$acs) {
+            $acs = ACS::withTrashed()->lockForUpdate()->findOrFail($id);
+            $acs->forceDelete();
 
-                $this->cacheService->forgetAll($this->tag);
-            });
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-
-            return $acs;
-        } catch(Exception $ex) {
-            $this->logError($ex, 'realDeleteACS error', ['id' => $id]);
-            throw $ex;
-        }
+        return $acs;
     }
 
     private function createDefaultSettings(ACS $acs): void

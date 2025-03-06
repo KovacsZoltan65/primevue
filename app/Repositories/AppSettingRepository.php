@@ -33,7 +33,7 @@ class AppSettingRepository extends BaseRepository implements AppSettingRepositor
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveAppSettings()
+    public function getActiveAppSettings(): Array
     {
         $model = $this->model();
         $settings = $model::query()
@@ -47,161 +47,116 @@ class AppSettingRepository extends BaseRepository implements AppSettingRepositor
 
     public function getAppSettings(Request $request): Collection
     {
-        try {
-            $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
+        $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
-            return $this->cacheService->remember($this->tag, $cacheKey, function () use($request) {
-                $appSettingQuery = AppSetting::search($request);
-                return $appSettingQuery->get();
-            });
-        } catch(Exception $ex) {
-            $this->logError($ex, 'getAppSettings error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $this->cacheService->remember($this->tag, $cacheKey, function () use($request) {
+            $appSettingQuery = AppSetting::search($request);
+            return $appSettingQuery->get();
+        });
     }
 
     public function getAppSetting(int $id): AppSetting
     {
-        try {
-            $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
+        $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
 
-            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
-                return AppSetting::findOrFail($id);
-            });
-        } catch(Exception $ex) {
-            $this->logError($ex, 'getAppSettings error', ['id' => $id]);
-            throw $ex;
-        }
+        return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
+            return AppSetting::findOrFail($id);
+        });
     }
 
     public function getAppSettingByKey(string $key): AppSetting
     {
-        try {
-            $cacheKey = $this->generateCacheKey($this->tag, $key);
+        $cacheKey = $this->generateCacheKey($this->tag, $key);
 
-            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($key) {
-                return AppSetting::where('key', '=', $key)->firstOrFail();
-            });
-        } catch(Exception $ex) {
-            $this->logError($ex, 'getAppSettingByKey error', ['key' => $key]);
-            throw $ex;
-        }
+        return $this->cacheService->remember($this->tag, $cacheKey, function () use ($key) {
+            return AppSetting::where('key', '=', $key)->firstOrFail();
+        });
     }
 
-    public function createAppSetting(Request $request): AppSetting
+    public function createAppSetting(Request $request): ?AppSetting
     {
-        try {
-            $setting = null;
+        $setting = null;
 
-            DB::transaction(function()use($request, &$setting) {
-                $setting = AppSetting::create($request->all());
+        DB::transaction(function()use($request, &$setting) {
+            $setting = AppSetting::create($request->all());
 
-                $this->createDefaultSettings($setting);
+            $this->createDefaultSettings($setting);
 
-                $this->cacheService->forgetAll($this->tag);
-            });
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-            return $setting;
-        } catch(Exception $ex) {
-            $this->logError($ex, 'createAppSetting error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $setting;
     }
 
-    public function updateAppSetting(Request $request, int $id): AppSetting
+    public function updateAppSetting(Request $request, int $id): ?AppSetting
     {
-        try {
-            $setting = null;
-            DB::transaction(function() use($request, $id, &$setting) {
-                $setting = AppSetting::lockForUpdate()->findOrFail($id);
-                $setting->update($request->all());
-                $setting->refresh();
+        $setting = null;
+        DB::transaction(function() use($request, $id, &$setting) {
+            $setting = AppSetting::lockForUpdate()->findOrFail($id);
+            $setting->update($request->all());
+            $setting->refresh();
 
-                $this->cacheService->forgetAll($this->tag);
-            });
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-            return $setting;
-        } catch(Exception $ex) {
-            $this->logError($ex, 'updateAppSetting error', ['id' => $id, 'request' => $request->all()]);
-            throw $ex;
-        }
+        return $setting;
     }
 
     public function deleteAppSettings(Request $request): int
     {
-        try {
-            $validated = $request->validate([
-                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
-                'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
-            ]);
-            $ids = $validated['ids'];
-            $deletedCount = 0;
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
+            'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
+        ]);
+        $ids = $validated['ids'];
+        $deletedCount = 0;
 
-            DB::transaction(function() use($request, &$deletedCount) {
-                $settings = AppSetting::whereIn('id', $request->ids)->lockForUpdate()->get();
+        DB::transaction(function() use($ids, &$deletedCount) {
+            $settings = AppSetting::whereIn('id', $ids)->lockForUpdate()->get();
 
-                $deletedCount = $settings->each(function ($setting) {
-                    $setting->delete();
-                })->count();
+            $deletedCount = $settings->each(function ($setting) {
+                $setting->delete();
+            })->count();
 
-                // Cache törlése, ha szükséges
-                $this->cacheService->forgetAll($this->tag);
-            });
+            // Cache törlése, ha szükséges
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-            return $deletedCount;
-        } catch (Exception $ex) {
-            $this->logError($ex, 'deleteAppSettings error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $deletedCount;
     }
 
-    public function deleteAppSetting(Request $request): ?AppSetting
+    public function deleteAppSetting(Request $request): bool
     {
-        try {
-            $appSetting = AppSetting::lockForUpdate()->findOrFail($request->id);
-            $appSetting->delete();
+        $appSetting = AppSetting::lockForUpdate()->findOrFail($request->id);
+        $result = $appSetting->delete();
 
-            $this->cacheService->forgetAll($this->tag);
+        $this->cacheService->forgetAll($this->tag);
 
-            return $appSetting;
-        } catch (Exception $ex) {
-            $this->logError($ex, 'deleteAppSetting error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $result;
     }
 
     public function restoreAppSettings(Request $request): ?AppSetting
     {
-        try {
-            $appSetting = AppSetting::withTrashed()->findOrFail($request->id);
-            $appSetting->restore();
+        $appSetting = AppSetting::withTrashed()->findOrFail($request->id);
+        $appSetting->restore();
 
-            $this->cacheService->forgetAll($this->tag);
+        $this->cacheService->forgetAll($this->tag);
 
-            return $appSetting;
-        } catch(Exception $ex) {
-            $this->logError($ex, 'restoreAppSettings error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $appSetting;
     }
 
-    public function realDeleteSetting(Request $request)
+    public function realDeleteSetting(Request $request): ?AppSetting
     {
-        try {
-            $setting = null;
+        $setting = null;
 
-            DB::transaction(function() use($request, &$setting) {
-                $setting = AppSetting::withTrashed()->lockForUpdate()->findOrFail($request->id);
-                $setting->forceDelete();
+        DB::transaction(function() use($request, &$setting) {
+            $setting = AppSetting::withTrashed()->lockForUpdate()->findOrFail($request->id);
+            $setting->forceDelete();
 
-                $this->cacheService->forgetAll($this->tag);
-            });
+            $this->cacheService->forgetAll($this->tag);
+        });
 
-            return $setting;
-        } catch(Exception $ex) {
-            $this->logError($ex, 'realDeleteSetting error', ['request' => $request->all()]);
-            throw $ex;
-        }
+        return $setting;
     }
 
     private function createDefaultSettings(AppSetting $setting): void

@@ -74,7 +74,7 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
         }
     }
 
-    public function getCityByName(string $name)
+    public function getCityByName(string $name): City
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, (string) $name);
@@ -88,7 +88,7 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
         }
     }
 
-    public function createCity(Request $request)
+    public function createCity(Request $request): City
     {
         try{
             $city = null;

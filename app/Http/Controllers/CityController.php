@@ -10,10 +10,11 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\Region;
 use App\Repositories\CityRepository;
+use App\Services\AppSettings\CityService;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\DB;
+//use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -22,20 +23,21 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use App\Services\CacheService;
+//use App\Services\CacheService;
+use Illuminate\Routing\Controller;
 
 class CityController extends Controller
 {
     use AuthorizesRequests,
         Functions;
     
-    protected CityRepository $cityRepository;
+    protected CityService $cityService;
     
     protected string $tag = 'cities';
 
-    public function __construct(CityRepository $cityRepository)
+    public function __construct(CityService $cityService)
     {
-        $this->cityRepository = $cityRepository;
+        $this->cityService = $cityService;
         
         $this->tag = City::getTag();
         
@@ -72,7 +74,7 @@ class CityController extends Controller
     public function getCities(Request $request): JsonResponse
     {
         try {
-            $cities = $this->cityRepository->getCities($request);
+            $cities = $this->cityService->getCities($request);
             $cities = CityResource::collection($cities);
 
             return response()->json($cities, Response::HTTP_OK);
@@ -86,7 +88,7 @@ class CityController extends Controller
     public function getCity(GetCityRequest $request)
     {
         try {
-            $city = $this->cityRepository->getCity($request->id);
+            $city = $this->cityService->getCity($request->id);
 
             return response()->json($city, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -101,7 +103,7 @@ class CityController extends Controller
     public function getCityByName(string $name): JsonResponse
     {
         try {
-            $city = $this->cityRepository->getCityByName($name);
+            $city = $this->cityService->getCityByName($name);
 
             return response()->json($city, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -116,7 +118,7 @@ class CityController extends Controller
     public function createCity(StoreCityRequest $request): JsonResponse
     {
         try {
-            $city = $this->cityRepository->createCity($request);
+            $city = $this->cityService->createCity($request);
 
             return response()->json($city, Response::HTTP_CREATED);
         } catch(QueryException $ex) {

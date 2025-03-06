@@ -84,10 +84,13 @@ class AppSettingController extends Controller
             return response()->json($setting, Response::HTTP_OK);
 
         } catch( ModelNotFoundException $ex ) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'geApptSetting model not found error', Response::HTTP_NOT_FOUND);
         } catch( QueryException $ex ) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'geApptSetting query exception', Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(Exception $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'geApptSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -99,10 +102,13 @@ class AppSettingController extends Controller
 
             return response()->json($setting, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'getAppSettingByKey model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'getAppSettingByKey query exception', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'getAppSettingByKey general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -114,8 +120,10 @@ class AppSettingController extends Controller
 
             return response()->json($setting, Response::HTTP_CREATED);
         }catch(QueryException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'createAppSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'createAppSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -127,10 +135,13 @@ class AppSettingController extends Controller
 
             return response()->json($setting, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'updateAppSetting model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'updateAppSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'updateAppSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -141,10 +152,13 @@ class AppSettingController extends Controller
             $deletedCount = $this->appSettingRepository->deleteAppSettings($request);
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch (ModelNotFoundException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'deleteAppSettings model not found error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (QueryException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'deleteAppSettings query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'deleteAppSettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -156,10 +170,13 @@ class AppSettingController extends Controller
 
             return response()->json($appSetting, Response::HTTP_OK);
         } catch (ModelNotFoundException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'deleteAppSetting model not found exception', Response::HTTP_NOT_FOUND);
         } catch (QueryException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'deleteAppSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'deleteAppSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -171,10 +188,13 @@ class AppSettingController extends Controller
 
             return response()->json($appSetting, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'restoreAppSettings model not found exception', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'restoreAppSettings query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'restoreAppSettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -186,10 +206,13 @@ class AppSettingController extends Controller
             
             return response()->json($appSetting, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'realDeleteSetting model not found exception', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'realDeleteSetting query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'realDeleteSetting general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

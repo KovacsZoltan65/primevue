@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Prettus\Repository\Criteria\RequestCriteria;
@@ -32,7 +33,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveCompanies()
+    public function getActiveCompanies(): Collection
     {
         try {
             $model = $this->model();
@@ -51,7 +52,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function getCompanies(Request $request)
+    public function getCompanies(Request $request): Collection
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
@@ -67,7 +68,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function getCompany(int $id)
+    public function getCompany(int $id): Company
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
@@ -81,7 +82,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function getCompanyByName(string $name)
+    public function getCompanyByName(string $name): Company
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, $name);
@@ -95,7 +96,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function createCompany(Request $request)
+    public function createCompany(Request $request): Company
     {
         try{
             $company = null;
@@ -117,7 +118,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function updateCompany($request, int $id)
+    public function updateCompany($request, int $id): Company
     {
         try {
             $company = null;
@@ -136,7 +137,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function deleteCompanies(Request $request)
+    public function deleteCompanies(Request $request): int
     {
         try {
             $validated = $request->validate([

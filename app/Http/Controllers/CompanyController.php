@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Services\City\CityService;
+use App\Services\Company\CompanyService;
+use App\Services\Country\CountryService;
 use Illuminate\Database\Eloquent\Builder;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -41,17 +44,18 @@ class CompanyController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected $cityRepository,
-              $countryRepository,
-              $companyRepository;
+    protected $cityService,
+              $countryService,
+              $companyService;
 
     protected string $tag = '';
 
-    public function __construct(CityRepository $cityRepository, CountryRepository $countryRepository, CompanyRepository $companyRepository)
+    // TODO: A Repository -kat le kell cserélni Service -re
+    public function __construct(CityService $cityService, CountryService $countryService, CompanyService $companyService)
     {
-        $this->cityRepository = $cityRepository;
-        $this->countryRepository = $countryRepository;
-        $this->companyRepository = $companyRepository;
+        $this->cityService = $cityService;
+        $this->countryService = $countryService;
+        $this->companyService = $companyService;
 
         $this->tag = Company::getTag();
 
@@ -71,8 +75,8 @@ class CompanyController extends Controller
     {
         $roles = $this->getUserRoles($this->tag);
 
-        $cities = $this->cityRepository->getActiveCities();
-        $countries = $this->countryRepository->getActiveCountries();
+        $cities = $this->cityService->getActiveCities();
+        $countries = $this->countryService->getActiveCountries();
 
         // Adjon vissza egy Inertia választ a vállalatok és a keresési paraméterek megadásával.
         return Inertia::render("Companies/Index", [
@@ -93,7 +97,7 @@ class CompanyController extends Controller
     public function getActiveCompanies(): JsonResponse
     {
         try {
-            $companies = $this->companyRepository->getActiveCompanies();
+            $companies = $this->companyService->getActiveCompanies();
 
             return response()->json($companies, Response::HTTP_OK);
         } catch (QueryException $ex) {
@@ -108,7 +112,7 @@ class CompanyController extends Controller
     public function getCompanies(Request $request): JsonResponse
     {
         try {
-            $_companies = $this->companyRepository->getCompanies($request);
+            $_companies = $this->companyService->getCompanies($request);
             $companies = CompanyResource::collection($_companies);
 
             return response()->json($companies, Response::HTTP_OK);
@@ -122,7 +126,7 @@ class CompanyController extends Controller
     public function getCompany(GetCompanyRequest $request): JsonResponse
     {
         try {
-            $company = $this->companyRepository->getCompany($request->id);
+            $company = $this->companyService->getCompany($request->id);
 
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -137,7 +141,7 @@ class CompanyController extends Controller
     public function getCompanyByName(string $name): JsonResponse
     {
         try {
-            $company = $this->companyRepository->getCompanyByName($name);
+            $company = $this->companyService->getCompanyByName($name);
 
             return response()->json($company, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
@@ -152,7 +156,7 @@ class CompanyController extends Controller
     public function createCompany(StoreCompanyRequest $request): JsonResponse
     {
         try {
-            $company = $this->companyRepository->createCompany($request);
+            $company = $this->companyService->createCompany($request);
 
             return response()->json($company, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
@@ -165,7 +169,7 @@ class CompanyController extends Controller
     public function updateCompany(UpdateCompanyRequest $request, int $id): JsonResponse
     {
         try{
-            $company = $this->companyRepository->updateCompany($request, $id);
+            $company = $this->companyService->updateCompany($request, $id);
 
             return response()->json($company, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
@@ -180,7 +184,7 @@ class CompanyController extends Controller
     public function deleteCompanies(Request $request): JsonResponse
     {
         try {
-            $deletedCount = $this->companyRepository->deleteCompanies($request);
+            $deletedCount = $this->companyService->deleteCompanies($request);
             return response()->json($deletedCount, Response::HTTP_OK);
 
         } catch(ValidationException $ex) {
@@ -195,7 +199,7 @@ class CompanyController extends Controller
     public function deleteCompany(GetCompanyRequest $request): JsonResponse
     {
         try {
-            $company = $this->companyRepository($request);
+            $company = $this->companyService->deleteCompany($request);
 
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -210,7 +214,7 @@ class CompanyController extends Controller
     public function restoreCompany(GetCompanyRequest $request): JsonResponse
     {
         try {
-            $company = $this->companyRepository->restoreCompany($request);
+            $company = $this->companyService->restoreCompany($request);
 
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -225,7 +229,7 @@ class CompanyController extends Controller
     public function realDeleteCompany(GetCompanyRequest $request): JsonResponse
     {
         try {
-            $deletedCount = $this->companyRepository->realDeleteCompany($request->id);
+            $deletedCount = $this->companyService->realDeleteCompany($request->id);
 
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

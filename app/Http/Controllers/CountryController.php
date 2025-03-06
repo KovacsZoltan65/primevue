@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateCountryRequest;
 use App\Http\Resources\CountryResource;
 use App\Models\Country;
 use App\Repositories\CountryRepository;
+use App\Services\Country\CountryService;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -29,16 +30,16 @@ class CountryController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected CountryRepository $countryRepository;
-    
+    protected CountryService $countryService;
+
     protected string $tag = 'countries';
 
-    public function __construct(CountryRepository $repository)
+    public function __construct(CountryService $countryService)
     {
-        $this->countryRepository = $repository;
+        $this->countryService = $countryService;
 
         $this->tag = Country::getTag();
-        
+
         $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getCountries', 'getCountry', 'getCountryByName']]);
         $this->middleware("can:{$this->tag} create", ['only' => ['createCountry']]);
         $this->middleware("can:{$this->tag} edit", ['only' => ['updateCountry']]);
@@ -86,7 +87,7 @@ class CountryController extends Controller
     public function getCountries(Request $request): JsonResponse
     {
         try {
-            $countries = $this->countryRepository->getCountries($request);
+            $countries = $this->countryService->getCountries($request);
             $countries = CountryResource::collection($countries);
 
             return response()->json($countries, Response::HTTP_OK);
@@ -100,7 +101,7 @@ class CountryController extends Controller
     public function getCountry(GetCountryRequest $request): JsonResponse
     {
         try {
-            $company = $this->countryRepository->getCountry($request->id);
+            $company = $this->countryService->getCountry($request->id);
 
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -115,7 +116,7 @@ class CountryController extends Controller
     public function getCountryByName(string $name): JsonResponse
     {
         try {
-            $company = $this->countryRepository->getCountryByName($name);
+            $company = $this->countryService->getCountryByName($name);
 
             return response()->json($company, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
@@ -130,7 +131,7 @@ class CountryController extends Controller
     public function createCountry(StoreCountryRequest $request): JsonResponse
     {
         try {
-            $country = $this->countryRepository->createCountry($request);
+            $country = $this->countryService->createCountry($request);
 
             return response()->json($country, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
@@ -143,7 +144,7 @@ class CountryController extends Controller
     public function updateCountry(UpdateCountryRequest $request, int $id): JsonResponse
     {
         try{
-            $company = $this->updateCountry($request, $id);
+            $company = $this->countryService->updateCountry($request, $id);
 
             return response()->json($company, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
@@ -158,7 +159,7 @@ class CountryController extends Controller
     public function deleteCountries(Request $request): JsonResponse
     {
         try {
-            $company = $this->countryRepository->deleteCountries($request);
+            $company = $this->countryService->deleteCountries($request);
 
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -173,7 +174,7 @@ class CountryController extends Controller
     public function deleteCountry(GetCountryRequest $request): JsonResponse
     {
         try {
-            $deletedCount = $this->countryRepository->deleteCountry($request);
+            $deletedCount = $this->countryService->deleteCountry($request);
             return response()->json($deletedCount, Response::HTTP_OK);
 
         } catch(ValidationException $ex) {
@@ -188,7 +189,7 @@ class CountryController extends Controller
     public function restoreCountry(GetCountryRequest $request): JsonResponse
     {
         try {
-            $company = $this->countryRepository->restoreCountry($request);
+            $company = $this->countryService->restoreCountry($request);
 
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

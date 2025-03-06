@@ -25,13 +25,13 @@ class CompSettingController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected CompSettingRepository $compSettingRepository;
+    protected CompSettingController $compSettingController;
 
     protected string $tag = 'compSettings';
 
-    public function __construct(CompSettingRepository $repository)
+    public function __construct(CompSettingController $compSettingController)
     {
-        $this->compSettingRepository = $repository;
+        $this->compSettingController = $compSettingController;
 
         $this->tag = CompSetting::getTag();
 
@@ -62,7 +62,7 @@ class CompSettingController extends Controller
     public function getCompSettings(Request $request): JsonResponse
     {
         try {
-            $settings = $this->compSettingRepository->getCompSettings($request);
+            $settings = $this->compSettingController->getCompSettings($request);
 
             return response()->json($settings, Response::HTTP_OK);
         } catch(QueryException $ex) {
@@ -75,7 +75,7 @@ class CompSettingController extends Controller
     public function getCompSetting(GetCompSettingRequest $request)
     {
         try {
-            $setting = $this->compSettingRepository->getCompSetting($request->id);
+            $setting = $this->compSettingController->getCompSetting($request->id);
 
             return response()->json($setting, Response::HTTP_OK);
 
@@ -91,7 +91,7 @@ class CompSettingController extends Controller
     public function getCompSettingByKey(string $key): JsonResponse
     {
         try {
-            $setting = $this->compSettingRepository->getCompSettingByKey($key);
+            $setting = $this->compSettingController->getCompSettingByKey($key);
 
             return response()->json($setting, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
@@ -105,7 +105,7 @@ class CompSettingController extends Controller
 
     public function createCompSetting(StoreCompSettingRequest $request): JsonResponse{
         try{
-            $setting = $this->compSettingRepository->createCompSetting($request);
+            $setting = $this->compSettingController->createCompSetting($request);
 
             return response()->json($setting, Response::HTTP_CREATED);
         }catch(QueryException $ex) {
@@ -117,7 +117,7 @@ class CompSettingController extends Controller
 
     public function updateCompSetting(UpdateCompSettingRequest $request, int $id): JsonResponse {
         try {
-            $setting = $this->compSettingRepository->updateCompSetting($request, $id);
+            $setting = $this->compSettingController->updateCompSetting($request, $id);
 
             return response()->json($setting, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -132,7 +132,7 @@ class CompSettingController extends Controller
     public function deleteCompSettings(Request $request): JsonResponse
     {
         try {
-            $deletedCount = $this->compSettingRepository->deleteCompSettings($request);
+            $deletedCount = $this->compSettingController->deleteCompSettings($request);
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch (ModelNotFoundException $ex) {
             return $this->handleException($ex, 'deleteAppSettings model not found error', Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -146,7 +146,7 @@ class CompSettingController extends Controller
     public function deleteCompSetting(GetCompSettingRequest $request): JsonResponse
     {
         try {
-            $appSetting = $this->compSettingRepository->deleteCompSetting($request);
+            $appSetting = $this->compSettingController->deleteCompSetting($request);
 
             return response()->json($appSetting, Response::HTTP_OK);
         } catch (ModelNotFoundException $ex) {
@@ -160,7 +160,7 @@ class CompSettingController extends Controller
 
     public function restoreCompSetting(GetCompSettingRequest $request): JsonResponse {
         try {
-            $compSetting = $this->compSettingRepository->restoreCompSetting($request);
+            $compSetting = $this->compSettingController->restoreCompSetting($request);
 
             return response()->json($compSetting, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -175,8 +175,8 @@ class CompSettingController extends Controller
     public function realDeleteCompSetting(Request $request): JsonResponse
     {
         try {
-            $compSetting = $this->compSettingRepository->realDeleteSetting($request);
-            
+            $compSetting = $this->compSettingController->realDeleteSetting($request);
+
             return response()->json($compSetting, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'realDeleteSetting model not found exception', Response::HTTP_NOT_FOUND);

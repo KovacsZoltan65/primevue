@@ -44,7 +44,9 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
 
             return $companies;
         } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
             $this->logError($ex, 'getActiveCompanies error', []);
+            // Hiba továbbítása
             throw $ex;
         }
     }

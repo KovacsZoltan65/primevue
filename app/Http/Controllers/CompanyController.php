@@ -97,8 +97,10 @@ class CompanyController extends Controller
 
             return response()->json($companies, Response::HTTP_OK);
         } catch (QueryException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'getActiveCompanies query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'getActiveCompanies general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

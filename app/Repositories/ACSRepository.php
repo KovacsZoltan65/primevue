@@ -35,136 +35,206 @@ class ACSRepository extends BaseRepository implements ACSRepositoryInterface
 
     public function getActiveACSs(): Array
     {
-        $model = $this->model();
-        $acss = $model::query()
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->where('active','=',1)
-            ->get()->toArray();
+        try {
+            $model = $this->model();
+            $acss = $model::query()
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->where('active','=',1)
+                ->get()->toArray();
 
-        return $acss;
+            return $acss;
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'getActiveACSs error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     public function getACSs(Request $request): Array
     {
-        $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
+        try {
+            $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
-        return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
-            $acsQuery = ACS::search($request);
-            return $acsQuery->get();
-        });
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
+                $acsQuery = ACS::search($request);
+                return $acsQuery->get();
+            });
+        } catch (Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'getACSs error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     public function getACS(int $id): ACS
     {
-        $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
+        try {
+            $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
 
-        return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
-            return ACS::findOrFail($id);
-        });
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
+                return ACS::findOrFail($id);
+            });
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'getACS error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     public function getACSByName(string $name): ACS
     {
-        $cacheKey = $this->generateCacheKey($this->tag, $name);
+        try {
+            $cacheKey = $this->generateCacheKey($this->tag, $name);
 
-        return $this->cacheService->remember($this->tag, $cacheKey, function () use ($name) {
-            return ACS::where('name', '=', $name)->firstOrFail();
-        });
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($name) {
+                return ACS::where('name', '=', $name)->firstOrFail();
+            });
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'getACSByName error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
-    public function createACS(Request $request): ACS
+    public function createACS(Request $request): ?ACS
     {
-        $acs = null;
+        try {
+            $acs = null;
 
-        DB::transaction(function() use($request, &$acs) {
-            // 1. Cég létrehozása
-            $acs = ACS::create($request->all());
+            DB::transaction(function() use($request, &$acs) {
+                // 1. Cég létrehozása
+                $acs = ACS::create($request->all());
 
-            // 2. Kapcsolódó rekordok létrehozása (pl. alapértelmezett beállítások)
-            $this->createDefaultSettings($acs);
+                // 2. Kapcsolódó rekordok létrehozása (pl. alapértelmezett beállítások)
+                $this->createDefaultSettings($acs);
 
-            // 3. Cache törlése, ha releváns
-            $this->cacheService->forgetAll($this->tag);
-        });
-        return $acs;
+                // 3. Cache törlése, ha releváns
+                $this->cacheService->forgetAll($this->tag);
+            });
+            return $acs;
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'createACS error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     public function updateACS($request, int $id): ?ACS
     {
-        $acs = null;
-        DB::transaction(function() use($request, $id, &$acs) {
-            $acs = ACS::lockForUpdate()->findOrFail($id);
-            $acs->update($request->all());
-            $acs->refresh();
+        try {
+            $acs = null;
+            DB::transaction(function() use($request, $id, &$acs) {
+                $acs = ACS::lockForUpdate()->findOrFail($id);
+                $acs->update($request->all());
+                $acs->refresh();
 
-            $this->cacheService->forgetAll($this->tag);
-        });
+                $this->cacheService->forgetAll($this->tag);
+            });
 
-        return $acs;
+            return $acs;
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'updateACS error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     public function deleteACSs(Request $request): int
     {
-        $validated = $request->validate([
-            'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
-            'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
-        ]);
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
+                'ids.*' => 'integer|exists:roles,id', // Az id-k egész számok és létező cégek legyenek
+            ]);
 
-        $ids = $validated['ids'];
-        $deletedCount = 0;
+            $ids = $validated['ids'];
+            $deletedCount = 0;
 
-        DB::transaction(function () use ($ids, &$deletedCount) {
-            $acss = ACS::whereIn('id', $ids)->lockForUpdate()->get();
+            DB::transaction(function () use ($ids, &$deletedCount) {
+                $acss = ACS::whereIn('id', $ids)->lockForUpdate()->get();
 
-            $deletedCount = $acss->each(function ($acs) {
-                $acs->delete();
-            })->count();
+                $deletedCount = $acss->each(function ($acs) {
+                    $acs->delete();
+                })->count();
 
-            // Cache törlése, ha szükséges
-            $this->cacheService->forgetAll($this->tag);
-        });
+                // Cache törlése, ha szükséges
+                $this->cacheService->forgetAll($this->tag);
+            });
 
-        return $deletedCount;
+            return $deletedCount;
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'deleteACSs error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     public function deleteACS(Request $request): ?ACS
     {
-        $acs = null;
-        DB::transaction(function() use($request, &$acs) {
-            $acs = ACS::lockForUpdate()->findOrFail($request->id);
-            $acs->delete();
+        try {
+            $acs = null;
+            DB::transaction(function() use($request, &$acs) {
+                $acs = ACS::lockForUpdate()->findOrFail($request->id);
+                $acs->delete();
 
-            $this->cacheService->forgetAll($this->tag);
-        });
+                $this->cacheService->forgetAll($this->tag);
+            });
 
-        return $acs;
+            return $acs;
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'deleteACS error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     public function restoreACS(Request $request): ACS
     {
-        $acs = new ACS();
-        DB::transaction(function() use($request, &$acs) {
-            $acs = ACS::withTrashed()->lockForUpdate()->findOrFail($request->id);
-            $acs->restore();
+        try {
+            $acs = new ACS();
+            DB::transaction(function() use($request, &$acs) {
+                $acs = ACS::withTrashed()->lockForUpdate()->findOrFail($request->id);
+                $acs->restore();
 
-            $this->cacheService->forgetAll($this->tag);
-        });
+                $this->cacheService->forgetAll($this->tag);
+            });
 
-        return $acs;
+            return $acs;
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex,'restoreACS error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     public function realDeleteACS(int $id): ?ACS
     {
-        $acs = null;
-        DB::transaction(function() use($id, &$acs) {
-            $acs = ACS::withTrashed()->lockForUpdate()->findOrFail($id);
-            $acs->forceDelete();
+        try {
+            $acs = null;
+            DB::transaction(function() use($id, &$acs) {
+                $acs = ACS::withTrashed()->lockForUpdate()->findOrFail($id);
+                $acs->forceDelete();
 
-            $this->cacheService->forgetAll($this->tag);
-        });
+                $this->cacheService->forgetAll($this->tag);
+            });
 
-        return $acs;
+            return $acs;
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex,'realDeleteACS error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     private function createDefaultSettings(ACS $acs): void

@@ -38,6 +38,13 @@ trait Functions
         return $userRoles;
     }
 
+    /**
+     * Kivétel kezelése és JSON-válasz visszaadása.
+     * @param Exception                      $ex A kezelendő kivétel.
+     * @param string $defaultMessage         Az alapértelmezett hibaüzenet.
+     * @param int $statusCode                A HTTP-állapotkód.
+     * @return \Illuminate\Http\JsonResponse A JSON-válasz.
+     */
     public function handleException(Exception $ex, string $defaultMessage, int $statusCode)
     {
         return response()->json([
@@ -47,6 +54,13 @@ trait Functions
         ], $statusCode);
     }
 
+    /**
+     * Exception-t logol a szerveren, ahol a context (pl. 'createUser'), 
+     * a params (pl. ['name' => 'John Doe']) és a request útvonala is benne van.
+     * @param Exception $ex
+     * @param string $context
+     * @param array $params
+     */
     public function logError(Exception $ex, string $context, array $params):void
     {
         ActivityController::logServerError($ex, [

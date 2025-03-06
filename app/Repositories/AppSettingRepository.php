@@ -35,33 +35,54 @@ class AppSettingRepository extends BaseRepository implements AppSettingRepositor
 
     public function getActiveAppSettings(): Array
     {
-        $model = $this->model();
-        $settings = $model::query()
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->where('active','=',1)
-            ->get()->toArray();
+        try {
+            $model = $this->model();
+            $settings = $model::query()
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->where('active','=',1)
+                ->get()->toArray();
 
-        return $settings;
+            return $settings;
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'getActiveAppSettings error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     public function getAppSettings(Request $request): Collection
     {
-        $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
+        try {
+            $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
 
-        return $this->cacheService->remember($this->tag, $cacheKey, function () use($request) {
-            $appSettingQuery = AppSetting::search($request);
-            return $appSettingQuery->get();
-        });
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use($request) {
+                $appSettingQuery = AppSetting::search($request);
+                return $appSettingQuery->get();
+            });
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'getAppSettings error', ['request' => $request->all()]);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     public function getAppSetting(int $id): AppSetting
     {
-        $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
+        try {
+            $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
 
-        return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
-            return AppSetting::findOrFail($id);
-        });
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($id) {
+                return AppSetting::findOrFail($id);
+            });
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'getAppSetting error', ['id' => $id]);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
     public function getAppSettingByKey(string $key): AppSetting

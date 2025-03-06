@@ -68,8 +68,10 @@ class AppSettingController extends Controller
 
             return response()->json($settings, Response::HTTP_OK);
         } catch(QueryException $ex) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'getAppSettings query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch( Exception $ex ) {
+            // Hiba továbbítása a frontend felé
             return $this->handleException($ex, 'getAppSettings general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

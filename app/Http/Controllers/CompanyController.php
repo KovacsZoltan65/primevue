@@ -50,7 +50,6 @@ class CompanyController extends Controller
 
     protected string $tag = '';
 
-    // TODO: A Repository -kat le kell cserélni Service -re
     public function __construct(CityService $cityService, CountryService $countryService, CompanyService $companyService)
     {
         $this->cityService = $cityService;

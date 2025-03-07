@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\AppSettings;
+namespace App\Services\Company;
 
 use App\Repositories\CompanyRepository;
 use Illuminate\Database\Eloquent\Collection;

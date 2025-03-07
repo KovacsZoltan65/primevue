@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\AppSettings;
+namespace App\Services\City;
 
 use App\Models\City;
 use App\Repositories\CityRepository;

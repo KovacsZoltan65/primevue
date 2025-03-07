@@ -6,6 +6,8 @@ use App\Models\Entity;
 use App\Services\CacheService;
 use App\Traits\Functions;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Collection;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Interfaces\HierarchyRepositoryInterface;
@@ -33,7 +35,7 @@ class HierarchyRepository extends BaseRepository implements HierarchyRepositoryI
         $this->cacheService = $cacheService;
     }
 
-    public function addParent(Request $request, $childId)
+    public function addParent(Request $request, $childId): ?Entity
     {
         try {
             $child = null;
@@ -59,29 +61,53 @@ class HierarchyRepository extends BaseRepository implements HierarchyRepositoryI
     public function addChild(Request $request, int $parentId)
     {
         try {
-            //
+            $parent = null;
+            DB::transaction(function() use($request, $parentId, &$parent){
+                $parentId = $request->input('parent_id');
+                $parent = Entity::findOrFail($parentId);
+
+                $childId = $request->input('child_id');
+                $child = Entity::findOrFail($childId);
+
+                $parent->children()->attach($child);
+
+                return $parent->load('children');
+            });
+
+            return $parent;
         } catch(Exception $ex) {
             $this->logError($ex, 'addChild error', ['request' => $request->all(), 'parentId' => $parentId]);
             throw $ex;
         }
     }
 
-    public function getHierarchy(int $entityId)
+    public function getHierarchy(int $entityId): Collection
     {
         try {
-            //
+            $cacheKey = $this->generateCacheKey($this->tag, (string) $entityId);
+
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($entityId) {
+                $hierarchy = Entity::with(['parents', 'children'])->find($entityId);
+
+                return $hierarchy;
+            });
         } catch(Exception $ex) {
             $this->logError($ex, 'getHierarchy error', ['entityId' => $entityId]);
             throw $ex;
         }
     }
 
-    public function removeChild(int $entityId)
+    public function removeChild(int $parentId, int $childId): int
     {
         try {
-            //
+            $parent = Entity::findOrFail($parentId);
+            $child = Entity::findOrFail($childId);
+
+            $count = $parent->children()->detach($child);
+
+            return $count;
         } catch(Exception $ex) {
-            $this->logError($ex, 'removeChild error', ['entityId' => $entityId]);
+            $this->logError($ex, 'removeChild error', ['parentId' => $parentId, 'childId' => $childId]);
             throw $ex;
         }
     }
@@ -89,7 +115,13 @@ class HierarchyRepository extends BaseRepository implements HierarchyRepositoryI
     public function getBigBosses()
     {
         try {
-            //
+            $bigBosses = Entity::whereDoesntHave('parents')->get();
+
+            if( $bigBosses->isEmpty() ) {
+                throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException('No big bosses found.');
+            }
+
+            return response()->json($bigBosses, Response::HTTP_OK);
         } catch(Exception $ex) {
             $this->logError($ex, 'getBigBosses error', []);
             throw $ex;
@@ -142,7 +174,7 @@ class HierarchyRepository extends BaseRepository implements HierarchyRepositoryI
      * @return string
      */
     #[Override]
-     public function model()
+    public function model()
     {
         return Hierarchy::class;
     }
@@ -151,7 +183,7 @@ class HierarchyRepository extends BaseRepository implements HierarchyRepositoryI
      * Boot up the repository, pushing criteria
      */
     #[Override]
-     public function boot()
+    public function boot()
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Entity;
 use App\Models\Hierarchy;
 use App\Repositories\HierarchyRepository;
+use App\Services\AppSettings\HierarchyService;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -24,13 +25,13 @@ class HierarchyController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected HierarchyRepository $hierarchyRepository;
+    protected HierarchyService $hierarchyService;
 
     protected string $tag = 'hierarchy';
 
-    public function __construct(HierarchyRepository $repository)
+    public function __construct(HierarchyService $hierarchyService)
     {
-        $this->hierarchyRepository = $repository;
+        $this->hierarchyService = $hierarchyService;
 
         $this->tag = Hierarchy::getTag();
 
@@ -69,7 +70,7 @@ class HierarchyController extends Controller
     public function addParent(Request $request, $childId): JsonResponse
     {
         try {
-            $child = $this->hierarchyRepository->addParent($request, $childId);
+            $child = $this->hierarchyService->addParent($request, $childId);
             return response()->json([$child, Response::HTTP_OK]);
         } catch (ModelNotFoundException $ex) {
             return $this->handleException($ex, 'addParent model not found error', Response::HTTP_NOT_FOUND);
@@ -80,127 +81,34 @@ class HierarchyController extends Controller
         }
     }
 
-    /**
-     * Hozzáad egy utód entitást a szülő entitás gyermeklistájához.
-     *
-     * Ez a metódus lekéri az utód entitásazonosítót a kérésből, és létrehozza
-     * szülő-gyermek kapcsolat a megadott szülő és gyermek entitások között.
-     * Ha a gyermeket sikeresen csatlakoztatja a szülőhöz, naplózza a műveletet és
-     * JSON-választ ad vissza a frissített szülőentitással.
-     *
-     * @param Request $request A HTTP-kérelem objektum, amely tartalmazza a „child_id” értéket.
-     * @param int $parentId Annak a szülőentitásnak az azonosítója, amelyhez a gyermek hozzá lett adva.
-     *
-     * @return JsonResponse JSON-válasz sikert vagy kudarcot jelez.
-     *
-     * @throws ModelNotFoundException Ha a szülő vagy a gyermek entitás nem található.
-     * @throws Exception Bármilyen egyéb hiba esetén a folyamat során.
-     */
     public function addChild(Request $request, $parentId): JsonResponse
     {
         try {
-            $childId = $request->input('child_id');
-            $parent = Entity::findOrFail($parentId);
-            $child = Entity::findOrFail($childId);
 
-            // Add child relationship
-            $parent->children()->attach($child);
+            $parent = $this->hierarchyService->addChild($request, $parentId);
 
-            // 200
-            return response()->json([
-                'message' => 'Child added successfully.',
-                'parent' => $parent->load('children'),
-            ], Response::HTTP_OK);
+            return response()->json($parent, Response::HTTP_OK);
         } catch (ModelNotFoundException $ex) {
-            ActivityController::logServerError($ex, [
-                'context' => 'addChild model not found error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            // 404
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'addChild model not found error'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'addChild model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ActivityController::logServerError($ex, [
-                'context' => 'addChild query error',
-                'params' => ['id' => $request->id],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            // 422
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'addChild query error'
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->handleException($ex, 'addChild query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
-            ActivityController::logServerError($ex, [
-                'context' => 'addChild general error',
-                'params' => ['id' => $request->id],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            // 500
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'addChild general error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'addChild general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    // Hierarchia lekérdezése
+    
     public function getHierarchy($entityId): JsonResponse
     {
         try {
             $entity = Entity::with('parents', 'children')->findOrFail($entityId);
 
             return response()->json($entity);
-        } catch (ModelNotFoundException $e) {
-            ActivityController::logServerError($ex, [
-                'context' => 'getHierarchy model not found error',
-                'params' => ['entityId' => $entityId],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getHierarchy model not found error'
-            ], Response::HTTP_NOT_FOUND);
+        } catch (ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'getHierarchy model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ActivityController::logServerError($ex, [
-                'context' => 'getHierarchy query error',
-                'params' => ['entityId' => $entityId],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getHierarchy query error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getHierarchy query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
-            ActivityController::logServerError($ex, [
-                'context' => 'getHierarchy general error',
-                'params' => ['entityId' => $entityId],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getHierarchy general error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'getHierarchy general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -209,113 +117,29 @@ class HierarchyController extends Controller
     {
         try {
             $childId = $request->input('child_id');
-            $parent = Entity::findOrFail($parentId);
-            $child = Entity::findOrFail($childId);
 
-            // Remove child relationship
-            $parent->children()->detach($child);
+            $count = $this->hierarchyService->removeChild($parentId, $childId);
 
-            return response()->json([
-                'message' => 'Child removed successfully.',
-                'parent' => $parent->load('children'),
-            ]);
+            return response()->json($count, Response::HTTP_OK);
         } catch (ModelNotFoundException $ex) {
-            ActivityController::logServerError($ex, [
-                'context' => 'removeChild model not found error',
-                'params' => ['request' => $request->all()],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'removeChild model not found error'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->handleException($ex, 'removeChild model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
-            ActivityController::logServerError($ex, [
-                'context' => 'removeChild query error',
-                'params' => ['id' => $request->id],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'removeChild query error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'removeChild query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $ex) {
-            ActivityController::logServerError($ex, [
-                'context' => 'removeChild general error',
-                'params' => ['request' => $request->all(), 'parentId' => $parentId],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'removeChild general error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleException($ex, 'removeChild general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     // Nagyfőnök lekérése
     public function getBigBosses()
     {
         try {
-            // Azok az entitások, amelyek nem szerepelnek parent_id-ként a kapcsolati táblában
-            $bigBosses = Entity::whereDoesntHave('parents')->get();
-
-            if ($bigBosses->isEmpty()) {
-                return response()->json([
-                    'message' => 'No big bosses found.',
-                ], Response::HTTP_NOT_FOUND);
-            }
-
-            return response()->json([
-                'message' => 'Big bosses retrieved successfully.',
-                'big_bosses' => $bigBosses,
-            ]);
+            $bigBosses = $this->hierarchyService->getBigBosses();
         } catch(ModelNotFoundException $ex) {
-            ActivityController::logServerError($ex, [
-                'context' => 'getBigBosses model not found error',
-                'params' => [],
-                'route' => request()->path(),
-                'type' => 'ModelNotFoundException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getBigBosses model not found error'
-            ], Response::HTTP_NOT_FOUND);
+            //
         } catch(QueryException $ex) {
-            ActivityController::logServerError($ex, [
-                'context' => 'getBigBosses query error',
-                'params' => [],
-                'route' => request()->path(),
-                'type' => 'QueryException',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getBigBosses query error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            //
         } catch (Exception $ex) {
-            ActivityController::logServerError($ex, [
-                'context' => 'getBigBosses general error',
-                'params' => [],
-                'route' => request()->path(),
-                'type' => 'Exception',
-                'severity' => 'error',
-            ]);
-
-            return response()->json([
-                'success' => APP_FALSE,
-                'error' => 'getBigBosses general error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            //
         }
     }
     // Egy vezető beosztottjainak áthelyezése egy másik vezető alá

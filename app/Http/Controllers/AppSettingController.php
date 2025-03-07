@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateAppSettingRequest;
 use App\Http\Resources\AppSettingsResource;
 use App\Models\AppSetting;
 use App\Repositories\AppSettingRepository;
+use App\Services\Setting\AppSettingService;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -27,13 +28,13 @@ class AppSettingController extends Controller
     use AuthorizesRequests,
         Functions;
 
-    protected AppSettingRepository $appSettingRepository;
+    protected AppSettingService $appSettingService;
 
     protected string $tag = 'appSettings';
 
-    public function __construct(AppSettingRepository $repository)
+    public function __construct(AppSettingService $appSettingService)
     {
-        $this->appSettingRepository = $repository;
+        $this->appSettingService = $appSettingService;
 
         $this->tag = AppSetting::getTag();
         
@@ -64,7 +65,7 @@ class AppSettingController extends Controller
     public function getAppSettings(Request $request): JsonResponse
     {
         try {
-            $settings = $this->appSettingRepository->getAppSettings($request);
+            $settings = $this->appSettingService->getAppSettings($request);
 
             return response()->json($settings, Response::HTTP_OK);
         } catch(QueryException $ex) {
@@ -79,7 +80,7 @@ class AppSettingController extends Controller
     public function getApptSetting(GetAppSettingRequest $request): JsonResponse
     {
         try {
-            $setting = $this->appSettingRepository->getAppSetting($request->id);
+            $setting = $this->appSettingService->getAppSetting($request->id);
 
             return response()->json($setting, Response::HTTP_OK);
 
@@ -98,7 +99,7 @@ class AppSettingController extends Controller
     public function getAppSettingByKey(string $key): JsonResponse
     {
         try {
-            $setting = $this->appSettingRepository->getAppSettingByKey($key);
+            $setting = $this->appSettingService->getAppSettingByKey($key);
 
             return response()->json($setting, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
@@ -116,7 +117,7 @@ class AppSettingController extends Controller
     public function createAppSetting(StoreAppSettingRequest $request): JsonResponse
     {
         try{
-            $setting = $this->appSettingRepository->createAppSetting($request);
+            $setting = $this->appSettingService->createAppSetting($request);
 
             return response()->json($setting, Response::HTTP_CREATED);
         }catch(QueryException $ex) {
@@ -131,7 +132,7 @@ class AppSettingController extends Controller
     public function updateAppSetting(UpdateAppSettingRequest $request, int $id): JsonResponse
     {
         try {
-            $setting = $this->appSettingRepository->updateAppSetting($request, $id);
+            $setting = $this->appSettingService->updateAppSetting($request, $id);
 
             return response()->json($setting, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -149,7 +150,7 @@ class AppSettingController extends Controller
     public function deleteAppSettings(Request $request)
     {
         try {
-            $deletedCount = $this->appSettingRepository->deleteAppSettings($request);
+            $deletedCount = $this->appSettingService->deleteAppSettings($request);
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch (ModelNotFoundException $ex) {
             // Hiba továbbítása a frontend felé
@@ -166,7 +167,7 @@ class AppSettingController extends Controller
     public function deleteAppSetting(GetAppSettingRequest $request)
     {
         try {
-            $appSetting = $this->appSettingRepository->deleteAppSetting($request);
+            $appSetting = $this->appSettingService->deleteAppSetting($request);
 
             return response()->json($appSetting, Response::HTTP_OK);
         } catch (ModelNotFoundException $ex) {
@@ -184,7 +185,7 @@ class AppSettingController extends Controller
     public function restoreAppSettings(GetAppSettingRequest $request): JsonResponse
     {
         try {
-            $appSetting = $this->appSettingRepository->restoreAppSettings($request);
+            $appSetting = $this->appSettingService->restoreAppSettings($request);
 
             return response()->json($appSetting, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -202,7 +203,7 @@ class AppSettingController extends Controller
     public function realDeleteCompSetting(Request $request): JsonResponse
     {
         try {
-            $appSetting = $this->appSettingRepository->realDeleteSetting($request);
+            $appSetting = $this->appSettingService->realDeleteSetting($request);
             
             return response()->json($appSetting, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

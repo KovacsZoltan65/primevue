@@ -28,46 +28,82 @@ class CompanyService
 
     public function getCompanies(Request $request): Collection
     {
-        return $this->companyRepository->getCompanies($request);
+        try{
+            return $this->companyRepository->getCompanies($request);
+        } catch( Exception $ex ) {
+            throw $ex;
+        }
     }
 
     public function getCompany(int $id): Company
     {
-        return $this->companyRepository->getCompany($id);
+        try{
+            return $this->companyRepository->getCompany($id);
+        } catch( Exception $ex ) {
+            throw $ex;
+        }
     }
 
     public function getCompanyByName(string $name): Company
     {
-        return $this->companyRepository->getCompanyByName($name);
+        try {
+            return $this->companyRepository->getCompanyByName($name);
+        } catch( Exception $ex ) {
+            throw $ex;
+        }
     }
 
     public function createCompany(Request $request): Company
     {
-        return $this->companyRepository->createCompany($request);
+        try {
+            return $this->companyRepository->createCompany($request);
+        } catch( Exception $ex ) {
+            throw $ex;
+        }
     }
 
     public function updateCompany($request, int $id): Company
     {
-        return $this->companyRepository->updateCompany($request, $id);
+        try {
+            return $this->companyRepository->updateCompany($request, $id);
+        } catch( Exception $ex ) {
+            throw $ex;
+        }
     }
 
     public function deleteCompanies(Request $request): int
     {
-        return $this->companyRepository->deleteCompanies($request);
+        try {
+            return $this->companyRepository->deleteCompanies($request);
+        } catch( Exception $ex ) {
+            throw $ex;
+        }
     }
 
     public function deleteCompany(Request $request): ?Company
     {
-        return $this->companyRepository->deleteCompany($request);
+        try {
+            return $this->companyRepository->deleteCompany($request);
+        } catch( Exception $ex ) {
+            throw $ex;
+        }
     }
 
     public function restoreCompany(Request $request): ?Company
     {
-        return $this->companyRepository->restoreCompany($request);
+        try {
+            return $this->companyRepository->restoreCompany($request);
+        } catch( Exception $ex ) {
+            throw $ex;
+        }
     }
 
     public function realDeleteCompany(int $id): ?Company
     {
-        return $this->companyRepository->realDeleteCompany($id);
+        try {
+            return $this->companyRepository->realDeleteCompany($id);
+        } catch( Exception $ex ) {
+            throw $ex;
+        }
     }
 }

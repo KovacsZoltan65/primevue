@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Entity;
 
 use App\Http\Requests\GetEntityRequest;
 use App\Http\Requests\StoreEntityRequest;
@@ -10,6 +10,8 @@ use App\Models\Entity;
 use App\Models\User;
 use App\Repositories\EntityRepository;
 use App\Repositories\CompanyRepository;
+use App\Services\AppSettings\CompanyService;
+use App\Services\Entity\EntityService;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -30,15 +32,15 @@ class EntityController extends Controller
 {
     use AuthorizesRequests,
         Functions;
-    protected EntityRepository $entityRepository;
-    protected CompanyRepository $companyRepository;
+    protected EntityService $entityService;
+    protected CompanyService $companyService;
 
     protected string $tag = 'entities';
 
-    public function __construct(EntityRepository $repository, CompanyRepository $companyRepository)
+    public function __construct(EntityService $entityService, CompanyService $companyService)
     {
-        $this->entityRepository = $repository;
-        $this->companyRepository = $companyRepository;
+        $this->entityService = $entityService;
+        $this->companyService = $companyService;
 
         $tag = Entity::getTag();
 
@@ -57,7 +59,7 @@ class EntityController extends Controller
             ->orderBy('name')
             ->where('active', '=', 1)
             ->get()->toArray();
-        $companies = $this->companyRepository->getActiveCompanies();
+        $companies = $this->entityService->getActiveCompanies();
 
         return Inertia::render('Entity/Index',[
             'users' => $users,
@@ -79,9 +81,9 @@ class EntityController extends Controller
     public function getEntities(Request $request): JsonResponse
     {
         try {
-            $_entities = $this->entityRepository->getEntities($request);
+            $_entities = $this->entityService->getEntities($request);
             $entities = EntityResource::collection($_entities);
-\Log::info('EntityController $entities[0]->end_date: ' . print_r($entities[0]->end_date, true));
+
             return response()->json($entities, Response::HTTP_OK);
 
         } catch (QueryException $ex) {
@@ -96,7 +98,7 @@ class EntityController extends Controller
     public function getEntity(GetEntityRequest $request): JsonResponse
     {
         try {
-            $company = $this->entityRepository->getEntity($request->id);
+            $company = $this->entityService->getEntity($request->id);
 
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -111,7 +113,7 @@ class EntityController extends Controller
     public function getEntityByName(string $name): JsonResponse
     {
         try {
-            $company = $this->entityRepository->getEntityByName($name);
+            $company = $this->entityService->getEntityByName($name);
 
             return response()->json($company, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
@@ -126,7 +128,7 @@ class EntityController extends Controller
     public function createEntity(StoreEntityRequest $request): JsonResponse
     {
         try {
-            $company = $this->entityRepository->createEntity($request);
+            $company = $this->entityService->createEntity($request);
 
             return response()->json($company, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
@@ -139,7 +141,7 @@ class EntityController extends Controller
     public function updateEntity(UpdateEntityRequest $request, int $id, CacheService $cacheService): JsonResponse
     {
         try{
-            $entity = $this->entityRepository->updateEntity($request, $id);
+            $entity = $this->entityService->updateEntity($request, $id);
 
             return response()->json($entity, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
@@ -154,7 +156,7 @@ class EntityController extends Controller
     public function deleteEntities(Request $request): JsonResponse
     {
         try {
-            $deletedCount = $this->entityRepository->deleteEntities($request);
+            $deletedCount = $this->entityService->deleteEntities($request);
             return response()->json($deletedCount, Response::HTTP_OK);
 
         } catch(ValidationException $ex) {
@@ -169,7 +171,7 @@ class EntityController extends Controller
     public function deleteEntity(GetEntityRequest $request): JsonResponse
     {
         try {
-            $entity = $this->entityRepository->deleteEntity($request);
+            $entity = $this->entityService->deleteEntity($request);
 
             return response()->json($entity, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -184,7 +186,7 @@ class EntityController extends Controller
     public function restoreEntity(GetEntityRequest $request): JsonResponse
     {
         try {
-            $company = $this->entityRepository->restoreEntity($request);
+            $company = $this->entityService->restoreEntity($request);
 
             return response()->json($company, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

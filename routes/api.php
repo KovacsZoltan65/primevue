@@ -195,14 +195,14 @@ Route::middleware(['web', 'auth'])->group(function () {
      * JOGI SZEMÉLYEK (legal entity)
      * =======================================================
      */
-    Route::get('/entities', [\App\Http\Controllers\EntityController::class, 'getEntities'])->name('api.get.entities');
+    Route::get('/entities', [\App\Http\Controllers\Entity\EntityController::class, 'getEntities'])->name('api.get.entities');
 
-    Route::get('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'getEntity'])->name('api.get.entity_by_id')->where('id', '[0-9]+');
-    Route::get('/entities/name/{name}', [\App\Http\Controllers\EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::get('/entities/{id}', [\App\Http\Controllers\Entity\EntityController::class, 'getEntity'])->name('api.get.entity_by_id')->where('id', '[0-9]+');
+    Route::get('/entities/name/{name}', [\App\Http\Controllers\Entity\EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
 
-    Route::post('/entities', [\App\Http\Controllers\EntityController::class, 'createEntity'])->name('api.post.entities');
-    Route::put('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'updateEntity'])->name('api.put.entities')->where('id', '[0-9]+');
-    Route::delete('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'deleteEntity'])->name('api.delete.entities')->where('id', '[0-9]+');
+    Route::post('/entities', [\App\Http\Controllers\Entity\EntityController::class, 'createEntity'])->name('api.post.entities');
+    Route::put('/entities/{id}', [\App\Http\Controllers\Entity\EntityController::class, 'updateEntity'])->name('api.put.entities')->where('id', '[0-9]+');
+    Route::delete('/entities/{id}', [\App\Http\Controllers\Entity\EntityController::class, 'deleteEntity'])->name('api.delete.entities')->where('id', '[0-9]+');
 
     /**
      * =======================================================
@@ -292,12 +292,12 @@ Route::middleware(['web', 'auth'])->group(function () {
      * ENTITIES
      * =======================================================
      */
-    Route::get('/entities', [\App\Http\Controllers\EntityController::class, 'getEntities'])->name('api.get.entities');
-    Route::get('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'getEntity'])->name('api.get.entity')->where('id', '[0-9]+');
-    Route::get('/entities/name/{name}', [\App\Http\Controllers\EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
-    Route::post('/entities', [\App\Http\Controllers\EntityController::class, 'createEntities'])->name('api.post.entities');
-    Route::put('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'updateEntities'])->name('api.put.entities')->where('id', '[0-9]+');
-    Route::delete('/entities/{id}', [\App\Http\Controllers\EntityController::class, 'deleteEntities'])->name('api.delete.entities')->where('id', '[0-9]+');
+    Route::get('/entities', [\App\Http\Controllers\Entity\EntityController::class, 'getEntities'])->name('api.get.entities');
+    Route::get('/entities/{id}', [\App\Http\Controllers\Entity\EntityController::class, 'getEntity'])->name('api.get.entity')->where('id', '[0-9]+');
+    Route::get('/entities/name/{name}', [\App\Http\Controllers\Entity\EntityController::class, 'getEntityByName'])->name('api.get.entity_by_name')->where('name', '[a-zA-Z0-9\s]{3,}');
+    Route::post('/entities', [\App\Http\Controllers\Entity\EntityController::class, 'createEntities'])->name('api.post.entities');
+    Route::put('/entities/{id}', [\App\Http\Controllers\Entity\EntityController::class, 'updateEntities'])->name('api.put.entities')->where('id', '[0-9]+');
+    Route::delete('/entities/{id}', [\App\Http\Controllers\Entity\EntityController::class, 'deleteEntities'])->name('api.delete.entities')->where('id', '[0-9]+');
 
     /**
      * =======================================================

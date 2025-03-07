@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Services\CacheService;
 use App\Traits\Functions;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
@@ -33,7 +34,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveCompanies()
+    public function getActiveCompanies(): array
     {
         $model = $this->model();
         $companies = $model::query()
@@ -45,7 +46,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
         return $companies;
     }
 
-    public function getEntities(Request $request)
+    public function getEntities(Request $request): Collection
     {
         try {
 
@@ -68,7 +69,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
         }
     }
 
-    public function getEntity(int $id)
+    public function getEntity(int $id): Entity
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
@@ -82,7 +83,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
         }
     }
 
-    public function getEntityByName(string $name)
+    public function getEntityByName(string $name): Entity
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, $name);
@@ -96,7 +97,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
         }
     }
 
-    public function createEntity(Request $request)
+    public function createEntity(Request $request): Entity
     {
         try {
             $company = Entity::create($request->all());
@@ -107,7 +108,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
         }
     }
 
-    public function updateEntity(Request $request, int $id)
+    public function updateEntity(Request $request, int $id): ?Entity
     {
         try {
             $entity = null;
@@ -126,7 +127,7 @@ class EntityRepository extends BaseRepository implements EntityRepositoryInterfa
         }
     }
 
-    public function deleteEntities(Request $request)
+    public function deleteEntities(Request $request): bool
     {
         try {
             $validated = $request->validate([

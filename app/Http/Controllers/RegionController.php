@@ -7,6 +7,7 @@ use App\Http\Requests\StoreRegionRequest;
 use App\Models\Country;
 use App\Models\Region;
 use App\Repositories\RegionRepository;
+use App\Services\Region\RegionService;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,14 +28,14 @@ class RegionController extends Controller
         Functions;
 
     protected string $tag = 'regions';
-    protected RegionRepository $regionRepository;
+    protected RegionService $regionService;
 
     public function __construct(RegionRepository $repository)
     {
         $this->regionRepository = $repository;
-        
+
         $this->tag = Region::getTag();
-        
+
         $this->middleware("can:{$this->tag} list", ['only' => ['index', 'applySearch', 'getRegions', 'getSRegion', 'getRegionByName']]);
         $this->middleware("can:{$this->tag} create", ['only' => ['createRegion']]);
         $this->middleware("can:{$this->tag} edit", ['only' => ['updateRegion']]);
@@ -55,7 +56,7 @@ class RegionController extends Controller
     public function index(Request $request): InertiaResponse
     {
         $roles = $this->getUserRoles($this->tag);
-        
+
         $countries = Country::where('active', 1)->orderBy('name')->get()->toArray();
 
         $search = $request->query('search');
@@ -88,7 +89,7 @@ class RegionController extends Controller
     public function getRegions(Request $request): JsonResponse
     {
         try {
-            $regions = $this->regionRepository->getRegions($request);
+            $regions = $this->regionService->getRegions($request);
 
             return response()->json($regions, Response::HTTP_OK);
         } catch(QueryException $ex) {
@@ -101,7 +102,7 @@ class RegionController extends Controller
     public function getRegion(GetRegionRequest $request): JsonResponse
     {
         try {
-            $region = $this->regionRepository->getRegion($request->id);
+            $region = $this->regionService->getRegion($request->id);
 
             return response()->json($region, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -116,7 +117,7 @@ class RegionController extends Controller
     public function getRegionByName(string $name): JsonResponse
     {
         try {
-            $region = $this->regionRepository->getRegionByName($name);
+            $region = $this->regionService->getRegionByName($name);
 
             return response()->json($region, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
@@ -139,7 +140,7 @@ class RegionController extends Controller
     public function createRegion(StoreRegionRequest $request): JsonResponse
     {
         try {
-            $region = $this->regionRepository->createRegion($request);
+            $region = $this->regionService->createRegion($request);
 
             return response()->json($region, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
@@ -161,7 +162,7 @@ class RegionController extends Controller
     public function updateRegion(Request $request, int $id): JsonResponse
     {
         try{
-            $region = $this->regionRepository->updateRegion($request, $id);
+            $region = $this->regionService->updateRegion($request, $id);
 
             return response()->json($region, Response::HTTP_OK);
         }catch(ModelNotFoundException $ex){
@@ -176,7 +177,7 @@ class RegionController extends Controller
     public function deleteRegions(Request $request): JsonResponse
     {
         try {
-            $deletedCount = $this->regionRepository->deleteRegions($request);
+            $deletedCount = $this->regionService->deleteRegions($request);
 
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ValidationException $ex) {
@@ -187,7 +188,7 @@ class RegionController extends Controller
             return $this->handleException($ex, 'deleteRegions general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Töröljön egy régiót az adatbázisból.
      *
@@ -199,7 +200,7 @@ class RegionController extends Controller
     public function deleteRegion(StoreRegionRequest $request): JsonResponse
     {
         try {
-            $region = $this->regionRepository->deleteREgion($request);
+            $region = $this->regionService->deleteRegion($request);
 
             return response()->json($region, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -214,7 +215,7 @@ class RegionController extends Controller
     public function restoreRegion(GetRegionRequest $request): JsonResponse
     {
         try {
-            $region = $this->regionRepository->restoreRegion($request);
+            $region = $this->regionService->restoreRegion($request);
 
             return response()->json($region, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -223,6 +224,21 @@ class RegionController extends Controller
             return $this->handleException($ex, 'restoreRegion query error', Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch(Exception $ex) {
             return $this->handleException($ex, 'restoreRegion general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function realDeleteRegion(GetRegionRequest $request)
+    {
+        try {
+            $deletedCount = $this->regionService->realDeleteRegion($request->id);
+
+            return response()->json($deletedCount, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'realDeleteRegion model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'realDeleteRegion query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'realDeleteRegion general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

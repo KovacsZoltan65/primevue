@@ -21,7 +21,7 @@ use Exception;
 class RegionRepository extends BaseRepository implements RegionRepositoryInterface
 {
     use Functions;
-    
+
     protected CacheService $cacheService;
 
     protected string $tag = 'regions';
@@ -31,7 +31,7 @@ class RegionRepository extends BaseRepository implements RegionRepositoryInterfa
         $this->tag = Region::getTag();
         $this->cacheService = $cacheService;
     }
-    
+
     public function getActiveRegions()
     {
         $model = $this->model();
@@ -43,12 +43,12 @@ class RegionRepository extends BaseRepository implements RegionRepositoryInterfa
 
         return $companies;
     }
-    
+
     public function getRegions(Request $request)
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
-            
+
             return $this->cacheService->remember($this->tag, $cacheKey, function () use ($request) {
                 $regionQuery = Region::search($request);
                 return $regionQuery->get();
@@ -58,7 +58,7 @@ class RegionRepository extends BaseRepository implements RegionRepositoryInterfa
             throw $ex;
         }
     }
-    
+
     public function getRegion(int $id)
     {
         try {
@@ -72,7 +72,7 @@ class RegionRepository extends BaseRepository implements RegionRepositoryInterfa
             throw $ex;
         }
     }
-    
+
     public function getRegionByName(string $name)
     {
         try {
@@ -86,26 +86,33 @@ class RegionRepository extends BaseRepository implements RegionRepositoryInterfa
             throw $ex;
         }
     }
-    
+
     public function createRegion(Request $request)
     {
         try{
-            $region = Region::create($request->all());
-            
-            $this->cacheService->forgetAll($this->tag);
-            
+            $region = null;
+
+            DB::transaction(function()use($request, &$region) {
+                // 1. Régió létrehozása
+                $region = Region::create($request->all());
+                // 2. Kapcsolódó rekordok létrehozása (pl. alapértelmezett beállítások)
+                $this->createDefaultSettings($region);
+                // 3. Cache törlése, ha releváns
+                $this->cacheService->forgetAll($this->tag);
+            });
+
             return $region;
         } catch(Exception $ex) {
             $this->logError($ex, 'createRegion error', ['request' => $request->all()]);
             throw $ex;
         }
     }
-    
+
     public function updateRegion(Request $request, int $id)
     {
         try {
             $region = null;
-            
+
             DB::trnasaction(function() use($request, $id, &$region) {
                 $region = Region::findOrFail($id)->lockForUpdate();
                 $region->update($request->all());
@@ -113,15 +120,15 @@ class RegionRepository extends BaseRepository implements RegionRepositoryInterfa
 
                 $this->cacheService->forgetAll($this->tag);
             });
-            
+
             return $region;
         } catch(Exception $ex) {
             $this->logError($ex, 'createRegion error', ['request' => $request->all()]);
             throw $ex;
         }
     }
-    
-    public function deleteRegions(Request $request)
+
+    public function deleteRegions(Request $request): int
     {
         try {
             $validated = $request->validate([
@@ -130,25 +137,38 @@ class RegionRepository extends BaseRepository implements RegionRepositoryInterfa
             ]);
 
             $ids = $validated['ids'];
+            $deleteCount = 0;
 
-            $deletedCount = Region::whereIn('id', $ids)->delete();
+            DB::transaction(function()use($ids, &$deleteCount) {
+                $regions = Region::whereIn('id', $ids)->lockForUpdate()->get();
 
-            $this->cacheService->forgetAll($this->tag);
+                $deleteCount = $regions->each(function ($region) {
+                    $region->delete();
+                })->count();
 
-            return $deletedCount;
+                // Cache törlése, ha szükséges
+                $this->cacheService->forgetAll($this->tag);
+
+            });
+
+            return $deleteCount;
         } catch(Exception $ex) {
             $this->logError($ex, 'deleteRegions error', ['request' => $request->all()]);
             throw $ex;
         }
     }
-    
-    public function deleteRegion(Request $request)
+
+    public function deleteRegion(Request $request): ?Region
     {
         try {
-            $region = Region::findOrFail($request->id);
-            $region->delete();
+            $region = null;
 
-            $this->cacheService->forgetAll($this->tag);
+            DB::transaction(function()use($request, &$region) {
+                $region = Region::lockForUpdate()->findOrFail($request->id);
+                $region->delete();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $region;
         } catch(Exception $ex) {
@@ -156,7 +176,7 @@ class RegionRepository extends BaseRepository implements RegionRepositoryInterfa
             throw $ex;
         }
     }
-    
+
     public function restoreRegion(Request $request)
     {
         try {
@@ -171,7 +191,32 @@ class RegionRepository extends BaseRepository implements RegionRepositoryInterfa
             throw $ex;
         }
     }
-            
+
+    public function realDeleteCompany(int $id): ?Region
+    {
+        try {
+            $region = null;
+
+            DB::transaction(function() use($id, &$region) {
+                $region = Region::withTrashed()->lockForUpdate()->findOrFail($id);
+                $region->forceDelete();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
+
+
+            return $region;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'realDeleteCompany error', ['id' => $id]);
+            throw $ex;
+        }
+    }
+
+    private function createDefaultSettings(Region $region): void
+    {
+        //
+    }
+
     /**
      * Specify Model class name
      *
@@ -191,5 +236,5 @@ class RegionRepository extends BaseRepository implements RegionRepositoryInterfa
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
-    
+
 }

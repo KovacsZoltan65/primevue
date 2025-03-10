@@ -9,6 +9,7 @@ use App\Http\Resources\PersonResource;
 use App\Models\Person;
 use App\Repositories\PersonRepository;
 use App\Services\CacheService;
+use App\Services\Person\PersonService;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -22,13 +23,14 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Routing\Controller;
 
 class PersonController extends Controller
 {
     use AuthorizesRequests,
         Functions;
 
-    protected PersonRepository $personRepository;
+    protected PersonService $personService;
     protected string $tag = 'persons';
 
     public function __construct(PersonRepository $repository)
@@ -63,7 +65,7 @@ class PersonController extends Controller
     public function getPersons(Request $request): JsonResponse
     {
         try {
-            $persons = $this->personRepository->getPersons($request);
+            $persons = $this->personService->getPersons($request);
 
             return response()->json($persons, Response::HTTP_OK);
         } catch(QueryException $ex) {
@@ -73,10 +75,10 @@ class PersonController extends Controller
         }
     }
 
-    public function getPerson(GetPersonRequest $request): JsonResponse
+    public function getPerson(Request $request): JsonResponse
     {
         try {
-            $person = $this->personRepository->getPerson($request);
+            $person = $this->personService->getPerson($request->id);
 
             return response()->json($person, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -91,7 +93,7 @@ class PersonController extends Controller
     public function getPersonByName(string $name): JsonResponse
     {
         try {
-            $person = $this->personRepository->getPersonByName($name);
+            $person = $this->personService->getPersonByName($name);
 
             return response()->json($person, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
@@ -106,7 +108,7 @@ class PersonController extends Controller
     public function createPerson(StorePersonRequest $request): JsonResponse
     {
         try {
-            $person = $this->personRepository->createPerson($request);
+            $person = $this->personService->createPerson($request);
 
             return response()->json($person, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
@@ -119,7 +121,7 @@ class PersonController extends Controller
     public function updatePerson(UpdatePersonRequest $request, int $id): JsonResponse
     {
         try{
-            $person = $this->personRepository->updatePerson($request, $id);
+            $person = $this->personService->updatePerson($request, $id);
 
             return response()->json($person, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
@@ -134,7 +136,7 @@ class PersonController extends Controller
     public function deletePersons(Request $request): JsonResponse
         {
             try{
-                $deletedCount = $this->personRepository->deletePersons($request);
+                $deletedCount = $this->personService->deletePersons($request);
 
                 return response()->json($deletedCount, Response::HTTP_OK);
             } catch(ValidationException $ex) {
@@ -149,7 +151,7 @@ class PersonController extends Controller
     public function deletePerson(GetPersonRequest $request): JsonResponse
     {
         try{
-            $person = $this->personRepository->deletePerson($request);
+            $person = $this->personService->deletePerson($request);
 
             return response()->json($person, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -163,16 +165,31 @@ class PersonController extends Controller
 
     public function restorePerson(GetPersonRequest $request): JsonResponse
     {
-            try {
-                $person = $this->personRepository->restorePerson($request);
+        try {
+            $person = $this->personService->restorePerson($request);
 
-                return response()->json($person, Response::HTTP_OK);
-            } catch(ModelNotFoundException $ex) {
-                return $this->handleException($ex, 'restorePerson model not found exception', Response::HTTP_NOT_FOUND);
-            } catch(QueryException $ex) {
-                return $this->handleException($ex, 'restorePerson query error', Response::HTTP_UNPROCESSABLE_ENTITY);
-            } catch(Exception $ex) {
-                return $this->handleException($ex, 'restorePerson general error', Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
+            return response()->json($person, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'restorePerson model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'restorePerson query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'restorePerson general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public function realDeletePerson(int $id): JsonResponse
+    {
+        try {
+            $deleteCount = $this->personService->realDeletePerson($id);
+
+            return response()->json($deleteCount, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'realDeletePerson model not found exception', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'realDeletePerson query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'realDeletePerson general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }

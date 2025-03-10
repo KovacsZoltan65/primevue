@@ -33,7 +33,7 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
         $this->cacheService = $cacheService;
     }
 
-    public function getActivePersons()
+    public function getActivePersons(): array
     {
         $model = $this->model();
         $companies = $model::query()
@@ -88,13 +88,21 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
         }
     }
 
-    public function createPerson(StorePersonRequest $request)
+    public function createPerson(Request $request): ?Person
     {
         try{
-            $person = Person::create($request->all());
+            $person = null;
 
-            $this->cacheService->forgetAll($this->tag);
+            DB::transaction(function() use($request, &$person) {
+                // 1. Cég létrehozása
+                $person = Person::create($request->all());
 
+                // 2. Kapcsolódó rekordok létrehozása (pl. alapértelmezett beállítások)
+                $this->createDefaultSettings($person);
+
+                // 3. Cache törlése, ha releváns
+                $this->cacheService->forgetAll($this->tag);
+            });
             return $person;
         } catch(Exception $ex) {
             $this->logError($ex, 'createPerson error', ['request' => $request->all()]);
@@ -102,7 +110,7 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
         }
     }
 
-    public function updatePerson(Request $request, int $id)
+    public function updatePerson(Request $request, int $id): ?Person
     {
         try {
             $person = null;
@@ -123,21 +131,31 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
         }
     }
 
-    public function deletePersons(Request $request)
+    public function deletePersons(Request $request): bool
     {
         try {
             $validated = $request->validate([
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
-                'ids.*' => 'integer|exists:persons,id', // Az id-k egész számok és létező cégek legyenek
+                'ids.*' => 'integer|exists:companies,id', // Az id-k egész számok és létező cégek legyenek
             ]);
 
             $ids = $validated['ids'];
-            $deletedCount = Person::whereIn('id', $ids)->delete();
-            $this->cacheService->forgetAll($this->tag);
+            $deletedCount = 0;
+
+            DB::transaction(function () use ($ids, &$deletedCount) {
+                $persons = Person::whereIn('id', $ids)->lockForUpdate()->get();
+
+                $deletedCount = $persons->each(function ($person) {
+                    $person->delete();
+                })->count();
+
+                // Cache törlése, ha szükséges
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $deletedCount;
         } catch(Exception $ex) {
-            $this->logError($ex, 'deletePersons error', ['request' => $request->all()]);
+            $this->logError($ex, 'deleteCompanies error', ['request' => $request->all()]);
             throw $ex;
         }
     }
@@ -145,10 +163,13 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
     public function deletePerson(Request $request)
     {
         try {
-            $person = Person::findOrFail($request->id);
-            $person->delete();
+            $person = null;
+            DB::transaction(function() use($request, &$person) {
+                $person = Person::lockForUpdate()->findOrFail($request->id);
+                $person->delete();
 
-            $this->cacheService->forgetAll($this->tag);
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $person;
         } catch(Exception $ex) {
@@ -157,19 +178,45 @@ class PersonRepository extends BaseRepository implements PersonRepositoryInterfa
         }
     }
 
-    public function restorePerson(Request $request)
+    public function restorePerson(Request $request): ?Person
     {
         try {
-            $person = Person::withTrashed()->findOrFail($request->id);
-            $person->restore();
+            $person = null;
+            DB::transaction(function() use($request, &$person) {
+                $person = Person::withTrashed()->lockForUpdate()->findOrFail($request->id);
+                $person->restore();
 
-            $this->cacheService->forgetAll($this->tag);
+                $this->cacheService->forgetAll($this->tag);
+            });
 
             return $person;
         } catch(Exception $ex) {
             $this->logError($ex, 'restorePerson error', ['request' => $request->all()]);
             throw $ex;
         }
+    }
+
+    public function realDeletePerson(int $id): ?Person
+    {
+        try {
+            $person = null;
+
+            DB::transaction(function() use($id, &$person){
+                $person = Person::withTrashed()->lockForUpdate()->findOrFail($id);
+                $person->forceDelete();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
+
+            return $person;
+        } catch(Exception $ex) {
+            throw $ex;
+        }
+    }
+
+    private function createDefaultSettings(Person $person): void
+    {
+        //
     }
 
     /**

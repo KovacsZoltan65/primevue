@@ -10,7 +10,7 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\Region;
 use App\Repositories\CityRepository;
-use App\Services\AppSettings\CityService;
+use \App\Services\City\CityService;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;

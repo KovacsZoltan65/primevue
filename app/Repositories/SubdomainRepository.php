@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Http\Resources\SubdomainResource;
 use App\Services\CacheService;
 use App\Traits\Functions;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
@@ -34,7 +35,7 @@ class SubdomainRepository extends BaseRepository implements SubdomainRepositoryI
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveSubdomains()
+    public function getActiveSubdomains(): Collection
     {
         $model = $this->model();
         $subdomains = $model::query()
@@ -46,7 +47,7 @@ class SubdomainRepository extends BaseRepository implements SubdomainRepositoryI
         return $subdomains;
     }
 
-    public function getSubdomains(Request $request)
+    public function getSubdomains(Request $request): Collection
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
@@ -61,7 +62,8 @@ class SubdomainRepository extends BaseRepository implements SubdomainRepositoryI
         }
     }
 
-    public function getSubdomain(int $id){
+    public function getSubdomain(int $id): Subdomain
+    {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
 
@@ -74,7 +76,8 @@ class SubdomainRepository extends BaseRepository implements SubdomainRepositoryI
         }
     }
 
-    public function getSubdomainByName(string $name){
+    public function getSubdomainByName(string $name): Subdomain
+    {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, $name);
 
@@ -87,10 +90,11 @@ class SubdomainRepository extends BaseRepository implements SubdomainRepositoryI
         }
     }
 
-    public function createSubdomain(Request $request){
+    public function createSubdomain(Request $request): Subdomain
+    {
         try {
             $subdomain = Subdomain::create($request->all());
-dd($subdomain);
+
             $this->cacheService->forgetAll($this->tag);
 
             return $subdomain;
@@ -100,7 +104,8 @@ dd($subdomain);
         }
     }
 
-    public function updateSubdomain(Request $request, int $id){
+    public function updateSubdomain(Request $request, int $id): ?Subdomain
+    {
         try {
             $subdomain = null;
 
@@ -119,7 +124,8 @@ dd($subdomain);
         }
     }
 
-    public function deleteSubdomains(Request $request){
+    public function deleteSubdomains(Request $request): int
+    {
         try {
             $validated = $request->validate([
                 'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
@@ -137,7 +143,8 @@ dd($subdomain);
         }
     }
 
-    public function deleteSubdomain(Request $request){
+    public function deleteSubdomain(Request $request): Subdomain
+    {
         try {
             $subdomain = Subdomain::findOrFail($request->id);
             $subdomain->delete();
@@ -151,7 +158,8 @@ dd($subdomain);
         }
     }
 
-    public function restoreSubdomain(Request $request){
+    public function restoreSubdomain(Request $request): Subdomain
+    {
         try {
             $subdomain = Subdomain::withTrashed()->findOrFail($request->id);
             $subdomain->restore();

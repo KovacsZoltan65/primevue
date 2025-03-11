@@ -10,33 +10,33 @@ class SettingsMetadataController extends Controller
     public function __construct() {
         //
     }
-    
+
     public function index(Request $request)
     {
         return response()->json(SettingsMetadata::all());
     }
-    
+
     public function show(string $key)
     {
-        $metadata = SettingMetadata::where('key', $key)->firstOrFail();
+        $metadata = SettingsMetadata::where('key', $key)->firstOrFail();
         return response()->json($metadata);
     }
-    
+
     public function getAllMetadata(Request $request)
     {
         //
     }
-    
+
     public function getMetadata(Request $request)
     {
         //
     }
-    
+
     public function getMetadataByKey(string $key)
     {
         //
     }
-    
+
     public function createMetadata(Request $request)
     {
         $validated = $request->validate([
@@ -53,7 +53,7 @@ class SettingsMetadataController extends Controller
         $metadata = SettingMetadata::create($validated);
         return response()->json($metadata, 201);
     }
-    
+
     public function updateMetadata(Request $request, int $id)
     {
         $metadata = SettingMetadata::where('id', $id)->firstOrFail();
@@ -71,7 +71,7 @@ class SettingsMetadataController extends Controller
         $metadata->update($validated);
         return response()->json($metadata);
     }
-    
+
     public function deleteMetadata(int $id)
     {
         $metadata = SettingMetadata::where('id', $id)->firstOrFail();

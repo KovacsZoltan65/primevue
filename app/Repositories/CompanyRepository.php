@@ -33,7 +33,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveCompanies(): Collection
+    public function getActiveCompanies(): array
     {
         try {
             $model = $this->model();

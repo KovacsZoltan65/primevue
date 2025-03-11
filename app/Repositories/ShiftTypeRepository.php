@@ -92,7 +92,7 @@ class ShiftTypeRepository extends BaseRepository implements ShiftTypeRepositoryI
         }
     }
     
-    public function createShiftType(Request $request)
+    public function createShiftType(Request $request): ?ShiftType
     {
         try {
             $shiftType = null;
@@ -114,7 +114,7 @@ class ShiftTypeRepository extends BaseRepository implements ShiftTypeRepositoryI
         }
     }
     
-    public function updateShiftType($request, int $id)
+    public function updateShiftType($request, int $id): ?ShiftType
     {
         try {
             $shiftType = null;
@@ -133,7 +133,7 @@ class ShiftTypeRepository extends BaseRepository implements ShiftTypeRepositoryI
         }
     }
     
-    public function deleteShiftTypes(Request $request)
+    public function deleteShiftTypes(Request $request): int
     {
         try {
             $validated = $request->validate([
@@ -232,8 +232,6 @@ class ShiftTypeRepository extends BaseRepository implements ShiftTypeRepositoryI
         return ShiftType::class;
     }
 
-
-
     /**
      * Boot up the repository, pushing criteria
      */
@@ -241,5 +239,4 @@ class ShiftTypeRepository extends BaseRepository implements ShiftTypeRepositoryI
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
-
 }

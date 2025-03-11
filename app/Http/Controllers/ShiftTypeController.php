@@ -7,6 +7,7 @@ use App\Http\Requests\GetShiftTypeRequest;
 use App\Http\Requests\StoreShiftTypeRequest;
 use App\Http\Requests\UpdateShiftTypeRequest;
 use App\Http\Resources\ShiftTypeResource;
+use App\Services\Shift\ShiftTypeService;
 use Illuminate\Routing\Controller;
 use App\Models\ShiftType;
 use App\Repositories\ShiftTypeRepository;
@@ -28,12 +29,12 @@ class ShiftTypeController extends Controller
     use AuthorizesRequests, 
         Functions;
     
-    protected $shiftTypeRepository;
+    protected ShiftTypeService $shiftTypeService;
     
     protected string $tag = '';
     
-    public function __construct(ShiftTypeRepository $shiftTypeRepository) {
-        $this->shiftTypeRepository = $shiftTypeRepository;
+    public function __construct(ShiftTypeService $shiftTypeService) {
+        $this->shiftTypeService = $shiftTypeService;
         
         $this->tag = ShiftType::getTag();
         
@@ -64,7 +65,7 @@ class ShiftTypeController extends Controller
     public function getActiveShiftTypes(): JsonResponse
     {
         try {
-            $shifTypes = $this->shiftTypeRepository->getActiveShiftTypes();
+            $shifTypes = $this->shiftTypeService->getActiveShiftTypes();
             
             return response()->json($shifTypes, Response::HTTP_OK);
         } catch( QueryException $ex ) {
@@ -77,7 +78,7 @@ class ShiftTypeController extends Controller
     public function getShiftTypes(Request $request): JsonResponse
     {
         try {
-            $_shiftTypes = $this->shiftTypeRepository->getShiftTypes($request);
+            $_shiftTypes = $this->shiftTypeService->getShiftTypes($request);
             $shiftTypes = ShiftTypeResource::collection($_shiftTypes);
 
             return response()->json($shiftTypes, Response::HTTP_OK);
@@ -91,7 +92,7 @@ class ShiftTypeController extends Controller
     public function getShiftType(GetShiftTypeRequest $request): JsonResponse
     {
         try {
-            $_shiftType = $this->shiftTypeRepository->getShiftType($request->id);
+            $_shiftType = $this->shiftTypeService->getShiftType($request->id);
             $shiftType = new ShiftTypeResource($_shiftType);
 
             return response()->json($shiftType, Response::HTTP_OK);
@@ -107,7 +108,7 @@ class ShiftTypeController extends Controller
     public function getShiftTypeByName(string $name): JsonResponse
     {
         try {
-            $shiftType = $this->shiftTypeRepository->getShiftTypeByName($name);
+            $shiftType = $this->shiftTypeService->getShiftTypeByName($name);
 
             return response()->json($shiftType, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
@@ -122,7 +123,7 @@ class ShiftTypeController extends Controller
     public function createShiftType(StoreShiftTypeRequest $request): JsonResponse
     {
         try {
-            $shiftType = $this->shiftTypeRepository->createShiftType($request);
+            $shiftType = $this->shiftTypeService->createShiftType($request);
 
             return response()->json($shiftType, Response::HTTP_CREATED);
         } catch( QueryException $ex ) {
@@ -135,7 +136,7 @@ class ShiftTypeController extends Controller
     public function updateShiftType(UpdateShiftTypeRequest $request, int $id): JsonResponse
     {
         try {
-            $shiftType = $this->shiftTypeRepository->updateShiftType($request, $id);
+            $shiftType = $this->shiftTypeService->updateShiftType($request, $id);
 
             return response()->json($shiftType, Response::HTTP_CREATED);
         } catch( ModelNotFoundException $ex ) {
@@ -150,7 +151,7 @@ class ShiftTypeController extends Controller
     public function deleteShiftTypes(Request $request): JsonResponse
     {
         try {
-            $deletedCount = $this->shiftTypeRepository->deleteShiftTypes($request);
+            $deletedCount = $this->shiftTypeService->deleteShiftTypes($request);
 
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
@@ -165,7 +166,7 @@ class ShiftTypeController extends Controller
     public function deleteShiftType(GetEntityShiftRequest $request): JsonResponse
     {
         try {
-            $shiftType = $this->shiftTypeRepository->deleteShiftType($request);
+            $shiftType = $this->shiftTypeService->deleteShiftType($request);
 
             return response()->json($shiftType, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
@@ -180,7 +181,7 @@ class ShiftTypeController extends Controller
     public function restoreShiftType(Request $request): JsonResponse
     {
         try {
-            $shiftType = $this->shiftTypeRepository->restoreShiftType($request);
+            $shiftType = $this->shiftTypeService->restoreShiftType($request);
 
             return response()->json($shiftType, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
@@ -195,7 +196,7 @@ class ShiftTypeController extends Controller
     public function realDeleteShiftType(GetShiftTypeRequest $request): JsonResponse
     {
         try {
-            $shiftType = $this->shiftTypeRepository->realDeleteShiftType($request->id);
+            $shiftType = $this->shiftTypeService->realDeleteShiftType($request->id);
 
             return response()->json($shiftType, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {

@@ -6,6 +6,7 @@ use App\Http\Requests\GetSubdomainStateRequest;
 use App\Http\Requests\StoreSubdomainStateRequest;
 use App\Http\Requests\UpdateSubdomainStateRequest;
 use App\Http\Resources\SubdomainStateResource;
+use App\Services\Subdomain\SubdomainStateService;
 use Illuminate\Support\Facades\DB;
 use App\Models\SubdomainState;
 use App\Services\CacheService;
@@ -31,11 +32,11 @@ class SubdomainStateController extends Controller
 
     protected string $tag = 'subdomainstate';
 
-    protected SubdomainStateRepository $stateRepository;
+    protected SubdomainStateService $stateService;
 
-    public function __construct(SubdomainStateRepository $repository)
+    public function __construct(SubdomainStateService $stateService)
     {
-        $this->stateRepository = $repository;
+        $this->stateService = $stateService;
         
         $this->tag = SubdomainState::getTag();
         
@@ -66,7 +67,7 @@ class SubdomainStateController extends Controller
     public function getSubdomainStates(Request $request): JsonResponse
     {
         try {
-            $_subdomainStates = $this->stateRepository->getSubdomainStates($request);
+            $_subdomainStates = $this->stateService->getSubdomainStates($request);
             $subdomainStates = SubdomainState::collection($_subdomainStates);
 
             return response()->json($subdomainStates, Response::HTTP_OK);
@@ -80,7 +81,7 @@ class SubdomainStateController extends Controller
     public function getSubdomainState(GetSubdomainStateRequest $request): JsonResponse
     {
         try {
-            $subdomainState = $this->stateRepository->getSubdomainState($request->id);
+            $subdomainState = $this->stateService->getSubdomainState($request->id);
 
             return response()->json($subdomainState, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -95,7 +96,7 @@ class SubdomainStateController extends Controller
     public function getSubdomainStateByName(string $name): JsonResponse
     {
         try {
-            $subdomainState = $this->stateRepository->getSubdomainStateByName($name);
+            $subdomainState = $this->stateService->getSubdomainStateByName($name);
 
             return response()->json($subdomainState, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
@@ -110,7 +111,7 @@ class SubdomainStateController extends Controller
     public function createSubdomainState(StoreSubdomainStateRequest $request): JsonResponse
     {
         try {
-            $subdomainState = $this->stateRepository->createSubdomainState($request);
+            $subdomainState = $this->stateService->createSubdomainState($request);
 
             return response()->json($subdomainState, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
@@ -123,7 +124,7 @@ class SubdomainStateController extends Controller
     public function updateSubdomainState(UpdateSubdomainStateRequest $request, int $id): JsonResponse
     {
         try {
-            $subdomainState = $this->stateRepository->updateSubdomainState($request, $id);
+            $subdomainState = $this->stateService->updateSubdomainState($request, $id);
 
             return response()->json($subdomainState, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -138,7 +139,7 @@ class SubdomainStateController extends Controller
     public function deleteSubdomainStates(Request $request): JsonResponse
     {
         try {
-            $deletedCount = $this->stateRepository->deleteSubdomainStates($request);
+            $deletedCount = $this->stateService->deleteSubdomainStates($request);
 
             return response()->json($deletedCount, Response::HTTP_OK);
 
@@ -154,7 +155,7 @@ class SubdomainStateController extends Controller
     public function deleteSubdomainState(GetSubdomainStateRequest $request): JsonResponse
     {
         try {
-            $state = $this->stateRepository->deleteSubdomainState($request);
+            $state = $this->stateService->deleteSubdomainState($request);
 
             return response()->json($state, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -169,7 +170,7 @@ class SubdomainStateController extends Controller
     public function restoreSubdomainState(GetSubdomainStateRequest $request): JsonResponse
     {
         try {
-            $state = $this->stateRepository->restoreSubdomainState($request);
+            $state = $this->stateService->restoreSubdomainState($request);
 
             return response()->json($state, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

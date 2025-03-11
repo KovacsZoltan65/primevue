@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Prettus\Repository\Eloquent\BaseRepository;
@@ -33,19 +34,26 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveStates()
+    public function getActiveStates(): Collection
     {
-        $model = $this->model();
-        $states = $model::query()
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->where('active','=',1)
-            ->get()->toArray();
+        try {
+            $model = $this->model();
+            $states = $model::query()
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->where('active','=',1)
+                ->get()->toArray();
 
-        return $states;
+            return $states;
+        } catch(Exception $ex) {
+            // Hiba logolás az ActivityController segítségével
+            $this->logError($ex, 'getActiveStates error', []);
+            // Hiba továbbítása
+            throw $ex;
+        }
     }
 
-    public function getSubdomainStates(Request $request)
+    public function getSubdomainStates(Request $request): Collection
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->all()));
@@ -60,7 +68,7 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
         }
     }
 
-    public function getSubdomainState(int $id)
+    public function getSubdomainState(int $id): SubdomainState
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
@@ -74,7 +82,7 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
         }
     }
 
-    public function getSubdomainStateByName(string $name)
+    public function getSubdomainStateByName(string $name): SubdomainState
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, $name);
@@ -88,7 +96,7 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
         }
     }
 
-    public function createSubdomainState(Request $request)
+    public function createSubdomainState(Request $request): SubdomainState
     {
         try {
             $state = SubdomainState::create($request->all());
@@ -102,7 +110,7 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
         }
     }
 
-    public function updateSubdomainState(Request $request, int $id)
+    public function updateSubdomainState(Request $request, int $id): ?SubdomainState
     {
         try {
             $state = null;
@@ -122,7 +130,7 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
         }
     }
 
-    public function deleteSubdomainStates(Request $request)
+    public function deleteSubdomainStates(Request $request): int
     {
         try {
             $validated = $request->validate([
@@ -141,7 +149,7 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
         }
     }
 
-    public function deleteSubdomainState(Request $request)
+    public function deleteSubdomainState(Request $request): SubdomainState
     {
         try {
             $state = SubdomainState::findOrFail($request->id);
@@ -156,7 +164,7 @@ class SubdomainStateRepository extends BaseRepository implements SubdomainStateR
         }
     }
 
-    public function restoreSubdomainState(Request $request)
+    public function restoreSubdomainState(Request $request): SubdomainState
     {
         try {
             $state = SubdomainState::withTrashed()->findOrFail($request->id);

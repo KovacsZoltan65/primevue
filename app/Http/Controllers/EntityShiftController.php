@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateEntityRequest;
 use App\Http\Resources\EntityShiftResource;
 use App\Models\EntityShift;
 use App\Repositories\EntityShiftRepository;
+use App\Services\Shift\EntityShiftService;
 use App\Traits\Functions;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,7 +28,7 @@ class EntityShiftController extends Controller
     use AuthorizesRequests,
         Functions;
     
-    protected EntityShiftRepository $entityShiftRepository;
+    protected EntityShiftService $entityShiftService;
     protected string $tag = '';
     
     /**
@@ -39,8 +40,8 @@ class EntityShiftController extends Controller
      * Entitásváltással kapcsolatos engedélyalapú műveletekhez, például listázáshoz,
      * létrehozása, szerkesztése, törlése és visszaállítása.
      */
-    public function __construct(EntityShiftRepository $entityShiftRepository) {
-        $this->entityShiftRepository = $entityShiftRepository;
+    public function __construct(EntityShiftService $entityShiftService) {
+        $this->entityShiftService = $entityShiftService;
         
         $this->tag = EntityShift::getTag();
         
@@ -99,7 +100,7 @@ class EntityShiftController extends Controller
     public function getActiveEntityShifts()
     {
         try {
-            $entitiesShifts = $this->entityShiftRepository->getActiveEntityShifts();
+            $entitiesShifts = $this->entityShiftService->getActiveEntityShifts();
             
             return $entitiesShifts;
         } catch( QueryException $ex ) {
@@ -121,7 +122,7 @@ class EntityShiftController extends Controller
     public function getEntitiesShifts(Request $request): JsonResponse
     {
         try {
-            $_entitiesShifts = $this->entityShiftRepository->getEntitiesShifts($request);
+            $_entitiesShifts = $this->entityShiftService->getEntityShift($request->id);
             $entitiesShifts = EntityShiftResource::collection($_entitiesShifts);
             
             return response()->json($entitiesShifts, Response::HTTP_OK);
@@ -135,7 +136,7 @@ class EntityShiftController extends Controller
     public function getEntityShift(GetEntityShiftRequest $request): JsonResponse
     {
         try {
-            $entityShift = $this->entityShiftRepository->getEntityShift($request->id);
+            $entityShift = $this->entityShiftService->getEntityShift($request->id);
             
             return response()->json($entityShift, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -150,7 +151,7 @@ class EntityShiftController extends Controller
     public function getEntityShiftByName(string $name): JsonResponse
     {
         try {
-            $entityShift = $this->entityShiftRepository->getEntityShiftByName($name);
+            $entityShift = $this->entityShiftService->getEntityShiftByName($name);
             
             return response()->json($entityShift, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -165,7 +166,7 @@ class EntityShiftController extends Controller
     public function createEntityShift(StoreEntityShiftRequest $request): JsonResponse
     {
         try {
-            $entityShift = $this->entityShiftRepository->createEntityShift($request);
+            $entityShift = $this->entityShiftService->createEntityShift($request);
 
             return response()->json($entityShift, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
@@ -178,7 +179,7 @@ class EntityShiftController extends Controller
     public function updateEntityShift(UpdateEntityRequest $request, int $id): JsonResponse
     {
         try {
-            $entityShift = $this->entityShiftRepository->updateEntityShift($request, $id);
+            $entityShift = $this->entityShiftService->updateEntityShift($request, $id);
 
             return response()->json($entityShift, Response::HTTP_CREATED);
         } catch(ModelNotFoundException $ex) {
@@ -193,7 +194,7 @@ class EntityShiftController extends Controller
     public function deleteEntitiesShifts(Request $request): JsonResponse
     {
         try {
-            $deletedCount = $this->entityShiftRepository->deleteEntitiesShifts($request);
+            $deletedCount = $this->entityShiftService->deleteEntitiesShifts($request);
             
             return response()->json($deletedCount, Response::HTTP_OK);
         } catch(ValidationException $ex) {
@@ -208,7 +209,7 @@ class EntityShiftController extends Controller
     public function deleteEntityShift(GetEntityShiftRequest $request): JsonResponse
     {
         try {
-            $entityShift = $this->entityShiftRepository->deleteEntityShift($request);
+            $entityShift = $this->entityShiftService->deleteEntityShift($request);
 
             return response()->json($entityShift, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -223,7 +224,7 @@ class EntityShiftController extends Controller
     public function restoreEntityShift(GetEntityShiftRequest $request): JsonResponse
     {
         try {
-            $entityShift = $this->entityShiftRepository->restoreEntityShift($request);
+            $entityShift = $this->entityShiftService->restoreEntityShift($request);
 
             return response()->json($entityShift, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {
@@ -238,7 +239,7 @@ class EntityShiftController extends Controller
     public function realDeleteEntityShift(GetEntityShiftRequest $request): JsonResponse
     {
         try {
-            $entityShift = $this->entityShiftRepository->realDeleteEntityShift($request->id);
+            $entityShift = $this->entityShiftService->realDeleteEntityShift($request->id);
 
             return response()->json($entityShift, Response::HTTP_OK);
         } catch(ModelNotFoundException $ex) {

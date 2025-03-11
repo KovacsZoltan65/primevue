@@ -32,7 +32,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
         $this->cacheService = $cacheService;
     }
 
-    public function getActiveEntityShifts()
+    public function getActiveEntityShifts(): array
     {
         try {
             $model = $this->model();
@@ -64,7 +64,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
         }
     }
 
-    public function getEntityShift(int $id)
+    public function getEntityShift(int $id): EntityShift
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, (string) $id);
@@ -78,7 +78,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
         }
     }
 
-    public function getEntityShiftByName(string $name)
+    public function getEntityShiftByName(string $name): EntityShift
     {
         try {
             $cacheKey = $this->generateCacheKey($this->tag, $name);
@@ -92,7 +92,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
         }
     }
 
-    public function createEntityShift(Request $request)
+    public function createEntityShift(Request $request): ?EntityShift
     {
         try{
             $company = null;
@@ -114,7 +114,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
         }
     }
 
-    public function updateEntityShift($request, int $id)
+    public function updateEntityShift($request, int $id): ?EntityShift
     {
         try {
             $company = null;
@@ -133,7 +133,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
         }
     }
 
-    public function deleteEntitiesShifts(Request $request)
+    public function deleteEntitiesShifts(Request $request): int
     {
         try {
             $validated = $request->validate([
@@ -162,7 +162,7 @@ class EntityShiftRepository extends BaseRepository implements EntityShiftReposit
         }
     }
 
-    public function deleteEntityShift(Request $request)
+    public function deleteEntityShift(Request $request): EntityShift
     {
         try {
             $entityshift = null;

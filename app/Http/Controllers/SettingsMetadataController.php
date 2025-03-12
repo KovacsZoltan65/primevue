@@ -2,13 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSettingsMetadataRequest;
+use App\Http\Requests\UpdateSettingsMetadataRequest;
+use App\Http\Resources\SettingsMetadataResource;
 use App\Models\SettingsMetadata;
+use App\Services\Setting\SettingsMetadataService;
+use App\Traits\Functions;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Illuminate\Validation\ValidationException;
+use Exception;
 
 class SettingsMetadataController extends Controller
 {
-    public function __construct() {
-        //
+    use AuthorizesRequests, Functions;
+
+    protected SettingsMetadataService $settingsMetadataService;
+
+    protected string $tag = '';
+
+    public function __construct(SettingsMetadataService $settingsMetadataService) {
+        $this->settingsMetadataService = $settingsMetadataService;
+        $this->tag = SettingsMetadata::getTag();
     }
 
     public function index(Request $request)
@@ -16,57 +36,98 @@ class SettingsMetadataController extends Controller
         return response()->json(SettingsMetadata::all());
     }
 
-    public function show(string $key)
+    public function applySearch(Builder $query, string $search): Builder
     {
-        $metadata = SettingsMetadata::where('key', $key)->firstOrFail();
-        return response()->json($metadata);
+        return $query->when($search, function ($query, string $search) {
+            $query->where('key', 'like', "%{$search}%");
+        });
     }
 
-    public function getAllMetadata(Request $request)
+    public function getActiveMetadata(Request $request): JsonResponse
     {
-        //
+        try {
+            $metadata = $this->settingsMetadataService->getActiveMetadata();
+
+            return response()->json($metadata, Response::HTTP_OK);
+        } catch( QueryException $ex ) {
+            return $this->handleException($ex, 'getActiveMetadata query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch( Exception $ex ) {
+            return $this->handleException($ex, 'getActiveMetadata general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getMetadatas(Request $request): JsonResponse
+    {
+        try {
+            $_metadatas = $this->settingsMetadataService->getMetadatas($request);
+            $metadatas = SettingsMetadataResource::collection($_metadatas);
+
+            return response()->json($_metadatas, Response::HTTP_OK);
+        } catch( QueryException $ex ) {
+            return $this->handleException($ex, 'getMetadatas query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch( Exception $ex ) {
+            return $this->handleException($ex, 'getMetadatas general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     public function getMetadata(Request $request)
     {
-        //
+        try {
+            $metadata = $this->settingsMetadataService->getMetadata($request->id);
+
+            return response()->json($metadata, Response::HTTP_OK);
+        } catch( ModelNotFoundException $ex ) {
+            return $this->handleException($ex, 'getMetadata model not found error', Response::HTTP_NOT_FOUND);
+        } catch( QueryException $ex ) {
+            return $this->handleException($ex, 'getMetadata query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch( Exception $ex ) {
+            return $this->handleException($ex, 'getMetadata general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     public function getMetadataByKey(string $key)
     {
-        //
+        try {
+            $metadata = $this->settingsMetadataService->getMetadataByKey($key);
+
+            return response()->json($metadata, Response::HTTP_OK);
+        } catch ( ModelNotFoundException $ex ) {
+            return $this->handleException($ex, 'getCompanyByName model not found error', Response::HTTP_NOT_FOUND);
+        } catch (QueryException $ex) {
+            return $this->handleException($ex, 'getCompanyByName query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (Exception $ex) {
+            return $this->handleException($ex, 'getCompanyByName general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
-    public function createMetadata(Request $request)
+    public function createMetadata(StoreSettingsMetadataRequest $request)
     {
-        $validated = $request->validate([
-            'key' => 'required|string|unique:settings_metadata,key',
-            'label' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'type' => 'required|in:string,integer,boolean,json',
-            'level' => 'required|in:application,company',
-            'is_required' => 'boolean',
-            'default_value' => 'nullable',
-            'validation_rules' => 'nullable|json',
-        ]);
+        try {
+            $metadata = $this->settingsMetadataService->createMetadata($request);
 
-        $metadata = SettingMetadata::create($validated);
-        return response()->json($metadata, 201);
+            return response()->json($metadata, Response::HTTP_CREATED);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'createMetadata query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'createMetadata general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
-    public function updateMetadata(Request $request, int $id)
+    public function updateMetadata(UpdateSettingsMetadataRequest $request, int $id)
     {
-        $metadata = SettingMetadata::where('id', $id)->firstOrFail();
+        try {
+            $metadata = $this->settingsMetadataService->updateMetadata($request, $id);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'updateCompany model not found error', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'updateCompany query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'updateCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
 
-        $validated = $request->validate([
-            'label' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'type' => 'nullable|in:string,integer,boolean,json',
-            'level' => 'nullable|in:application,company',
-            'is_required' => 'boolean',
-            'default_value' => 'nullable',
-            'validation_rules' => 'nullable|json',
-        ]);
+        $metadata = SettingsMetadata::where('id', $id)->firstOrFail();
+
+        $validated = $request->validate();
 
         $metadata->update($validated);
         return response()->json($metadata);
@@ -74,7 +135,7 @@ class SettingsMetadataController extends Controller
 
     public function deleteMetadata(int $id)
     {
-        $metadata = SettingMetadata::where('id', $id)->firstOrFail();
+        $metadata = SettingsMetadata::where('id', $id)->firstOrFail();
         $metadata->delete();
 
         return response()->json(['message' => 'Metadata deactivated successfully']);

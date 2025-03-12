@@ -16,6 +16,7 @@ class AppSettingService
     {
         $this->appSettingRepository = $appSettingRepository;
     }
+    
     public function getActiveAppSettings(): Array
     {
         try {

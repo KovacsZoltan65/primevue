@@ -130,9 +130,92 @@ class SettingsMetadataRepository extends BaseRepository implements SettingsMetad
         }
     }
 
+    public function deleteMetaDatas(Request $request): int
+    {
+        try {
+            $validated = $request->validate([
+                'ids' => 'required|array|min:1', // Kötelező, legalább 1 id kell
+                'ids.*' => 'integer|exists:companies,id', // Az id-k egész számok és létező cégek legyenek
+            ]);
+
+            $ids = $validated['ids'];
+            $deletedCount = 0;
+
+            DB::transaction(function()use($ids, &$deletedCount) {
+                $metadata = SettingsMetadata::whereIn('id', $ids)->lockForUpdate()->get();
+
+                $deletedCount = $metadata->each(function ($meta) {
+                    $meta->delete();
+                })->count();
+
+                // Cache törlése, ha szükséges
+                $this->cacheService->forgetAll($this->tag);
+            });
+
+            return $deletedCount;
+        } catch(Exception $ex) {
+            $this->logError($ex, 'deleteMetaDatas error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    public function deleteMetaData(Request $request): ?SettingsMetadata
+    {
+        try {
+            $metadata = null;
+
+            DB::transaction(function() use($request, $metadata) {
+                $metadata = SettingsMetadata::lockForUpdate()->findOrFail($request->id);
+                $metadata->delete();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
+
+            return $metadata;
+        } catch( Exception $ex ) {
+            $this->logError($ex, 'deleteMetaData error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    public function restoreMetaData(Request $request): ?SettingsMetadata
+    {
+        try {
+            $metadata = null;
+
+            DB::transaction(function()use($request, &$metadata) {
+                $metadata = SettingsMetadata::withTrashed()->lockForUpdate()->findOrFail($request->id);
+                $metadata->restore();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
+
+            return $metadata;
+        } catch( Exception $ex ) {
+            $this->logError($ex, 'restoreMetaData error', ['request' => $request->all()]);
+            throw $ex;
+        }
+    }
+
+    public function realDeleteMetaData(int $id): ?SettingsMetadata
+    {
+        try {
+            $metadata = null;
+
+            DB::transaction(function() use($id, &$metadata) {
+                $metadata = SettingsMetadata::withTrashed()->lockForUpdate()->findOrFail($id);
+                $metadata->forceDelete();
+
+                $this->cacheService->forgetAll($this->tag);
+            });
 
 
-
+            return $metadata;
+        } catch( Exception $ex ) {
+            $this->logError($ex, 'realDeleteMetaData error', ['id' => $id]);
+            throw $ex;
+        }
+    }
 
     public function model(): string
     {

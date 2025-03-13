@@ -118,7 +118,7 @@ class CompanyRepository extends BaseRepository implements CompanyRepositoryInter
         }
     }
 
-    public function updateCompany($request, int $id): Company
+    public function updateCompany($request, int $id): ?Company
     {
         try {
             $company = null;

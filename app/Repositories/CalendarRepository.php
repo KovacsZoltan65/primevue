@@ -30,17 +30,18 @@ class CalendarRepository extends BaseRepository implements CalendarRepositoryInt
         $this->tag = Calendar::getTag();
     }
 
-    public function getCalendarByYear(Request $request): array
+    public function getCalendarByYear(int $year): array
     {
         try {
-            $cacheKey = $this->generateCacheKey($this->tag, json_encode($request->year));
+            $cacheKey = $this->generateCacheKey($this->tag, (string) $year);
 
-            return $this->cacheService->remember($this->tag, $cacheKey, function() use($request->year) {
-                $calendarQuery = Calendar::search($request->year);
-                return $calendarQuery->get();
+            return $this->cacheService->remember($this->tag, $cacheKey, function () use ($year) {
+                return Calendar::whereYear('date', $year)
+                    ->orderBy('date', 'asc')
+                    ->pluck('date')->toArray();
             });
         } catch (Exception $ex) {
-            $this->logError($ex, 'getCalendarByYear error', ['year' => $request->year]);
+            $this->logError($ex, 'getCalendarByYear error', ['year' => $year]);
             throw $ex;
         }
     }
@@ -71,16 +72,66 @@ class CalendarRepository extends BaseRepository implements CalendarRepositoryInt
     }
     public function getCalendarByDay(int $day, int $month, int $year): array
     {
-        return Calendar::whereYear('date', $year)
-            ->whereMonth('date', $month)
-            ->whereDay('date', $day)
-            ->pluck('date')
-            ->toArray();
+        try {
+            return Calendar::whereYear('date', $year)
+                ->whereMonth('date', $month)
+                ->whereDay('date', $day)
+                ->pluck('date')
+                ->toArray();
+        } catch(Exception $ex) {
+            $this->logError($ex, 'getCalendarByWeek error', ['year' => $year, 'month' => $month, 'day' => $day]);
+            throw $ex;
+        }
     }
-    public function getCalendarByRange($startDate, $endDate): array{}
-    public function getCalendarByDate($date): Calendar{}
-    public function getCalendarByWeekday($weekday, $week, $year){}
-    public function getCalendarByWeekdayRange($startDate, $endDate){}
+    public function getCalendarByRange(string $startDate, string $endDate): array
+    {
+        try {
+            return Calendar::whereBetween('date', [$startDate, $endDate])
+                ->orderBy('date', 'asc')
+                ->pluck('date')->toArray();
+        } catch( Exception $ex ) {
+            $this->logError($ex, 'getCalendarByWeek error', ['startDate' => $startDate, 'endDate' => $endDate]);
+            throw $ex;
+        }
+    }
+    public function getCalendarByDate(string $date): ?Calendar
+    {
+        try {
+            return Calendar::where('date', $date)->first();
+        } catch(Exception $ex) {
+            $this->logError($ex, 'getCalendarByWeek error', ['date' => $date]);
+            throw $ex;
+        }
+    }
+    public function getCalendarByWeekday(int $weekday, int $week, int $year): array
+    {
+        try {
+            return Calendar::whereYear('date', $year)
+                ->whereRaw('WEEKDAY(date) =?', [$weekday])
+                ->whereRaw('WEEK(date, 1) =?', [$week])
+                ->orderBy('date', 'asc')
+                ->pluck('date')->toArray();
+        } catch( Exception $ex ) {
+            $this->logError($ex, 'getCalendarByWeekday error', ['weekday' => $weekday, 'week' => $week, 'year' => $year]);
+            throw $ex;
+        }
+    }
+    public function getCalendarByWeekdayRange($startDate, $endDate): array
+    {
+        try {
+            return Calendar::whereBetween('date', [$startDate, $endDate])
+               ->whereRaw('WEEKDAY(date) BETWEEN ? AND ?', [
+                   (date('w', strtotime($startDate)) + 6) % 7,
+                   (date('w', strtotime($endDate)) + 6) % 7
+               ])
+               ->orderBy('date', 'asc')
+               ->pluck('date')
+               ->toArray();
+        } catch(Exception $ex) {
+            $this->logError($ex, 'getCalendarByWeekdayRange error', ['startDate' => $startDate, 'endDate' => $endDate]);
+            throw $ex;
+        }
+    }
     public function createCalendars(int $year){}
 
 
@@ -94,7 +145,7 @@ class CalendarRepository extends BaseRepository implements CalendarRepositoryInt
         return Calendar::class;
     }
 
-    
+
 
     /**
      * Boot up the repository, pushing criteria
@@ -103,5 +154,5 @@ class CalendarRepository extends BaseRepository implements CalendarRepositoryInt
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
-    
+
 }

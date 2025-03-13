@@ -15,7 +15,12 @@ return new class extends Migration
 		Schema::create('entity_calendars', function(Blueprint $table) {
             $table->increments('id');
 
+			$table->unsignedBigInteger('calendar_id')->index()->comment('Naptár azonosító');
+
             $table->timestamps();
+			$table->softDeletes()->comment('Lágy törlés dátuma');
+
+			$table->foreign('calendar_id')->references('id')->on('calendars')->cascadeOnDelete();
 		});
 	}
 

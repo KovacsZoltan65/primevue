@@ -49,6 +49,9 @@ class DatabaseSeeder extends Seeder
 
             // Munkarendek
             WorkplanSeeder::class,
+
+            // Naptárak
+            CalendarSeeder::class,
         ]);
 
         // User::factory(10)->create();

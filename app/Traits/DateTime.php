@@ -10,6 +10,7 @@
 namespace App\Traits;
 
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 
 trait DateTime
 {
@@ -173,5 +174,13 @@ trait DateTime
     public function isDate(string $date, string $format): bool
     {
         return \DateTime::createFromFormat($format, $date) !== false;
+    }
+
+    public function getYearDays(int $year): array
+    {
+        return array_map(
+            fn($date) => $date->toDateString(), 
+            iterator_to_array(CarbonPeriod::create("{$year}-01-01", "{$year}-12-31"))
+        );
     }
 }

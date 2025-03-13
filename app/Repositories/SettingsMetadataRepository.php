@@ -112,13 +112,13 @@ class SettingsMetadataRepository extends BaseRepository implements SettingsMetad
         }
     }
 
-    public function updateMetadata(Request $request): ?SettingsMetadata
+    public function updateMetadata(Request $request, int $id): ?SettingsMetadata
     {
         try {
             $metadata = null;
 
-            DB::transaction(function()use($request, &$metadata) {
-                $metadata = SettingsMetadata::lockForUpdate()->findOrFail($request->id);
+            DB::transaction(function()use($request, $id, &$metadata) {
+                $metadata = SettingsMetadata::lockForUpdate()->findOrFail($id);
                 $metadata->update($request->all());
                 $metadata->refresh();
             });

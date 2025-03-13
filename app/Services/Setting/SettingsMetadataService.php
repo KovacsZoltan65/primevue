@@ -62,10 +62,10 @@ class SettingsMetadataService
         }
     }
 
-    public function updateMetadata(Request $request): ?SettingsMetadata
+    public function updateMetadata(Request $request, int $id): ?SettingsMetadata
     {
         try {
-            return $this->settingsMetadataRepository->updateMetadata($request);
+            return $this->settingsMetadataRepository->updateMetadata($request, $id);
         } catch( Exception $ex ) {
             throw $ex;
         }

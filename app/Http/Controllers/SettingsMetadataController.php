@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSettingsMetadataRequest;
 use App\Http\Requests\UpdateSettingsMetadataRequest;
+use App\Http\Requests\GetSettingsMetadataRequest;
 use App\Http\Resources\SettingsMetadataResource;
 use App\Models\SettingsMetadata;
 use App\Services\Setting\SettingsMetadataService;
@@ -22,12 +23,12 @@ class SettingsMetadataController extends Controller
 {
     use AuthorizesRequests, Functions;
 
-    protected SettingsMetadataService $settingsMetadataService;
+    protected SettingsMetadataService $metadataService;
 
     protected string $tag = '';
 
     public function __construct(SettingsMetadataService $settingsMetadataService) {
-        $this->settingsMetadataService = $settingsMetadataService;
+        $this->metadataService = $settingsMetadataService;
         $this->tag = SettingsMetadata::getTag();
     }
 
@@ -46,7 +47,7 @@ class SettingsMetadataController extends Controller
     public function getActiveMetadata(Request $request): JsonResponse
     {
         try {
-            $metadata = $this->settingsMetadataService->getActiveMetadata();
+            $metadata = $this->metadataService->getActiveMetadata();
 
             return response()->json($metadata, Response::HTTP_OK);
         } catch( QueryException $ex ) {
@@ -59,7 +60,7 @@ class SettingsMetadataController extends Controller
     public function getMetadatas(Request $request): JsonResponse
     {
         try {
-            $_metadatas = $this->settingsMetadataService->getMetadatas($request);
+            $_metadatas = $this->metadataService->getMetadatas($request);
             $metadatas = SettingsMetadataResource::collection($_metadatas);
 
             return response()->json($_metadatas, Response::HTTP_OK);
@@ -73,7 +74,7 @@ class SettingsMetadataController extends Controller
     public function getMetadata(Request $request)
     {
         try {
-            $metadata = $this->settingsMetadataService->getMetadata($request->id);
+            $metadata = $this->metadataService->getMetadata($request->id);
 
             return response()->json($metadata, Response::HTTP_OK);
         } catch( ModelNotFoundException $ex ) {
@@ -88,7 +89,7 @@ class SettingsMetadataController extends Controller
     public function getMetadataByKey(string $key)
     {
         try {
-            $metadata = $this->settingsMetadataService->getMetadataByKey($key);
+            $metadata = $this->metadataService->getMetadataByKey($key);
 
             return response()->json($metadata, Response::HTTP_OK);
         } catch ( ModelNotFoundException $ex ) {
@@ -103,7 +104,7 @@ class SettingsMetadataController extends Controller
     public function createMetadata(StoreSettingsMetadataRequest $request)
     {
         try {
-            $metadata = $this->settingsMetadataService->createMetadata($request);
+            $metadata = $this->metadataService->createMetadata($request);
 
             return response()->json($metadata, Response::HTTP_CREATED);
         } catch(QueryException $ex) {
@@ -116,7 +117,7 @@ class SettingsMetadataController extends Controller
     public function updateMetadata(UpdateSettingsMetadataRequest $request, int $id)
     {
         try {
-            $metadata = $this->settingsMetadataService->updateMetadata($request, $id);
+            $metadata = $this->metadataService->updateMetadata($request, $id);
         } catch(ModelNotFoundException $ex) {
             return $this->handleException($ex, 'updateCompany model not found error', Response::HTTP_NOT_FOUND);
         } catch(QueryException $ex) {
@@ -124,20 +125,65 @@ class SettingsMetadataController extends Controller
         } catch(Exception $ex) {
             return $this->handleException($ex, 'updateCompany general error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        $metadata = SettingsMetadata::where('id', $id)->firstOrFail();
-
-        $validated = $request->validate();
-
-        $metadata->update($validated);
-        return response()->json($metadata);
     }
 
-    public function deleteMetadata(int $id)
+    public function deleteMetadatas(Request $request): JsonResponse
     {
-        $metadata = SettingsMetadata::where('id', $id)->firstOrFail();
-        $metadata->delete();
+        try {
+            $deletedCount = $this->metadataService->deleteMetaDatas($request);
 
-        return response()->json(['message' => 'Metadata deactivated successfully']);
+            return response()->json($deletedCount, Response::HTTP_OK);
+        } catch(ValidationException $ex) {
+            return $this->handleException($ex, 'deleteMetadatas validation error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'deleteMetadatas query error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'deleteMetadatas general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function deleteMetadata(GetSettingsMetadataRequest $request): JsonResponse
+    {
+        try {
+            $metadata = $this->metadataService->deleteMetadata($request);
+
+            return response()->json($metadata, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'deleteMetadata model not found error', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'deleteMetadata database error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'deleteMetadata general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function restoreMetadata(GetSettingsMetadataRequest $request): JsonResponse
+    {
+        try {
+            $metadata = $this->metadataService->restoreMetadata($request);
+
+            return response()->json($metadata, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'restoreMetadata model not found error', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'restoreMetadata database error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'restoreMetadata general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function realDeleteMetadata(GetSettingsMetadataRequest $request): JsonResponse
+    {
+        try {
+            $metadata = $this->metadataService->realDeleteMetadata($request->id);
+
+            return response()->json($metadata, Response::HTTP_OK);
+        } catch(ModelNotFoundException $ex) {
+            return $this->handleException($ex, 'realDeleteMetadata model not found error', Response::HTTP_NOT_FOUND);
+        } catch(QueryException $ex) {
+            return $this->handleException($ex, 'realDeleteMetadata database error', Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch(Exception $ex) {
+            return $this->handleException($ex, 'realDeleteMetadata general error', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

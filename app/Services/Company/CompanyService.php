@@ -17,7 +17,7 @@ class CompanyService
         $this->companyRepository = $companyRepository;
     }
 
-    public function getActiveCompanies(): Collection
+    public function getActiveCompanies(): array
     {
         try {
             return $this->companyRepository->getActiveCompanies();

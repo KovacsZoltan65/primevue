@@ -28,9 +28,9 @@ use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 
 use App\Http\Resources\CompanyResource;
-use App\Repositories\CityRepository;
-use App\Repositories\CompanyRepository;
-use App\Repositories\CountryRepository;
+//use App\Repositories\CityRepository;
+//use App\Repositories\CompanyRepository;
+//use App\Repositories\CountryRepository;
 use App\Traits\Functions;
 
 /**

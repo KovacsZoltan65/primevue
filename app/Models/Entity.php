@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 use Override;
@@ -82,6 +83,18 @@ class Entity extends Model
         $this->attributes['last_export'] = $value ? Carbon::parse($value)->format('Y-m-d') : null;
     }
 
+    /**
+     * 
+     * 
+     * @return HasMany<EntityCalendar, Entity>
+     * 
+     * $entity = Entity::find(1);
+     * $calendars = $entity->entityCalendars;
+     */
+    public function entityCalendars(): HasMany
+    {
+        return $this->hasMany(EntityCalendar::class);
+    }
     /*
      * ==============================================================
      * LOGOLÁS

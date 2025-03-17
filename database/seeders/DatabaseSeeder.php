@@ -52,6 +52,7 @@ class DatabaseSeeder extends Seeder
 
             // Naptárak
             CalendarSeeder::class,
+            EntityCalendarSeeder::class,
         ]);
 
         // User::factory(10)->create();

@@ -73,6 +73,11 @@ php artisan migrate
 http://your-app-url/telescope
 
 // ---------------------------------------
+// CALENDAR
+// ---------------------------------------
+https://primetek.hashnode.dev/vue3-fullcalendar
+
+// ---------------------------------------
 // REDIS
 // ---------------------------------------
 Cache::store('redis')->put('test_key', 'test_value', 60);
@@ -81,7 +86,6 @@ Cache::store('redis')->get('test_key'); // "test_value" várható eredmény
 php artisan make:controller RegionController --resource
 php artisan make:controller CountryController --resource
 php artisan make:controller CityController --resource
-
 
 php artisan make:model Person
 php artisan make:controller PersonController

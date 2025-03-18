@@ -182,3 +182,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/shift_types', [\App\Http\Controllers\ShiftTypeController::class, 'index'])->name('shifts_types');
     
 require __DIR__.'/auth.php';
+require __DIR__ . '/calendar.php';

@@ -42,6 +42,15 @@ class CalendarController extends Controller
             $query->where('date', 'like', "%{$search}%");
         });
     }
+    
+    public function getEntitiesByDate(string $date)
+    {
+        $entities = \App\Models\EntityCalendar::whereHas('calendar', function($query) use($date) {
+            $query->where('date', $date);
+        })->with('entity')->get();
+        
+        return response()->json($entities->pluck('entity'));
+    }
 
     public function getCalendarByYear(int $year): JsonResponse
     {

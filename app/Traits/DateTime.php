@@ -183,4 +183,31 @@ trait DateTime
             iterator_to_array(CarbonPeriod::create("{$year}-01-01", "{$year}-12-31"))
         );
     }
+    
+    /**
+     * Két dátum közötti különbség óra:perc formátumban
+     * 
+     * @author Kovács Zoltán <zoltan1_kovacs@msn.com>
+     * @since 1.0.0
+     * @date 2023-08-01
+     * 
+     * @param string $start_date Kezdő dátum
+     * @param string $end_date Befejező dátum
+     * @param string|null $format Dátum formátum (alapértelmezett: Y-m-d H:i:s)
+     * @return string Különbség "HH:MM" formátumban
+     */
+   public function getDifferenceInHoursAndMinutes(string $start_date, string $end_date, string $format = null): string {
+       if (is_null($format)) {
+           $format = $this->format;
+       }
+
+       $start = Carbon::createFromFormat($format, $start_date);
+       $end = Carbon::createFromFormat($format, $end_date);
+
+       $diffInMinutes = $start->diffInMinutes($end);
+       $hours = intdiv($diffInMinutes, 60);
+       $minutes = $diffInMinutes % 60;
+
+       return sprintf('%02d:%02d', $hours, $minutes);
+   }
 }

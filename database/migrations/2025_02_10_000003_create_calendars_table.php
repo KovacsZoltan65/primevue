@@ -13,12 +13,12 @@ return new class extends Migration
 	public function up()
 	{
 		Schema::create('calendars', function(Blueprint $table) {
-            $table->id()->comment('Rekord azonosító');
+                    $table->id()->comment('Rekord azonosító');
 
-			$table->date('date')->index()->comment('Dátum');
+                    $table->date('date')->index()->comment('Dátum');
 
-            $table->timestamps();
-			$table->softDeletes()->comment('Lágy törlés dátuma');
+                    $table->timestamps();
+                    $table->softDeletes()->comment('Lágy törlés dátuma');
 		});
 	}
 

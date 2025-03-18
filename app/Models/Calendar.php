@@ -59,6 +59,30 @@ class Calendar extends Model
         });
     }
 
+    /**
+     * Kapcsolat az EntityCalendar modellel (sok entity tartozhat egy naptárnaphoz)
+     */
+    public function entityCalendars()
+    {
+        return $this->hasMany(EntityCalendar::class);
+    }
+    
+    /**
+     * Azon entitások lekérése, akik ezen a napon szerepelnek
+     */
+    public function entities()
+    {
+        return $this->belongsToMany(Entity::class, 'entity_calendar')->withTimestamps();
+    }
+    
+    /**
+     * Naptári nap létrehozása vagy lekérése egy adott dátum alapján
+     */
+    public static function firstOrCreateByDate($date)
+    {
+        return self::firstOrCreate(['date' => $date]);
+    }
+    
     #[\Override]
     public function getActivitylogOptions(): LogOptions
     {

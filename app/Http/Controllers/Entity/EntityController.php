@@ -10,7 +10,7 @@ use App\Models\Entity;
 use App\Models\User;
 use App\Repositories\EntityRepository;
 use App\Repositories\CompanyRepository;
-use App\Services\AppSettings\CompanyService;
+use App\Services\Company\CompanyService;
 use App\Services\Entity\EntityService;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;

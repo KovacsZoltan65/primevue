@@ -7,6 +7,7 @@ use App\Services\Calendar\EntityCalendarService;
 use App\Traits\Functions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 
 class EntityCalendarController extends Controller

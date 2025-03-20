@@ -178,3 +178,7 @@ php artisan make:request UpdateWorkplanRequest
     sass-migrator module --migrate-deps F:\wamp64\www\softc\primevue\resources\css\demo.scss
     sass-migrator module --migrate-deps F:\wamp64\www\softc\primevue\resources\css\styles.scss
     sass-migrator module --migrate-deps F:\wamp64\www\softc\primevue\resources\css\layout\layout.scss
+
+
+npm:    10.9.2
+node:   23.10.0
